@@ -1,0 +1,1630 @@
+/*
+Theme Name: Raisul Sohan
+Theme URI: https://github.com/raisulsohan/RaisulSohanSite
+Author: Raisul Sohan
+Description: রাইসুল সোহানের লেখার সাইট। Figma Make ডিজাইন থেকে পোর্ট করা একটি হালকা ক্লাসিক থিম। পোস্ট মডালে খোলে, কিন্তু প্রতিটা লেখার নিজস্ব URL থাকে।
+Version: 2.5.0
+Requires at least: 6.0
+Tested up to: 6.8
+Requires PHP: 7.4
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: raisul-sohan
+Tags: blog, one-column, custom-colors
+*/
+
+/* ==========================================================================
+   1. Tokens
+   ========================================================================== */
+
+:root {
+	--rs-bg: #eaecf1;
+	--rs-fg: #1a1a1a;
+	/* Cool neighbours, so nothing reads warm against the grey page.
+	   --rs-muted-fg has to be this dark to clear 4.5:1 on #eaecf1, which
+	   is a good deal darker than the old paper background. */
+	--rs-muted: #dfe3ea;
+	--rs-muted-fg: #5f6672;
+	--rs-accent: #dde1e9;
+
+	--rs-border: rgba(0, 0, 0, 0.12);
+	--rs-border-30: rgba(0, 0, 0, 0.036);
+	--rs-border-40: rgba(0, 0, 0, 0.048);
+	--rs-border-50: rgba(0, 0, 0, 0.06);
+	--rs-border-60: rgba(0, 0, 0, 0.072);
+
+	/* Divider between list rows. Deliberately stronger than --rs-border-40,
+	   which disappeared entirely, and stronger than --rs-grid so the rules
+	   read as structure rather than as part of the background pattern. */
+	--rs-rule: rgba(0, 0, 0, 0.16);
+
+	/* Background grid. Faint enough to read as texture rather than ruling;
+	   --rs-rule stays several times stronger so the list dividers still
+	   read as structure. */
+	--rs-grid: rgba(0, 0, 0, 0.016);
+	--rs-grid-size: 64px;
+
+	--rs-hover: #f3821d;
+	--rs-mark: #fef08a;
+
+	/* --rs-bg at 85%, for the close button floating over scrolling text. */
+	--rs-bg-blur: rgba(234, 236, 241, 0.85);
+
+	/* Cool teal for the category tag: reads apart from both the dark
+	   title and the grey date without competing with --rs-hover. */
+	--rs-cat: #4a6d7c;
+
+	/* Long form text sits slightly softer than --rs-fg. */
+	--rs-body-fg: rgba(26, 26, 26, 0.85);
+	/* Raised panels that must read lighter than the page, e.g. toasts. */
+	--rs-surface: #ffffff;
+	/* Dimmer behind the modals. */
+	--rs-scrim: rgba(0, 0, 0, 0.45);
+	/* Divider inside the size control bar. */
+	--rs-fontctl-sep: rgba(234, 236, 241, 0.2);
+
+	/* Filled controls: the size bar and the two scroll to top buttons.
+	   Light mode simply inverts the page; dark mode uses the accent
+	   instead, because a white pill on a dark page glares. */
+	--rs-solid-bg: var(--rs-fg);
+	--rs-solid-fg: var(--rs-bg);
+
+	/* The hover summary floats above everything, so it inverts on light
+	   and becomes a raised panel on dark. */
+	--rs-tooltip-bg: var(--rs-fg);
+	--rs-tooltip-fg: var(--rs-bg);
+
+	/* Without these the browser draws its own scheme default, which is a
+	   neutral grey that sits badly against a tinted page. Inherited, so
+	   the modal's scroller picks it up too. */
+	--rs-scrollbar-thumb: #b9bfcc;
+	--rs-scrollbar-track: #e1e4eb;
+	scrollbar-color: var(--rs-scrollbar-thumb) var(--rs-scrollbar-track);
+
+	color-scheme: light;
+
+	--rs-serif: "Noto Serif Bengali", "SolaimanLipi", serif;
+	--rs-sans: "Noto Sans Bengali", sans-serif;
+
+	--rs-radius: 0.25rem;
+	--rs-radius-lg: 0.5rem;
+	--rs-radius-xl: 0.75rem;
+
+	--rs-wrap: 48rem;
+	--rs-gutter: 1.5rem;
+
+	/* Set by JS from the SIZES array in app.js. Keep this equal to that
+	   array's FONT_DEFAULT entry: it is what the page renders with before
+	   the script runs, so a mismatch shows as a jump on load. */
+	--rs-post-size: 19px;
+
+	--rs-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+	--rs-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+	--rs-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/*
+ * Dark mode. Only the colour tokens change, so every rule below keeps
+ * working untouched. The attribute is written on <html> by an inline
+ * script in wp_head, before first paint, so the page never flashes light.
+ */
+:root[data-theme="dark"] {
+	--rs-bg: #141130;
+	--rs-fg: #f1f0f8;
+	--rs-muted: #201c48;
+	--rs-muted-fg: #8b87ac;
+	--rs-accent: #262157;
+
+	--rs-border: rgba(255, 255, 255, 0.18);
+	--rs-border-30: rgba(255, 255, 255, 0.06);
+	--rs-border-40: rgba(255, 255, 255, 0.08);
+	--rs-border-50: rgba(255, 255, 255, 0.1);
+	--rs-border-60: rgba(255, 255, 255, 0.13);
+
+	--rs-rule: rgba(255, 255, 255, 0.2);
+
+	--rs-grid: rgba(255, 255, 255, 0.015);
+
+	/* Violet stands in for the orange here: on indigo the orange reads as
+	   a stray warm note, and this matches the filled buttons below. */
+	--rs-hover: #9c8cff;
+	/* Violet tinted highlight, so the light --rs-fg on top stays readable. */
+	--rs-mark: #4a3aa0;
+
+	--rs-bg-blur: rgba(20, 17, 48, 0.85);
+	/* Periwinkle rather than the light mode teal, which turns muddy here. */
+	--rs-cat: #9bb4e8;
+
+	--rs-body-fg: rgba(241, 240, 248, 0.82);
+	--rs-surface: #201c48;
+	--rs-scrim: rgba(6, 4, 20, 0.7);
+	--rs-fontctl-sep: rgba(255, 255, 255, 0.28);
+
+	--rs-solid-bg: #6c5ce7;
+	--rs-solid-fg: #ffffff;
+
+	--rs-tooltip-bg: #272253;
+	--rs-tooltip-fg: #f1f0f8;
+
+	/* Indigo rather than the browser's grey, so the scrollbar channel
+	   reads as part of the page. */
+	--rs-scrollbar-thumb: #3d3777;
+	--rs-scrollbar-track: #1c1942;
+
+	color-scheme: dark;
+
+	/* Shadows read as almost nothing on a dark page unless deepened. */
+	--rs-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45), 0 2px 4px -2px rgba(0, 0, 0, 0.45);
+	--rs-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
+	--rs-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+
+/* ==========================================================================
+   2. Reset
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	font-size: 16px;
+	-webkit-text-size-adjust: 100%;
+	/*
+	 * Keep the scrollbar's strip of space reserved at all times. Opening a
+	 * modal sets overflow: hidden below, which removes the scrollbar; without
+	 * this the page would widen by its thickness and everything would jump
+	 * sideways. Also keeps the centred modal from shifting for the same
+	 * reason. Browsers without support fall back to the old jump.
+	 */
+	scrollbar-gutter: stable;
+}
+
+body {
+	margin: 0;
+	min-height: 100vh;
+	/*
+	 * Two hairline gradients tiled into a grid. Kept on the page itself,
+	 * so anything with its own fill — the header, modals, toasts — simply
+	 * covers it rather than having to opt out.
+	 */
+	background-color: var(--rs-bg);
+	background-image:
+		linear-gradient(to right, var(--rs-grid) 1px, transparent 1px),
+		linear-gradient(to bottom, var(--rs-grid) 1px, transparent 1px);
+	background-size: var(--rs-grid-size) var(--rs-grid-size);
+	color: var(--rs-fg);
+	font-family: var(--rs-serif);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+body.rs-locked {
+	overflow: hidden;
+}
+
+img {
+	max-width: 100%;
+	height: auto;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+button {
+	font-family: inherit;
+	border: 0;
+	background: none;
+	padding: 0;
+	color: inherit;
+	cursor: pointer;
+}
+
+:focus-visible {
+	outline: 2px solid var(--rs-hover);
+	outline-offset: 2px;
+	border-radius: 2px;
+}
+
+.rs-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.rs-wrap {
+	max-width: var(--rs-wrap);
+	margin: 0 auto;
+	padding-left: var(--rs-gutter);
+	padding-right: var(--rs-gutter);
+}
+
+/* ==========================================================================
+   3. Header
+   ========================================================================== */
+
+.rs-header {
+	position: sticky;
+	top: 0;
+	z-index: 40;
+	background: var(--rs-bg);
+	border-bottom: 1px solid var(--rs-border-50);
+}
+
+.rs-header__inner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	position: relative;
+	padding-top: max(12px, env(safe-area-inset-top, 12px));
+	padding-bottom: 0.75rem;
+}
+
+.rs-header__nav {
+	display: flex;
+	align-items: center;
+	gap: 1.25rem;
+}
+
+.rs-header__nav--right {
+	gap: 1rem;
+}
+
+.rs-header__link {
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--rs-muted-fg);
+	transition: color 0.15s ease;
+}
+
+.rs-header__link:hover {
+	color: var(--rs-fg);
+}
+
+.rs-header__brand {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	font-family: var(--rs-sans);
+	font-size: 0.875rem;
+	font-weight: 500;
+	letter-spacing: 0.025em;
+	color: var(--rs-fg);
+	white-space: nowrap;
+}
+
+.rs-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--rs-muted-fg);
+	transition: color 0.15s ease;
+}
+
+.rs-icon:hover {
+	color: var(--rs-fg);
+}
+
+.rs-icon svg {
+	display: block;
+}
+
+/* Shows the mode you would switch to: moon while light, sun while dark. */
+.rs-theme__sun {
+	display: none;
+}
+
+.rs-theme__moon {
+	display: block;
+}
+
+:root[data-theme="dark"] .rs-theme__sun {
+	display: block;
+}
+
+:root[data-theme="dark"] .rs-theme__moon {
+	display: none;
+}
+
+/* --------------------------------------------------------------------------
+   Navbar: the WordPress menu row, second row inside the sticky header.
+   Only renders when a menu is assigned to the "rs_primary" location.
+   Background and bottom border come from .rs-header, so both rows stick
+   together as one block.
+   -------------------------------------------------------------------------- */
+
+.rs-navbar__inner {
+	display: flex;
+	justify-content: center;
+	padding-top: 0.125rem;
+	padding-bottom: 0.5rem;
+}
+
+.rs-navbar__list {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 0.375rem 1.625rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.rs-navbar__list li {
+	margin: 0;
+}
+
+.rs-navbar__list a {
+	position: relative;
+	display: inline-block;
+	font-family: var(--rs-sans);
+	font-size: 0.8125rem;
+	line-height: 1.25rem;
+	color: var(--rs-muted-fg);
+	transition: color 0.25s ease;
+}
+
+.rs-navbar__list a:hover {
+	color: var(--rs-fg);
+}
+
+/* Underline opens from the middle, same easing as the hero reveal. */
+.rs-navbar__list a::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: -3px;
+	height: 1px;
+	background: currentColor;
+	transform: scaleX(0);
+	transform-origin: center;
+	transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rs-navbar__list a:hover::after,
+.rs-navbar__list .current-menu-item > a::after,
+.rs-navbar__list .current_page_item > a::after,
+.rs-navbar__list .current-menu-ancestor > a::after {
+	transform: scaleX(1);
+}
+
+.rs-navbar__list .current-menu-item > a,
+.rs-navbar__list .current_page_item > a,
+.rs-navbar__list .current-menu-ancestor > a {
+	color: var(--rs-fg);
+}
+
+/* ==========================================================================
+   4. Hero / typewriter
+   ========================================================================== */
+
+.rs-hero {
+	max-width: var(--rs-wrap);
+	margin: 0 auto;
+	padding: 3.5rem var(--rs-gutter) 2.5rem;
+	height: 140px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+
+.rs-hero__title {
+	margin: 0;
+	font-family: var(--rs-serif);
+	font-size: 2.25rem;
+	font-weight: 300;
+	line-height: 1.35;
+	/* No tracking: the tight -0.025em was there to hold 700 together, and
+	   negative spacing risks pulling যুক্তাক্ষর apart at light weights. */
+	letter-spacing: normal;
+	white-space: nowrap;
+	color: var(--rs-fg);
+}
+
+/*
+ * One word per span, staggered from JS via transition-delay.
+ * Words rise out of a blur on the way in and lift away on the way out,
+ * so a phrase change reads as a crossfade rather than a rewind.
+ */
+.rs-word {
+	display: inline-block;
+	opacity: 0;
+	filter: blur(12px);
+	transform: translate3d(0, 0.45em, 0) scale(0.94);
+	transition:
+		opacity 900ms cubic-bezier(0.16, 1, 0.3, 1),
+		filter 900ms cubic-bezier(0.16, 1, 0.3, 1),
+		transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rs-word.is-in {
+	opacity: 1;
+	filter: blur(0);
+	transform: translate3d(0, 0, 0) scale(1);
+}
+
+.rs-word.is-out {
+	opacity: 0;
+	filter: blur(9px);
+	transform: translate3d(0, -0.32em, 0) scale(1.03);
+	transition-duration: 520ms;
+	transition-timing-function: cubic-bezier(0.7, 0, 0.84, 0);
+}
+
+/* ==========================================================================
+   5. Post list
+   ========================================================================== */
+
+.rs-main {
+	padding-bottom: 6rem;
+}
+
+.rs-list {
+	border-top: 1px solid var(--rs-rule);
+}
+
+.rs-row {
+	border-bottom: 1px solid var(--rs-rule);
+}
+
+.rs-row__link {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 1rem;
+	width: 100%;
+	/* Roomier than the title alone needs: the list is the page's main
+	   surface, and the rows read as cramped at the old 0.75rem. */
+	padding: 1rem 0;
+	text-align: left;
+}
+
+/*
+ * Title and category flow as inline text inside this block, so the tag
+ * trails the last line of the title rather than sitting in its own column.
+ */
+.rs-row__head {
+	min-width: 0;
+}
+
+.rs-row__title {
+	font-family: var(--rs-serif);
+	font-size: var(--rs-post-size);
+	line-height: 1.625;
+	color: var(--rs-fg);
+	transition: color 0.15s ease;
+}
+
+.rs-row__link:hover .rs-row__title,
+.rs-row__link:focus-visible .rs-row__title {
+	color: var(--rs-hover);
+}
+
+/* Sits outside .rs-row__title, so it keeps its own colour while the
+   title turns orange on hover. */
+.rs-row__cat {
+	margin-left: 0.75rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	font-style: italic;
+	line-height: 1rem;
+	color: var(--rs-cat);
+	white-space: nowrap;
+}
+
+/* Reading time and date travel together, so .rs-row__link still has the
+   two children its space-between layout expects. */
+.rs-row__aside {
+	display: flex;
+	align-items: baseline;
+	flex-shrink: 0;
+	gap: 0.875rem;
+}
+
+.rs-row__read {
+	white-space: nowrap;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--rs-muted-fg);
+	opacity: 0.75;
+}
+
+.rs-row__date {
+	flex-shrink: 0;
+	white-space: nowrap;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--rs-muted-fg);
+}
+
+.rs-more {
+	display: block;
+	width: 100%;
+	margin-top: 2rem;
+	padding: 0.75rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	color: var(--rs-muted-fg);
+	border: 1px solid var(--rs-border-60);
+	border-radius: var(--rs-radius-lg);
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.rs-more:hover {
+	background: var(--rs-accent);
+	color: var(--rs-fg);
+}
+
+.rs-more[hidden] {
+	display: none;
+}
+
+/* ==========================================================================
+   6. Tooltip
+   ========================================================================== */
+
+.rs-tooltip {
+	position: fixed;
+	z-index: 50;
+	max-width: 220px;
+	padding: 0.5rem 0.75rem;
+	border-radius: var(--rs-radius-lg);
+	box-shadow: var(--rs-shadow-lg);
+	background: var(--rs-tooltip-bg);
+	color: var(--rs-tooltip-fg);
+	font-family: var(--rs-serif);
+	font-size: 0.75rem;
+	line-height: 1.625;
+	pointer-events: none;
+	opacity: 0;
+	visibility: hidden;
+}
+
+.rs-tooltip.is-visible {
+	opacity: 1;
+	visibility: visible;
+}
+
+@media (hover: none) {
+	.rs-tooltip {
+		display: none;
+	}
+}
+
+/* ==========================================================================
+   7. Font size controls
+   ========================================================================== */
+
+.rs-fontctl {
+	display: flex;
+	overflow: hidden;
+	border: 1px solid var(--rs-border-60);
+	border-radius: var(--rs-radius);
+	font-family: sans-serif;
+}
+
+.rs-fontctl button {
+	padding: 0.25rem 0.5rem;
+	font-weight: 700;
+	background: var(--rs-solid-bg);
+	color: var(--rs-solid-fg);
+	transition: opacity 0.15s ease;
+}
+
+.rs-fontctl button:hover:not(:disabled) {
+	opacity: 0.75;
+}
+
+.rs-fontctl button:disabled {
+	opacity: 0.3;
+	cursor: default;
+}
+
+.rs-fontctl button[data-step="0"] {
+	font-size: 11px;
+}
+
+.rs-fontctl button[data-step="1"] {
+	font-size: 13px;
+}
+
+.rs-fontctl button[data-step="2"] {
+	font-size: 15px;
+}
+
+.rs-fontctl__sep {
+	width: 1px;
+	background: var(--rs-fontctl-sep);
+}
+
+/* Floating variant, anchored 2rem to the left of the content column. */
+.rs-fontctl--float {
+	position: fixed;
+	top: 50%;
+	left: calc(50% - 24rem - 2rem);
+	transform: translateY(-50%);
+	z-index: 30;
+	flex-direction: column;
+	box-shadow: var(--rs-shadow-md);
+}
+
+.rs-fontctl--float button {
+	padding: 0.5rem 0.625rem;
+}
+
+.rs-fontctl--float .rs-fontctl__sep {
+	width: auto;
+	height: 1px;
+}
+
+/* ==========================================================================
+   8. Scroll to top
+   ========================================================================== */
+
+.rs-top {
+	position: fixed;
+	bottom: 2rem;
+	right: calc(50% - 24rem - 2rem);
+	z-index: 30;
+	padding: 0.5rem;
+	background: var(--rs-solid-bg);
+	color: var(--rs-solid-fg);
+	border-radius: var(--rs-radius-lg);
+	box-shadow: var(--rs-shadow-md);
+	transition: opacity 0.2s ease, visibility 0.2s ease;
+	opacity: 0;
+	visibility: hidden;
+}
+
+.rs-top.is-visible {
+	opacity: 1;
+	visibility: visible;
+}
+
+.rs-top:hover {
+	opacity: 0.75;
+}
+
+/* ==========================================================================
+   9. Footer
+   ========================================================================== */
+
+.rs-footer {
+	border-top: 1px solid var(--rs-border-40);
+	padding: 1.5rem 0;
+	text-align: center;
+}
+
+.rs-footer span {
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--rs-muted-fg);
+}
+
+/* ==========================================================================
+   10. Modals
+   ========================================================================== */
+
+.rs-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 50;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+	background: var(--rs-scrim);
+	-webkit-backdrop-filter: blur(4px);
+	backdrop-filter: blur(4px);
+}
+
+/*
+ * Open and close motion.
+ *
+ * Done entirely in CSS. The JS only toggles the hidden attribute, and
+ * display cannot normally be transitioned — allow-discrete plus
+ * @starting-style is what makes the change animatable, so openOverlay()
+ * and closeOverlay() stay untouched and the focus trap and history
+ * handling are not put at risk.
+ *
+ * Only opacity and transform move: both are composited, so this costs no
+ * layout or paint work. The backdrop blur deliberately stays fixed —
+ * animating a filter is the one thing here that would actually be slow.
+ *
+ * Browsers without @starting-style simply get the old instant behaviour.
+ */
+.rs-overlay {
+	opacity: 1;
+	transition:
+		opacity 200ms ease,
+		display 200ms allow-discrete;
+}
+
+.rs-overlay[hidden] {
+	display: none;
+	opacity: 0;
+}
+
+@starting-style {
+	.rs-overlay:not([hidden]) {
+		opacity: 0;
+	}
+}
+
+.rs-modal {
+	opacity: 1;
+	transform: scale(1) translateY(0);
+	/* Same easing as the hero reveal: quick off the mark, long slow settle. */
+	transition:
+		opacity 280ms cubic-bezier(0.16, 1, 0.3, 1),
+		transform 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/*
+ * --rs-from-x / --rs-from-y are written by app.js: the offset from the
+ * middle of the screen to the middle of whatever was clicked. The modal
+ * therefore grows out of that row and shrinks back into it. They default
+ * to zero, so the search and about dialogs simply scale in place.
+ */
+.rs-overlay[hidden] .rs-modal {
+	opacity: 0;
+	transform:
+		translate(var(--rs-from-x, 0px), var(--rs-from-y, 0px))
+		scale(0.86);
+	transition-duration: 190ms;
+	transition-timing-function: cubic-bezier(0.55, 0, 0.85, 0.35);
+}
+
+@starting-style {
+	.rs-overlay:not([hidden]) .rs-modal {
+		opacity: 0;
+		transform:
+			translate(var(--rs-from-x, 0px), var(--rs-from-y, 0px))
+			scale(0.86);
+	}
+}
+
+.rs-overlay--top {
+	align-items: flex-start;
+	padding-top: 6rem;
+}
+
+.rs-modal {
+	position: relative;
+	width: 100%;
+	background: var(--rs-bg);
+	border-radius: var(--rs-radius-xl);
+	box-shadow: var(--rs-shadow-2xl);
+	font-family: var(--rs-serif);
+}
+
+/*
+ * 44rem, not the 48rem of the page column: closer to the list so opening
+ * a post no longer narrows the page, but still short enough a line that
+ * the eye does not have to travel far to find the next one.
+ */
+.rs-modal--post {
+	max-width: 44rem;
+}
+
+/* Reading progress, pinned to the top edge of the modal. */
+.rs-modal__progress {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2px;
+	z-index: 3;
+	border-radius: var(--rs-radius-xl) var(--rs-radius-xl) 0 0;
+	overflow: hidden;
+	pointer-events: none;
+}
+
+.rs-modal__progress span {
+	display: block;
+	width: 0;
+	height: 100%;
+	background: var(--rs-hover);
+}
+
+/*
+ * The scroller sits inside the modal rather than being the modal, so
+ * .rs-modal__close — positioned against .rs-modal — stays put while the
+ * article scrolls under it. app.js resets scroll via postBody.parentNode,
+ * which is this element.
+ */
+.rs-modal__scroll {
+	max-height: 80vh;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	border-radius: inherit;
+}
+
+/* Widened along with the type: at 28rem the 19px lines were barely 20em,
+   short enough that justifying them would open ugly gaps between words. */
+.rs-modal--about {
+	max-width: 34rem;
+}
+
+/* Padding lives on the scroller, so a long bio scrolls instead of
+   overflowing the fixed overlay where it could not be reached. */
+.rs-about__inner {
+	padding: 2.5rem 2rem 2rem;
+}
+
+.rs-modal--search {
+	max-width: 36rem;
+	overflow: hidden;
+}
+
+.rs-modal__close {
+	position: absolute;
+	top: 0.75rem;
+	right: 0.75rem;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 50%;
+	/* Opaque enough to stay legible over the text passing beneath it. */
+	background: var(--rs-bg-blur);
+	-webkit-backdrop-filter: blur(8px);
+	backdrop-filter: blur(8px);
+	box-shadow: 0 0 0 1px var(--rs-border-50);
+	color: var(--rs-muted-fg);
+	transition: color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.rs-modal__close:hover {
+	color: var(--rs-fg);
+	box-shadow: 0 0 0 1px var(--rs-border);
+}
+
+/* Same control as .rs-top, but bound to the modal's own scroller. */
+.rs-modal__top {
+	position: absolute;
+	bottom: 1rem;
+	right: 1rem;
+	z-index: 2;
+	padding: 0.5rem;
+	background: var(--rs-solid-bg);
+	color: var(--rs-solid-fg);
+	border-radius: var(--rs-radius-lg);
+	box-shadow: var(--rs-shadow-md);
+	transition: opacity 0.2s ease, visibility 0.2s ease;
+	opacity: 0;
+	visibility: hidden;
+}
+
+.rs-modal__top.is-visible {
+	opacity: 1;
+	visibility: visible;
+}
+
+.rs-modal__top:hover {
+	opacity: 0.75;
+}
+
+.rs-modal__top svg {
+	display: block;
+}
+
+/* ==========================================================================
+   11. Article (shared by modal and single.php)
+   ========================================================================== */
+
+.rs-article {
+	padding: 2.5rem 2rem;
+}
+
+.rs-article__meta {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	margin-bottom: 1rem;
+}
+
+/* Date and edit link group left, the size controls stay right even
+   though the row now holds three children. */
+.rs-article__meta .rs-fontctl {
+	margin-left: auto;
+}
+
+.rs-article__read {
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--rs-muted-fg);
+	opacity: 0.75;
+	white-space: nowrap;
+}
+
+.rs-article__edit {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3125rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--rs-muted-fg);
+	transition: color 0.15s ease;
+}
+
+.rs-article__edit:hover {
+	color: var(--rs-hover);
+}
+
+.rs-article__edit svg {
+	display: block;
+}
+
+.rs-article__date {
+	margin: 0;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--rs-muted-fg);
+}
+
+/*
+ * The heading renders inline inside this block so the category can trail
+ * its last line. It stays a real h1/h2 in the DOM, and the tag stays
+ * outside it, so the heading text is still just the title.
+ */
+.rs-article__head {
+	margin: 0 0 0.75rem;
+}
+
+.rs-article__title {
+	display: inline;
+	margin: 0;
+	font-family: var(--rs-serif);
+	font-size: 1.5rem;
+	font-weight: 700;
+	line-height: 1.375;
+	color: var(--rs-fg);
+}
+
+/* An <a> in the modal and on single posts, a plain <em> in the list,
+   where it would otherwise be an anchor nested inside .rs-row__link. */
+.rs-article__cat {
+	margin-left: 0.75rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	font-style: italic;
+	line-height: 1rem;
+	color: var(--rs-cat);
+	white-space: nowrap;
+	text-decoration-color: transparent;
+	text-underline-offset: 0.25em;
+	transition: text-decoration-color 0.15s ease, color 0.15s ease;
+}
+
+a.rs-article__cat:hover {
+	color: var(--rs-hover);
+	text-decoration: underline;
+	text-decoration-color: currentColor;
+}
+
+.rs-article__author {
+	margin: 0 0 2rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--rs-muted-fg);
+}
+
+.rs-article__body {
+	font-family: var(--rs-serif);
+	font-size: var(--rs-post-size);
+	line-height: 1.625;
+	color: var(--rs-body-fg);
+}
+
+.rs-article__body > * {
+	margin: 0 0 1.25rem;
+}
+
+.rs-article__body > *:last-child {
+	margin-bottom: 0;
+}
+
+.rs-article__body h2,
+.rs-article__body h3,
+.rs-article__body h4 {
+	font-weight: 700;
+	color: var(--rs-fg);
+	line-height: 1.4;
+	margin-top: 2rem;
+}
+
+.rs-article__body h2 {
+	font-size: 1.25em;
+}
+
+.rs-article__body h3 {
+	font-size: 1.1em;
+}
+
+.rs-article__body a {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	text-decoration-color: var(--rs-border);
+}
+
+.rs-article__body a:hover {
+	color: var(--rs-hover);
+	text-decoration-color: currentColor;
+}
+
+/*
+ * Justified body text by default. Captions and .aligncenter carry a
+ * two class selector, so they keep winning over this one and stay centred.
+ * An inline text-align from the editor's own alignment buttons also wins,
+ * which is how a single paragraph opts out.
+ */
+.rs-article__body p {
+	text-align: justify;
+	/* Justification stretches the spaces between words, so a very long
+	   unbroken string would otherwise push past the column. */
+	overflow-wrap: break-word;
+}
+
+.rs-article__body blockquote {
+	padding-left: 1rem;
+	border-left: 2px solid var(--rs-border);
+	color: var(--rs-muted-fg);
+	font-style: italic;
+}
+
+.rs-article__body ul,
+.rs-article__body ol {
+	padding-left: 1.5rem;
+}
+
+.rs-article__body li {
+	margin-bottom: 0.5rem;
+}
+
+.rs-article__body img,
+.rs-article__body figure {
+	border-radius: var(--rs-radius-lg);
+}
+
+.rs-article__body figcaption {
+	margin-top: 0.5rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	color: var(--rs-muted-fg);
+	text-align: center;
+}
+
+.rs-article__body hr {
+	border: 0;
+	border-top: 1px solid var(--rs-border-60);
+	margin: 2rem 0;
+}
+
+/* Core block classes. The default block CSS is dequeued, so the handful
+   that actually matter for a text blog are defined here. */
+
+.rs-article__body .alignleft {
+	float: left;
+	margin: 0.25rem 1.5rem 1rem 0;
+}
+
+.rs-article__body .alignright {
+	float: right;
+	margin: 0.25rem 0 1rem 1.5rem;
+}
+
+.rs-article__body .aligncenter {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+}
+
+.rs-article__body .alignwide,
+.rs-article__body .alignfull {
+	max-width: none;
+}
+
+.rs-article__body .wp-block-image,
+.rs-article__body .wp-caption {
+	margin-bottom: 1.5rem;
+}
+
+.rs-article__body .wp-caption-text {
+	margin-top: 0.5rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	color: var(--rs-muted-fg);
+	text-align: center;
+}
+
+.rs-article__body .wp-block-quote {
+	padding-left: 1rem;
+	border-left: 2px solid var(--rs-border);
+	color: var(--rs-muted-fg);
+}
+
+.rs-article__body::after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+/* Share row */
+
+.rs-share {
+	margin-top: 2.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--rs-border-40);
+}
+
+.rs-share__label {
+	margin: 0 0 0.75rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--rs-muted-fg);
+}
+
+.rs-share__row {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+}
+
+.rs-share__btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	padding: 0.375rem 1rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	border: 1px solid var(--rs-border-60);
+	border-radius: var(--rs-radius-lg);
+	transition: background 0.15s ease;
+}
+
+.rs-share__btn:hover {
+	background: var(--rs-accent);
+}
+
+.rs-share__btn svg {
+	flex-shrink: 0;
+}
+
+/* ==========================================================================
+   12. About modal
+   ========================================================================== */
+
+/* Matches .rs-article__title, so the bio reads like any other page. */
+.rs-about__title {
+	margin: 0 0 1.25rem;
+	font-family: var(--rs-serif);
+	font-size: 1.5rem;
+	font-weight: 700;
+	line-height: 1.375;
+	color: var(--rs-fg);
+}
+
+.rs-about__body {
+	font-family: var(--rs-serif);
+	/* Was a hardcoded 0.875rem, which left this the one piece of prose on
+	   the site that ignored both the reading size and the reader's A-/A+
+	   choice. */
+	font-size: var(--rs-post-size);
+	line-height: 1.625;
+	color: var(--rs-body-fg);
+}
+
+.rs-about__body p {
+	text-align: justify;
+	overflow-wrap: break-word;
+}
+
+.rs-about__body > * {
+	margin: 0 0 1rem;
+}
+
+.rs-about__body > *:last-child {
+	margin-bottom: 0;
+}
+
+/* ==========================================================================
+   13. Search modal
+   ========================================================================== */
+
+.rs-search__field {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 1rem 1.25rem;
+	border-bottom: 1px solid var(--rs-border-40);
+}
+
+.rs-search__field svg {
+	flex-shrink: 0;
+	color: var(--rs-muted-fg);
+}
+
+.rs-search__input {
+	flex: 1;
+	min-width: 0;
+	background: transparent;
+	border: 0;
+	outline: none;
+	font-family: var(--rs-serif);
+	font-size: 0.875rem;
+	color: var(--rs-fg);
+}
+
+.rs-search__input::placeholder {
+	color: var(--rs-muted-fg);
+}
+
+.rs-search__results {
+	max-height: 60vh;
+	overflow-y: auto;
+}
+
+.rs-search__hint {
+	margin: 0;
+	padding: 2rem 1.25rem;
+	text-align: center;
+	font-family: var(--rs-sans);
+	font-size: 0.875rem;
+	color: var(--rs-muted-fg);
+}
+
+.rs-result {
+	display: block;
+	width: 100%;
+	padding: 1rem 1.25rem;
+	text-align: left;
+	border-bottom: 1px solid var(--rs-border-30);
+	transition: background 0.15s ease;
+}
+
+.rs-result:hover {
+	background: var(--rs-muted);
+}
+
+.rs-result__head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 0.75rem;
+	margin-bottom: 0.25rem;
+}
+
+.rs-result__title {
+	font-family: var(--rs-serif);
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--rs-fg);
+}
+
+.rs-result__date {
+	flex-shrink: 0;
+	white-space: nowrap;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	color: var(--rs-muted-fg);
+}
+
+.rs-result__snippet {
+	display: block;
+	margin: 0;
+	font-family: var(--rs-serif);
+	font-size: 0.75rem;
+	line-height: 1.625;
+	color: var(--rs-muted-fg);
+}
+
+.rs-result mark {
+	background: var(--rs-mark);
+	color: var(--rs-fg);
+	border-radius: 0.125rem;
+	padding: 0 0.125rem;
+}
+
+.rs-search__count {
+	padding: 0.5rem 1.25rem;
+	border-top: 1px solid var(--rs-border-30);
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	color: var(--rs-muted-fg);
+}
+
+/* ==========================================================================
+   14. Toast
+   ========================================================================== */
+
+.rs-toasts {
+	position: fixed;
+	bottom: 1.5rem;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 60;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+	pointer-events: none;
+}
+
+.rs-toast {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.625rem;
+	min-width: 15rem;
+	padding: 0.875rem 1rem;
+	background: var(--rs-surface);
+	border-radius: var(--rs-radius-lg);
+	box-shadow: var(--rs-shadow-lg);
+	font-family: var(--rs-sans);
+	animation: rs-toast-in 0.2s ease;
+}
+
+.rs-toast.is-out {
+	animation: rs-toast-out 0.2s ease forwards;
+}
+
+.rs-toast svg {
+	flex-shrink: 0;
+	margin-top: 1px;
+	color: var(--rs-fg);
+}
+
+.rs-toast__title {
+	font-size: 0.8125rem;
+	font-weight: 500;
+	color: var(--rs-fg);
+}
+
+.rs-toast__desc {
+	margin-top: 0.125rem;
+	font-size: 0.75rem;
+	color: var(--rs-muted-fg);
+	word-break: break-all;
+}
+
+@keyframes rs-toast-in {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+}
+
+@keyframes rs-toast-out {
+	to {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+}
+
+/* ==========================================================================
+   15. Single post page (direct visit / crawler)
+   ========================================================================== */
+
+.rs-single {
+	max-width: 36rem;
+	margin: 3rem auto 6rem;
+	padding: 0 var(--rs-gutter);
+}
+
+.rs-single .rs-article {
+	padding: 0;
+}
+
+.rs-back {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	margin-bottom: 2rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	color: var(--rs-muted-fg);
+	transition: color 0.15s ease;
+}
+
+.rs-back:hover {
+	color: var(--rs-fg);
+}
+
+.rs-nextprev {
+	display: flex;
+	justify-content: space-between;
+	gap: 1.5rem;
+	margin-top: 3rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--rs-border-40);
+	font-family: var(--rs-serif);
+	font-size: 0.8125rem;
+}
+
+.rs-nextprev a {
+	max-width: 45%;
+	color: var(--rs-muted-fg);
+	transition: color 0.15s ease;
+}
+
+.rs-nextprev a:hover {
+	color: var(--rs-hover);
+}
+
+.rs-nextprev .rs-nextprev__next {
+	text-align: right;
+	margin-left: auto;
+}
+
+/* ==========================================================================
+   16. Archive / 404
+   ========================================================================== */
+
+.rs-notice {
+	max-width: 36rem;
+	margin: 5rem auto;
+	padding: 0 var(--rs-gutter);
+	text-align: center;
+}
+
+.rs-notice h1 {
+	margin: 0 0 1rem;
+	font-family: var(--rs-serif);
+	font-size: 1.5rem;
+	font-weight: 700;
+}
+
+.rs-notice p {
+	margin: 0 0 2rem;
+	font-family: var(--rs-serif);
+	font-size: 0.9375rem;
+	color: var(--rs-muted-fg);
+}
+
+/* ==========================================================================
+   17. Responsive
+   ========================================================================== */
+
+@media (min-width: 768px) {
+	.rs-hero__title {
+		font-size: 3rem;
+	}
+}
+
+/* The floating controls need room outside the 48rem column. */
+@media (max-width: 1100px) {
+	.rs-fontctl--float {
+		display: none;
+	}
+
+	.rs-top {
+		right: 1.5rem;
+	}
+}
+
+@media (max-width: 640px) {
+	.rs-hero {
+		height: 110px;
+		padding-top: 2.5rem;
+		padding-bottom: 1.5rem;
+	}
+
+	.rs-hero__title {
+		font-size: 1.75rem;
+	}
+
+	.rs-header__brand {
+		font-size: 0.8125rem;
+	}
+
+	.rs-header__nav--right {
+		gap: 0.875rem;
+	}
+
+	.rs-navbar__list {
+		gap: 0.375rem 1.125rem;
+	}
+
+	.rs-navbar__list a {
+		font-size: 0.75rem;
+	}
+
+	.rs-row__link {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.25rem;
+	}
+
+	.rs-overlay {
+		padding: 0.75rem;
+	}
+
+	.rs-overlay--top {
+		padding-top: 3rem;
+	}
+
+	.rs-modal__scroll {
+		max-height: 88vh;
+	}
+
+	.rs-article {
+		padding: 2.5rem 1.25rem 2rem;
+	}
+
+	.rs-modal--about {
+		padding: 2.5rem 1.25rem 1.5rem;
+	}
+
+	.rs-article__title {
+		font-size: 1.25rem;
+	}
+
+	.rs-share__row {
+		gap: 0.5rem;
+	}
+}
+
+/* ==========================================================================
+   18. Motion and print
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+
+	.rs-word {
+		opacity: 1;
+		filter: none;
+		transform: none;
+	}
+}
+
+@media print {
+	.rs-header,
+	.rs-fontctl,
+	.rs-top,
+	.rs-share,
+	.rs-overlay,
+	.rs-toasts,
+	.rs-tooltip {
+		display: none !important;
+	}
+
+	body {
+		background: #fff;
+	}
+}

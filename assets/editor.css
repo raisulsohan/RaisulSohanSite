@@ -1,0 +1,37 @@
+/*
+ * Loaded into the Classic editor by add_editor_style(), so the writing
+ * view matches the published page: same serif, same measure, and the
+ * justified body text the theme applies on the front end.
+ */
+
+@import url("fonts.css");
+
+body#tinymce {
+	max-width: 36rem;
+	margin: 1.5rem auto;
+	padding: 0 1.5rem;
+	background: #eaecf1;
+	color: #1a1a1a;
+	font-family: "Noto Serif Bengali", "SolaimanLipi", serif;
+	font-size: 19px;
+	line-height: 1.625;
+}
+
+body#tinymce p {
+	text-align: justify;
+	overflow-wrap: break-word;
+}
+
+/* Matches the front end, where these outrank the paragraph rule. */
+body#tinymce .wp-caption-text,
+body#tinymce figcaption,
+body#tinymce .aligncenter {
+	text-align: center;
+}
+
+body#tinymce blockquote {
+	padding-left: 1rem;
+	border-left: 2px solid rgba(0, 0, 0, 0.12);
+	color: #888880;
+	font-style: italic;
+}
