@@ -18,6 +18,15 @@ get_header();
 	</h1>
 </div>
 
+<div class="rs-wrap">
+	<p class="rs-post-count">
+		<span class="rs-post-count__number">
+			<?php echo esc_html( rs_bn_digits( rs_published_count() ) ); ?>
+		</span>
+		টি লেখা প্রকাশিত
+	</p>
+</div>
+
 <div class="rs-fontctl rs-fontctl--float" role="group" aria-label="লেখার আকার">
 	<button type="button" data-rs-font="down" data-step="0" aria-label="ছোট করুন">A-</button>
 	<span class="rs-fontctl__sep"></span>

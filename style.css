@@ -422,6 +422,21 @@ button {
 	text-align: center;
 }
 
+.rs-post-count {
+	margin-top:.9rem;
+	text-align: center;
+	font-family: var(--rs-sans);
+	font-size: 0.82rem;
+	font-weight: 400;
+	color: var(--rs-muted-fg);
+	letter-spacing: 0.02em;
+}
+
+.rs-post-count__number{
+	font-weight:600;
+	color:var(--rs-hover);
+}
+
 .rs-hero__title {
 	margin: 0;
 	font-family: var(--rs-serif);
