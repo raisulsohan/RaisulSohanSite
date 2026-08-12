@@ -12,9 +12,32 @@ if ( ! defined( 'ABSPATH' ) ) {
 get_header();
 ?>
 
-<div class="rs-hero">
+<?php $rs_hero = rs_hero_image(); ?>
+
+<div class="rs-hero<?php echo $rs_hero ? ' rs-hero--image' : ''; ?>">
+	<?php
+	/* Still an h1 either way. A picture standing in for the heading is
+	   still the heading, and its alt text is the words it replaced —
+	   which is what a search engine and a screen reader both read. */
+	?>
 	<h1 class="rs-hero__title">
-		<span id="rs-type"><?php echo esc_html( rs_phrases()[0] ); ?></span>
+		<?php if ( $rs_hero ) : ?>
+			<?php
+			echo wp_get_attachment_image(
+				$rs_hero,
+				'large',
+				false,
+				array(
+					'class' => 'rs-hero__image',
+					'alt'   => rs_phrases()[0],
+				)
+			);
+			?>
+		<?php else : ?>
+			<?php /* app.js finds this by id; with a picture there is nothing
+			         to type out and the typewriter stays asleep. */ ?>
+			<span id="rs-type"><?php echo esc_html( rs_phrases()[0] ); ?></span>
+		<?php endif; ?>
 	</h1>
 </div>
 
