@@ -11,14 +11,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.9.1' );
+define( 'RS_VERSION', '2.10.0' );
 
 /** Rows per page, on the front page and on every archive. */
 define( 'RS_PER_PAGE', 10 );
 
-/** Post meta holding the read count. Leading underscore keeps it out of
-    the Custom Fields box, where it would only invite editing. */
+/** Post meta holding the counts: every opening, and first time readers.
+    Leading underscores keep them out of the Custom Fields box, where they
+    would only invite editing. */
 define( 'RS_VIEWS_KEY', '_rs_views' );
+define( 'RS_READERS_KEY', '_rs_readers' );
 
 /* =========================================================================
  * 1. Theme setup
@@ -1098,7 +1100,11 @@ function rs_rest_routes() {
 			'callback'            => 'rs_rest_view',
 			'permission_callback' => '__return_true',
 			'args'                => array(
-				'id' => array(
+				'id'    => array(
+					'sanitize_callback' => 'absint',
+				),
+				/* Set by the browser the first time it opens this post. */
+				'first' => array(
 					'sanitize_callback' => 'absint',
 				),
 			),
@@ -1241,8 +1247,6 @@ function rs_rest_search( $request ) {
  * @return WP_REST_Response|WP_Error
  */
 function rs_rest_view( $request ) {
-	global $wpdb;
-
 	$id   = (int) $request['id'];
 	$item = get_post( $id );
 
@@ -1264,24 +1268,50 @@ function rs_rest_view( $request ) {
 		return rest_ensure_response( array( 'counted' => false ) );
 	}
 
-	/* Make sure there is a row, then add to it in the database rather than
-	   reading, adding and writing back: two readers arriving together
-	   would otherwise both store the same number and one would be lost. */
-	add_post_meta( $id, RS_VIEWS_KEY, 0, true );
+	rs_bump( $id, RS_VIEWS_KEY );
+
+	/*
+	 * Whether this browser has opened this post before is the browser's
+	 * own memory, and it is the only party that can answer. Which makes
+	 * this a count of browsers rather than of people: the same reader on
+	 * a phone and a laptop is two, and clearing site data starts them
+	 * over. Nothing closer is possible without keeping something about
+	 * each reader on the server, which is not worth doing for a number.
+	 */
+	if ( $request->get_param( 'first' ) ) {
+		rs_bump( $id, RS_READERS_KEY );
+	}
+
+	return rest_ensure_response( array( 'counted' => true ) );
+}
+
+/**
+ * Add one to a counter held in post meta.
+ *
+ * The addition happens in the database rather than by reading, adding and
+ * writing back: two readers arriving together would otherwise both store
+ * the same number, and one of them would be lost.
+ *
+ * @param int    $post_id Post ID.
+ * @param string $key     Meta key.
+ */
+function rs_bump( $post_id, $key ) {
+	global $wpdb;
+
+	/* There has to be a row before there is anything to add to. */
+	add_post_meta( $post_id, $key, 0, true );
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- No API for an atomic increment.
 	$wpdb->query(
 		$wpdb->prepare(
 			"UPDATE {$wpdb->postmeta} SET meta_value = meta_value + 1 WHERE post_id = %d AND meta_key = %s",
-			$id,
-			RS_VIEWS_KEY
+			$post_id,
+			$key
 		)
 	);
 
 	/* The row was changed behind the object cache's back. */
-	wp_cache_delete( $id, 'post_meta' );
-
-	return rest_ensure_response( array( 'counted' => true ) );
+	wp_cache_delete( $post_id, 'post_meta' );
 }
 
 /* =========================================================================
@@ -1690,8 +1720,40 @@ add_filter( 'body_class', 'rs_body_class' );
  * 11. Read counts in the admin
  * ====================================================================== */
 
+/*
+ * Two numbers, and they answer different questions. "পাঠক" counts the
+ * browsers that opened a post for the first time; "মোট পড়া" counts every
+ * opening. A story people come back to shows the gap.
+ */
+
 /**
- * How many times a post has been read.
+ * The two counts a post carries, and the meta each one lives in.
+ *
+ * Keyed by the admin column name, which is also what the sort links pass
+ * back, so this one array drives the columns, their values and their
+ * ordering.
+ *
+ * @return array
+ */
+function rs_count_columns() {
+	return array(
+		'rs_readers' => array( __( 'পাঠক', 'raisul-sohan' ), RS_READERS_KEY ),
+		'rs_views'   => array( __( 'মোট পড়া', 'raisul-sohan' ), RS_VIEWS_KEY ),
+	);
+}
+
+/**
+ * How many first time readers a post has had.
+ *
+ * @param int $post_id Post ID.
+ * @return int
+ */
+function rs_readers( $post_id ) {
+	return (int) get_post_meta( $post_id, RS_READERS_KEY, true );
+}
+
+/**
+ * How many times a post has been opened, returning readers included.
  *
  * @param int $post_id Post ID.
  * @return int
@@ -1701,46 +1763,52 @@ function rs_views( $post_id ) {
 }
 
 /**
- * A read count column on the posts screen.
+ * Add the count columns to the posts screen.
  *
  * @param array $columns Columns.
  * @return array
  */
-function rs_views_column( $columns ) {
-	$columns['rs_views'] = __( 'পড়া হয়েছে', 'raisul-sohan' );
+function rs_count_column( $columns ) {
+	foreach ( rs_count_columns() as $name => $column ) {
+		$columns[ $name ] = $column[0];
+	}
 
 	return $columns;
 }
-add_filter( 'manage_post_posts_columns', 'rs_views_column' );
+add_filter( 'manage_post_posts_columns', 'rs_count_column' );
 
 /**
- * Fill that column.
+ * Fill those columns.
  *
  * @param string $column  Column name.
  * @param int    $post_id Post ID.
  */
-function rs_views_column_value( $column, $post_id ) {
-	if ( 'rs_views' === $column ) {
-		echo esc_html( rs_bn_digits( rs_views( $post_id ) ) );
+function rs_count_column_value( $column, $post_id ) {
+	$columns = rs_count_columns();
+
+	if ( isset( $columns[ $column ] ) ) {
+		echo esc_html( rs_bn_digits( (int) get_post_meta( $post_id, $columns[ $column ][1], true ) ) );
 	}
 }
-add_action( 'manage_post_posts_custom_column', 'rs_views_column_value', 10, 2 );
+add_action( 'manage_post_posts_custom_column', 'rs_count_column_value', 10, 2 );
 
 /**
- * Let the column be clicked to sort by it.
+ * Let either column be clicked to sort by it.
  *
  * @param array $columns Sortable columns.
  * @return array
  */
-function rs_views_sortable( $columns ) {
-	$columns['rs_views'] = 'rs_views';
+function rs_count_sortable( $columns ) {
+	foreach ( array_keys( rs_count_columns() ) as $name ) {
+		$columns[ $name ] = $name;
+	}
 
 	return $columns;
 }
-add_filter( 'manage_edit-post_sortable_columns', 'rs_views_sortable' );
+add_filter( 'manage_edit-post_sortable_columns', 'rs_count_sortable' );
 
 /**
- * Order the posts screen by read count.
+ * Order the posts screen by one of the counts.
  *
  * The OR against NOT EXISTS is what keeps the unread posts on the list.
  * Ordering by a meta key alone quietly drops every post that has no row
@@ -1748,33 +1816,42 @@ add_filter( 'manage_edit-post_sortable_columns', 'rs_views_sortable' );
  *
  * @param WP_Query $query Query.
  */
-function rs_views_orderby( $query ) {
-	if ( ! is_admin() || ! $query->is_main_query() || 'rs_views' !== $query->get( 'orderby' ) ) {
+function rs_count_orderby( $query ) {
+	if ( ! is_admin() || ! $query->is_main_query() ) {
 		return;
 	}
+
+	$columns = rs_count_columns();
+	$orderby = $query->get( 'orderby' );
+
+	if ( ! is_string( $orderby ) || ! isset( $columns[ $orderby ] ) ) {
+		return;
+	}
+
+	$key = $columns[ $orderby ][1];
 
 	$query->set(
 		'meta_query',
 		array(
 			'relation' => 'OR',
 			array(
-				'key'     => RS_VIEWS_KEY,
+				'key'     => $key,
 				'compare' => 'EXISTS',
 			),
 			array(
-				'key'     => RS_VIEWS_KEY,
+				'key'     => $key,
 				'compare' => 'NOT EXISTS',
 			),
 		)
 	);
 	$query->set( 'orderby', 'meta_value_num' );
 }
-add_action( 'pre_get_posts', 'rs_views_orderby' );
+add_action( 'pre_get_posts', 'rs_count_orderby' );
 
 /**
- * Show the count in the editor's Publish box, where it used to sit.
+ * Show both counts in the editor's Publish box, where one used to sit.
  */
-function rs_views_submitbox() {
+function rs_count_submitbox() {
 	$screen = get_current_screen();
 
 	if ( ! $screen || 'post' !== $screen->post_type ) {
@@ -1782,12 +1859,14 @@ function rs_views_submitbox() {
 	}
 
 	printf(
-		'<div class="misc-pub-section">%s <b>%s</b></div>',
-		esc_html__( 'পড়া হয়েছে:', 'raisul-sohan' ),
+		'<div class="misc-pub-section">%1$s <b>%2$s</b> &middot; %3$s <b>%4$s</b></div>',
+		esc_html__( 'পাঠক:', 'raisul-sohan' ),
+		esc_html( rs_bn_digits( rs_readers( get_the_ID() ) ) ),
+		esc_html__( 'মোট পড়া:', 'raisul-sohan' ),
 		esc_html( rs_bn_digits( rs_views( get_the_ID() ) ) )
 	);
 }
-add_action( 'post_submitbox_misc_actions', 'rs_views_submitbox' );
+add_action( 'post_submitbox_misc_actions', 'rs_count_submitbox' );
 
 /* =========================================================================
  * 12. Housekeeping

@@ -120,21 +120,56 @@
 	 * one exclusion is whoever wrote the posts, and that is decided at
 	 * the other end: the cookie travels with the request, and the server
 	 * is the only side of this that can read it.
+	 *
+	 * Whether this is a first reading is the opposite case — the browser
+	 * is the only side that knows, so it keeps the list of what it has
+	 * opened and says so. That earns the post a reader as well as a
+	 * reading.
 	 * ------------------------------------------------------------ */
+
+	var READ_KEY = 'rs-read';
 
 	function countView( id ) {
 		if ( ! id || ! window.fetch ) {
 			return;
 		}
 
+		var mark = '|' + id + '|';
+		var read = '';
+
+		try {
+			read = window.localStorage.getItem( READ_KEY ) || '';
+		} catch ( e ) {
+			/* Private mode: every visit looks like a first one, which is
+			   as close to the truth as this can get there. */
+		}
+
+		var first = read.indexOf( mark ) === -1;
+
 		/* same-origin is what carries the login cookie, which is how the
 		   endpoint recognises the author and declines to count them. */
-		window.fetch( rest + 'view/' + id, {
+		window.fetch( rest + 'view/' + id + ( first ? '?first=1' : '' ), {
 			method: 'POST',
 			credentials: 'same-origin',
-		} ).then( null, function () {
-			/* A missed count is not worth telling the reader about. */
-		} );
+		} ).then(
+			function () {
+				if ( ! first ) {
+					return;
+				}
+
+				/* Remembered only once the server has it. A request that
+				   never arrived should still be a first reading next
+				   time. */
+				try {
+					window.localStorage.setItem( READ_KEY, read + mark );
+				} catch ( e ) {
+					/* As above. */
+				}
+			},
+			function () {
+				/* A missed count is not worth telling the reader about. */
+			}
+		);
 	}
 
 	/* ---------------------------------------------------------------
