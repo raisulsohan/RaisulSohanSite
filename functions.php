@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.15.1' );
+define( 'RS_VERSION', '2.16.0' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -201,6 +201,28 @@ function rs_theme_boot() {
 		/* Private mode or no matchMedia: light is the sane fallback. */
 		document.documentElement.setAttribute( 'data-theme', 'light' );
 	}
+
+	/*
+	 * A colour the reader chose, if there is one. app.js works the whole
+	 * palette out and stores the finished custom properties, so this only
+	 * has to write them back — no colour arithmetic before first paint,
+	 * and none of it duplicated here.
+	 *
+	 * Its own try: a value that will not parse should cost the reader
+	 * their tint, not the light or dark choice made just above.
+	 */
+	try {
+		var tint = window.localStorage.getItem( 'rs-tint' );
+		var saved = tint ? JSON.parse( tint ) : null;
+
+		if ( saved && saved.vars ) {
+			for ( var key in saved.vars ) {
+				document.documentElement.style.setProperty( key, saved.vars[ key ] );
+			}
+
+			document.documentElement.setAttribute( 'data-theme', saved.light ? 'light' : 'dark' );
+		}
+	} catch ( e ) {}
 }() );
 </script>
 	<?php
@@ -969,6 +991,7 @@ function rs_icon( $name, $size = 15 ) {
 		'copy'     => '<rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
 		'left'     => '<path d="m15 18-6-6 6-6"/>',
 		'right'    => '<path d="m9 18 6-6-6-6"/>',
+		'undo'     => '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>',
 		'edit'     => '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>',
 		'sun'      => '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
 		'moon'     => '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
