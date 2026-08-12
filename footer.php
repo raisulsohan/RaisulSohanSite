@@ -12,16 +12,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 $rs_about = rs_about();
 ?>
 
+<?php
+/*
+ * No link to the feed here on purpose. Browsers stopped rendering feeds
+ * years ago, so following one shows a reader a screenful of XML and the
+ * impression that something broke. The people who do use feeds add a
+ * site by its address, and the alternate link wp_head prints is what
+ * their reader follows — a visible link would only catch the readers it
+ * cannot help.
+ */
+?>
 <footer class="rs-footer">
-	<div class="rs-wrap rs-footer__inner">
+	<div class="rs-wrap">
 		<span><?php echo esc_html( rs_footer_text() ); ?></span>
-
-		<?php /* The feed has always worked; until now nothing on the page
-		         said so, and a reader who wanted the next story had only
-		         Facebook to hope for. */ ?>
-		<a class="rs-footer__feed" href="<?php echo esc_url( get_bloginfo( 'rss2_url' ) ); ?>">
-			নতুন লেখার খবর পেতে
-		</a>
 	</div>
 </footer>
 

@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.16.1' );
+define( 'RS_VERSION', '2.16.2' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -2501,6 +2501,11 @@ add_action( 'wp_after_admin_bar_render', 'rs_toolbar_locale_restore' );
  * Keep the emoji script out of the page. Bengali text does not need it.
  */
 function rs_trim_head() {
+	/* Only the site's own feed is worth announcing. feed_links_extra adds
+	   one for comments, which this theme does not have a template for and
+	   which will therefore never hold anything. */
+	remove_action( 'wp_head', 'feed_links_extra', 3 );
+
 	remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
 	remove_action( 'wp_print_styles', 'print_emoji_styles' );
 	remove_action( 'wp_head', 'wp_generator' );
