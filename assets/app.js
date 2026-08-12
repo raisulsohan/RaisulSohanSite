@@ -129,22 +129,53 @@
 
 	var READ_KEY = 'rs-read';
 
+	function readList() {
+		try {
+			return window.localStorage.getItem( READ_KEY ) || '';
+		} catch ( e ) {
+			/* Private mode: every visit looks like a first one, which is
+			   as close to the truth as this can get there. */
+			return '';
+		}
+	}
+
+	function hasRead( list, id ) {
+		return list.indexOf( '|' + id + '|' ) > -1;
+	}
+
+	/*
+	 * Dim the rows this browser has already opened.
+	 *
+	 * The same list the count uses, put to a second purpose. Thirty
+	 * stories can be held in the head; six hundred cannot, and "which of
+	 * these have I read" is the question a long archive keeps asking.
+	 */
+	function markRead() {
+		var wrap = $( '#rs-list-wrap' );
+
+		if ( ! wrap ) {
+			return;
+		}
+
+		var read = readList();
+
+		$$( '[data-rs-post]', wrap ).forEach( function ( link ) {
+			var row = link.closest ? link.closest( '.rs-row' ) : null;
+
+			if ( row && hasRead( read, link.getAttribute( 'data-rs-post' ) ) ) {
+				row.classList.add( 'is-read' );
+			}
+		} );
+	}
+
 	function countView( id ) {
 		if ( ! id || ! window.fetch ) {
 			return;
 		}
 
 		var mark = '|' + id + '|';
-		var read = '';
-
-		try {
-			read = window.localStorage.getItem( READ_KEY ) || '';
-		} catch ( e ) {
-			/* Private mode: every visit looks like a first one, which is
-			   as close to the truth as this can get there. */
-		}
-
-		var first = read.indexOf( mark ) === -1;
+		var read = readList();
+		var first = ! hasRead( read, id );
 
 		/* same-origin is what carries the login cookie, which is how the
 		   endpoint recognises the author and declines to count them. */
@@ -165,6 +196,10 @@
 				} catch ( e ) {
 					/* As above. */
 				}
+
+				/* The row is still there behind the modal, and should be
+				   dimmed by the time the reader closes it. */
+				markRead();
 			},
 			function () {
 				/* A missed count is not worth telling the reader about. */
@@ -714,6 +749,28 @@
 		);
 	}
 
+	function relatedHtml( data ) {
+		if ( ! data.related || ! data.related.length ) {
+			return '';
+		}
+
+		var html = '<nav class="rs-related"><p class="rs-related__label">' +
+			escapeHtml( 'আরও ' + ( data.category || 'লেখা' ) ) +
+			'</p><ul class="rs-related__list">';
+
+		/* data-rs-post again, so these open in this modal rather than
+		   reloading the page under it. */
+		data.related.forEach( function ( item ) {
+			html += '<li><a href="' + escapeHtml( item.link ) +
+				'" data-rs-post="' + item.id + '">' +
+				'<span class="rs-related__title">' + escapeHtml( item.title ) + '</span>' +
+				'<span class="rs-related__meta">' + escapeHtml( item.readingTime ) + '</span>' +
+				'</a></li>';
+		} );
+
+		return html + '</ul></nav>';
+	}
+
 	function renderPost( data ) {
 		postBody.innerHTML =
 			'<div class="rs-article__meta">' +
@@ -729,6 +786,7 @@
 			'<p class="rs-article__author"></p>' +
 			'<div class="rs-article__body"></div>' +
 			shareHtml( data.link ) +
+			relatedHtml( data ) +
 			nextPrevHtml( data );
 
 		$( '.rs-article__date', postBody ).textContent = data.date;
@@ -1268,6 +1326,7 @@
 					}
 
 					swap( html );
+					markRead();
 
 					listUrl = url;
 					wrap.classList.remove( 'is-loading' );
@@ -1426,4 +1485,6 @@
 	/* A post opened at its own address, rather than in the modal. Zero on
 	   every other kind of page, and countView() ignores zero. */
 	countView( cfg.postId );
+
+	markRead();
 }() );

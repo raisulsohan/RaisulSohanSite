@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.12.0' );
+define( 'RS_VERSION', '2.13.0' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -22,6 +22,12 @@ define( 'RS_PER_PAGE', 10 );
     would only invite editing. */
 define( 'RS_VIEWS_KEY', '_rs_views' );
 define( 'RS_READERS_KEY', '_rs_readers' );
+
+/** Post meta holding what a list row needs but a post body is expensive to
+    work out: the reading time and the summary. Both are filled the first
+    time they are asked for and thrown away when the post is saved. */
+define( 'RS_MINUTES_KEY', '_rs_minutes' );
+define( 'RS_SUMMARY_KEY', '_rs_summary' );
 
 /* =========================================================================
  * 1. Theme setup
@@ -383,10 +389,23 @@ function rs_reading_time( $post = null ) {
 		return '';
 	}
 
-	$words   = preg_match_all( '/\S+/u', rs_plain_text( $post ) );
-	$minutes = max( 1, (int) round( $words / 180 ) );
+	/*
+	 * Kept in post meta after the first time it is worked out. Counting
+	 * words means walking the whole body, and a list page asks for this
+	 * once per row: at ten rows it is unnoticeable, at six hundred posts
+	 * and a longer page it would not be. rs_clear_cached_text() throws
+	 * the answer away whenever the post is saved.
+	 */
+	$minutes = get_post_meta( $post->ID, RS_MINUTES_KEY, true );
 
-	return rs_bn_digits( $minutes ) . ' মিনিট';
+	if ( '' === $minutes ) {
+		$words   = preg_match_all( '/\S+/u', rs_plain_text( $post ) );
+		$minutes = max( 1, (int) round( $words / 180 ) );
+
+		update_post_meta( $post->ID, RS_MINUTES_KEY, $minutes );
+	}
+
+	return rs_bn_digits( (int) $minutes ) . ' মিনিট';
 }
 
 /**
@@ -424,14 +443,37 @@ function rs_summary( $post = null, $length = 200 ) {
 		return '';
 	}
 
-	if ( has_excerpt( $post ) ) {
-		$text = trim( wp_strip_all_tags( $post->post_excerpt ) );
-	} else {
-		$text = rs_plain_text( $post );
+	/* Cached at its longest, then cut down to whatever this caller wants.
+	   Every caller asks for 200 or fewer; anything longer would silently
+	   get the 200 character version. */
+	$text = get_post_meta( $post->ID, RS_SUMMARY_KEY, true );
+
+	if ( '' === $text ) {
+		$text = has_excerpt( $post )
+			? trim( wp_strip_all_tags( $post->post_excerpt ) )
+			: rs_plain_text( $post );
+
+		$text = rs_shorten( $text, 200 );
+
+		update_post_meta( $post->ID, RS_SUMMARY_KEY, $text );
 	}
 
 	return rs_shorten( $text, $length );
 }
+
+/**
+ * Forget the cached reading time and summary when a post changes.
+ *
+ * Thrown away rather than recalculated here: save_post fires for autosaves,
+ * revisions and quick edits too, and the next reader will pay for it once.
+ *
+ * @param int $post_id Post ID.
+ */
+function rs_clear_cached_text( $post_id ) {
+	delete_post_meta( $post_id, RS_MINUTES_KEY );
+	delete_post_meta( $post_id, RS_SUMMARY_KEY );
+}
+add_action( 'save_post', 'rs_clear_cached_text' );
 
 /**
  * Case insensitive position of a needle, in characters.
@@ -989,6 +1031,110 @@ function rs_share_row( $post = null ) {
 	<?php
 }
 
+/**
+ * A few other posts from the same category.
+ *
+ * The next and previous links below an article are neighbours by date,
+ * which is rarely what a reader who just finished a story wants next.
+ * These are neighbours by subject instead.
+ *
+ * Shuffled rather than newest first, so the same three do not sit under
+ * every story in a category. The category filter keeps the set small
+ * enough that the sort costs nothing worth measuring.
+ *
+ * @param int|WP_Post|null $post  Post to find company for.
+ * @param int              $limit How many.
+ * @return WP_Post[]
+ */
+function rs_related( $post = null, $limit = 3 ) {
+	$post = get_post( $post );
+
+	if ( ! $post ) {
+		return array();
+	}
+
+	$term = rs_primary_category( $post );
+
+	if ( ! $term ) {
+		return array();
+	}
+
+	$query = new WP_Query(
+		array(
+			'post_type'              => 'post',
+			'post_status'            => 'publish',
+			'posts_per_page'         => (int) $limit,
+			'post__not_in'           => array( $post->ID ),
+			'cat'                    => $term->term_id,
+			'orderby'                => 'rand',
+			'has_password'           => false,
+			'ignore_sticky_posts'    => true,
+			'no_found_rows'          => true,
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false,
+		)
+	);
+
+	return $query->posts;
+}
+
+/**
+ * Render the related posts block.
+ *
+ * @param int|WP_Post|null $post Post.
+ */
+function rs_related_row( $post = null ) {
+	$items = rs_related( $post );
+
+	if ( ! $items ) {
+		return;
+	}
+
+	$term = rs_primary_category( $post );
+	?>
+	<nav class="rs-related" aria-label="<?php esc_attr_e( 'একই বিভাগের লেখা', 'raisul-sohan' ); ?>">
+		<p class="rs-related__label">
+			<?php
+			/* translators: %s: category name. */
+			echo esc_html( sprintf( 'আরও %s', $term ? $term->name : '' ) );
+			?>
+		</p>
+		<ul class="rs-related__list">
+			<?php foreach ( $items as $item ) : ?>
+				<li>
+					<?php /* data-rs-post lets the modal's own click handler catch these. */ ?>
+					<a href="<?php echo esc_url( get_permalink( $item ) ); ?>" data-rs-post="<?php echo (int) $item->ID; ?>">
+						<span class="rs-related__title"><?php echo esc_html( get_the_title( $item ) ); ?></span>
+						<span class="rs-related__meta"><?php echo esc_html( rs_reading_time( $item ) ); ?></span>
+					</a>
+				</li>
+			<?php endforeach; ?>
+		</ul>
+	</nav>
+	<?php
+}
+
+/**
+ * Related posts trimmed down to what the modal needs.
+ *
+ * @param int|WP_Post|null $post Post.
+ * @return array
+ */
+function rs_related_payload( $post = null ) {
+	$items = array();
+
+	foreach ( rs_related( $post ) as $item ) {
+		$items[] = array(
+			'id'          => $item->ID,
+			'title'       => get_the_title( $item ),
+			'link'        => get_permalink( $item ),
+			'readingTime' => rs_reading_time( $item ),
+		);
+	}
+
+	return $items;
+}
+
 /* =========================================================================
  * 8. The post list
  * ====================================================================== */
@@ -1144,11 +1290,16 @@ function rs_render_count() {
 		return;
 	}
 
-	if ( is_category() ) {
-		$before = 'এই ক্যাটাগরিতে ';
+	$term = ( is_category() || is_tag() ) ? get_queried_object() : null;
+
+	if ( $term instanceof WP_Term && is_category() ) {
+		/* The name rather than "this category": it is the only line on an
+		   archive that says which one the reader is standing in, since the
+		   heading above keeps the site's own phrase. */
+		$before = $term->name . ' ক্যাটাগরিতে ';
 		$after  = 'টি লেখা প্রকাশিত';
-	} elseif ( is_tag() ) {
-		$before = 'এই ট্যাগে ';
+	} elseif ( $term instanceof WP_Term ) {
+		$before = $term->name . ' ট্যাগে ';
 		$after  = 'টি লেখা প্রকাশিত';
 	} elseif ( is_search() ) {
 		$before = '';
@@ -1369,6 +1520,7 @@ function rs_rest_post( $request ) {
 			'category'     => rs_category( $item ),
 			'categoryLink' => rs_category_link( $item ),
 			'readingTime'  => rs_reading_time( $item ),
+			'related'      => rs_related_payload( $item ),
 			'prev'         => rs_adjacent_payload( $prev ),
 			'next'         => rs_adjacent_payload( $next ),
 		)

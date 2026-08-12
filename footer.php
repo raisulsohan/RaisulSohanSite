@@ -13,8 +13,15 @@ $rs_about = rs_about();
 ?>
 
 <footer class="rs-footer">
-	<div class="rs-wrap">
+	<div class="rs-wrap rs-footer__inner">
 		<span><?php echo esc_html( rs_footer_text() ); ?></span>
+
+		<?php /* The feed has always worked; until now nothing on the page
+		         said so, and a reader who wanted the next story had only
+		         Facebook to hope for. */ ?>
+		<a class="rs-footer__feed" href="<?php echo esc_url( get_bloginfo( 'rss2_url' ) ); ?>">
+			নতুন লেখার খবর পেতে
+		</a>
 	</div>
 </footer>
 
