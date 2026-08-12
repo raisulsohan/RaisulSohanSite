@@ -1151,6 +1151,37 @@
 		openPost( link.getAttribute( 'data-rs-post' ), link.getAttribute( 'href' ), true );
 	} );
 
+	/* "Any one of them". The href is a redirect to the post's own page and
+	   is what happens without JavaScript; with it, the story opens in the
+	   modal like every other story on the list. */
+	document.addEventListener( 'click', function ( event ) {
+		var link = event.target.closest ? event.target.closest( '[data-rs-random]' ) : null;
+
+		if ( ! link || ! window.fetch ) {
+			return;
+		}
+
+		if ( event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0 ) {
+			return;
+		}
+
+		event.preventDefault();
+
+		var cat = link.getAttribute( 'data-rs-random' );
+		var where = cat && '0' !== cat ? '?cat=' + encodeURIComponent( cat ) : '';
+
+		getJSON( rest + 'random' + where ).then(
+			function ( data ) {
+				setModalOrigin( link );
+				openPost( data.id, data.link, true );
+			},
+			function () {
+				/* Let the plain link do what it was always going to. */
+				window.location.href = link.href;
+			}
+		);
+	} );
+
 	if ( document.body.classList.contains( 'rs-is-list' ) ) {
 		/* Same tag the page links push, so every list entry in the history
 		   looks alike and only 'post' is the special case below. */

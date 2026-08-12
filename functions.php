@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.15.0' );
+define( 'RS_VERSION', '2.15.1' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -1121,25 +1121,37 @@ function rs_related( $post = null, $limit = 3 ) {
 }
 
 /**
+ * The category "any one of them" should stay inside, or 0 for anywhere.
+ *
+ * A reader who has narrowed the list down has said something about what
+ * they want.
+ *
+ * @return int
+ */
+function rs_random_cat() {
+	if ( ! is_category() ) {
+		return 0;
+	}
+
+	$term = get_queried_object();
+
+	return $term instanceof WP_Term ? (int) $term->term_id : 0;
+}
+
+/**
  * Address of the "any one of them" link.
  *
- * Inside a category it stays in that category: a reader who has narrowed
- * the list down has said something about what they want.
+ * app.js catches the click and opens the story in the modal instead,
+ * which is how every other story on the list opens. This address is what
+ * happens without that: a redirect to the post's own page.
  *
  * @return string
  */
 function rs_random_url() {
 	$url = add_query_arg( 'rs_random', '1', home_url( '/' ) );
+	$cat = rs_random_cat();
 
-	if ( is_category() ) {
-		$term = get_queried_object();
-
-		if ( $term instanceof WP_Term ) {
-			$url = add_query_arg( 'rs_cat', $term->term_id, $url );
-		}
-	}
-
-	return $url;
+	return $cat ? add_query_arg( 'rs_cat', $cat, $url ) : $url;
 }
 
 /**
@@ -1413,7 +1425,9 @@ function rs_render_count() {
 			?><span class="rs-post-count__number"><?php echo esc_html( rs_bn_digits( $count ) ); ?></span><?php
 			echo esc_html( $after );
 			?>
-			<a class="rs-post-count__any" href="<?php echo esc_url( rs_random_url() ); ?>">যেকোনো একটা</a>
+			<a class="rs-post-count__any"
+				href="<?php echo esc_url( rs_random_url() ); ?>"
+				data-rs-random="<?php echo (int) rs_random_cat(); ?>">যেকোনো একটা</a>
 		</p>
 	</div>
 	<?php
@@ -1544,6 +1558,21 @@ function rs_rest_routes() {
 			'args'                => array(
 				'q' => array(
 					'sanitize_callback' => 'sanitize_text_field',
+				),
+			),
+		)
+	);
+
+	register_rest_route(
+		'rs/v1',
+		'/random',
+		array(
+			'methods'             => WP_REST_Server::READABLE,
+			'callback'            => 'rs_rest_random',
+			'permission_callback' => '__return_true',
+			'args'                => array(
+				'cat' => array(
+					'sanitize_callback' => 'absint',
 				),
 			),
 		)
@@ -1684,6 +1713,34 @@ function rs_rest_search( $request ) {
 		array(
 			'items' => $items,
 			'total' => (int) $query->found_posts,
+		)
+	);
+}
+
+/**
+ * Which post "any one of them" landed on.
+ *
+ * Only the ID and the address, because app.js hands them straight to the
+ * same code a click on a list row uses, and that fetches the rest.
+ *
+ * @param WP_REST_Request $request Request.
+ * @return WP_REST_Response|WP_Error
+ */
+function rs_rest_random( $request ) {
+	$items = rs_random_posts( 1, 0, (int) $request->get_param( 'cat' ) );
+
+	if ( ! $items ) {
+		return new WP_Error( 'rs_empty', 'কোনো লেখা নেই', array( 'status' => 404 ) );
+	}
+
+	/* Nothing between here and the reader should hold on to this: a
+	   different answer every time is the entire feature. */
+	nocache_headers();
+
+	return rest_ensure_response(
+		array(
+			'id'   => $items[0]->ID,
+			'link' => get_permalink( $items[0] ),
 		)
 	);
 }
