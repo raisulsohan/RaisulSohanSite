@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: রাইসুল সোহানের লেখার সাইট। Figma Make ডিজাইন থেকে পোর্ট করা একটি হালকা ক্লাসিক থিম। পোস্ট মডালে খোলে, কিন্তু প্রতিটা লেখার নিজস্ব URL থাকে।
-Version: 2.17.1
+Version: 2.17.2
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -440,10 +440,35 @@ button {
 	width: 100%;
 }
 
+/*
+ * The banner dissolves into the page at its edges instead of stopping at
+ * a hard line.
+ *
+ * A mask rather than a gradient of the page colour laid on top: this makes
+ * the picture genuinely transparent there, so whatever is behind shows
+ * through — light, dark, or a colour the reader chose — and the faint grid
+ * keeps running underneath the fade rather than being painted over.
+ *
+ * Two gradients intersected, because one linear gradient fades along one
+ * axis only. The sides get a shorter fade than the top and bottom: on a
+ * banner this shape they are the long edges, and the same percentage
+ * across both would eat far more picture sideways than it does vertically.
+ *
+ * Browsers without mask-composite keep the hard edges, which is where
+ * this started.
+ */
 .rs-hero__image {
 	display: block;
 	width: 100%;
 	height: auto;
+	-webkit-mask-image:
+		linear-gradient(to right, transparent, #000 7%, #000 93%, transparent),
+		linear-gradient(to bottom, transparent, #000 15%, #000 85%, transparent);
+	mask-image:
+		linear-gradient(to right, transparent, #000 7%, #000 93%, transparent),
+		linear-gradient(to bottom, transparent, #000 15%, #000 85%, transparent);
+	-webkit-mask-composite: source-in;
+	mask-composite: intersect;
 }
 
 .rs-post-count {
