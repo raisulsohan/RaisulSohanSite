@@ -68,6 +68,7 @@ get_header();
 			</div>
 
 			<?php rs_share_row(); ?>
+			<?php rs_related_row(); ?>
 		</article>
 
 		<nav class="rs-nextprev">

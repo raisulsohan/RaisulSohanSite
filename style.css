@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: রাইসুল সোহানের লেখার সাইট। Figma Make ডিজাইন থেকে পোর্ট করা একটি হালকা ক্লাসিক থিম। পোস্ট মডালে খোলে, কিন্তু প্রতিটা লেখার নিজস্ব URL থাকে।
-Version: 2.12.0
+Version: 2.13.0
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -529,6 +529,16 @@ button {
 	color: var(--rs-hover);
 }
 
+/*
+ * Already opened in this browser. The muted grey rather than a lower
+ * opacity: it is a token that has been checked against the page for
+ * contrast, so a read title stays as legible as the date beside it and
+ * only reads as further away. Hover still brings it back.
+ */
+.rs-row.is-read .rs-row__title {
+	color: var(--rs-muted-fg);
+}
+
 /* Sits outside .rs-row__title, so it keeps its own colour while the
    title turns orange on hover. */
 .rs-row__cat {
@@ -780,11 +790,31 @@ a.rs-pagination__step:focus-visible {
 	text-align: center;
 }
 
-.rs-footer span {
+.rs-footer__inner {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: center;
+	gap: 0.5rem 1rem;
+}
+
+.rs-footer span,
+.rs-footer__feed {
 	font-family: var(--rs-sans);
 	font-size: 0.75rem;
 	line-height: 1rem;
 	color: var(--rs-muted-fg);
+}
+
+.rs-footer__feed {
+	border-bottom: 1px solid var(--rs-border-60);
+	transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.rs-footer__feed:hover,
+.rs-footer__feed:focus-visible {
+	color: var(--rs-hover);
+	border-color: currentColor;
 }
 
 /* ==========================================================================
@@ -1252,6 +1282,65 @@ a.rs-article__cat:hover {
 	border-top: 1px solid var(--rs-border-40);
 }
 
+/*
+ * Other posts from the same category, under the share row. Deliberately
+ * quieter than the list on the front page: this is an offer at the end of
+ * a reading, not the page's main business.
+ */
+.rs-related {
+	margin-top: 2rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--rs-border-40);
+}
+
+.rs-related__label {
+	margin: 0 0 0.75rem;
+	font-family: var(--rs-sans);
+	font-size: 0.6875rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--rs-muted-fg);
+}
+
+.rs-related__list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.rs-related__list li + li {
+	border-top: 1px solid var(--rs-border-40);
+}
+
+.rs-related__list a {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 0.625rem 0;
+}
+
+.rs-related__title {
+	font-family: var(--rs-serif);
+	font-size: 0.9375rem;
+	line-height: 1.5;
+	color: var(--rs-fg);
+	transition: color 0.15s ease;
+}
+
+.rs-related__list a:hover .rs-related__title,
+.rs-related__list a:focus-visible .rs-related__title {
+	color: var(--rs-hover);
+}
+
+.rs-related__meta {
+	flex-shrink: 0;
+	white-space: nowrap;
+	font-family: var(--rs-sans);
+	font-size: 0.6875rem;
+	color: var(--rs-muted-fg);
+}
+
 .rs-share__label {
 	margin: 0 0 0.75rem;
 	font-family: var(--rs-sans);
@@ -1693,6 +1782,8 @@ a.rs-article__cat:hover {
 	.rs-overlay,
 	.rs-toasts,
 	.rs-tooltip,
+	.rs-related,
+	.rs-footer__feed,
 	.rs-pagination {
 		display: none !important;
 	}
