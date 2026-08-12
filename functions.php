@@ -11,9 +11,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.11.0' );
+define( 'RS_VERSION', '2.12.0' );
 
-/** Rows per page, on the front page and on every archive. */
+/** Rows per page before anyone changes it on the settings screen, and the
+    value fallen back to if the field is ever emptied. */
 define( 'RS_PER_PAGE', 10 );
 
 /** Post meta holding the counts: every opening, and first time readers.
@@ -51,13 +52,17 @@ function rs_setup() {
 add_action( 'after_setup_theme', 'rs_setup' );
 
 /**
- * One page size for every list the theme renders.
+ * How long each list is.
  *
  * The front page, the archives and the search results all go through
  * rs_render_list(), whose page links are built from the main query. So the
  * main query is what has to be sized here — on every one of those views,
- * not just the front page, or a category would paginate at the WordPress
- * default while the front page paginated at RS_PER_PAGE.
+ * or a category would paginate at the WordPress default while the front
+ * page paginated at its own setting.
+ *
+ * The front page gets its own number because it is the one people arrive
+ * on and scroll; an archive is somewhere they have already narrowed down
+ * to and a shorter page reads better there.
  *
  * @param WP_Query $query Main query.
  */
@@ -66,8 +71,11 @@ function rs_pre_get_posts( $query ) {
 		return;
 	}
 
-	if ( $query->is_home() || $query->is_archive() || $query->is_search() ) {
-		$query->set( 'posts_per_page', RS_PER_PAGE );
+	if ( $query->is_home() ) {
+		$query->set( 'posts_per_page', (int) rs_option( 'rs_home_per_page' ) );
+		$query->set( 'ignore_sticky_posts', true );
+	} elseif ( $query->is_archive() || $query->is_search() ) {
+		$query->set( 'posts_per_page', (int) rs_option( 'rs_archive_per_page' ) );
 		$query->set( 'ignore_sticky_posts', true );
 	}
 }
@@ -511,6 +519,8 @@ function rs_defaults() {
 		'rs_footer'   => '© {year} রাইসুল সোহানের গল্প · সর্বস্বত্ব সংরক্ষিত',
 		'rs_about'    => 0,
 		'rs_og_image' => 0,
+		'rs_home_per_page'    => RS_PER_PAGE,
+		'rs_archive_per_page' => RS_PER_PAGE,
 		'rs_verify'   => 'UGbwgVSquWFpv2qZcQYRQzJSyEFaryG9PHAIpY2ZsYA',
 	);
 }
@@ -585,6 +595,26 @@ function rs_about() {
 }
 
 /**
+ * Keep a page length usable.
+ *
+ * An empty or zero field would otherwise mean a list with nothing in it,
+ * and a very large one would put every summary and reading time on a
+ * single request. Both ends are held rather than trusted.
+ *
+ * @param mixed $value Submitted value.
+ * @return int
+ */
+function rs_sanitize_per_page( $value ) {
+	$value = absint( $value );
+
+	if ( $value < 1 ) {
+		return RS_PER_PAGE;
+	}
+
+	return min( $value, 100 );
+}
+
+/**
  * The plain text settings, and how each one is handled.
  *
  * key => array( label, input type, sanitiser, note under the field )
@@ -606,6 +636,18 @@ function rs_settings_fields() {
 			'text',
 			'sanitize_text_field',
 			__( 'Separate several with commas and they take turns. A single one stays put.', 'raisul-sohan' ),
+		),
+		'rs_home_per_page'    => array(
+			__( 'Posts per page, front page', 'raisul-sohan' ),
+			'number',
+			'rs_sanitize_per_page',
+			__( 'How many rows the front page shows before the page links.', 'raisul-sohan' ),
+		),
+		'rs_archive_per_page' => array(
+			__( 'Posts per page, archives', 'raisul-sohan' ),
+			'number',
+			'rs_sanitize_per_page',
+			__( 'Categories, tags and search results.', 'raisul-sohan' ),
 		),
 		'rs_email'    => array(
 			__( 'Email', 'raisul-sohan' ),
@@ -687,11 +729,19 @@ function rs_settings_page() {
 							<label for="<?php echo esc_attr( $rs_key ); ?>"><?php echo esc_html( $rs_field[0] ); ?></label>
 						</th>
 						<td>
+							<?php $rs_number = 'number' === $rs_field[1]; ?>
 							<input type="<?php echo esc_attr( $rs_field[1] ); ?>"
 								id="<?php echo esc_attr( $rs_key ); ?>"
 								name="<?php echo esc_attr( $rs_key ); ?>"
 								value="<?php echo esc_attr( rs_option( $rs_key ) ); ?>"
-								class="regular-text">
+								class="<?php echo $rs_number ? 'small-text' : 'regular-text'; ?>"
+								<?php
+								/* The same range rs_sanitize_per_page() enforces,
+								   so the browser objects before the save does. */
+								if ( $rs_number ) :
+									?>
+									min="1" max="100" step="1"
+								<?php endif; ?>>
 							<p class="description"><?php echo esc_html( $rs_field[3] ); ?></p>
 						</td>
 					</tr>
