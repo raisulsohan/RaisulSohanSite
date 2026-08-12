@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.10.1' );
+define( 'RS_VERSION', '2.11.0' );
 
 /** Rows per page, on the front page and on every archive. */
 define( 'RS_PER_PAGE', 10 );
@@ -40,7 +40,7 @@ function rs_setup() {
 
 	register_nav_menus(
 		array(
-			'rs_primary' => __( 'প্রধান মেনু (হেডারের নিচে)', 'raisul-sohan' ),
+			'rs_primary' => __( 'Primary menu (below the header)', 'raisul-sohan' ),
 		)
 	);
 
@@ -494,7 +494,7 @@ function rs_published_count() {
 }
 
 /* =========================================================================
- * 5. Customizer options
+ * 5. Theme settings
  * ====================================================================== */
 
 /**
@@ -585,92 +585,252 @@ function rs_about() {
 }
 
 /**
- * Register customizer controls.
+ * The plain text settings, and how each one is handled.
  *
- * @param WP_Customize_Manager $wp_customize Customizer.
+ * key => array( label, input type, sanitiser, note under the field )
+ *
+ * The page picker and the image picker are not in here: neither is a text
+ * box, and both are written out by hand in rs_settings_page().
+ *
+ * These labels are English while the site itself is Bengali, on purpose.
+ * They are read alongside WordPress's own labels, which follow whichever
+ * language the user chose for the admin, and a screen that is half one
+ * language and half the other is harder to read than either.
+ *
+ * @return array
  */
-function rs_customize( $wp_customize ) {
-	$defaults = rs_defaults();
-
-	$wp_customize->add_section(
-		'rs_site',
-		array(
-			'title'    => __( 'সাইটের সেটিংস', 'raisul-sohan' ),
-			'priority' => 30,
-		)
-	);
-
-	$fields = array(
-		'rs_phrases'  => array( __( 'হেডিংয়ের লেখা (কমা দিয়ে আলাদা)', 'raisul-sohan' ), 'text', 'sanitize_text_field' ),
-		'rs_email'    => array( __( 'ইমেইল', 'raisul-sohan' ), 'text', 'sanitize_email' ),
-		'rs_facebook' => array( __( 'ফেসবুক লিংক', 'raisul-sohan' ), 'url', 'esc_url_raw' ),
-		'rs_linkedin' => array( __( 'লিঙ্কডইন লিংক', 'raisul-sohan' ), 'url', 'esc_url_raw' ),
-		'rs_footer'   => array( __( 'ফুটারের লেখা ({year} বসালে সাল আসবে)', 'raisul-sohan' ), 'text', 'sanitize_text_field' ),
-		'rs_verify'   => array( __( 'Google ভেরিফিকেশন কোড (Search Console)', 'raisul-sohan' ), 'text', 'sanitize_text_field' ),
-	);
-
-	foreach ( $fields as $key => $field ) {
-		$wp_customize->add_setting(
-			$key,
-			array(
-				'default'           => $defaults[ $key ],
-				'sanitize_callback' => $field[2],
-				'transport'         => 'refresh',
-			)
-		);
-
-		$wp_customize->add_control(
-			$key,
-			array(
-				'label'   => $field[0],
-				'section' => 'rs_site',
-				'type'    => $field[1],
-			)
-		);
-	}
-
-	$wp_customize->add_setting(
-		'rs_about',
-		array(
-			'default'           => 0,
-			'sanitize_callback' => 'absint',
-		)
-	);
-
-	$wp_customize->add_control(
-		'rs_about',
-		array(
-			'label'       => __( '"আমার সম্পর্কে" পেজ', 'raisul-sohan' ),
-			'description' => __( 'একটা পেজ বেছে দিন, তার লেখাই মডালে দেখাবে।', 'raisul-sohan' ),
-			'section'     => 'rs_site',
-			'type'        => 'dropdown-pages',
-		)
-	);
-
-	$wp_customize->add_setting(
-		'rs_og_image',
-		array(
-			'default'           => 0,
-			'sanitize_callback' => 'absint',
-		)
-	);
-
-	/* Stores the attachment ID, which is what rs_share_image() wants: a
-	   plain URL would go stale the day the media library is moved. */
-	$wp_customize->add_control(
-		new WP_Customize_Media_Control(
-			$wp_customize,
-			'rs_og_image',
-			array(
-				'label'       => __( 'শেয়ার করার ছবি', 'raisul-sohan' ),
-				'description' => __( 'যেসব লেখার নিজের কোনো ছবি নেই, ফেসবুকে বা মেসেঞ্জারে শেয়ার করলে সেগুলোর কার্ডে এই ছবিটা বসবে। বর্গাকার ছবি দিন, ৬০০×৬০০ বা তার বড় — কার্ডের থাম্বনেইলটা বর্গাকার, তাই চওড়া ছবি কেটে যাবে। লেখার ভেতরে ছবি থাকলে সেটাই আগে বসে।', 'raisul-sohan' ),
-				'section'     => 'rs_site',
-				'mime_type'   => 'image',
-			)
-		)
+function rs_settings_fields() {
+	return array(
+		'rs_phrases'  => array(
+			__( 'Heading text', 'raisul-sohan' ),
+			'text',
+			'sanitize_text_field',
+			__( 'Separate several with commas and they take turns. A single one stays put.', 'raisul-sohan' ),
+		),
+		'rs_email'    => array(
+			__( 'Email', 'raisul-sohan' ),
+			'text',
+			'sanitize_email',
+			__( 'Copied when a reader clicks the mail icon in the header.', 'raisul-sohan' ),
+		),
+		'rs_facebook' => array(
+			__( 'Facebook URL', 'raisul-sohan' ),
+			'url',
+			'esc_url_raw',
+			__( 'Leave empty to hide the icon.', 'raisul-sohan' ),
+		),
+		'rs_linkedin' => array(
+			__( 'LinkedIn URL', 'raisul-sohan' ),
+			'url',
+			'esc_url_raw',
+			__( 'Leave empty to hide the icon.', 'raisul-sohan' ),
+		),
+		'rs_footer'   => array(
+			__( 'Footer text', 'raisul-sohan' ),
+			'text',
+			'sanitize_text_field',
+			__( 'Write {year} and the current year appears there, in Bengali digits.', 'raisul-sohan' ),
+		),
+		'rs_verify'   => array(
+			__( 'Google verification code', 'raisul-sohan' ),
+			'text',
+			'sanitize_text_field',
+			__( 'From Search Console: the content value of the HTML tag on its own. Empty means no tag.', 'raisul-sohan' ),
+		),
 	);
 }
-add_action( 'customize_register', 'rs_customize' );
+
+/**
+ * Put the settings on their own screen, under Appearance.
+ */
+function rs_settings_menu() {
+	add_theme_page(
+		__( 'Theme Settings', 'raisul-sohan' ),
+		__( 'Theme Settings', 'raisul-sohan' ),
+		'edit_theme_options',
+		'rs-settings',
+		'rs_settings_page'
+	);
+}
+add_action( 'admin_menu', 'rs_settings_menu' );
+
+/**
+ * The settings screen.
+ *
+ * A full width form rather than the customizer's sidebar. Nothing here
+ * benefits from a live preview — every one of these settings redrew the
+ * whole page anyway — and several of them are long enough that a column
+ * two hundred pixels wide was the wrong shape for reading them.
+ */
+function rs_settings_page() {
+	$image = (int) rs_option( 'rs_og_image' );
+	$thumb = $image ? wp_get_attachment_image_src( $image, 'medium' ) : false;
+	?>
+	<div class="wrap">
+		<h1><?php esc_html_e( 'Theme Settings', 'raisul-sohan' ); ?></h1>
+
+		<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading a flag off our own redirect, acting on nothing. ?>
+		<?php if ( isset( $_GET['updated'] ) ) : ?>
+			<div class="notice notice-success is-dismissible">
+				<p><?php esc_html_e( 'Settings saved.', 'raisul-sohan' ); ?></p>
+			</div>
+		<?php endif; ?>
+
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+			<input type="hidden" name="action" value="rs_save_settings">
+			<?php wp_nonce_field( 'rs_save_settings' ); ?>
+
+			<table class="form-table" role="presentation">
+				<?php foreach ( rs_settings_fields() as $rs_key => $rs_field ) : ?>
+					<tr>
+						<th scope="row">
+							<label for="<?php echo esc_attr( $rs_key ); ?>"><?php echo esc_html( $rs_field[0] ); ?></label>
+						</th>
+						<td>
+							<input type="<?php echo esc_attr( $rs_field[1] ); ?>"
+								id="<?php echo esc_attr( $rs_key ); ?>"
+								name="<?php echo esc_attr( $rs_key ); ?>"
+								value="<?php echo esc_attr( rs_option( $rs_key ) ); ?>"
+								class="regular-text">
+							<p class="description"><?php echo esc_html( $rs_field[3] ); ?></p>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+
+				<tr>
+					<th scope="row">
+						<label for="rs_about"><?php esc_html_e( 'About page', 'raisul-sohan' ); ?></label>
+					</th>
+					<td>
+						<?php
+						wp_dropdown_pages(
+							array(
+								'name'              => 'rs_about',
+								'id'                => 'rs_about',
+								'selected'          => (int) rs_option( 'rs_about' ),
+								'show_option_none'  => __( '— Use the built in bio —', 'raisul-sohan' ),
+								'option_none_value' => 0,
+							)
+						);
+						?>
+						<p class="description">
+							<?php esc_html_e( 'That page\'s content is what the About modal shows.', 'raisul-sohan' ); ?>
+						</p>
+					</td>
+				</tr>
+
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Share image', 'raisul-sohan' ); ?></th>
+					<td>
+						<div id="rs-image-preview" style="margin-bottom:.75rem;">
+							<?php if ( $thumb ) : ?>
+								<img src="<?php echo esc_url( $thumb[0] ); ?>" alt="" style="max-width:200px;height:auto;">
+							<?php endif; ?>
+						</div>
+
+						<?php /* The attachment ID rather than a URL, which would go stale the day the media library moves. */ ?>
+						<input type="hidden" name="rs_og_image" id="rs_og_image" value="<?php echo esc_attr( $image ); ?>">
+
+						<button type="button" class="button" id="rs-image-pick">
+							<?php esc_html_e( 'Choose image', 'raisul-sohan' ); ?>
+						</button>
+						<button type="button" class="button" id="rs-image-clear">
+							<?php esc_html_e( 'Remove', 'raisul-sohan' ); ?>
+						</button>
+
+						<p class="description">
+							<?php esc_html_e( 'Used on the share card of posts that have no picture of their own. Square, 600x600 or larger — the card crops a wide image to its middle. A picture inside a post wins over this one.', 'raisul-sohan' ); ?>
+						</p>
+					</td>
+				</tr>
+			</table>
+
+			<?php submit_button(); ?>
+		</form>
+	</div>
+	<?php
+}
+
+/**
+ * Save the settings.
+ *
+ * They stay theme mods rather than becoming options of their own, so
+ * rs_option() and everything that reads through it is untouched by the
+ * move off the customizer.
+ */
+function rs_settings_save() {
+	if ( ! current_user_can( 'edit_theme_options' ) ) {
+		wp_die( esc_html__( 'You are not allowed to change these settings.', 'raisul-sohan' ) );
+	}
+
+	check_admin_referer( 'rs_save_settings' );
+
+	foreach ( rs_settings_fields() as $key => $field ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitised by the field's own callback on the next line.
+		$value = isset( $_POST[ $key ] ) ? wp_unslash( $_POST[ $key ] ) : '';
+
+		set_theme_mod( $key, call_user_func( $field[2], $value ) );
+	}
+
+	set_theme_mod( 'rs_about', isset( $_POST['rs_about'] ) ? absint( $_POST['rs_about'] ) : 0 );
+	set_theme_mod( 'rs_og_image', isset( $_POST['rs_og_image'] ) ? absint( $_POST['rs_og_image'] ) : 0 );
+
+	wp_safe_redirect( admin_url( 'themes.php?page=rs-settings&updated=1' ) );
+	exit;
+}
+add_action( 'admin_post_rs_save_settings', 'rs_settings_save' );
+
+/**
+ * The media library picker, loaded on this screen and nowhere else.
+ *
+ * @param string $hook Current admin page.
+ */
+function rs_settings_assets( $hook ) {
+	if ( 'appearance_page_rs-settings' !== $hook ) {
+		return;
+	}
+
+	wp_enqueue_media();
+	wp_enqueue_script( 'jquery' );
+
+	wp_add_inline_script(
+		'jquery-core',
+		"jQuery( function ( $ ) {
+	var frame;
+
+	$( '#rs-image-pick' ).on( 'click', function () {
+		if ( frame ) {
+			frame.open();
+			return;
+		}
+
+		frame = wp.media( {
+			title: " . wp_json_encode( __( 'Share image', 'raisul-sohan' ) ) . ",
+			library: { type: 'image' },
+			multiple: false
+		} );
+
+		frame.on( 'select', function () {
+			var img = frame.state().get( 'selection' ).first().toJSON();
+			var src = img.sizes && img.sizes.medium ? img.sizes.medium.url : img.url;
+
+			$( '#rs_og_image' ).val( img.id );
+			$( '#rs-image-preview' ).html(
+				$( '<img>' ).attr( 'src', src ).css( { maxWidth: '200px', height: 'auto' } )
+			);
+		} );
+
+		frame.open();
+	} );
+
+	$( '#rs-image-clear' ).on( 'click', function () {
+		$( '#rs_og_image' ).val( '' );
+		$( '#rs-image-preview' ).empty();
+	} );
+} );"
+	);
+}
+add_action( 'admin_enqueue_scripts', 'rs_settings_assets' );
 
 /* =========================================================================
  * 6. Icons
@@ -1721,8 +1881,8 @@ add_filter( 'body_class', 'rs_body_class' );
  * ====================================================================== */
 
 /*
- * Two numbers, and they answer different questions. "পাঠক" counts the
- * browsers that opened a post for the first time; "মোট পড়া" counts every
+ * Two numbers, and they answer different questions. Readers counts the
+ * browsers that opened a post for the first time; Reads counts every
  * opening. A story people come back to shows the gap.
  */
 
@@ -1737,8 +1897,8 @@ add_filter( 'body_class', 'rs_body_class' );
  */
 function rs_count_columns() {
 	return array(
-		'rs_readers' => array( __( 'পাঠক', 'raisul-sohan' ), RS_READERS_KEY ),
-		'rs_views'   => array( __( 'মোট পড়া', 'raisul-sohan' ), RS_VIEWS_KEY ),
+		'rs_readers' => array( __( 'Readers', 'raisul-sohan' ), RS_READERS_KEY ),
+		'rs_views'   => array( __( 'Reads', 'raisul-sohan' ), RS_VIEWS_KEY ),
 	);
 }
 
@@ -1860,9 +2020,9 @@ function rs_count_submitbox() {
 
 	printf(
 		'<div class="misc-pub-section">%1$s <b>%2$s</b> &middot; %3$s <b>%4$s</b></div>',
-		esc_html__( 'পাঠক:', 'raisul-sohan' ),
+		esc_html__( 'Readers:', 'raisul-sohan' ),
 		esc_html( rs_bn_digits( rs_readers( get_the_ID() ) ) ),
-		esc_html__( 'মোট পড়া:', 'raisul-sohan' ),
+		esc_html__( 'Reads:', 'raisul-sohan' ),
 		esc_html( rs_bn_digits( rs_views( get_the_ID() ) ) )
 	);
 }
