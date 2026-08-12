@@ -109,6 +109,53 @@
 	}
 
 	/* ---------------------------------------------------------------
+	 * Read count
+	 *
+	 * Counted from the browser rather than while the page renders,
+	 * because the pages sit behind a full page cache: a reader served a
+	 * cached copy never runs any PHP, so a count kept during a render
+	 * would miss most of them.
+	 *
+	 * Once per post per browser session. Opening a story from the list
+	 * and then landing on its own page is one reading, not two.
+	 * ------------------------------------------------------------ */
+
+	var SEEN_KEY = 'rs-seen';
+
+	function countView( id ) {
+		/* Anyone who can edit the posts is reading their own work. */
+		if ( ! id || ! window.fetch || cfg.editBase ) {
+			return;
+		}
+
+		var mark = '|' + id + '|';
+		var seen = '';
+
+		try {
+			seen = window.sessionStorage.getItem( SEEN_KEY ) || '';
+		} catch ( e ) {
+			/* Private mode. Counting a second time beats not counting. */
+		}
+
+		if ( seen.indexOf( mark ) > -1 ) {
+			return;
+		}
+
+		try {
+			window.sessionStorage.setItem( SEEN_KEY, seen + mark );
+		} catch ( e ) {
+			/* As above. */
+		}
+
+		window.fetch( rest + 'view/' + id, {
+			method: 'POST',
+			credentials: 'same-origin',
+		} ).then( null, function () {
+			/* A missed count is not worth telling the reader about. */
+		} );
+	}
+
+	/* ---------------------------------------------------------------
 	 * Toasts
 	 * ------------------------------------------------------------ */
 
@@ -875,6 +922,9 @@
 		var done = function ( data ) {
 			cache[ id ] = data;
 			renderPost( data );
+			/* Here rather than at the top of openPost(), so a fetch that
+			   never arrives is not counted as a reading. */
+			countView( id );
 			document.title = data.title + ' · ' + ( cfg.siteName || baseTitle );
 
 			var close = $( '.rs-modal__close', postOverlay );
@@ -1355,4 +1405,8 @@
 			} );
 		}
 	}() );
+
+	/* A post opened at its own address, rather than in the modal. Zero on
+	   every other kind of page, and countView() ignores zero. */
+	countView( cfg.postId );
 }() );

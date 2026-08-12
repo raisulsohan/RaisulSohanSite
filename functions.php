@@ -11,10 +11,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.8.2' );
+define( 'RS_VERSION', '2.9.0' );
 
 /** Rows per page, on the front page and on every archive. */
 define( 'RS_PER_PAGE', 10 );
+
+/** Post meta holding the read count. Leading underscore keeps it out of
+    the Custom Fields box, where it would only invite editing. */
+define( 'RS_VIEWS_KEY', '_rs_views' );
 
 /* =========================================================================
  * 1. Theme setup
@@ -133,6 +137,9 @@ function rs_assets() {
 			'phrases' => rs_phrases(),
 			'email'   => rs_option( 'rs_email' ),
 			'siteName'=> get_bloginfo( 'name' ),
+			/* Which post this page is, for the read count. Zero everywhere
+			   else, and app.js counts nothing when it is zero. */
+			'postId'  => is_singular( 'post' ) ? get_queried_object_id() : 0,
 			/* Base URL for the modal's edit link, empty for readers. The
 			   capability is checked here, in a normally authenticated page
 			   request; the REST call carries no nonce, so current_user_can()
@@ -1082,6 +1089,21 @@ function rs_rest_routes() {
 			),
 		)
 	);
+
+	register_rest_route(
+		'rs/v1',
+		'/view/(?P<id>\d+)',
+		array(
+			'methods'             => WP_REST_Server::CREATABLE,
+			'callback'            => 'rs_rest_view',
+			'permission_callback' => '__return_true',
+			'args'                => array(
+				'id' => array(
+					'sanitize_callback' => 'absint',
+				),
+			),
+		)
+	);
 }
 add_action( 'rest_api_init', 'rs_rest_routes' );
 
@@ -1200,6 +1222,52 @@ function rs_rest_search( $request ) {
 			'total' => (int) $query->found_posts,
 		)
 	);
+}
+
+/**
+ * Add one to a post's read count.
+ *
+ * Called from the browser rather than while the page renders, because the
+ * pages sit behind a full page cache: a reader served a cached copy runs
+ * no PHP at all, so anything counted during a render would miss most of
+ * them.
+ *
+ * There is no nonce, and that is deliberate. A nonce belongs to a session
+ * and would be baked into the cached HTML, so every reader would send the
+ * same stale one. The endpoint is written to be safe without it: it takes
+ * nothing but the ID of a published post and adds one to a number.
+ *
+ * @param WP_REST_Request $request Request.
+ * @return WP_REST_Response|WP_Error
+ */
+function rs_rest_view( $request ) {
+	global $wpdb;
+
+	$id   = (int) $request['id'];
+	$item = get_post( $id );
+
+	if ( ! $item || 'publish' !== $item->post_status || 'post' !== $item->post_type ) {
+		return new WP_Error( 'rs_not_found', 'পোস্ট পাওয়া যায়নি', array( 'status' => 404 ) );
+	}
+
+	/* Make sure there is a row, then add to it in the database rather than
+	   reading, adding and writing back: two readers arriving together
+	   would otherwise both store the same number and one would be lost. */
+	add_post_meta( $id, RS_VIEWS_KEY, 0, true );
+
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- No API for an atomic increment.
+	$wpdb->query(
+		$wpdb->prepare(
+			"UPDATE {$wpdb->postmeta} SET meta_value = meta_value + 1 WHERE post_id = %d AND meta_key = %s",
+			$id,
+			RS_VIEWS_KEY
+		)
+	);
+
+	/* The row was changed behind the object cache's back. */
+	wp_cache_delete( $id, 'post_meta' );
+
+	return rest_ensure_response( array( 'ok' => true ) );
 }
 
 /* =========================================================================
@@ -1605,8 +1673,122 @@ function rs_body_class( $classes ) {
 add_filter( 'body_class', 'rs_body_class' );
 
 /* =========================================================================
- * 11. Housekeeping
+ * 11. Read counts in the admin
  * ====================================================================== */
+
+/**
+ * How many times a post has been read.
+ *
+ * @param int $post_id Post ID.
+ * @return int
+ */
+function rs_views( $post_id ) {
+	return (int) get_post_meta( $post_id, RS_VIEWS_KEY, true );
+}
+
+/**
+ * A read count column on the posts screen.
+ *
+ * @param array $columns Columns.
+ * @return array
+ */
+function rs_views_column( $columns ) {
+	$columns['rs_views'] = __( 'পড়া হয়েছে', 'raisul-sohan' );
+
+	return $columns;
+}
+add_filter( 'manage_post_posts_columns', 'rs_views_column' );
+
+/**
+ * Fill that column.
+ *
+ * @param string $column  Column name.
+ * @param int    $post_id Post ID.
+ */
+function rs_views_column_value( $column, $post_id ) {
+	if ( 'rs_views' === $column ) {
+		echo esc_html( rs_bn_digits( rs_views( $post_id ) ) );
+	}
+}
+add_action( 'manage_post_posts_custom_column', 'rs_views_column_value', 10, 2 );
+
+/**
+ * Let the column be clicked to sort by it.
+ *
+ * @param array $columns Sortable columns.
+ * @return array
+ */
+function rs_views_sortable( $columns ) {
+	$columns['rs_views'] = 'rs_views';
+
+	return $columns;
+}
+add_filter( 'manage_edit-post_sortable_columns', 'rs_views_sortable' );
+
+/**
+ * Order the posts screen by read count.
+ *
+ * The OR against NOT EXISTS is what keeps the unread posts on the list.
+ * Ordering by a meta key alone quietly drops every post that has no row
+ * for it, which here would be exactly the ones worth noticing.
+ *
+ * @param WP_Query $query Query.
+ */
+function rs_views_orderby( $query ) {
+	if ( ! is_admin() || ! $query->is_main_query() || 'rs_views' !== $query->get( 'orderby' ) ) {
+		return;
+	}
+
+	$query->set(
+		'meta_query',
+		array(
+			'relation' => 'OR',
+			array(
+				'key'     => RS_VIEWS_KEY,
+				'compare' => 'EXISTS',
+			),
+			array(
+				'key'     => RS_VIEWS_KEY,
+				'compare' => 'NOT EXISTS',
+			),
+		)
+	);
+	$query->set( 'orderby', 'meta_value_num' );
+}
+add_action( 'pre_get_posts', 'rs_views_orderby' );
+
+/**
+ * Show the count in the editor's Publish box, where it used to sit.
+ */
+function rs_views_submitbox() {
+	$screen = get_current_screen();
+
+	if ( ! $screen || 'post' !== $screen->post_type ) {
+		return;
+	}
+
+	printf(
+		'<div class="misc-pub-section">%s <b>%s</b></div>',
+		esc_html__( 'পড়া হয়েছে:', 'raisul-sohan' ),
+		esc_html( rs_bn_digits( rs_views( get_the_ID() ) ) )
+	);
+}
+add_action( 'post_submitbox_misc_actions', 'rs_views_submitbox' );
+
+/* =========================================================================
+ * 12. Housekeeping
+ * ====================================================================== */
+
+/*
+ * Keep the block editor switched off.
+ *
+ * This is the whole of what the Classic Editor plugin was doing here. The
+ * theme is built around the classic editor already: it hands that editor
+ * its own stylesheet, puts the justify button back in its toolbar, and
+ * drops the block library's CSS from the front end. use_block_editor_for_post
+ * consults this filter too, so the one covers both.
+ */
+add_filter( 'use_block_editor_for_post_type', '__return_false', 100 );
 
 /**
  * Keep the emoji script out of the page. Bengali text does not need it.
