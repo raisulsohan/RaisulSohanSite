@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: রাইসুল সোহানের লেখার সাইট। Figma Make ডিজাইন থেকে পোর্ট করা একটি হালকা ক্লাসিক থিম। পোস্ট মডালে খোলে, কিন্তু প্রতিটা লেখার নিজস্ব URL থাকে।
-Version: 2.17.0
+Version: 2.17.1
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -423,21 +423,27 @@ button {
 }
 
 /*
- * With a banner instead of the heading, the fixed height goes: the
- * picture decides how tall this is, up to a cap that keeps it in the same
- * register as the two lines of type it replaced.
+ * With a banner instead of the heading, the fixed height goes and the
+ * picture takes the whole column. The gutter is the one the list rows
+ * below use, so the banner's edges line up with theirs rather than
+ * floating loose in the middle.
  */
 .rs-hero--image {
 	height: auto;
-	padding-top: 2.5rem;
+	padding-top: 2rem;
 	padding-bottom: 1.5rem;
+}
+
+/* The heading is a flex item, so without this it is only as wide as what
+   is inside it and the picture has nothing to fill. */
+.rs-hero--image .rs-hero__title {
+	width: 100%;
 }
 
 .rs-hero__image {
 	display: block;
-	width: auto;
-	max-width: 100%;
-	max-height: 7.5rem;
+	width: 100%;
+	height: auto;
 }
 
 .rs-post-count {
@@ -1888,12 +1894,8 @@ a.rs-article__cat:hover {
 	}
 
 	.rs-hero--image {
-		padding-top: 2rem;
-		padding-bottom: 1.25rem;
-	}
-
-	.rs-hero__image {
-		max-height: 5rem;
+		padding-top: 1.5rem;
+		padding-bottom: 1rem;
 	}
 
 	.rs-header__brand {
