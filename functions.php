@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.14.0' );
+define( 'RS_VERSION', '2.15.0' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -1121,6 +1121,53 @@ function rs_related( $post = null, $limit = 3 ) {
 }
 
 /**
+ * Address of the "any one of them" link.
+ *
+ * Inside a category it stays in that category: a reader who has narrowed
+ * the list down has said something about what they want.
+ *
+ * @return string
+ */
+function rs_random_url() {
+	$url = add_query_arg( 'rs_random', '1', home_url( '/' ) );
+
+	if ( is_category() ) {
+		$term = get_queried_object();
+
+		if ( $term instanceof WP_Term ) {
+			$url = add_query_arg( 'rs_cat', $term->term_id, $url );
+		}
+	}
+
+	return $url;
+}
+
+/**
+ * Send ?rs_random=1 off to a post picked at random.
+ *
+ * A plain link and a redirect rather than anything cleverer, so it works
+ * with JavaScript off. nocache_headers() matters more than usual here:
+ * a full page cache that kept the redirect would hand every reader the
+ * same "random" post until it expired.
+ */
+function rs_random_redirect() {
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read only, and public.
+	if ( ! isset( $_GET['rs_random'] ) ) {
+		return;
+	}
+
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read only, and public.
+	$cat   = isset( $_GET['rs_cat'] ) ? absint( $_GET['rs_cat'] ) : 0;
+	$items = rs_random_posts( 1, 0, $cat );
+
+	nocache_headers();
+
+	wp_safe_redirect( $items ? get_permalink( $items[0] ) : home_url( '/' ) );
+	exit;
+}
+add_action( 'template_redirect', 'rs_random_redirect' );
+
+/**
  * Render a short list of posts being offered to the reader.
  *
  * Used under an article and on the missing page, which want the same
@@ -1366,6 +1413,7 @@ function rs_render_count() {
 			?><span class="rs-post-count__number"><?php echo esc_html( rs_bn_digits( $count ) ); ?></span><?php
 			echo esc_html( $after );
 			?>
+			<a class="rs-post-count__any" href="<?php echo esc_url( rs_random_url() ); ?>">যেকোনো একটা</a>
 		</p>
 	</div>
 	<?php

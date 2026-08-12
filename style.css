@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: রাইসুল সোহানের লেখার সাইট। Figma Make ডিজাইন থেকে পোর্ট করা একটি হালকা ক্লাসিক থিম। পোস্ট মডালে খোলে, কিন্তু প্রতিটা লেখার নিজস্ব URL থাকে।
-Version: 2.14.0
+Version: 2.15.0
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -435,6 +435,105 @@ button {
 .rs-post-count__number{
 	font-weight:600;
 	color:var(--rs-hover);
+}
+
+/* Sends the reader to a story chosen for them. Set apart by a middot
+   rather than a button, because it is an aside to the count, not a
+   second thing to decide about. */
+.rs-post-count__any {
+	margin-left: 0.5rem;
+	padding-left: 0.75rem;
+	border-left: 1px solid var(--rs-border-60);
+	color: var(--rs-muted-fg);
+	transition: color 0.15s ease;
+}
+
+.rs-post-count__any:hover,
+.rs-post-count__any:focus-visible {
+	color: var(--rs-hover);
+}
+
+/*
+ * The story this browser started and did not finish. Above the list and
+ * quieter than it: an offer, not a row.
+ */
+.rs-resume {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	max-width: var(--rs-wrap);
+	margin: 1.25rem auto 0;
+	padding: 0.625rem 0.875rem;
+	background: var(--rs-muted);
+	border-radius: var(--rs-radius-lg);
+}
+
+.rs-resume__link {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.125rem 0.625rem;
+	min-width: 0;
+	flex: 1;
+}
+
+.rs-resume__label {
+	flex-shrink: 0;
+	font-family: var(--rs-sans);
+	font-size: 0.6875rem;
+	letter-spacing: 0.04em;
+	color: var(--rs-muted-fg);
+}
+
+.rs-resume__title {
+	font-family: var(--rs-serif);
+	font-size: 0.9375rem;
+	line-height: 1.5;
+	color: var(--rs-fg);
+	transition: color 0.15s ease;
+}
+
+.rs-resume__link:hover .rs-resume__title,
+.rs-resume__link:focus-visible .rs-resume__title {
+	color: var(--rs-hover);
+}
+
+.rs-resume__close {
+	flex-shrink: 0;
+	width: 1.5rem;
+	height: 1.5rem;
+	font-size: 1.125rem;
+	line-height: 1;
+	color: var(--rs-muted-fg);
+	transition: color 0.15s ease;
+}
+
+.rs-resume__close:hover,
+.rs-resume__close:focus-visible {
+	color: var(--rs-fg);
+}
+
+/*
+ * How far through a post the reader is, on the post's own page. The
+ * modal has had one inside its own frame all along; this one rides above
+ * the sticky header, which is the only strip of the window that nothing
+ * else is using.
+ */
+.rs-progress {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2px;
+	z-index: 50;
+	pointer-events: none;
+}
+
+.rs-progress span {
+	display: block;
+	width: 0;
+	height: 100%;
+	background: var(--rs-hover);
 }
 
 .rs-hero__title {
@@ -1796,6 +1895,8 @@ a.rs-article__cat:hover {
 	.rs-toasts,
 	.rs-tooltip,
 	.rs-related,
+	.rs-resume,
+	.rs-progress,
 	.rs-footer__feed,
 	.rs-pagination {
 		display: none !important;
