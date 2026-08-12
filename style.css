@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: রাইসুল সোহানের লেখার সাইট। Figma Make ডিজাইন থেকে পোর্ট করা একটি হালকা ক্লাসিক থিম। পোস্ট মডালে খোলে, কিন্তু প্রতিটা লেখার নিজস্ব URL থাকে।
-Version: 2.16.2
+Version: 2.16.3
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -1373,23 +1373,38 @@ a.rs-article__cat:hover {
 }
 
 /* Core block classes. The default block CSS is dequeued, so the handful
-   that actually matter for a text blog are defined here. */
+   that actually matter for a text blog are defined here.
 
-.rs-article__body .alignleft {
+   The About modal gets them too: its content comes out of the same editor
+   as everything else, so an image aligned left there was landing inline
+   and dropping the paragraph to the foot of the picture. */
+
+.rs-article__body .alignleft,
+.rs-about__body .alignleft {
 	float: left;
 	margin: 0.25rem 1.5rem 1rem 0;
 }
 
-.rs-article__body .alignright {
+.rs-article__body .alignright,
+.rs-about__body .alignright {
 	float: right;
 	margin: 0.25rem 0 1rem 1.5rem;
 }
 
-.rs-article__body .aligncenter {
+.rs-article__body .aligncenter,
+.rs-about__body .aligncenter {
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
 	text-align: center;
+}
+
+/* A float taller than the text beside it would otherwise hang out of the
+   bottom of the modal's scrolling area. */
+.rs-about__body::after {
+	content: "";
+	display: table;
+	clear: both;
 }
 
 .rs-article__body .alignwide,
@@ -1528,16 +1543,6 @@ a.rs-article__cat:hover {
 /* ==========================================================================
    12. About modal
    ========================================================================== */
-
-/* Matches .rs-article__title, so the bio reads like any other page. */
-.rs-about__title {
-	margin: 0 0 1.25rem;
-	font-family: var(--rs-serif);
-	font-size: 1.5rem;
-	font-weight: 700;
-	line-height: 1.375;
-	color: var(--rs-fg);
-}
 
 .rs-about__body {
 	font-family: var(--rs-serif);
