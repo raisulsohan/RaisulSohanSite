@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.16.0' );
+define( 'RS_VERSION', '2.16.1' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -431,6 +431,26 @@ function rs_reading_time( $post = null ) {
 }
 
 /**
+ * A post's title as plain text.
+ *
+ * get_the_title() returns HTML. wptexturize has been over it, so a
+ * hyphen is now "&#8211;" and a quote is "&#8216;" — correct in a
+ * template, where the browser turns them back into characters, and wrong
+ * everywhere else. JSON is everywhere else: JavaScript puts these titles
+ * into textContent and escapes them before writing markup, and in both
+ * places "&#8216;" is eight characters rather than a quotation mark.
+ *
+ * Decoding here rather than in JavaScript keeps it in one place, and the
+ * decoded text is still escaped at every point it reaches the page.
+ *
+ * @param int|WP_Post|null $post Post.
+ * @return string
+ */
+function rs_plain_title( $post = null ) {
+	return html_entity_decode( get_the_title( $post ), ENT_QUOTES, 'UTF-8' );
+}
+
+/**
  * Cut a string to a character limit, with an ellipsis when it was cut.
  *
  * Characters rather than bytes, and characters rather than words: Bengali
@@ -471,8 +491,11 @@ function rs_summary( $post = null, $length = 200 ) {
 	$text = get_post_meta( $post->ID, RS_SUMMARY_KEY, true );
 
 	if ( '' === $text ) {
+		/* Decoded on the excerpt branch for the same reason as the title:
+		   this ends up in the hover summary, which is set as text. The
+		   other branch comes back decoded already. */
 		$text = has_excerpt( $post )
-			? trim( wp_strip_all_tags( $post->post_excerpt ) )
+			? trim( html_entity_decode( wp_strip_all_tags( $post->post_excerpt ), ENT_QUOTES, 'UTF-8' ) )
 			: rs_plain_text( $post );
 
 		$text = rs_shorten( $text, 200 );
@@ -1256,7 +1279,7 @@ function rs_related_payload( $post = null ) {
 	foreach ( rs_related( $post ) as $item ) {
 		$items[] = array(
 			'id'          => $item->ID,
-			'title'       => get_the_title( $item ),
+			'title'       => rs_plain_title( $item ),
 			'link'        => get_permalink( $item ),
 			'readingTime' => rs_reading_time( $item ),
 		);
@@ -1660,7 +1683,7 @@ function rs_rest_post( $request ) {
 	return rest_ensure_response(
 		array(
 			'id'           => $item->ID,
-			'title'        => get_the_title( $item ),
+			'title'        => rs_plain_title( $item ),
 			'date'         => rs_bn_date( $item ),
 			'author'       => get_the_author_meta( 'display_name', $item->post_author ),
 			'content'      => $content,
@@ -1688,7 +1711,7 @@ function rs_adjacent_payload( $item ) {
 
 	return array(
 		'id'    => $item->ID,
-		'title' => get_the_title( $item ),
+		'title' => rs_plain_title( $item ),
 		'link'  => get_permalink( $item ),
 	);
 }
@@ -1725,7 +1748,7 @@ function rs_rest_search( $request ) {
 	foreach ( $query->posts as $post ) {
 		$items[] = array(
 			'id'      => $post->ID,
-			'title'   => get_the_title( $post ),
+			'title'   => rs_plain_title( $post ),
 			'date'    => rs_bn_date( $post ),
 			'link'    => get_permalink( $post ),
 			'snippet' => rs_match_snippet( $post, $term ),
