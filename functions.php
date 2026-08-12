@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.8.0' );
+define( 'RS_VERSION', '2.8.1' );
 
 /** Rows per page, on the front page and on every archive. */
 define( 'RS_PER_PAGE', 10 );
@@ -1273,15 +1273,10 @@ function rs_content_image_id( $post ) {
  * benefit, and a post that already opens with a picture has said which
  * picture it is about.
  *
- * The customizer image is used whole, having been chosen for this job at
- * the right proportions. The other two were chosen to sit inside a post
- * and could be enormous.
- *
  * @return array|null
  */
 function rs_share_image() {
-	$id  = 0;
-	$use = 'large';
+	$id = 0;
 
 	if ( is_singular() ) {
 		$post = get_post( get_queried_object_id() );
@@ -1294,15 +1289,28 @@ function rs_share_image() {
 	}
 
 	if ( ! $id ) {
-		$id  = (int) rs_option( 'rs_og_image' );
-		$use = 'full';
+		$id = (int) rs_option( 'rs_og_image' );
 	}
 
 	if ( ! $id ) {
 		return null;
 	}
 
-	$src = wp_get_attachment_image_src( $id, $use );
+	/*
+	 * The medium size deliberately, and the smallness is the point.
+	 *
+	 * Facebook chooses the shape of the card from the picture it is
+	 * handed. At 600x315 or above it builds the tall card: a wide image,
+	 * the headline under it, and nothing else. Below that it builds the
+	 * compact one — a small picture on the left, and on the right the
+	 * headline followed by the opening lines of the writing.
+	 *
+	 * What is being shared here is prose, so the card that shows a few
+	 * lines of it is worth more than the one that fills the feed with a
+	 * picture. Sending a large image would silently throw those lines
+	 * away, which is exactly what it did until this was changed.
+	 */
+	$src = wp_get_attachment_image_src( $id, 'medium' );
 
 	if ( ! $src ) {
 		return null;
@@ -1436,12 +1444,11 @@ function rs_seo_meta() {
 		printf( "<meta property=\"og:image:height\" content=\"%d\">\n", (int) $image['height'] );
 	}
 
-	/* The wide card is worth a great deal more in a feed, but asking for it
-	   with no image to fill it leaves an empty band. */
-	printf(
-		"<meta name=\"twitter:card\" content=\"%s\">\n",
-		$image ? 'summary_large_image' : 'summary'
-	);
+	/* The small card here too, to match what rs_share_image() asks
+	   Facebook for. summary_large_image would stretch a medium sized
+	   picture across a wide frame and drop the description underneath it,
+	   which is the trade this theme has already declined once. */
+	printf( "<meta name=\"twitter:card\" content=\"summary\">\n" );
 }
 add_action( 'wp_head', 'rs_seo_meta', 1 );
 
