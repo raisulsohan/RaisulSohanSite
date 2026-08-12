@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.7.2' );
+define( 'RS_VERSION', '2.8.0' );
 
 /** Rows per page, on the front page and on every archive. */
 define( 'RS_PER_PAGE', 10 );
@@ -1241,26 +1241,56 @@ function rs_verify_tag() {
 add_action( 'wp_head', 'rs_verify_tag', 1 );
 
 /**
+ * The first image in a post's body.
+ *
+ * WordPress stamps every image inserted from the media library with a
+ * wp-image-<id> class. That is worth more than the src beside it: an ID
+ * gives the right size and its dimensions, and it survives the site being
+ * moved to another domain. An image pasted in as a bare URL carries no
+ * such class and is not found, which is the correct outcome — it may not
+ * be ours to put on a share card.
+ *
+ * @param WP_Post $post Post object.
+ * @return int Attachment ID, or 0.
+ */
+function rs_content_image_id( $post ) {
+	if ( ! preg_match( '/wp-image-(\d+)/', $post->post_content, $found ) ) {
+		return 0;
+	}
+
+	return (int) $found[1];
+}
+
+/**
  * The picture to attach to a shared link.
  *
- * A post's own featured image when it has one, and otherwise the image set
- * in the customizer. Most posts here are text alone, and a link with no
- * picture is a blank rectangle in a Facebook feed, so the fallback is what
- * this is really for.
+ * Three places to look, in order of how deliberately the picture was
+ * chosen: the featured image, then the first image in the body, then the
+ * one set in the customizer.
  *
- * The customizer image is used at full size because it was chosen for this
- * job at the right proportions; a featured image was chosen to sit at the
- * top of a post and could be enormous.
+ * The middle one is there because this theme never displays a featured
+ * image. Setting one would be invisible work done purely for Facebook's
+ * benefit, and a post that already opens with a picture has said which
+ * picture it is about.
+ *
+ * The customizer image is used whole, having been chosen for this job at
+ * the right proportions. The other two were chosen to sit inside a post
+ * and could be enormous.
  *
  * @return array|null
  */
 function rs_share_image() {
 	$id  = 0;
-	$use = 'full';
+	$use = 'large';
 
-	if ( is_singular() && has_post_thumbnail( get_queried_object_id() ) ) {
-		$id  = get_post_thumbnail_id( get_queried_object_id() );
-		$use = 'large';
+	if ( is_singular() ) {
+		$post = get_post( get_queried_object_id() );
+
+		if ( $post && has_post_thumbnail( $post ) ) {
+			$id = get_post_thumbnail_id( $post );
+		} elseif ( $post ) {
+			$id = rs_content_image_id( $post );
+		}
 	}
 
 	if ( ! $id ) {
