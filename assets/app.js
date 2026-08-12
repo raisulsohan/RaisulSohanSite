@@ -182,9 +182,24 @@
 		window.fetch( rest + 'view/' + id + ( first ? '?first=1' : '' ), {
 			method: 'POST',
 			credentials: 'same-origin',
-		} ).then(
-			function () {
-				if ( ! first ) {
+		} )
+			.then( function ( res ) {
+				return res.ok ? res.json() : null;
+			} )
+			.then( function ( data ) {
+				/*
+				 * The reply says whether this was counted, and that is the
+				 * answer to a second question too: the author opens their
+				 * own posts constantly, and a list where every row has
+				 * gone grey tells them nothing. Only a reading the server
+				 * accepted is worth remembering.
+				 *
+				 * Asked of the server rather than worked out here, because
+				 * the page these scripts came in may well have been served
+				 * from the cache, and a cached page looks logged out to
+				 * everyone including whoever wrote it.
+				 */
+				if ( ! first || ! data || ! data.counted ) {
 					return;
 				}
 
@@ -200,11 +215,10 @@
 				/* The row is still there behind the modal, and should be
 				   dimmed by the time the reader closes it. */
 				markRead();
-			},
-			function () {
+			} )
+			.then( null, function () {
 				/* A missed count is not worth telling the reader about. */
-			}
-		);
+			} );
 	}
 
 	/* ---------------------------------------------------------------
