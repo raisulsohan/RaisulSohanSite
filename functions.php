@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.9.0' );
+define( 'RS_VERSION', '2.9.1' );
 
 /** Rows per page, on the front page and on every archive. */
 define( 'RS_PER_PAGE', 10 );
@@ -1250,6 +1250,20 @@ function rs_rest_view( $request ) {
 		return new WP_Error( 'rs_not_found', 'পোস্ট পাওয়া যায়নি', array( 'status' => 404 ) );
 	}
 
+	/*
+	 * The author reading their own work is not a reader, and the cookie is
+	 * read here by hand rather than through is_user_logged_in(). WordPress
+	 * only trusts a cookie on a REST request that also carries a nonce, and
+	 * a nonce cannot be used on these pages: it belongs to one session, and
+	 * the page it would have to travel in is cached and handed to everyone.
+	 * wp_validate_auth_cookie() checks the same cookie without that rule.
+	 */
+	$viewer = wp_validate_auth_cookie( '', 'logged_in' );
+
+	if ( $viewer && user_can( $viewer, 'edit_posts' ) ) {
+		return rest_ensure_response( array( 'counted' => false ) );
+	}
+
 	/* Make sure there is a row, then add to it in the database rather than
 	   reading, adding and writing back: two readers arriving together
 	   would otherwise both store the same number and one would be lost. */
@@ -1267,7 +1281,7 @@ function rs_rest_view( $request ) {
 	/* The row was changed behind the object cache's back. */
 	wp_cache_delete( $id, 'post_meta' );
 
-	return rest_ensure_response( array( 'ok' => true ) );
+	return rest_ensure_response( array( 'counted' => true ) );
 }
 
 /* =========================================================================

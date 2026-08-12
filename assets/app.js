@@ -116,37 +116,19 @@
 	 * cached copy never runs any PHP, so a count kept during a render
 	 * would miss most of them.
 	 *
-	 * Once per post per browser session. Opening a story from the list
-	 * and then landing on its own page is one reading, not two.
+	 * Every opening counts, including the same reader coming back. The
+	 * one exclusion is whoever wrote the posts, and that is decided at
+	 * the other end: the cookie travels with the request, and the server
+	 * is the only side of this that can read it.
 	 * ------------------------------------------------------------ */
 
-	var SEEN_KEY = 'rs-seen';
-
 	function countView( id ) {
-		/* Anyone who can edit the posts is reading their own work. */
-		if ( ! id || ! window.fetch || cfg.editBase ) {
+		if ( ! id || ! window.fetch ) {
 			return;
 		}
 
-		var mark = '|' + id + '|';
-		var seen = '';
-
-		try {
-			seen = window.sessionStorage.getItem( SEEN_KEY ) || '';
-		} catch ( e ) {
-			/* Private mode. Counting a second time beats not counting. */
-		}
-
-		if ( seen.indexOf( mark ) > -1 ) {
-			return;
-		}
-
-		try {
-			window.sessionStorage.setItem( SEEN_KEY, seen + mark );
-		} catch ( e ) {
-			/* As above. */
-		}
-
+		/* same-origin is what carries the login cookie, which is how the
+		   endpoint recognises the author and declines to count them. */
 		window.fetch( rest + 'view/' + id, {
 			method: 'POST',
 			credentials: 'same-origin',
