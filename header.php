@@ -32,7 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</nav>
 
 		<a class="rs-header__brand" href="<?php echo esc_url( home_url( '/' ) ); ?>">
-			<?php bloginfo( 'name' ); ?>
+			<?php echo esc_html( rs_brand() ); ?>
 		</a>
 
 		<nav class="rs-header__nav rs-header__nav--right">
