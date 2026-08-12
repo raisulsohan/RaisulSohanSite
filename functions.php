@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.8.1' );
+define( 'RS_VERSION', '2.8.2' );
 
 /** Rows per page, on the front page and on every archive. */
 define( 'RS_PER_PAGE', 10 );
@@ -654,7 +654,7 @@ function rs_customize( $wp_customize ) {
 			'rs_og_image',
 			array(
 				'label'       => __( 'শেয়ার করার ছবি', 'raisul-sohan' ),
-				'description' => __( 'ফেসবুকে বা মেসেঞ্জারে লিংক দিলে যে ছবিটা দেখাবে। ১২০০×৬৩০ পিক্সেল সবচেয়ে ভালো। কোনো লেখার নিজের ফিচার্ড ইমেজ থাকলে সেটাই আগে বসবে।', 'raisul-sohan' ),
+				'description' => __( 'যেসব লেখার নিজের কোনো ছবি নেই, ফেসবুকে বা মেসেঞ্জারে শেয়ার করলে সেগুলোর কার্ডে এই ছবিটা বসবে। বর্গাকার ছবি দিন, ৬০০×৬০০ বা তার বড় — কার্ডের থাম্বনেইলটা বর্গাকার, তাই চওড়া ছবি কেটে যাবে। লেখার ভেতরে ছবি থাকলে সেটাই আগে বসে।', 'raisul-sohan' ),
 				'section'     => 'rs_site',
 				'mime_type'   => 'image',
 			)
