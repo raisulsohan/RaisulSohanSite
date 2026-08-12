@@ -77,13 +77,18 @@ $rs_about = rs_about();
 </div>
 
 <!-- About modal -->
-<div class="rs-overlay" id="rs-about-overlay" role="dialog" aria-modal="true" aria-labelledby="rs-about-title" hidden>
+<?php
+/* No heading inside: the button that opens this already carries the
+   page's title, so repeating it here only pushed the writing down.
+   aria-label does the naming instead, since there is no longer an
+   element to point at. */
+?>
+<div class="rs-overlay" id="rs-about-overlay" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr( $rs_about['title'] ); ?>" hidden>
 	<div class="rs-modal rs-modal--about">
 		<button class="rs-modal__close" type="button" data-rs-close aria-label="বন্ধ করুন">
 			<?php echo wp_kses( rs_icon( 'close', 18 ), rs_svg_tags() ); ?>
 		</button>
 		<div class="rs-modal__scroll rs-about__inner">
-			<h2 class="rs-about__title" id="rs-about-title"><?php echo esc_html( $rs_about['title'] ); ?></h2>
 			<div class="rs-about__body"><?php echo wp_kses_post( $rs_about['content'] ); ?></div>
 		</div>
 	</div>
