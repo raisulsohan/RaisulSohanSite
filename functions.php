@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.10.0' );
+define( 'RS_VERSION', '2.10.1' );
 
 /** Rows per page, on the front page and on every archive. */
 define( 'RS_PER_PAGE', 10 );
@@ -1882,6 +1882,59 @@ add_action( 'post_submitbox_misc_actions', 'rs_count_submitbox' );
  * consults this filter too, so the one covers both.
  */
 add_filter( 'use_block_editor_for_post_type', '__return_false', 100 );
+
+/**
+ * Whether the toolbar wants a different language from the page under it.
+ *
+ * WordPress keeps two languages: the site's, for everything a reader
+ * sees, and the user's own, for the admin. The toolbar on a front end
+ * page belongs to the page as far as WordPress is concerned, so it comes
+ * out in the site's language — Bengali — while the same toolbar inside
+ * wp-admin comes out in whatever the user chose.
+ *
+ * Worked out once and remembered, because the answer has to survive the
+ * switch: after switch_to_locale() runs, get_locale() returns the new
+ * locale and the comparison below would say no switch ever happened.
+ *
+ * @return bool
+ */
+function rs_toolbar_needs_locale() {
+	static $needed = null;
+
+	if ( null === $needed ) {
+		$needed = ! is_admin() && get_user_locale() !== get_locale();
+	}
+
+	return $needed;
+}
+
+/**
+ * Put the toolbar in the language its owner reads.
+ *
+ * Hooked ahead of every core callback that builds a toolbar item, because
+ * the items are where the translated words are made. wp_before_admin_bar_render
+ * would look like the right place and is already too late.
+ */
+function rs_toolbar_locale() {
+	if ( rs_toolbar_needs_locale() ) {
+		switch_to_locale( get_user_locale() );
+	}
+}
+add_action( 'admin_bar_menu', 'rs_toolbar_locale', -9999 );
+
+/**
+ * Hand the page back its own language.
+ *
+ * The toolbar renders at the very end of the footer, so this closes a
+ * window with almost nothing left in it — but leaving a switch open is
+ * the kind of thing that surprises whatever runs next.
+ */
+function rs_toolbar_locale_restore() {
+	if ( rs_toolbar_needs_locale() ) {
+		restore_previous_locale();
+	}
+}
+add_action( 'wp_after_admin_bar_render', 'rs_toolbar_locale_restore' );
 
 /**
  * Keep the emoji script out of the page. Bengali text does not need it.
