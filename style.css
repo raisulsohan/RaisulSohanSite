@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: রাইসুল সোহানের লেখার সাইট। Figma Make ডিজাইন থেকে পোর্ট করা একটি হালকা ক্লাসিক থিম। পোস্ট মডালে খোলে, কিন্তু প্রতিটা লেখার নিজস্ব URL থাকে।
-Version: 2.16.1
+Version: 2.16.2
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -958,31 +958,11 @@ a.rs-pagination__step:focus-visible {
 	text-align: center;
 }
 
-.rs-footer__inner {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: baseline;
-	justify-content: center;
-	gap: 0.5rem 1rem;
-}
-
-.rs-footer span,
-.rs-footer__feed {
+.rs-footer span {
 	font-family: var(--rs-sans);
 	font-size: 0.75rem;
 	line-height: 1rem;
 	color: var(--rs-muted-fg);
-}
-
-.rs-footer__feed {
-	border-bottom: 1px solid var(--rs-border-60);
-	transition: color 0.15s ease, border-color 0.15s ease;
-}
-
-.rs-footer__feed:hover,
-.rs-footer__feed:focus-visible {
-	color: var(--rs-hover);
-	border-color: currentColor;
 }
 
 /* ==========================================================================
@@ -1968,7 +1948,6 @@ a.rs-article__cat:hover {
 	.rs-resume,
 	.rs-progress,
 	.rs-tint,
-	.rs-footer__feed,
 	.rs-pagination {
 		display: none !important;
 	}
