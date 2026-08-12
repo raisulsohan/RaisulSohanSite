@@ -11,11 +11,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.17.2' );
+define( 'RS_VERSION', '2.18.0' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
 define( 'RS_PER_PAGE', 10 );
+
+/** The shape the heading banner is cropped to. Read by the front end and
+    by the box on the settings screen that sets the crop, so the two
+    cannot drift apart. */
+define( 'RS_HERO_RATIO', '1600 / 300' );
 
 /** Post meta holding the counts: every opening, and first time readers.
     Leading underscores keep them out of the Custom Fields box, where they
@@ -608,6 +613,7 @@ function rs_defaults() {
 		'rs_about'    => 0,
 		'rs_og_image' => 0,
 		'rs_hero_image' => 0,
+		'rs_hero_pos'   => '50% 50%',
 		'rs_home_per_page'    => RS_PER_PAGE,
 		'rs_archive_per_page' => RS_PER_PAGE,
 		'rs_verify'   => 'UGbwgVSquWFpv2qZcQYRQzJSyEFaryG9PHAIpY2ZsYA',
@@ -810,6 +816,27 @@ function rs_settings_fields() {
 }
 
 /**
+ * Keep an object-position to the pair of percentages it should be.
+ *
+ * Only ever written by dragging the box on the settings screen, but it
+ * arrives as a string in a form post like anything else, and it is put
+ * straight into a style attribute at the other end.
+ *
+ * @param mixed $value Submitted value.
+ * @return string
+ */
+function rs_sanitize_position( $value ) {
+	if ( ! preg_match( '/^(\d{1,3}(?:\.\d)?)% (\d{1,3}(?:\.\d)?)%$/', trim( (string) $value ), $found ) ) {
+		return '50% 50%';
+	}
+
+	$x = min( 100, max( 0, (float) $found[1] ) );
+	$y = min( 100, max( 0, (float) $found[2] ) );
+
+	return $x . '% ' . $y . '%';
+}
+
+/**
  * The settings that hold a picture, and what each one is for.
  *
  * key => array( label, note under the field )
@@ -823,12 +850,16 @@ function rs_settings_fields() {
 function rs_settings_images() {
 	return array(
 		'rs_hero_image' => array(
-			__( 'Heading image', 'raisul-sohan' ),
-			__( 'Stands in place of the heading text at the top of the list, filling the width of the column so its edges line up with the rows below. Upload it wide — around 1600 pixels across — and let its own proportions decide the height. A transparent PNG sits on the page rather than in a box of its own, but remember the page has a dark mode and a colour readers can change, so a picture drawn for one background may disappear on another.', 'raisul-sohan' ),
+			'label'  => __( 'Heading image', 'raisul-sohan' ),
+			'note'   => __( 'Stands in place of the heading text at the top of the list. Any picture will do — it is cropped to a 1600 by 300 band, so a tall or square one loses its edges rather than stretching. Drag it inside the box to choose which part of it survives.', 'raisul-sohan' ),
+			/* A ratio turns the preview into a box of that shape that can
+			   be dragged, and names the setting the drag writes to. */
+			'ratio'  => RS_HERO_RATIO,
+			'anchor' => 'rs_hero_pos',
 		),
 		'rs_og_image'   => array(
-			__( 'Share image', 'raisul-sohan' ),
-			__( 'Used on the share card of posts that have no picture of their own. Square, 600x600 or larger — the card crops a wide image to its middle. A picture inside a post wins over this one.', 'raisul-sohan' ),
+			'label' => __( 'Share image', 'raisul-sohan' ),
+			'note'  => __( 'Used on the share card of posts that have no picture of their own. Square, 600x600 or larger — the card crops a wide image to its middle. A picture inside a post wins over this one.', 'raisul-sohan' ),
 		),
 	);
 }
@@ -920,17 +951,40 @@ function rs_settings_page() {
 
 				<?php foreach ( rs_settings_images() as $rs_key => $rs_image ) : ?>
 					<?php
-					$rs_id    = (int) rs_option( $rs_key );
-					$rs_thumb = $rs_id ? wp_get_attachment_image_src( $rs_id, 'medium' ) : false;
+					$rs_id     = (int) rs_option( $rs_key );
+					$rs_ratio  = isset( $rs_image['ratio'] ) ? $rs_image['ratio'] : '';
+					$rs_anchor = isset( $rs_image['anchor'] ) ? $rs_image['anchor'] : '';
+					/* A crop box wants a picture big enough to move around
+					   inside it; a plain thumbnail does not. */
+					$rs_src = $rs_id ? wp_get_attachment_image_src( $rs_id, $rs_ratio ? 'large' : 'medium' ) : false;
 					?>
 					<tr>
-						<th scope="row"><?php echo esc_html( $rs_image[0] ); ?></th>
+						<th scope="row"><?php echo esc_html( $rs_image['label'] ); ?></th>
 						<td>
-							<div class="rs-image-preview" id="<?php echo esc_attr( $rs_key ); ?>-preview" style="margin-bottom:.75rem;">
-								<?php if ( $rs_thumb ) : ?>
-									<img src="<?php echo esc_url( $rs_thumb[0] ); ?>" alt="" style="max-width:200px;height:auto;">
-								<?php endif; ?>
-							</div>
+							<?php if ( $rs_ratio ) : ?>
+								<div class="rs-crop"
+									id="<?php echo esc_attr( $rs_key ); ?>-preview"
+									data-rs-anchor="<?php echo esc_attr( $rs_anchor ); ?>"
+									style="aspect-ratio: <?php echo esc_attr( $rs_ratio ); ?>;">
+									<?php if ( $rs_src ) : ?>
+										<img src="<?php echo esc_url( $rs_src[0] ); ?>" alt=""
+											style="object-position: <?php echo esc_attr( rs_option( $rs_anchor ) ); ?>;">
+									<?php endif; ?>
+								</div>
+								<p class="description rs-crop__hint">
+									<?php esc_html_e( 'Drag the picture to choose what shows.', 'raisul-sohan' ); ?>
+								</p>
+								<input type="hidden"
+									name="<?php echo esc_attr( $rs_anchor ); ?>"
+									id="<?php echo esc_attr( $rs_anchor ); ?>"
+									value="<?php echo esc_attr( rs_option( $rs_anchor ) ); ?>">
+							<?php else : ?>
+								<div class="rs-image-preview" id="<?php echo esc_attr( $rs_key ); ?>-preview" style="margin-bottom:.75rem;">
+									<?php if ( $rs_src ) : ?>
+										<img src="<?php echo esc_url( $rs_src[0] ); ?>" alt="" style="max-width:200px;height:auto;">
+									<?php endif; ?>
+								</div>
+							<?php endif; ?>
 
 							<?php /* The attachment ID rather than a URL, which would go stale the day the media library moves. */ ?>
 							<input type="hidden"
@@ -945,7 +999,7 @@ function rs_settings_page() {
 								<?php esc_html_e( 'Remove', 'raisul-sohan' ); ?>
 							</button>
 
-							<p class="description"><?php echo esc_html( $rs_image[1] ); ?></p>
+							<p class="description"><?php echo esc_html( $rs_image['note'] ); ?></p>
 						</td>
 					</tr>
 				<?php endforeach; ?>
@@ -980,8 +1034,17 @@ function rs_settings_save() {
 
 	set_theme_mod( 'rs_about', isset( $_POST['rs_about'] ) ? absint( $_POST['rs_about'] ) : 0 );
 
-	foreach ( array_keys( rs_settings_images() ) as $key ) {
+	foreach ( rs_settings_images() as $key => $image ) {
 		set_theme_mod( $key, isset( $_POST[ $key ] ) ? absint( $_POST[ $key ] ) : 0 );
+
+		if ( empty( $image['anchor'] ) ) {
+			continue;
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitised on the next line.
+		$anchor = isset( $_POST[ $image['anchor'] ] ) ? wp_unslash( $_POST[ $image['anchor'] ] ) : '';
+
+		set_theme_mod( $image['anchor'], rs_sanitize_position( $anchor ) );
 	}
 
 	wp_safe_redirect( admin_url( 'themes.php?page=rs-settings&updated=1' ) );
@@ -1001,6 +1064,39 @@ function rs_settings_assets( $hook ) {
 
 	wp_enqueue_media();
 	wp_enqueue_script( 'jquery' );
+
+	wp_add_inline_style(
+		'common',
+		'.rs-crop {
+	position: relative;
+	width: 100%;
+	max-width: 560px;
+	overflow: hidden;
+	background: #f0f0f1;
+	border: 1px solid #c3c4c7;
+	border-radius: 2px;
+}
+
+.rs-crop img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	cursor: grab;
+	user-select: none;
+	-webkit-user-drag: none;
+	touch-action: none;
+}
+
+.rs-crop img:active {
+	cursor: grabbing;
+}
+
+.rs-crop__hint {
+	margin-top: .35rem;
+	margin-bottom: .75rem;
+}'
+	);
 
 	/* One handler for however many picture settings there are: the button
 	   names the field it belongs to, and the field's own id is what the
@@ -1022,12 +1118,24 @@ function rs_settings_assets( $hook ) {
 
 			frames[ key ].on( 'select', function () {
 				var img = frames[ key ].state().get( 'selection' ).first().toJSON();
-				var src = img.sizes && img.sizes.medium ? img.sizes.medium.url : img.url;
+				var box = $( '#' + key + '-preview' );
 
 				$( '#' + key ).val( img.id );
-				$( '#' + key + '-preview' ).html(
-					$( '<img>' ).attr( 'src', src ).css( { maxWidth: '200px', height: 'auto' } )
-				);
+
+				if ( box.hasClass( 'rs-crop' ) ) {
+					/* A crop box wants room to move the picture about, so
+					   it takes the large size rather than the thumbnail. */
+					var big = img.sizes && img.sizes.large ? img.sizes.large.url : img.url;
+
+					box.html( $( '<img>' ).attr( 'src', big ).css( { objectPosition: '50% 50%' } ) );
+					$( '#' + box.attr( 'data-rs-anchor' ) ).val( '50% 50%' );
+
+					return;
+				}
+
+				var src = img.sizes && img.sizes.medium ? img.sizes.medium.url : img.url;
+
+				box.html( $( '<img>' ).attr( 'src', src ).css( { maxWidth: '200px', height: 'auto' } ) );
 			} );
 		}
 
@@ -1039,6 +1147,70 @@ function rs_settings_assets( $hook ) {
 
 		$( '#' + key ).val( '' );
 		$( '#' + key + '-preview' ).empty();
+	} );
+
+	/*
+	 * Dragging inside a crop box moves the picture behind it.
+	 *
+	 * object-position's percentages run across whatever the crop hides
+	 * rather than across the picture, so a pixel of drag is only worth a
+	 * pixel on screen once it is divided by that hidden amount — which is
+	 * why the overflow is worked out here rather than guessed at.
+	 */
+	$( document ).on( 'pointerdown', '.rs-crop img', function ( event ) {
+		var img = this;
+		var box = img.parentNode;
+		var field = $( box ).attr( 'data-rs-anchor' );
+
+		if ( ! field || ! img.naturalWidth ) {
+			return;
+		}
+
+		var rect = box.getBoundingClientRect();
+		var scale = Math.max( rect.width / img.naturalWidth, rect.height / img.naturalHeight );
+		var roomX = img.naturalWidth * scale - rect.width;
+		var roomY = img.naturalHeight * scale - rect.height;
+		var start = $( '#' + field ).val().split( ' ' );
+		var fromX = parseFloat( start[ 0 ] );
+		var fromY = parseFloat( start[ 1 ] );
+		var atX = event.clientX;
+		var atY = event.clientY;
+
+		if ( isNaN( fromX ) ) {
+			fromX = 50;
+		}
+
+		if ( isNaN( fromY ) ) {
+			fromY = 50;
+		}
+
+		event.preventDefault();
+		img.setPointerCapture( event.pointerId );
+
+		function hold( value ) {
+			return Math.min( 100, Math.max( 0, value ) ).toFixed( 1 );
+		}
+
+		function move( e ) {
+			/* Minus, so the picture follows the pointer: dragging down
+			   should bring what is above into view. */
+			var x = roomX > 0 ? hold( fromX - ( e.clientX - atX ) / roomX * 100 ) : hold( fromX );
+			var y = roomY > 0 ? hold( fromY - ( e.clientY - atY ) / roomY * 100 ) : hold( fromY );
+			var to = x + '% ' + y + '%';
+
+			img.style.objectPosition = to;
+			$( '#' + field ).val( to );
+		}
+
+		function drop() {
+			img.removeEventListener( 'pointermove', move );
+			img.removeEventListener( 'pointerup', drop );
+			img.removeEventListener( 'pointercancel', drop );
+		}
+
+		img.addEventListener( 'pointermove', move );
+		img.addEventListener( 'pointerup', drop );
+		img.addEventListener( 'pointercancel', drop );
 	} );
 } );"
 	);
