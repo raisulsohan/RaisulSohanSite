@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.13.1' );
+define( 'RS_VERSION', '2.14.0' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -558,6 +558,7 @@ function rs_defaults() {
 		'rs_facebook' => 'https://www.facebook.com/lettertosohan/',
 		'rs_linkedin' => 'https://www.linkedin.com/in/raisulsohan/',
 		'rs_phrases'  => 'অক্ষরের আশ্রয়, এখানে গল্প থাকে',
+		'rs_brand'    => '',
 		'rs_footer'   => '© {year} রাইসুল সোহানের গল্প · সর্বস্বত্ব সংরক্ষিত',
 		'rs_about'    => 0,
 		'rs_og_image' => 0,
@@ -590,6 +591,23 @@ function rs_phrases() {
 	$parts = array_filter( array_map( 'trim', explode( ',', $raw ) ) );
 
 	return array_values( $parts ? $parts : array( get_bloginfo( 'name' ) ) );
+}
+
+/**
+ * The name in the middle of the header.
+ *
+ * Its own setting rather than the Site Title, because the two are read in
+ * different places. The Site Title goes into the browser tab, the feed,
+ * og:site_name and every mail WordPress sends; the header is a line of
+ * type on the page. Empty here means the two agree, which is the sane
+ * default and what happens until someone decides otherwise.
+ *
+ * @return string
+ */
+function rs_brand() {
+	$brand = trim( (string) rs_option( 'rs_brand' ) );
+
+	return '' !== $brand ? $brand : get_bloginfo( 'name' );
 }
 
 /**
@@ -690,6 +708,12 @@ function rs_settings_fields() {
 			'number',
 			'rs_sanitize_per_page',
 			__( 'Categories, tags and search results.', 'raisul-sohan' ),
+		),
+		'rs_brand'    => array(
+			__( 'Header title', 'raisul-sohan' ),
+			'text',
+			'sanitize_text_field',
+			__( 'The name shown in the middle of the header. Empty uses the Site Title from Settings → General, which is also what the browser tab and shared links use.', 'raisul-sohan' ),
 		),
 		'rs_email'    => array(
 			__( 'Email', 'raisul-sohan' ),
@@ -1032,15 +1056,49 @@ function rs_share_row( $post = null ) {
 }
 
 /**
+ * A handful of posts, shuffled.
+ *
+ * Shuffled rather than newest first, so the same few do not end up under
+ * every story in a category and on every missing page. The filters keep
+ * the set small enough that the sort costs nothing worth measuring.
+ *
+ * @param int $limit   How many.
+ * @param int $exclude Post to leave out.
+ * @param int $cat     Category to stay inside, 0 for anywhere.
+ * @return WP_Post[]
+ */
+function rs_random_posts( $limit = 3, $exclude = 0, $cat = 0 ) {
+	$args = array(
+		'post_type'              => 'post',
+		'post_status'            => 'publish',
+		'posts_per_page'         => (int) $limit,
+		'orderby'                => 'rand',
+		'has_password'           => false,
+		'ignore_sticky_posts'    => true,
+		'no_found_rows'          => true,
+		'update_post_meta_cache' => false,
+		'update_post_term_cache' => false,
+	);
+
+	if ( $exclude ) {
+		$args['post__not_in'] = array( (int) $exclude );
+	}
+
+	if ( $cat ) {
+		$args['cat'] = (int) $cat;
+	}
+
+	$query = new WP_Query( $args );
+
+	return $query->posts;
+}
+
+/**
  * A few other posts from the same category.
  *
  * The next and previous links below an article are neighbours by date,
  * which is rarely what a reader who just finished a story wants next.
  * These are neighbours by subject instead.
- *
- * Shuffled rather than newest first, so the same three do not sit under
- * every story in a category. The category filter keeps the set small
- * enough that the sort costs nothing worth measuring.
  *
  * @param int|WP_Post|null $post  Post to find company for.
  * @param int              $limit How many.
@@ -1059,46 +1117,25 @@ function rs_related( $post = null, $limit = 3 ) {
 		return array();
 	}
 
-	$query = new WP_Query(
-		array(
-			'post_type'              => 'post',
-			'post_status'            => 'publish',
-			'posts_per_page'         => (int) $limit,
-			'post__not_in'           => array( $post->ID ),
-			'cat'                    => $term->term_id,
-			'orderby'                => 'rand',
-			'has_password'           => false,
-			'ignore_sticky_posts'    => true,
-			'no_found_rows'          => true,
-			'update_post_meta_cache' => false,
-			'update_post_term_cache' => false,
-		)
-	);
-
-	return $query->posts;
+	return rs_random_posts( $limit, $post->ID, $term->term_id );
 }
 
 /**
- * Render the related posts block.
+ * Render a short list of posts being offered to the reader.
  *
- * @param int|WP_Post|null $post Post.
+ * Used under an article and on the missing page, which want the same
+ * shape and differ only in what they call it.
+ *
+ * @param WP_Post[] $items Posts.
+ * @param string    $label Heading above them.
  */
-function rs_related_row( $post = null ) {
-	$items = rs_related( $post );
-
+function rs_suggestions( $items, $label ) {
 	if ( ! $items ) {
 		return;
 	}
-
-	$term = rs_primary_category( $post );
 	?>
-	<nav class="rs-related" aria-label="<?php esc_attr_e( 'একই বিভাগের লেখা', 'raisul-sohan' ); ?>">
-		<p class="rs-related__label">
-			<?php
-			/* translators: %s: category name. */
-			echo esc_html( sprintf( 'আরও %s', $term ? $term->name : '' ) );
-			?>
-		</p>
+	<nav class="rs-related" aria-label="<?php echo esc_attr( $label ); ?>">
+		<p class="rs-related__label"><?php echo esc_html( $label ); ?></p>
 		<ul class="rs-related__list">
 			<?php foreach ( $items as $item ) : ?>
 				<li>
@@ -1112,6 +1149,17 @@ function rs_related_row( $post = null ) {
 		</ul>
 	</nav>
 	<?php
+}
+
+/**
+ * Render the related posts block under an article.
+ *
+ * @param int|WP_Post|null $post Post.
+ */
+function rs_related_row( $post = null ) {
+	$term = rs_primary_category( $post );
+
+	rs_suggestions( rs_related( $post ), 'আরও ' . ( $term ? $term->name : 'লেখা' ) );
 }
 
 /**
