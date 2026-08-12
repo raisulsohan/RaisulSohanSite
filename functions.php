@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.7.1' );
+define( 'RS_VERSION', '2.7.2' );
 
 /** Rows per page, on the front page and on every archive. */
 define( 'RS_PER_PAGE', 10 );
@@ -1436,8 +1436,16 @@ function rs_schema() {
 		$data = array(
 			'@context'         => 'https://schema.org',
 			'@type'            => 'BlogPosting',
-			/* schema.org asks for 110 characters or fewer here. */
-			'headline'         => rs_shorten( get_the_title( $id ), 110 ),
+			/*
+			 * schema.org asks for 110 characters or fewer here.
+			 *
+			 * Decoded first, because this is JSON and not HTML: wptexturize
+			 * turns a hyphen in a title into "&#8211;", which an attribute
+			 * would decode on the way out but a JSON string would hand to
+			 * Google as those eight literal characters. rs_summary() below
+			 * is already plain text, so it needs none of this.
+			 */
+			'headline'         => rs_shorten( html_entity_decode( get_the_title( $id ), ENT_QUOTES, 'UTF-8' ), 110 ),
 			'description'      => rs_summary( $id, 160 ),
 			'datePublished'    => get_the_date( DATE_W3C, $id ),
 			'dateModified'     => get_the_modified_date( DATE_W3C, $id ),
