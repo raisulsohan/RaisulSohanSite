@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.16.5' );
+define( 'RS_VERSION', '2.17.0' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -607,6 +607,7 @@ function rs_defaults() {
 		'rs_footer'   => '© {year} রাইসুল সোহানের গল্প · সর্বস্বত্ব সংরক্ষিত',
 		'rs_about'    => 0,
 		'rs_og_image' => 0,
+		'rs_hero_image' => 0,
 		'rs_home_per_page'    => RS_PER_PAGE,
 		'rs_archive_per_page' => RS_PER_PAGE,
 		'rs_verify'   => 'UGbwgVSquWFpv2qZcQYRQzJSyEFaryG9PHAIpY2ZsYA',
@@ -653,6 +654,21 @@ function rs_brand() {
 	$brand = trim( (string) rs_option( 'rs_brand' ) );
 
 	return '' !== $brand ? $brand : get_bloginfo( 'name' );
+}
+
+/**
+ * The banner standing in for the heading text, or 0 for none.
+ *
+ * Checked rather than trusted: a setting can outlive the picture it names
+ * if the file is deleted from the media library, and an empty <img> at
+ * the top of every list is worse than the text it replaced.
+ *
+ * @return int
+ */
+function rs_hero_image() {
+	$id = (int) rs_option( 'rs_hero_image' );
+
+	return $id && wp_get_attachment_image_src( $id, 'large' ) ? $id : 0;
 }
 
 /**
@@ -794,6 +810,30 @@ function rs_settings_fields() {
 }
 
 /**
+ * The settings that hold a picture, and what each one is for.
+ *
+ * key => array( label, note under the field )
+ *
+ * Separate from rs_settings_fields() because these are not text boxes:
+ * they store an attachment ID and are worked with through the media
+ * library rather than typed.
+ *
+ * @return array
+ */
+function rs_settings_images() {
+	return array(
+		'rs_hero_image' => array(
+			__( 'Heading image', 'raisul-sohan' ),
+			__( 'Stands in place of the heading text at the top of the list. A transparent PNG sits on the page rather than in a box of its own — but remember the page has a dark mode and a colour readers can change, so a picture drawn for one background may disappear on another. Shown at up to 120 pixels tall.', 'raisul-sohan' ),
+		),
+		'rs_og_image'   => array(
+			__( 'Share image', 'raisul-sohan' ),
+			__( 'Used on the share card of posts that have no picture of their own. Square, 600x600 or larger — the card crops a wide image to its middle. A picture inside a post wins over this one.', 'raisul-sohan' ),
+		),
+	);
+}
+
+/**
  * Put the settings on their own screen, under Appearance.
  */
 function rs_settings_menu() {
@@ -816,8 +856,6 @@ add_action( 'admin_menu', 'rs_settings_menu' );
  * two hundred pixels wide was the wrong shape for reading them.
  */
 function rs_settings_page() {
-	$image = (int) rs_option( 'rs_og_image' );
-	$thumb = $image ? wp_get_attachment_image_src( $image, 'medium' ) : false;
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Theme Settings', 'raisul-sohan' ); ?></h1>
@@ -880,30 +918,37 @@ function rs_settings_page() {
 					</td>
 				</tr>
 
-				<tr>
-					<th scope="row"><?php esc_html_e( 'Share image', 'raisul-sohan' ); ?></th>
-					<td>
-						<div id="rs-image-preview" style="margin-bottom:.75rem;">
-							<?php if ( $thumb ) : ?>
-								<img src="<?php echo esc_url( $thumb[0] ); ?>" alt="" style="max-width:200px;height:auto;">
-							<?php endif; ?>
-						</div>
+				<?php foreach ( rs_settings_images() as $rs_key => $rs_image ) : ?>
+					<?php
+					$rs_id    = (int) rs_option( $rs_key );
+					$rs_thumb = $rs_id ? wp_get_attachment_image_src( $rs_id, 'medium' ) : false;
+					?>
+					<tr>
+						<th scope="row"><?php echo esc_html( $rs_image[0] ); ?></th>
+						<td>
+							<div class="rs-image-preview" id="<?php echo esc_attr( $rs_key ); ?>-preview" style="margin-bottom:.75rem;">
+								<?php if ( $rs_thumb ) : ?>
+									<img src="<?php echo esc_url( $rs_thumb[0] ); ?>" alt="" style="max-width:200px;height:auto;">
+								<?php endif; ?>
+							</div>
 
-						<?php /* The attachment ID rather than a URL, which would go stale the day the media library moves. */ ?>
-						<input type="hidden" name="rs_og_image" id="rs_og_image" value="<?php echo esc_attr( $image ); ?>">
+							<?php /* The attachment ID rather than a URL, which would go stale the day the media library moves. */ ?>
+							<input type="hidden"
+								name="<?php echo esc_attr( $rs_key ); ?>"
+								id="<?php echo esc_attr( $rs_key ); ?>"
+								value="<?php echo esc_attr( $rs_id ); ?>">
 
-						<button type="button" class="button" id="rs-image-pick">
-							<?php esc_html_e( 'Choose image', 'raisul-sohan' ); ?>
-						</button>
-						<button type="button" class="button" id="rs-image-clear">
-							<?php esc_html_e( 'Remove', 'raisul-sohan' ); ?>
-						</button>
+							<button type="button" class="button" data-rs-pick="<?php echo esc_attr( $rs_key ); ?>">
+								<?php esc_html_e( 'Choose image', 'raisul-sohan' ); ?>
+							</button>
+							<button type="button" class="button" data-rs-clear="<?php echo esc_attr( $rs_key ); ?>">
+								<?php esc_html_e( 'Remove', 'raisul-sohan' ); ?>
+							</button>
 
-						<p class="description">
-							<?php esc_html_e( 'Used on the share card of posts that have no picture of their own. Square, 600x600 or larger — the card crops a wide image to its middle. A picture inside a post wins over this one.', 'raisul-sohan' ); ?>
-						</p>
-					</td>
-				</tr>
+							<p class="description"><?php echo esc_html( $rs_image[1] ); ?></p>
+						</td>
+					</tr>
+				<?php endforeach; ?>
 			</table>
 
 			<?php submit_button(); ?>
@@ -934,7 +979,10 @@ function rs_settings_save() {
 	}
 
 	set_theme_mod( 'rs_about', isset( $_POST['rs_about'] ) ? absint( $_POST['rs_about'] ) : 0 );
-	set_theme_mod( 'rs_og_image', isset( $_POST['rs_og_image'] ) ? absint( $_POST['rs_og_image'] ) : 0 );
+
+	foreach ( array_keys( rs_settings_images() ) as $key ) {
+		set_theme_mod( $key, isset( $_POST[ $key ] ) ? absint( $_POST[ $key ] ) : 0 );
+	}
 
 	wp_safe_redirect( admin_url( 'themes.php?page=rs-settings&updated=1' ) );
 	exit;
@@ -954,39 +1002,43 @@ function rs_settings_assets( $hook ) {
 	wp_enqueue_media();
 	wp_enqueue_script( 'jquery' );
 
+	/* One handler for however many picture settings there are: the button
+	   names the field it belongs to, and the field's own id is what the
+	   hidden input and the preview are built from. */
 	wp_add_inline_script(
 		'jquery-core',
 		"jQuery( function ( $ ) {
-	var frame;
+	var frames = {};
 
-	$( '#rs-image-pick' ).on( 'click', function () {
-		if ( frame ) {
-			frame.open();
-			return;
+	$( document ).on( 'click', '[data-rs-pick]', function () {
+		var key = $( this ).attr( 'data-rs-pick' );
+
+		if ( ! frames[ key ] ) {
+			frames[ key ] = wp.media( {
+				title: " . wp_json_encode( __( 'Choose image', 'raisul-sohan' ) ) . ",
+				library: { type: 'image' },
+				multiple: false
+			} );
+
+			frames[ key ].on( 'select', function () {
+				var img = frames[ key ].state().get( 'selection' ).first().toJSON();
+				var src = img.sizes && img.sizes.medium ? img.sizes.medium.url : img.url;
+
+				$( '#' + key ).val( img.id );
+				$( '#' + key + '-preview' ).html(
+					$( '<img>' ).attr( 'src', src ).css( { maxWidth: '200px', height: 'auto' } )
+				);
+			} );
 		}
 
-		frame = wp.media( {
-			title: " . wp_json_encode( __( 'Share image', 'raisul-sohan' ) ) . ",
-			library: { type: 'image' },
-			multiple: false
-		} );
-
-		frame.on( 'select', function () {
-			var img = frame.state().get( 'selection' ).first().toJSON();
-			var src = img.sizes && img.sizes.medium ? img.sizes.medium.url : img.url;
-
-			$( '#rs_og_image' ).val( img.id );
-			$( '#rs-image-preview' ).html(
-				$( '<img>' ).attr( 'src', src ).css( { maxWidth: '200px', height: 'auto' } )
-			);
-		} );
-
-		frame.open();
+		frames[ key ].open();
 	} );
 
-	$( '#rs-image-clear' ).on( 'click', function () {
-		$( '#rs_og_image' ).val( '' );
-		$( '#rs-image-preview' ).empty();
+	$( document ).on( 'click', '[data-rs-clear]', function () {
+		var key = $( this ).attr( 'data-rs-clear' );
+
+		$( '#' + key ).val( '' );
+		$( '#' + key + '-preview' ).empty();
 	} );
 } );"
 	);
