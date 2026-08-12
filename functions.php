@@ -11,10 +11,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.5.0' );
+define( 'RS_VERSION', '2.7.0' );
 
-/** How many posts render server side, and how many each lazy batch adds. */
-define( 'RS_BATCH', 200 );
+/** Rows per page, on the front page and on every archive. */
+define( 'RS_PER_PAGE', 10 );
 
 /* =========================================================================
  * 1. Theme setup
@@ -45,13 +45,13 @@ function rs_setup() {
 add_action( 'after_setup_theme', 'rs_setup' );
 
 /**
- * Show every post on the front page and on category archives, in batches.
+ * One page size for every list the theme renders.
  *
- * Category archives need this as much as the front page does: on the
- * default ten per page the "আরও লেখা" button appears, and it pulls from
- * /rs/v1/list, which is not filtered by category and would append posts
- * from everywhere. Rendering the whole archive server side keeps the
- * button hidden and the list honest.
+ * The front page, the archives and the search results all go through
+ * rs_render_list(), whose page links are built from the main query. So the
+ * main query is what has to be sized here — on every one of those views,
+ * not just the front page, or a category would paginate at the WordPress
+ * default while the front page paginated at RS_PER_PAGE.
  *
  * @param WP_Query $query Main query.
  */
@@ -60,8 +60,8 @@ function rs_pre_get_posts( $query ) {
 		return;
 	}
 
-	if ( $query->is_home() || $query->is_category() ) {
-		$query->set( 'posts_per_page', RS_BATCH );
+	if ( $query->is_home() || $query->is_archive() || $query->is_search() ) {
+		$query->set( 'posts_per_page', RS_PER_PAGE );
 		$query->set( 'ignore_sticky_posts', true );
 	}
 }
@@ -129,16 +129,10 @@ function rs_assets() {
 		array(
 			'rest'    => esc_url_raw( rest_url( 'rs/v1/' ) ),
 			'home'    => esc_url_raw( home_url( '/' ) ),
-			'batch'   => RS_BATCH,
 			'total'   => rs_published_count(),
 			'phrases' => rs_phrases(),
 			'email'   => rs_option( 'rs_email' ),
 			'siteName'=> get_bloginfo( 'name' ),
-			/* Lazy loaded rows follow the server rendered ones: no category
-			   tag on a category archive, where it would repeat the heading.
-			   wp_localize_script stringifies scalars, so this reaches JS as
-			   "1" or "" — both behave correctly as a truthiness check. */
-			'showCat' => ! is_category(),
 			/* Base URL for the modal's edit link, empty for readers. The
 			   capability is checked here, in a normally authenticated page
 			   request; the REST call carries no nonce, so current_user_can()
@@ -157,7 +151,6 @@ function rs_assets() {
 				'results'  => __( 'টি ফলাফল', 'raisul-sohan' ),
 				'loading'  => __( 'আসছে...', 'raisul-sohan' ),
 				'error'    => __( 'লেখাটি আনা যায়নি', 'raisul-sohan' ),
-				'more'     => __( 'আরও লেখা', 'raisul-sohan' ),
 			),
 		)
 	);
@@ -380,6 +373,27 @@ function rs_reading_time( $post = null ) {
 }
 
 /**
+ * Cut a string to a character limit, with an ellipsis when it was cut.
+ *
+ * Characters rather than bytes, and characters rather than words: Bengali
+ * conjuncts are several bytes each, and the meta tags this feeds have
+ * character limits of their own.
+ *
+ * @param string $text   Text to shorten.
+ * @param int    $length Character limit.
+ * @return string
+ */
+function rs_shorten( $text, $length ) {
+	$text = trim( (string) $text );
+
+	if ( mb_strlen( $text, 'UTF-8' ) <= $length ) {
+		return $text;
+	}
+
+	return rtrim( mb_substr( $text, 0, $length, 'UTF-8' ) ) . '…';
+}
+
+/**
  * Short plain text summary, used for the hover tooltip and meta description.
  *
  * @param int|WP_Post|null $post   Post.
@@ -399,11 +413,7 @@ function rs_summary( $post = null, $length = 200 ) {
 		$text = rs_plain_text( $post );
 	}
 
-	if ( mb_strlen( $text, 'UTF-8' ) > $length ) {
-		$text = rtrim( mb_substr( $text, 0, $length, 'UTF-8' ) ) . '…';
-	}
-
-	return $text;
+	return rs_shorten( $text, $length );
 }
 
 /**
@@ -491,6 +501,8 @@ function rs_defaults() {
 		'rs_phrases'  => 'অক্ষরের আশ্রয়, এখানে গল্প থাকে',
 		'rs_footer'   => '© {year} রাইসুল সোহানের গল্প · সর্বস্বত্ব সংরক্ষিত',
 		'rs_about'    => 0,
+		'rs_og_image' => 0,
+		'rs_verify'   => 'UGbwgVSquWFpv2qZcQYRQzJSyEFaryG9PHAIpY2ZsYA',
 	);
 }
 
@@ -585,6 +597,7 @@ function rs_customize( $wp_customize ) {
 		'rs_facebook' => array( __( 'ফেসবুক লিংক', 'raisul-sohan' ), 'url', 'esc_url_raw' ),
 		'rs_linkedin' => array( __( 'লিঙ্কডইন লিংক', 'raisul-sohan' ), 'url', 'esc_url_raw' ),
 		'rs_footer'   => array( __( 'ফুটারের লেখা ({year} বসালে সাল আসবে)', 'raisul-sohan' ), 'text', 'sanitize_text_field' ),
+		'rs_verify'   => array( __( 'Google ভেরিফিকেশন কোড (Search Console)', 'raisul-sohan' ), 'text', 'sanitize_text_field' ),
 	);
 
 	foreach ( $fields as $key => $field ) {
@@ -624,6 +637,29 @@ function rs_customize( $wp_customize ) {
 			'type'        => 'dropdown-pages',
 		)
 	);
+
+	$wp_customize->add_setting(
+		'rs_og_image',
+		array(
+			'default'           => 0,
+			'sanitize_callback' => 'absint',
+		)
+	);
+
+	/* Stores the attachment ID, which is what rs_share_image() wants: a
+	   plain URL would go stale the day the media library is moved. */
+	$wp_customize->add_control(
+		new WP_Customize_Media_Control(
+			$wp_customize,
+			'rs_og_image',
+			array(
+				'label'       => __( 'শেয়ার করার ছবি', 'raisul-sohan' ),
+				'description' => __( 'ফেসবুকে বা মেসেঞ্জারে লিংক দিলে যে ছবিটা দেখাবে। ১২০০×৬৩০ পিক্সেল সবচেয়ে ভালো। কোনো লেখার নিজের ফিচার্ড ইমেজ থাকলে সেটাই আগে বসবে।', 'raisul-sohan' ),
+				'section'     => 'rs_site',
+				'mime_type'   => 'image',
+			)
+		)
+	);
 }
 add_action( 'customize_register', 'rs_customize' );
 
@@ -647,6 +683,7 @@ function rs_icon( $name, $size = 15 ) {
 		'up'       => '<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
 		'copy'     => '<rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
 		'left'     => '<path d="m15 18-6-6 6-6"/>',
+		'right'    => '<path d="m9 18 6-6-6-6"/>',
 		'edit'     => '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>',
 		'sun'      => '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
 		'moon'     => '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
@@ -734,7 +771,282 @@ function rs_share_row( $post = null ) {
 }
 
 /* =========================================================================
- * 8. REST endpoints
+ * 8. The post list
+ * ====================================================================== */
+
+/**
+ * URL of a page of the list currently being rendered.
+ *
+ * get_pagenum_link() builds on the request URI, so during a fragment
+ * request every link it returns would carry rs_ajax=1 along and the reader
+ * would end up with that in their address bar.
+ *
+ * @param int $page Page number.
+ * @return string
+ */
+function rs_page_url( $page ) {
+	return remove_query_arg( 'rs_ajax', get_pagenum_link( (int) $page ) );
+}
+
+/**
+ * Which page numbers a pagination bar shows.
+ *
+ * The ends, the current page and its neighbours; a 0 marks where a run was
+ * left out. Six hundred posts is sixty pages, and sixty numbers in a row is
+ * not a thing anyone reads.
+ *
+ * @param int $current Current page.
+ * @param int $total   Total pages.
+ * @param int $edge    How many pages to always keep at each end.
+ * @param int $around  How many pages to keep either side of the current one.
+ * @return array
+ */
+function rs_page_slots( $current, $total, $edge = 1, $around = 1 ) {
+	$slots = array();
+	$last  = 0;
+
+	for ( $page = 1; $page <= $total; $page++ ) {
+		$keep = $page <= $edge
+			|| $page > $total - $edge
+			|| abs( $page - $current ) <= $around;
+
+		if ( ! $keep ) {
+			continue;
+		}
+
+		if ( $last && $page - $last > 1 ) {
+			$slots[] = 0;
+		}
+
+		$slots[] = $page;
+		$last    = $page;
+	}
+
+	return $slots;
+}
+
+/**
+ * Render one arrow of the pagination bar.
+ *
+ * The disabled arrow stays in the flow as a span rather than disappearing,
+ * so the numbers do not shift sideways between the first page and the rest.
+ *
+ * @param int    $page  Page to link to.
+ * @param bool   $on    Whether that page exists.
+ * @param string $icon  Icon name.
+ * @param string $rel   Link relation.
+ * @param string $label Accessible label.
+ */
+function rs_pagination_step( $page, $on, $icon, $rel, $label ) {
+	$svg = wp_kses( rs_icon( $icon, 14 ), rs_svg_tags() );
+
+	if ( ! $on ) {
+		echo '<span class="rs-pagination__step is-off" aria-hidden="true">' . $svg . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		return;
+	}
+
+	echo '<a class="rs-pagination__step" href="' . esc_url( rs_page_url( $page ) ) . '"'
+		. ' rel="' . esc_attr( $rel ) . '" aria-label="' . esc_attr( $label ) . '">'
+		. $svg // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		. '</a>';
+}
+
+/**
+ * Numbered page links for the main query.
+ *
+ * Built from the main query rather than from a count of every post, so a
+ * category, a tag or a search paginates over its own results. Ordinary
+ * anchors, so they work with JavaScript off; app.js intercepts the click
+ * and swaps the list in place when it is on.
+ */
+function rs_pagination() {
+	$total = (int) $GLOBALS['wp_query']->max_num_pages;
+
+	if ( $total < 2 ) {
+		return;
+	}
+
+	$current = max( 1, (int) get_query_var( 'paged' ) );
+	?>
+	<nav class="rs-pagination" aria-label="<?php esc_attr_e( 'পাতা', 'raisul-sohan' ); ?>">
+		<?php
+		rs_pagination_step( $current - 1, $current > 1, 'left', 'prev', __( 'আগের পাতা', 'raisul-sohan' ) );
+
+		foreach ( rs_page_slots( $current, $total ) as $slot ) {
+			if ( 0 === $slot ) {
+				echo '<span class="rs-pagination__gap" aria-hidden="true">…</span>';
+				continue;
+			}
+
+			$digits = rs_bn_digits( $slot );
+
+			if ( $slot === $current ) {
+				printf(
+					'<span class="rs-pagination__num is-current" aria-current="page">%s</span>',
+					esc_html( $digits )
+				);
+				continue;
+			}
+
+			printf(
+				'<a class="rs-pagination__num" href="%s" aria-label="%s">%s</a>',
+				esc_url( rs_page_url( $slot ) ),
+				/* translators: %s: page number in Bengali digits. */
+				esc_attr( sprintf( __( '%s নম্বর পাতা', 'raisul-sohan' ), $digits ) ),
+				esc_html( $digits )
+			);
+		}
+
+		rs_pagination_step( $current + 1, $current < $total, 'right', 'next', __( 'পরের পাতা', 'raisul-sohan' ) );
+		?>
+	</nav>
+	<?php
+}
+
+/**
+ * The count that sits above the list.
+ *
+ * The front page counts every published post. Inside an archive that
+ * number would be a claim about posts the reader cannot see from there, so
+ * the archive's own total is used instead — which is also the only number
+ * that answers the question they just asked by narrowing the list.
+ *
+ * It lives outside the swapped fragment on purpose: it describes the whole
+ * archive, not the page of it currently on screen, so turning a page must
+ * not change it.
+ */
+function rs_render_count() {
+	$count = ( is_home() || is_front_page() )
+		? rs_published_count()
+		: (int) $GLOBALS['wp_query']->found_posts;
+
+	if ( ! $count ) {
+		/* An empty list says so in its own words, further down. */
+		return;
+	}
+
+	if ( is_category() ) {
+		$before = 'এই ক্যাটাগরিতে ';
+		$after  = 'টি লেখা প্রকাশিত';
+	} elseif ( is_tag() ) {
+		$before = 'এই ট্যাগে ';
+		$after  = 'টি লেখা প্রকাশিত';
+	} elseif ( is_search() ) {
+		$before = '';
+		$after  = 'টি লেখা পাওয়া গেছে';
+	} else {
+		$before = '';
+		$after  = 'টি লেখা প্রকাশিত';
+	}
+	?>
+	<div class="rs-wrap">
+		<p class="rs-post-count">
+			<?php
+			/* No line breaks around the number: টি is a suffix, and any
+			   whitespace here would render as a space inside the word. */
+			echo esc_html( $before );
+			?><span class="rs-post-count__number"><?php echo esc_html( rs_bn_digits( $count ) ); ?></span><?php
+			echo esc_html( $after );
+			?>
+		</p>
+	</div>
+	<?php
+}
+
+/**
+ * The list of posts, with its page links.
+ *
+ * Both the full page and the fragment that app.js swaps in go through
+ * here, so the page reached by clicking "২" is the same markup as the page
+ * reached by opening /page/2/ directly.
+ */
+function rs_render_list() {
+	/* Inside a category archive the tag would just repeat the heading, so
+	   it only earns its place in a mixed list. */
+	$show_cat = ! is_category();
+	?>
+	<div class="rs-list-wrap" id="rs-list-wrap" tabindex="-1" data-rs-title="<?php echo esc_attr( wp_get_document_title() ); ?>">
+		<?php if ( have_posts() ) : ?>
+
+			<div class="rs-list" id="rs-list">
+				<?php
+				while ( have_posts() ) :
+					the_post();
+					?>
+					<article class="rs-row">
+						<a class="rs-row__link"
+							href="<?php the_permalink(); ?>"
+							data-rs-post="<?php the_ID(); ?>"
+							data-rs-summary="<?php echo esc_attr( rs_summary() ); ?>">
+							<span class="rs-row__head">
+								<span class="rs-row__title"><?php the_title(); ?></span><?php
+								$rs_cat = $show_cat ? rs_category() : '';
+								if ( $rs_cat ) :
+									?><em class="rs-row__cat"><?php echo esc_html( $rs_cat ); ?></em><?php
+								endif;
+								?>
+							</span>
+							<span class="rs-row__aside">
+								<span class="rs-row__read"><?php echo esc_html( rs_reading_time() ); ?></span>
+								<span class="rs-row__date"><?php echo esc_html( rs_bn_date() ); ?></span>
+							</span>
+						</a>
+					</article>
+				<?php endwhile; ?>
+			</div>
+
+			<?php rs_pagination(); ?>
+
+		<?php else : ?>
+
+			<div class="rs-notice">
+				<?php if ( is_search() ) : ?>
+					<h2>কিছু পাওয়া যায়নি</h2>
+					<p>অন্য শব্দ দিয়ে খুঁজে দেখুন।</p>
+				<?php else : ?>
+					<h2>এখনো কোনো লেখা নেই</h2>
+					<p>প্রথম লেখাটা প্রকাশ করলে এখানে দেখা যাবে।</p>
+				<?php endif; ?>
+			</div>
+
+		<?php endif; ?>
+	</div>
+	<?php
+}
+
+/**
+ * Answer ?rs_ajax=1 with the list on its own.
+ *
+ * A page link handled by app.js asks for the page it was going to load
+ * anyway, just without the header, hero and footer wrapped around it. The
+ * main query has already run by the time template_redirect fires, so this
+ * is the same list the full page would have shown — which is what keeps a
+ * category, a tag or a search paginating over its own posts without the
+ * endpoint having to know anything about them.
+ */
+function rs_list_fragment() {
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read only, and public.
+	if ( ! isset( $_GET['rs_ajax'] ) ) {
+		return;
+	}
+
+	if ( ! is_home() && ! is_archive() && ! is_search() ) {
+		return;
+	}
+
+	nocache_headers();
+	header( 'Content-Type: text/html; charset=' . get_bloginfo( 'charset' ) );
+	/* A fragment has no header, no footer and no canonical tag. If a
+	   crawler ever finds one of these URLs, it should not keep it. */
+	header( 'X-Robots-Tag: noindex' );
+
+	rs_render_list();
+	exit;
+}
+add_action( 'template_redirect', 'rs_list_fragment' );
+
+/* =========================================================================
+ * 9. REST endpoints
  * ====================================================================== */
 
 /**
@@ -766,21 +1078,6 @@ function rs_rest_routes() {
 			'args'                => array(
 				'q' => array(
 					'sanitize_callback' => 'sanitize_text_field',
-				),
-			),
-		)
-	);
-
-	register_rest_route(
-		'rs/v1',
-		'/list',
-		array(
-			'methods'             => WP_REST_Server::READABLE,
-			'callback'            => 'rs_rest_list',
-			'permission_callback' => '__return_true',
-			'args'                => array(
-				'page' => array(
-					'sanitize_callback' => 'absint',
 				),
 			),
 		)
@@ -905,99 +1202,320 @@ function rs_rest_search( $request ) {
 	);
 }
 
-/**
- * A batch of list rows, for lazy loading beyond the first RS_BATCH posts.
- *
- * @param WP_REST_Request $request Request.
- * @return WP_REST_Response
- */
-function rs_rest_list( $request ) {
-	$page = max( 1, (int) $request->get_param( 'page' ) );
-
-	$query = new WP_Query(
-		array(
-			'post_type'              => 'post',
-			'post_status'            => 'publish',
-			'posts_per_page'         => RS_BATCH,
-			'paged'                  => $page,
-			'has_password'           => false,
-			'ignore_sticky_posts'    => true,
-			'update_post_meta_cache' => false,
-			/* Primed in one query so rs_category() below does not hit the
-			   database once per post. */
-			'update_post_term_cache' => true,
-		)
-	);
-
-	$items = array();
-
-	foreach ( $query->posts as $post ) {
-		$items[] = array(
-			'id'       => $post->ID,
-			'title'    => get_the_title( $post ),
-			'date'     => rs_bn_date( $post ),
-			'link'     => get_permalink( $post ),
-			'summary'  => rs_summary( $post ),
-			'category' => rs_category( $post ),
-			'readingTime' => rs_reading_time( $post ),
-		);
-	}
-
-	return rest_ensure_response(
-		array(
-			'items'    => $items,
-			'page'     => $page,
-			'maxPages' => (int) $query->max_num_pages,
-		)
-	);
-}
-
 /* =========================================================================
- * 9. SEO meta
+ * 10. SEO meta
  * ====================================================================== */
 
 /**
- * Basic description and Open Graph tags.
+ * Whether an SEO plugin is doing this job instead.
  *
- * Skip this if an SEO plugin such as Yoast or Rank Math is active.
+ * Yoast and Rank Math write the same tags. Two descriptions and two
+ * canonicals are worse than either one alone, so everything in this
+ * section stands down when one of them is active.
+ *
+ * @return bool
  */
-function rs_meta_tags() {
-	if ( defined( 'WPSEO_VERSION' ) || class_exists( 'RankMath' ) ) {
+function rs_seo_plugin_active() {
+	return defined( 'WPSEO_VERSION' ) || class_exists( 'RankMath' );
+}
+
+/**
+ * Google Search Console's ownership tag.
+ *
+ * Google only reads this on the address the property was registered under,
+ * but it costs a single line to put it on every page, and doing so means a
+ * property added later for a subsection verifies without another edit.
+ *
+ * Not gated on rs_seo_plugin_active(): this proves who owns the site
+ * rather than describing it, so there is nothing here to duplicate.
+ */
+function rs_verify_tag() {
+	$code = trim( (string) rs_option( 'rs_verify' ) );
+
+	if ( '' === $code ) {
 		return;
 	}
 
-	if ( is_singular( 'post' ) ) {
-		$description = rs_summary( get_queried_object_id(), 160 );
-		$title       = get_the_title();
-		$url         = get_permalink();
-		$type        = 'article';
-	} elseif ( is_home() || is_front_page() ) {
-		$description = get_bloginfo( 'description' );
-		$title       = get_bloginfo( 'name' );
-		$url         = home_url( '/' );
-		$type        = 'website';
-	} else {
-		return;
+	printf( "<meta name=\"google-site-verification\" content=\"%s\">\n", esc_attr( $code ) );
+}
+add_action( 'wp_head', 'rs_verify_tag', 1 );
+
+/**
+ * The picture to attach to a shared link.
+ *
+ * A post's own featured image when it has one, and otherwise the image set
+ * in the customizer. Most posts here are text alone, and a link with no
+ * picture is a blank rectangle in a Facebook feed, so the fallback is what
+ * this is really for.
+ *
+ * The customizer image is used at full size because it was chosen for this
+ * job at the right proportions; a featured image was chosen to sit at the
+ * top of a post and could be enormous.
+ *
+ * @return array|null
+ */
+function rs_share_image() {
+	$id  = 0;
+	$use = 'full';
+
+	if ( is_singular() && has_post_thumbnail( get_queried_object_id() ) ) {
+		$id  = get_post_thumbnail_id( get_queried_object_id() );
+		$use = 'large';
 	}
 
-	printf(
-		"\n<meta name=\"description\" content=\"%s\">\n",
-		esc_attr( $description )
+	if ( ! $id ) {
+		$id  = (int) rs_option( 'rs_og_image' );
+		$use = 'full';
+	}
+
+	if ( ! $id ) {
+		return null;
+	}
+
+	$src = wp_get_attachment_image_src( $id, $use );
+
+	if ( ! $src ) {
+		return null;
+	}
+
+	return array(
+		'url'    => $src[0],
+		'width'  => (int) $src[1],
+		'height' => (int) $src[2],
 	);
-	printf( "<meta property=\"og:type\" content=\"%s\">\n", esc_attr( $type ) );
-	printf( "<meta property=\"og:title\" content=\"%s\">\n", esc_attr( $title ) );
-	printf( "<meta property=\"og:description\" content=\"%s\">\n", esc_attr( $description ) );
-	printf( "<meta property=\"og:url\" content=\"%s\">\n", esc_url( $url ) );
+}
+
+/**
+ * What the view on screen should say about itself.
+ *
+ * Null for the views that have nothing worth saying — a date or author
+ * archive repeats the front page, and rs_robots() below keeps those out of
+ * the index rather than describing them.
+ *
+ * @return array|null
+ */
+function rs_seo_context() {
+	$paged = max( 1, (int) get_query_var( 'paged' ) );
+
+	if ( is_singular() ) {
+		return array(
+			'title'       => get_the_title( get_queried_object_id() ),
+			'description' => rs_summary( get_queried_object_id(), 160 ),
+			'url'         => get_permalink( get_queried_object_id() ),
+			'type'        => is_singular( 'post' ) ? 'article' : 'website',
+		);
+	}
+
+	if ( is_category() || is_tag() ) {
+		$term = get_queried_object();
+
+		if ( ! $term instanceof WP_Term ) {
+			return null;
+		}
+
+		$base = get_term_link( $term );
+
+		if ( is_wp_error( $base ) ) {
+			return null;
+		}
+
+		$about = trim( wp_strip_all_tags( $term->description ) );
+
+		if ( '' === $about ) {
+			$about = sprintf(
+				is_category() ? '%1$s বিভাগের সব লেখা — %2$s' : '%1$s বিষয়ের সব লেখা — %2$s',
+				$term->name,
+				get_bloginfo( 'name' )
+			);
+		}
+
+		return array(
+			'title'       => $term->name,
+			'description' => rs_shorten( $about, 160 ),
+			/* Page one keeps the clean term URL. Running it through
+			   get_pagenum_link() would drag any utm_ tags the reader
+			   arrived with into the canonical. */
+			'url'         => $paged > 1 ? rs_page_url( $paged ) : $base,
+			'type'        => 'website',
+		);
+	}
+
+	if ( is_home() || is_front_page() ) {
+		return array(
+			'title'       => get_bloginfo( 'name' ),
+			'description' => get_bloginfo( 'description' ),
+			'url'         => $paged > 1 ? rs_page_url( $paged ) : home_url( '/' ),
+			'type'        => 'website',
+		);
+	}
+
+	return null;
+}
+
+/**
+ * Description, canonical, Open Graph and Twitter tags.
+ */
+function rs_seo_meta() {
+	if ( rs_seo_plugin_active() ) {
+		return;
+	}
+
+	$view = rs_seo_context();
+
+	if ( ! $view ) {
+		return;
+	}
+
+	$image = rs_share_image();
+
+	printf( "\n<meta name=\"description\" content=\"%s\">\n", esc_attr( $view['description'] ) );
+
+	/* Core writes a canonical on single posts and pages and nowhere else,
+	   which was enough while those were the only addresses the theme had.
+	   Now that the list paginates, page two has to name itself or it reads
+	   as a second copy of the front page. */
+	if ( ! is_singular() ) {
+		printf( "<link rel=\"canonical\" href=\"%s\">\n", esc_url( $view['url'] ) );
+	}
+
+	printf( "<meta property=\"og:type\" content=\"%s\">\n", esc_attr( $view['type'] ) );
+	printf( "<meta property=\"og:title\" content=\"%s\">\n", esc_attr( $view['title'] ) );
+	printf( "<meta property=\"og:description\" content=\"%s\">\n", esc_attr( $view['description'] ) );
+	printf( "<meta property=\"og:url\" content=\"%s\">\n", esc_url( $view['url'] ) );
 	printf( "<meta property=\"og:site_name\" content=\"%s\">\n", esc_attr( get_bloginfo( 'name' ) ) );
 	printf( "<meta property=\"og:locale\" content=\"%s\">\n", esc_attr( get_locale() ) );
-	printf( "<meta name=\"twitter:card\" content=\"summary\">\n" );
 
-	if ( is_singular( 'post' ) && has_post_thumbnail() ) {
-		$image = get_the_post_thumbnail_url( null, 'large' );
-		printf( "<meta property=\"og:image\" content=\"%s\">\n", esc_url( $image ) );
+	if ( is_singular( 'post' ) ) {
+		$id     = get_queried_object_id();
+		$author = (int) get_post_field( 'post_author', $id );
+
+		printf( "<meta property=\"article:published_time\" content=\"%s\">\n", esc_attr( get_the_date( DATE_W3C, $id ) ) );
+		printf( "<meta property=\"article:modified_time\" content=\"%s\">\n", esc_attr( get_the_modified_date( DATE_W3C, $id ) ) );
+		printf( "<meta property=\"article:author\" content=\"%s\">\n", esc_attr( get_the_author_meta( 'display_name', $author ) ) );
+
+		$section = rs_category( $id );
+
+		if ( $section ) {
+			printf( "<meta property=\"article:section\" content=\"%s\">\n", esc_attr( $section ) );
+		}
 	}
+
+	if ( $image ) {
+		printf( "<meta property=\"og:image\" content=\"%s\">\n", esc_url( $image['url'] ) );
+		printf( "<meta property=\"og:image:width\" content=\"%d\">\n", (int) $image['width'] );
+		printf( "<meta property=\"og:image:height\" content=\"%d\">\n", (int) $image['height'] );
+	}
+
+	/* The wide card is worth a great deal more in a feed, but asking for it
+	   with no image to fill it leaves an empty band. */
+	printf(
+		"<meta name=\"twitter:card\" content=\"%s\">\n",
+		$image ? 'summary_large_image' : 'summary'
+	);
 }
-add_action( 'wp_head', 'rs_meta_tags', 1 );
+add_action( 'wp_head', 'rs_seo_meta', 1 );
+
+/**
+ * JSON-LD, so a search engine can tell a story from a page about stories.
+ *
+ * Person rather than Organization as the publisher: this is one writer's
+ * site, and saying otherwise would invite a logo that does not exist.
+ */
+function rs_schema() {
+	if ( rs_seo_plugin_active() ) {
+		return;
+	}
+
+	$data = null;
+
+	if ( is_singular( 'post' ) ) {
+		$id     = get_queried_object_id();
+		$author = (int) get_post_field( 'post_author', $id );
+		$image  = rs_share_image();
+
+		$data = array(
+			'@context'         => 'https://schema.org',
+			'@type'            => 'BlogPosting',
+			/* schema.org asks for 110 characters or fewer here. */
+			'headline'         => rs_shorten( get_the_title( $id ), 110 ),
+			'description'      => rs_summary( $id, 160 ),
+			'datePublished'    => get_the_date( DATE_W3C, $id ),
+			'dateModified'     => get_the_modified_date( DATE_W3C, $id ),
+			'inLanguage'       => get_bloginfo( 'language' ),
+			'mainEntityOfPage' => array(
+				'@type' => 'WebPage',
+				'@id'   => get_permalink( $id ),
+			),
+			'author'           => array(
+				'@type' => 'Person',
+				'name'  => get_the_author_meta( 'display_name', $author ),
+				'url'   => home_url( '/' ),
+			),
+			'publisher'        => array(
+				'@type' => 'Person',
+				'name'  => get_bloginfo( 'name' ),
+			),
+		);
+
+		$section = rs_category( $id );
+
+		if ( $section ) {
+			$data['articleSection'] = $section;
+		}
+
+		if ( $image ) {
+			$data['image'] = $image['url'];
+		}
+	} elseif ( is_home() || is_front_page() ) {
+		$data = array(
+			'@context'    => 'https://schema.org',
+			'@type'       => 'WebSite',
+			'name'        => get_bloginfo( 'name' ),
+			'description' => get_bloginfo( 'description' ),
+			'url'         => home_url( '/' ),
+			'inLanguage'  => get_bloginfo( 'language' ),
+		);
+	}
+
+	if ( ! $data ) {
+		return;
+	}
+
+	/* Unicode is left alone so the Bengali stays readable in view source,
+	   but slashes keep their escaping: that is what stops a "</script>" in
+	   a title from closing this block early. */
+	printf(
+		"\n<script type=\"application/ld+json\">%s</script>\n",
+		wp_json_encode( $data, JSON_UNESCAPED_UNICODE ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	);
+}
+add_action( 'wp_head', 'rs_schema', 2 );
+
+/**
+ * Keep the archives that repeat the front page out of the index.
+ *
+ * A date or an author archive on a one writer site is the same posts in
+ * the same order with nothing added, and every one of them competes with
+ * the pages that matter. Search results core already handles on its own.
+ *
+ * @param array $robots Robots directives.
+ * @return array
+ */
+function rs_robots( $robots ) {
+	if ( rs_seo_plugin_active() ) {
+		return $robots;
+	}
+
+	if ( is_date() || is_author() ) {
+		$robots['noindex'] = true;
+		/* Still worth crawling through: the links out of here are the
+		   posts themselves. */
+		$robots['follow'] = true;
+	}
+
+	return $robots;
+}
+add_filter( 'wp_robots', 'rs_robots' );
 
 /**
  * Add a helpful body class.
@@ -1008,7 +1526,10 @@ add_action( 'wp_head', 'rs_meta_tags', 1 );
 function rs_body_class( $classes ) {
 	$classes[] = 'rs';
 
-	if ( is_home() || is_front_page() ) {
+	/* app.js takes over the history on any view that renders a list: it is
+	   what tells the popstate handler that a back press means "close the
+	   modal" or "go to the previous page of rows", and not "leave". */
+	if ( is_home() || is_front_page() || is_archive() || is_search() ) {
 		$classes[] = 'rs-is-list';
 	}
 
@@ -1017,7 +1538,7 @@ function rs_body_class( $classes ) {
 add_filter( 'body_class', 'rs_body_class' );
 
 /* =========================================================================
- * 10. Housekeeping
+ * 11. Housekeeping
  * ====================================================================== */
 
 /**

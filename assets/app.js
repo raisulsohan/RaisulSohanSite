@@ -60,6 +60,16 @@
 		return String( str ).replace( /[.*+?^${}()|[\]\\]/g, '\\$&' );
 	}
 
+	/* Resolve a URL the way the browser would, so a link's href and
+	   location.href can be compared without one of them being relative. */
+	function absUrl( url ) {
+		var a = document.createElement( 'a' );
+
+		a.href = url;
+
+		return a.href;
+	}
+
 	function highlight( text, term ) {
 		var safe = escapeHtml( text );
 
@@ -336,7 +346,10 @@
 
 	( function () {
 		var tip = $( '#rs-tooltip' );
-		var list = $( '#rs-list' );
+		/* The wrapper rather than the list itself: turning a page replaces
+		   everything inside it, and listeners bound to the old rows would
+		   go with them. */
+		var list = $( '#rs-list-wrap' );
 
 		if ( ! tip || ! list || ! window.matchMedia || ! window.matchMedia( '(hover: hover)' ).matches ) {
 			return;
@@ -577,6 +590,12 @@
 	var postBody = $( '#rs-post-body' );
 	var baseTitle = document.title;
 	var cache = {};
+
+	/* Which page of the list is on screen, and the loader that can fetch a
+	   different one. Both belong to the pagination module near the bottom
+	   of this file; the popstate handler below is the other user. */
+	var listUrl = absUrl( window.location.href );
+	var loadListPage = null;
 
 	function fontControlsHtml() {
 		return (
@@ -959,7 +978,9 @@
 	} );
 
 	if ( document.body.classList.contains( 'rs-is-list' ) ) {
-		window.history.replaceState( { rs: 'home' }, '', window.location.href );
+		/* Same tag the page links push, so every list entry in the history
+		   looks alike and only 'post' is the special case below. */
+		window.history.replaceState( { rs: 'list' }, '', window.location.href );
 
 		window.addEventListener( 'popstate', function ( event ) {
 			var state = event.state;
@@ -975,6 +996,13 @@
 			} else {
 				postDepth = 0;
 				closePost( true );
+
+				/* Opening and closing a post always returns to the URL the
+				   list was on, so anything else here means the reader moved
+				   between pages of the list. */
+				if ( loadListPage && listUrl !== absUrl( window.location.href ) ) {
+					loadListPage( window.location.href, false );
+				}
 			}
 		} );
 	}
@@ -1082,118 +1110,140 @@
 	}
 
 	/* ---------------------------------------------------------------
-	 * Lazy list batches
+	 * Page links
+	 *
+	 * The links are ordinary /page/2/ anchors, so with JavaScript off they
+	 * load that page the usual way. With it on, the click is caught and the
+	 * server is asked for the same list on its own (?rs_ajax=1), which is
+	 * dropped in place of the current one: the hero keeps its phrase, the
+	 * header stays put, and only the rows change.
+	 *
+	 * The server decides what is on a page, so a category, a tag and a
+	 * search each paginate over their own posts without this code knowing
+	 * that any of them exist.
 	 * ------------------------------------------------------------ */
 
 	( function () {
-		var more = $( '#rs-more' );
-		var list = $( '#rs-list' );
+		var wrap = $( '#rs-list-wrap' );
 
-		if ( ! more || ! list ) {
+		if ( ! wrap || ! window.fetch ) {
 			return;
 		}
 
-		var busy = false;
+		/* A back press can arrive while a click's page is still on its way.
+		   Whichever request was asked for last is the one the reader is
+		   waiting on, so earlier replies are dropped rather than queued. */
+		var seq = 0;
 
-		function load() {
-			if ( busy ) {
-				return;
+		function fragmentUrl( url ) {
+			return url + ( url.indexOf( '?' ) > -1 ? '&' : '?' ) + 'rs_ajax=1';
+		}
+
+		/* The header is sticky, so the top of the list has to clear it or
+		   the first row lands underneath. */
+		function scrollToList() {
+			var header = $( '.rs-header' );
+			var clear = header ? header.offsetHeight : 0;
+			var top = wrap.getBoundingClientRect().top + window.pageYOffset - clear - 16;
+
+			window.scrollTo( {
+				top: Math.max( 0, top ),
+				behavior: reduceMotion ? 'auto' : 'smooth',
+			} );
+		}
+
+		function swap( html ) {
+			var holder = document.createElement( 'div' );
+
+			holder.innerHTML = html;
+
+			var next = holder.firstElementChild;
+
+			/* A login screen, a maintenance page or a plugin's redirect
+			   would all come back with a 200 and something else entirely.
+			   Better to hand the URL to the browser than to paste it in. */
+			if ( ! next || 'rs-list-wrap' !== next.id ) {
+				throw new Error( 'unexpected fragment' );
 			}
 
-			var next = parseInt( more.getAttribute( 'data-next' ), 10 );
-			var max = parseInt( more.getAttribute( 'data-max' ), 10 );
+			/* The contents, not the element: the hover summary listeners
+			   are bound to this wrapper and have to survive the swap. */
+			wrap.innerHTML = next.innerHTML;
 
-			if ( next > max ) {
-				more.hidden = true;
-				return;
+			var title = next.getAttribute( 'data-rs-title' );
+
+			if ( title ) {
+				document.title = title;
+				/* Closing a post modal restores this, so it has to follow
+				   whichever page of the list is underneath. */
+				baseTitle = title;
 			}
+		}
 
-			busy = true;
-			more.textContent = strings.loading || 'আসছে...';
+		function load( url, push ) {
+			url = absUrl( url );
 
-			getJSON( rest + 'list?page=' + next ).then(
-				function ( data ) {
-					var frag = document.createDocumentFragment();
+			var mine = ++seq;
 
-					data.items.forEach( function ( item ) {
-						var article = document.createElement( 'article' );
-						article.className = 'rs-row';
+			wrap.classList.add( 'is-loading' );
 
-						var link = document.createElement( 'a' );
-						link.className = 'rs-row__link';
-						link.href = item.link;
-						link.setAttribute( 'data-rs-post', item.id );
-						link.setAttribute( 'data-rs-summary', item.summary );
-
-						var head = document.createElement( 'span' );
-						head.className = 'rs-row__head';
-
-						var title = document.createElement( 'span' );
-						title.className = 'rs-row__title';
-						title.textContent = item.title;
-						head.appendChild( title );
-
-						if ( cfg.showCat && item.category ) {
-							var cat = document.createElement( 'em' );
-							cat.className = 'rs-row__cat';
-							cat.textContent = item.category;
-							head.appendChild( cat );
-						}
-
-						var aside = document.createElement( 'span' );
-						aside.className = 'rs-row__aside';
-
-						if ( item.readingTime ) {
-							var read = document.createElement( 'span' );
-							read.className = 'rs-row__read';
-							read.textContent = item.readingTime;
-							aside.appendChild( read );
-						}
-
-						var date = document.createElement( 'span' );
-						date.className = 'rs-row__date';
-						date.textContent = item.date;
-						aside.appendChild( date );
-
-						link.appendChild( head );
-						link.appendChild( aside );
-						article.appendChild( link );
-						frag.appendChild( article );
-					} );
-
-					list.appendChild( frag );
-
-					more.setAttribute( 'data-next', String( next + 1 ) );
-					more.textContent = strings.more || 'আরও লেখা';
-					busy = false;
-
-					if ( next + 1 > data.maxPages ) {
-						more.hidden = true;
+			window.fetch( fragmentUrl( url ), { credentials: 'same-origin' } )
+				.then( function ( res ) {
+					if ( ! res.ok ) {
+						throw new Error( res.status );
 					}
-				},
-				function () {
-					more.textContent = strings.more || 'আরও লেখা';
-					busy = false;
-				}
-			);
+
+					return res.text();
+				} )
+				.then( function ( html ) {
+					if ( mine !== seq ) {
+						return;
+					}
+
+					swap( html );
+
+					listUrl = url;
+					wrap.classList.remove( 'is-loading' );
+
+					if ( push ) {
+						window.history.pushState( { rs: 'list' }, '', url );
+					}
+
+					/* Nothing was focused after the old rows went away, so
+					   a keyboard reader would be back at the top of the
+					   document. preventScroll keeps this from fighting the
+					   smooth scroll; browsers that ignore it simply jump
+					   to the same place. */
+					wrap.focus( { preventScroll: true } );
+					scrollToList();
+				} )
+				.then( null, function () {
+					if ( mine !== seq ) {
+						return;
+					}
+
+					/* The URL is a real page whatever went wrong here, so
+					   let the browser go and fetch it properly. */
+					window.location.href = url;
+				} );
 		}
 
-		more.addEventListener( 'click', load );
+		document.addEventListener( 'click', function ( event ) {
+			var link = event.target.closest ? event.target.closest( '.rs-pagination a' ) : null;
 
-		if ( 'IntersectionObserver' in window ) {
-			var observer = new window.IntersectionObserver(
-				function ( entries ) {
-					entries.forEach( function ( entry ) {
-						if ( entry.isIntersecting ) {
-							load();
-						}
-					} );
-				},
-				{ rootMargin: '400px' }
-			);
+			if ( ! link ) {
+				return;
+			}
 
-			observer.observe( more );
-		}
+			if ( event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0 ) {
+				return;
+			}
+
+			event.preventDefault();
+			load( link.href, true );
+		} );
+
+		loadListPage = load;
 	}() );
 
 	/* ---------------------------------------------------------------
