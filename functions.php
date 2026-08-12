@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.17.0' );
+define( 'RS_VERSION', '2.17.1' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -824,7 +824,7 @@ function rs_settings_images() {
 	return array(
 		'rs_hero_image' => array(
 			__( 'Heading image', 'raisul-sohan' ),
-			__( 'Stands in place of the heading text at the top of the list. A transparent PNG sits on the page rather than in a box of its own — but remember the page has a dark mode and a colour readers can change, so a picture drawn for one background may disappear on another. Shown at up to 120 pixels tall.', 'raisul-sohan' ),
+			__( 'Stands in place of the heading text at the top of the list, filling the width of the column so its edges line up with the rows below. Upload it wide — around 1600 pixels across — and let its own proportions decide the height. A transparent PNG sits on the page rather than in a box of its own, but remember the page has a dark mode and a colour readers can change, so a picture drawn for one background may disappear on another.', 'raisul-sohan' ),
 		),
 		'rs_og_image'   => array(
 			__( 'Share image', 'raisul-sohan' ),
