@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.7.0' );
+define( 'RS_VERSION', '2.7.1' );
 
 /** Rows per page, on the front page and on every archive. */
 define( 'RS_PER_PAGE', 10 );
@@ -1516,6 +1516,28 @@ function rs_robots( $robots ) {
 	return $robots;
 }
 add_filter( 'wp_robots', 'rs_robots' );
+
+/**
+ * Keep the author archive out of the sitemap.
+ *
+ * A sitemap is a list of pages worth indexing, and rs_robots() above has
+ * just told Google not to index this one. Offering it anyway is a
+ * contradiction, and Search Console reports it back as an excluded URL.
+ *
+ * @param WP_Sitemaps_Provider $provider Sitemap provider.
+ * @param string               $name     Provider name.
+ * @return WP_Sitemaps_Provider|false
+ */
+function rs_sitemap_providers( $provider, $name ) {
+	/* The noindex is conditional on this same check, so the omission has
+	   to be: with a plugin in charge the archive may well be indexable. */
+	if ( rs_seo_plugin_active() ) {
+		return $provider;
+	}
+
+	return 'users' === $name ? false : $provider;
+}
+add_filter( 'wp_sitemaps_add_provider', 'rs_sitemap_providers', 10, 2 );
 
 /**
  * Add a helpful body class.
