@@ -15,6 +15,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 get_header();
 ?>
 
+<?php
+/* The modal has had one of these all along. A reader arriving from a
+   shared link never saw it, which is most of them. */
+?>
+<div class="rs-progress" aria-hidden="true"><span id="rs-progress"></span></div>
+
 <main class="rs-single" id="rs-content">
 	<?php
 	while ( have_posts() ) :

@@ -20,6 +20,12 @@ get_header();
 
 <?php rs_render_count(); ?>
 
+<?php
+/* Filled by app.js when this browser left a story unfinished. Empty in
+   the markup, because only the browser knows whether there is one. */
+?>
+<div class="rs-wrap" id="rs-resume"></div>
+
 <div class="rs-fontctl rs-fontctl--float" role="group" aria-label="লেখার আকার">
 	<button type="button" data-rs-font="down" data-step="0" aria-label="ছোট করুন">A-</button>
 	<span class="rs-fontctl__sep"></span>

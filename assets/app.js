@@ -833,7 +833,9 @@
 		$( '.rs-article__body', postBody ).innerHTML = data.content;
 
 		applyFont();
-		restoreScroll( postBody.parentNode, readPositions()[ 'p' + data.id ] || 0 );
+		var resume = positionEntry( data.id );
+
+		restoreScroll( postBody.parentNode, resume ? resume.t : 0 );
 	}
 
 	/*
@@ -853,10 +855,15 @@
 	/* ---------------------------------------------------------------
 	 * Remembering where the reader stopped
 	 *
-	 * One localStorage entry holding { p<id>: scrollTop }. Keys carry a
-	 * "p" so they stay non-numeric: JavaScript orders integer-like object
-	 * keys numerically, which would make the oldest-first pruning below
-	 * throw away the wrong entries.
+	 * One localStorage entry holding { p<id>: { t: scrollTop, n: title,
+	 * u: url } }. Keys carry a "p" so they stay non-numeric: JavaScript
+	 * orders integer-like object keys numerically, which would make the
+	 * oldest-first pruning below throw away the wrong entries.
+	 *
+	 * The title and the address ride along so that the "you were reading"
+	 * line on the front page needs nothing from the server. Entries left
+	 * by an older version of this file are bare numbers; those still
+	 * restore the scroll, they simply cannot be offered by name.
 	 * ------------------------------------------------------------ */
 
 	var POS_KEY = 'rs-pos';
@@ -873,7 +880,22 @@
 		}
 	}
 
-	function savePosition( id, top, travel ) {
+	/* Both shapes, as one shape. */
+	function positionEntry( id ) {
+		var found = readPositions()[ 'p' + id ];
+
+		if ( ! found ) {
+			return null;
+		}
+
+		if ( 'number' === typeof found ) {
+			return { t: found, n: '', u: '' };
+		}
+
+		return found;
+	}
+
+	function savePosition( id, top, travel, title, url ) {
 		if ( ! id ) {
 			return;
 		}
@@ -881,13 +903,19 @@
 		var map = readPositions();
 		var key = 'p' + id;
 
+		/* Deleted either way, then re-added: an object's keys keep the
+		   order they were inserted in, so this also moves the entry to the
+		   end, which is what makes the last one the most recent. */
+		delete map[ key ];
+
 		/* Forget the position once they have reached the end: coming back
 		   to a finished post should start at the beginning. */
-		if ( top < POS_MIN || ( travel > 0 && top / travel > 0.9 ) ) {
-			delete map[ key ];
-		} else {
-			delete map[ key ];
-			map[ key ] = Math.round( top );
+		if ( top >= POS_MIN && ! ( travel > 0 && top / travel > 0.9 ) ) {
+			map[ key ] = {
+				t: Math.round( top ),
+				n: title || '',
+				u: url || '',
+			};
 		}
 
 		var keys = Object.keys( map );
@@ -907,8 +935,15 @@
 		}
 
 		var scroller = postBody.parentNode;
+		var known = cache[ currentPostId ] || {};
 
-		savePosition( currentPostId, scroller.scrollTop, scroller.scrollHeight - scroller.clientHeight );
+		savePosition(
+			currentPostId,
+			scroller.scrollTop,
+			scroller.scrollHeight - scroller.clientHeight,
+			known.title,
+			known.link
+		);
 	}
 
 	function restoreScroll( scroller, target ) {
@@ -1494,6 +1529,171 @@
 				} );
 			} );
 		}
+	}() );
+
+	/* ---------------------------------------------------------------
+	 * Reading a post at its own address
+	 *
+	 * Everything above was written for the modal, which is how the front
+	 * page opens a story. Most readers do not arrive that way: they come
+	 * from a shared link, straight to the post's own page, where the
+	 * window does the scrolling and none of the modal's machinery is on
+	 * screen. This gives that page the same progress bar, and remembers
+	 * where they stopped so the line on the front page can offer it back.
+	 * ------------------------------------------------------------ */
+
+	( function () {
+		if ( ! cfg.postId ) {
+			return;
+		}
+
+		var bar = $( '#rs-progress' );
+		var article = $( '.rs-single .rs-article' );
+
+		function travel() {
+			return Math.max(
+				0,
+				document.documentElement.scrollHeight - window.innerHeight
+			);
+		}
+
+		function update() {
+			if ( ! bar ) {
+				return;
+			}
+
+			var room = travel();
+			var pct = room > 0 ? ( window.pageYOffset / room ) * 100 : 0;
+
+			bar.style.width = Math.min( 100, Math.max( 0, pct ) ) + '%';
+		}
+
+		function remember() {
+			var title = $( '.rs-article__title', article );
+
+			savePosition(
+				cfg.postId,
+				window.pageYOffset,
+				travel(),
+				title ? title.textContent : document.title,
+				window.location.href
+			);
+		}
+
+		var timer = null;
+
+		window.addEventListener(
+			'scroll',
+			function () {
+				update();
+
+				/* Trailing, like the modal's: writing to localStorage at
+				   scroll frequency would be wasteful. */
+				window.clearTimeout( timer );
+				timer = window.setTimeout( remember, 400 );
+			},
+			{ passive: true }
+		);
+
+		/* A closed tab never fires the timer. */
+		window.addEventListener( 'pagehide', remember );
+
+		update();
+	}() );
+
+	/* ---------------------------------------------------------------
+	 * "You were reading"
+	 *
+	 * A position is only kept while a post is started and unfinished, so
+	 * the newest entry is exactly the thread the reader dropped. Offering
+	 * it back is the whole point of having remembered it: until now the
+	 * position only helped someone who found their way to the same story
+	 * again on their own.
+	 * ------------------------------------------------------------ */
+
+	( function () {
+		var host = $( '#rs-resume' );
+
+		if ( ! host ) {
+			return;
+		}
+
+		var map = readPositions();
+		var keys = Object.keys( map );
+		var last = keys.length ? map[ keys[ keys.length - 1 ] ] : null;
+
+		/* Entries from before titles were stored have nothing to show. */
+		if ( ! last || 'number' === typeof last || ! last.n || ! last.u ) {
+			return;
+		}
+
+		var id = keys[ keys.length - 1 ].slice( 1 );
+
+		host.innerHTML =
+			'<div class="rs-resume">' +
+			'<a class="rs-resume__link" href="' + escapeHtml( last.u ) +
+			'" data-rs-post="' + escapeHtml( id ) + '">' +
+			'<span class="rs-resume__label">আপনি পড়ছিলেন</span>' +
+			'<span class="rs-resume__title">' + escapeHtml( last.n ) + '</span>' +
+			'</a>' +
+			'<button class="rs-resume__close" type="button" aria-label="সরিয়ে দিন">&times;</button>' +
+			'</div>';
+
+		$( '.rs-resume__close', host ).addEventListener( 'click', function () {
+			/* Dropped rather than hidden: they have said they are not
+			   going back to it. */
+			var fresh = readPositions();
+
+			delete fresh[ 'p' + id ];
+			store( POS_KEY, JSON.stringify( fresh ) );
+
+			host.innerHTML = '';
+		} );
+	}() );
+
+	/* ---------------------------------------------------------------
+	 * Carry the source along with copied text
+	 *
+	 * Bengali writing travels around Facebook without its author's name
+	 * more often than with it. This stops nobody — the text is still
+	 * theirs to take — it only makes the credit the easier thing to keep
+	 * than to remove.
+	 * ------------------------------------------------------------ */
+
+	( function () {
+		/* Long enough to be a passage rather than a word someone is
+		   looking up or a name they are searching for. */
+		var CREDIT_MIN = 60;
+
+		document.addEventListener( 'copy', function ( event ) {
+			var sel = window.getSelection();
+
+			if ( ! sel || sel.isCollapsed || ! event.clipboardData ) {
+				return;
+			}
+
+			var node = sel.anchorNode;
+			var el = node && 3 === node.nodeType ? node.parentNode : node;
+
+			if ( ! el || ! el.closest || ! el.closest( '.rs-article__body' ) ) {
+				return;
+			}
+
+			var text = sel.toString();
+
+			if ( text.length < CREDIT_MIN ) {
+				return;
+			}
+
+			var author = $( '.rs-article__author' );
+			var name = author && author.textContent ? author.textContent.trim() : ( cfg.siteName || '' );
+
+			event.clipboardData.setData(
+				'text/plain',
+				text + '\n\n— ' + name + ', ' + window.location.href
+			);
+			event.preventDefault();
+		} );
 	}() );
 
 	/* A post opened at its own address, rather than in the modal. Zero on
