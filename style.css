@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: রাইসুল সোহানের লেখার সাইট। Figma Make ডিজাইন থেকে পোর্ট করা একটি হালকা ক্লাসিক থিম। পোস্ট মডালে খোলে, কিন্তু প্রতিটা লেখার নিজস্ব URL থাকে।
-Version: 2.18.0
+Version: 2.19.0
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -44,7 +44,11 @@ Tags: blog, one-column, custom-colors
 	--rs-grid: rgba(0, 0, 0, 0.016);
 	--rs-grid-size: 64px;
 
-	--rs-hover: #f3821d;
+	/* Burnt rather than bright, because this colour lands on text. The
+	   #f3821d it started as measured 2.21:1 against the page, so hovering
+	   a title made it harder to read than leaving it alone — the opposite
+	   of what a hover state is for. This one is 4.98:1. */
+	--rs-hover: #a24c00;
 	--rs-mark: #fef08a;
 
 	/* --rs-bg at 85%, for the close button floating over scrolling text. */
@@ -1551,6 +1555,17 @@ a.rs-article__cat:hover {
 	align-items: center;
 	flex-wrap: wrap;
 	gap: 0.75rem;
+}
+
+/* Only where the browser can open a share sheet. app.js marks the page
+   when navigator.share is there; everywhere else this button would be a
+   second way to do what the one beside it already does. */
+.rs-share__btn[data-rs-share] {
+	display: none;
+}
+
+.rs-can-share .rs-share__btn[data-rs-share] {
+	display: inline-flex;
 }
 
 .rs-share__btn {
