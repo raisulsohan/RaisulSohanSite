@@ -292,6 +292,38 @@
 		} );
 	}
 
+	/* ---------------------------------------------------------------
+	 * Handing a story on
+	 *
+	 * Copying a link is a step on the way to what the reader meant, which
+	 * is nearly always to send it to somebody. Where the browser can open
+	 * the sheet they already send things with, that is one step instead
+	 * of three. Where it cannot, the button never appears and copying is
+	 * still there.
+	 * ------------------------------------------------------------ */
+
+	if ( navigator.share ) {
+		document.documentElement.classList.add( 'rs-can-share' );
+	}
+
+	document.addEventListener( 'click', function ( event ) {
+		var btn = event.target.closest ? event.target.closest( '[data-rs-share]' ) : null;
+
+		if ( ! btn || ! navigator.share ) {
+			return;
+		}
+
+		event.preventDefault();
+
+		navigator.share( {
+			title: btn.getAttribute( 'data-rs-share-title' ) || document.title,
+			url: btn.getAttribute( 'data-rs-share' ),
+		} ).then( null, function () {
+			/* Cancelling the sheet rejects. That is a decision, not a
+			   failure, and it needs no toast. */
+		} );
+	} );
+
 	document.addEventListener( 'click', function ( event ) {
 		var trigger = event.target.closest ? event.target.closest( '[data-rs-copy]' ) : null;
 
@@ -750,13 +782,18 @@
 		return '<a class="rs-article__edit" href="">' + icon + 'সম্পাদনা</a>';
 	}
 
-	function shareHtml( link ) {
-		var cpIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
+	function shareHtml( link, title ) {
+		var svg = 'width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+		var cpIcon = '<svg ' + svg + '><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
+		var shIcon = '<svg ' + svg + '><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>';
 
 		return (
 			'<div class="rs-share">' +
 			'<p class="rs-share__label">শেয়ার করুন</p>' +
 			'<div class="rs-share__row">' +
+			'<button class="rs-share__btn" type="button" data-rs-share="' + escapeHtml( link ) +
+			'" data-rs-share-title="' + escapeHtml( title || '' ) + '">' +
+			shIcon + 'পাঠান</button>' +
 			'<button class="rs-share__btn" type="button" data-rs-copy="' + escapeHtml( link ) + '">' +
 			cpIcon + 'লিঙ্ক কপি</button>' +
 			'</div></div>'
@@ -799,7 +836,7 @@
 			'</div>' +
 			'<p class="rs-article__author"></p>' +
 			'<div class="rs-article__body"></div>' +
-			shareHtml( data.link ) +
+			shareHtml( data.link, data.title ) +
 			relatedHtml( data ) +
 			nextPrevHtml( data );
 
@@ -1272,7 +1309,10 @@
 
 			window.clearTimeout( searchTimer );
 
-			if ( '' === term ) {
+			/* The hint stays up until there are two characters. One letter
+			   matches most of the archive, which is not an answer, and the
+			   endpoint declines it for the same reason. */
+			if ( term.length < 2 ) {
 				searchResults.innerHTML = '<p class="rs-search__hint">' + escapeHtml( strings.hint || '' ) + '</p>';
 				searchCount.hidden = true;
 				return;
@@ -1701,7 +1741,7 @@
 
 		/* The accent is the site's own and keeps its hue. It is only moved
 		   when the chosen background would swallow it. */
-		var hover = hexToRgb( light ? '#f3821d' : '#9c8cff' );
+		var hover = hexToRgb( light ? '#a24c00' : '#9c8cff' );
 
 		if ( contrast( hover, bg ) < 2 ) {
 			var hoverHsl = rgbToHsl( hover );

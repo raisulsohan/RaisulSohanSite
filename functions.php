@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.18.0' );
+define( 'RS_VERSION', '2.19.0' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -1236,6 +1236,9 @@ function rs_icon( $name, $size = 15 ) {
 		'close'    => '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
 		'up'       => '<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
 		'copy'     => '<rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+		/* Lines drawn as paths: rs_svg_tags() allows path and circle, and
+		   two more tags for one icon is not worth widening it. */
+		'share'    => '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/>',
 		'left'     => '<path d="m15 18-6-6 6-6"/>',
 		'right'    => '<path d="m9 18 6-6-6-6"/>',
 		'undo'     => '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>',
@@ -1316,6 +1319,18 @@ function rs_share_row( $post = null ) {
 	<div class="rs-share">
 		<p class="rs-share__label">শেয়ার করুন</p>
 		<div class="rs-share__row">
+			<?php
+			/* Hidden by CSS until app.js finds navigator.share and marks
+			   the page. On a phone this opens whatever the reader already
+			   sends things with, which is where these links actually go. */
+			?>
+			<button class="rs-share__btn" type="button"
+				data-rs-share="<?php echo esc_attr( $url ); ?>"
+				data-rs-share-title="<?php echo esc_attr( rs_plain_title( $post ) ); ?>">
+				<?php echo wp_kses( rs_icon( 'share', 14 ), rs_svg_tags() ); ?>
+				পাঠান
+			</button>
+
 			<button class="rs-share__btn" type="button" data-rs-copy="<?php echo esc_attr( $url ); ?>">
 				<?php echo wp_kses( rs_icon( 'copy', 14 ), rs_svg_tags() ); ?>
 				লিঙ্ক কপি
@@ -1947,10 +1962,25 @@ function rs_adjacent_payload( $item ) {
  * @return WP_REST_Response
  */
 function rs_rest_search( $request ) {
-	$term = trim( (string) $request->get_param( 'q' ) );
+	/* Cut before it is looked at. Nobody searches with eighty characters,
+	   and a LIKE across every post body deserves an upper bound that does
+	   not depend on the caller being reasonable. Plain mb_substr rather
+	   than rs_shorten(), which would hang an ellipsis on the end of the
+	   thing being searched for. */
+	$term = mb_substr( trim( (string) $request->get_param( 'q' ) ), 0, 80, 'UTF-8' );
 
-	if ( mb_strlen( $term, 'UTF-8' ) < 1 ) {
-		return rest_ensure_response( array( 'items' => array(), 'total' => 0 ) );
+	/*
+	 * Two, not one. A single Bengali letter matches most of the archive
+	 * and tells the reader nothing, and app.js holds its hint on screen
+	 * until there are two, so this is the same rule kept on both sides.
+	 */
+	if ( mb_strlen( $term, 'UTF-8' ) < 2 ) {
+		return rest_ensure_response(
+			array(
+				'items' => array(),
+				'total' => 0,
+			)
+		);
 	}
 
 	$query = new WP_Query(
@@ -2016,6 +2046,58 @@ function rs_rest_random( $request ) {
 }
 
 /**
+ * Whether whatever is asking looks like a machine.
+ *
+ * Counting from the browser already keeps out everything that does not
+ * run JavaScript, which is most crawlers. What is left is the handful
+ * that do, plus the previewers, the uptime checkers and anything run from
+ * a script — none of them readers.
+ *
+ * A guard on the user agent rather than a rate limit keyed on the address.
+ * The limit would want a transient, and a transient is a row written to
+ * the options table: it would add a write to every genuine reading in
+ * order to save writes during an attack nobody has made on a site with
+ * thirty four stories on it.
+ *
+ * @return bool
+ */
+function rs_looks_automated() {
+	$agent = isset( $_SERVER['HTTP_USER_AGENT'] )
+		? strtolower( sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) )
+		: '';
+
+	/* A browser always sends one. */
+	if ( '' === $agent ) {
+		return true;
+	}
+
+	$marks = array(
+		'bot',
+		'crawl',
+		'spider',
+		'slurp',
+		'facebookexternalhit',
+		'headless',
+		'preview',
+		'python',
+		'curl',
+		'wget',
+		'http-client',
+		'monitor',
+		'lighthouse',
+		'pingdom',
+	);
+
+	foreach ( $marks as $mark ) {
+		if ( false !== strpos( $agent, $mark ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
  * Add one to a post's read count.
  *
  * Called from the browser rather than while the page renders, because the
@@ -2049,7 +2131,7 @@ function rs_rest_view( $request ) {
 	 */
 	$viewer = wp_validate_auth_cookie( '', 'logged_in' );
 
-	if ( $viewer && user_can( $viewer, 'edit_posts' ) ) {
+	if ( ( $viewer && user_can( $viewer, 'edit_posts' ) ) || rs_looks_automated() ) {
 		return rest_ensure_response( array( 'counted' => false ) );
 	}
 
