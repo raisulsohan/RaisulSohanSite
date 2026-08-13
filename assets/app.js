@@ -789,7 +789,7 @@
 
 		return (
 			'<div class="rs-share">' +
-			'<p class="rs-share__label">শেয়ার করুন</p>' +
+			'<p class="rs-share__label">অন্যদেরও পড়তে দিন</p>' +
 			'<div class="rs-share__row">' +
 			'<button class="rs-share__btn" type="button" data-rs-share="' + escapeHtml( link ) +
 			'" data-rs-share-title="' + escapeHtml( title || '' ) + '">' +
