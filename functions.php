@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.20.0' );
+define( 'RS_VERSION', '2.20.1' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -1317,7 +1317,7 @@ function rs_share_row( $post = null ) {
 	$url = get_permalink( $post );
 	?>
 	<div class="rs-share">
-		<p class="rs-share__label">শেয়ার করুন</p>
+		<p class="rs-share__label">অন্যদেরও পড়তে দিন</p>
 		<div class="rs-share__row">
 			<?php
 			/* Hidden by CSS until app.js finds navigator.share and marks
