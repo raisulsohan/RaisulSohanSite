@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.19.0' );
+define( 'RS_VERSION', '2.20.0' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -1328,7 +1328,7 @@ function rs_share_row( $post = null ) {
 				data-rs-share="<?php echo esc_attr( $url ); ?>"
 				data-rs-share-title="<?php echo esc_attr( rs_plain_title( $post ) ); ?>">
 				<?php echo wp_kses( rs_icon( 'share', 14 ), rs_svg_tags() ); ?>
-				পাঠান
+				শেয়ার করুন
 			</button>
 
 			<button class="rs-share__btn" type="button" data-rs-copy="<?php echo esc_attr( $url ); ?>">

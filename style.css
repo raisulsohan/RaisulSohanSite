@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: রাইসুল সোহানের লেখার সাইট। Figma Make ডিজাইন থেকে পোর্ট করা একটি হালকা ক্লাসিক থিম। পোস্ট মডালে খোলে, কিন্তু প্রতিটা লেখার নিজস্ব URL থাকে।
-Version: 2.19.0
+Version: 2.20.0
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -234,6 +234,18 @@ button {
 	border-radius: 2px;
 }
 
+/*
+ * Selected text carries the accent too. On a site that is nothing but
+ * reading, dragging across a sentence is the commonest thing anyone does
+ * with it, and the browser's default blue belongs to no page in
+ * particular. The text keeps the page's own ink rather than turning
+ * white, which is what keeps a pale accent readable underneath it.
+ */
+::selection {
+	background: var(--rs-mark);
+	color: var(--rs-fg);
+}
+
 .rs-sr {
 	position: absolute;
 	width: 1px;
@@ -411,6 +423,19 @@ button {
 	color: var(--rs-fg);
 }
 
+/*
+ * The rule under the section you are in takes the accent, while the one
+ * that follows the pointer stays the colour of its own text. Two marks
+ * that looked identical now say different things: one is where you are,
+ * the other is where you would go.
+ */
+.rs-navbar__list .current-menu-item > a::after,
+.rs-navbar__list .current_page_item > a::after,
+.rs-navbar__list .current-menu-ancestor > a::after {
+	background: var(--rs-hover);
+	height: 2px;
+}
+
 /* ==========================================================================
    4. Hero / typewriter
    ========================================================================== */
@@ -475,20 +500,21 @@ button {
 	color:var(--rs-hover);
 }
 
-/* Sends the reader to a story chosen for them. Set apart by a middot
-   rather than a button, because it is an aside to the count, not a
-   second thing to decide about. */
+/* Sends the reader to a story chosen for them. Set apart by a rule rather
+   than a button, because it is an aside to the count, not a second thing
+   to decide about — but in the accent, because it is the one thing on
+   this line that does something. */
 .rs-post-count__any {
 	margin-left: 0.5rem;
 	padding-left: 0.75rem;
 	border-left: 1px solid var(--rs-border-60);
-	color: var(--rs-muted-fg);
-	transition: color 0.15s ease;
+	color: var(--rs-hover);
+	transition: opacity 0.15s ease;
 }
 
 .rs-post-count__any:hover,
 .rs-post-count__any:focus-visible {
-	color: var(--rs-hover);
+	opacity: 0.7;
 }
 
 /*
@@ -1375,9 +1401,11 @@ a.rs-article__cat:hover {
 	overflow-wrap: break-word;
 }
 
+/* The accent on the one mark in a piece of prose that is already saying
+   "somebody else wrote this". */
 .rs-article__body blockquote {
 	padding-left: 1rem;
-	border-left: 2px solid var(--rs-border);
+	border-left: 2px solid var(--rs-hover);
 	color: var(--rs-muted-fg);
 	font-style: italic;
 }

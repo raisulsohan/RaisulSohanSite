@@ -793,7 +793,7 @@
 			'<div class="rs-share__row">' +
 			'<button class="rs-share__btn" type="button" data-rs-share="' + escapeHtml( link ) +
 			'" data-rs-share-title="' + escapeHtml( title || '' ) + '">' +
-			shIcon + 'পাঠান</button>' +
+			shIcon + 'শেয়ার করুন</button>' +
 			'<button class="rs-share__btn" type="button" data-rs-copy="' + escapeHtml( link ) + '">' +
 			cpIcon + 'লিঙ্ক কপি</button>' +
 			'</div></div>'
