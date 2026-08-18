@@ -620,6 +620,7 @@ function rs_defaults() {
 		'rs_archive_per_page' => RS_PER_PAGE,
 		'rs_verify'   => 'UGbwgVSquWFpv2qZcQYRQzJSyEFaryG9PHAIpY2ZsYA',
 		'rs_featured_block_offset' => 0,
+		'rs_featured_bottom_gap'   => 0,
 		'rs_featured_summary_length' => 250,
 	);
 }
@@ -821,6 +822,12 @@ function rs_settings_fields() {
 			'number',
 			'intval',
 			__( 'Adjust the vertical position of the entire featured section. Can be negative, e.g., -5, 10.', 'raisul-sohan' ),
+		),
+		'rs_featured_bottom_gap' => array(
+			__( 'Featured bottom gap (px)', 'raisul-sohan' ),
+			'number',
+			'intval',
+			__( 'Adjust the gap below the featured post. Can be negative to bring the list closer.', 'raisul-sohan' ),
 		),
 		'rs_featured_summary_length' => array(
 			__( 'Featured summary length (chars)', 'raisul-sohan' ),
@@ -1793,7 +1800,13 @@ function rs_render_featured_post( $cat_id = 0 ) {
 	$rest = mb_substr( $summary, mb_strlen( $dropcap, 'UTF-8' ), null, 'UTF-8' );
 
 	$offset = (int) rs_option( 'rs_featured_block_offset' );
-	$style = $offset ? ' style="margin-top: ' . $offset . 'px;"' : '';
+	$bottom_gap = (int) rs_option( 'rs_featured_bottom_gap' );
+	
+	$styles = array();
+	if ( $offset ) $styles[] = 'margin-top: ' . $offset . 'px';
+	if ( $bottom_gap ) $styles[] = 'margin-bottom: ' . $bottom_gap . 'px';
+	
+	$style = ! empty( $styles ) ? ' style="' . implode( '; ', $styles ) . ';"' : '';
 	?>
 	<div class="rs-wrap"<?php echo $style; ?>>
 		<div class="rs-featured">
@@ -3005,6 +3018,23 @@ function rs_customize_register( $wp_customize ) {
 		'input_attrs' => array(
 			'min'  => -100,
 			'max'  => 100,
+			'step' => 1,
+		),
+	) );
+
+	$wp_customize->add_setting( 'rs_featured_bottom_gap', array(
+		'default'   => 0,
+		'type'      => 'theme_mod',
+		'transport' => 'refresh',
+	) );
+	$wp_customize->add_control( 'rs_featured_bottom_gap', array(
+		'label'       => __( 'Featured bottom gap (px)', 'raisul-sohan' ),
+		'description' => __( 'Adjust the gap between the featured post and the list below it.', 'raisul-sohan' ),
+		'section'     => 'rs_featured_section',
+		'type'        => 'range',
+		'input_attrs' => array(
+			'min'  => -200,
+			'max'  => 200,
 			'step' => 1,
 		),
 	) );
