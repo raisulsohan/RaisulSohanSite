@@ -20,6 +20,7 @@ get_header();
    shared link never saw it, which is most of them. */
 ?>
 <div class="rs-progress" aria-hidden="true"><span id="rs-progress"></span></div>
+<div id="rs-single-time-left" class="rs-time-left" aria-hidden="true"></div>
 
 <main class="rs-single" id="rs-content">
 	<?php

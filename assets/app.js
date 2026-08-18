@@ -1964,6 +1964,25 @@
 				var pct = travel > 0 ? ( scroller.scrollTop / travel ) * 100 : 0;
 
 				bar.style.width = Math.min( 100, Math.max( 0, pct ) ) + '%';
+
+				var timeLeftIndicator = $( '#rs-time-left' );
+				if ( timeLeftIndicator && currentPostId && cache[currentPostId] && cache[currentPostId].readingTime ) {
+					var rt = cache[currentPostId].readingTime;
+					var bnDigitsStr = rt.replace(/[^\u09E6-\u09EF]/g, '');
+					if ( bnDigitsStr ) {
+						var enDigits = bnDigitsStr.replace(/[\u09E6-\u09EF]/g, function(d) {
+							return "০১২৩৪৫৬৭৮৯".indexOf(d);
+						});
+						var totalMinutes = parseInt(enDigits, 10);
+						var remaining = Math.ceil( totalMinutes * ( 1 - ( pct / 100 ) ) );
+						if ( remaining > 0 && pct > 5 ) {
+							timeLeftIndicator.textContent = "আর " + bnDigits(remaining) + " মিনিট বাকি";
+							timeLeftIndicator.classList.add('is-visible');
+						} else {
+							timeLeftIndicator.classList.remove('is-visible');
+						}
+					}
+				}
 			}
 		}
 
@@ -1983,6 +2002,35 @@
 			},
 			{ passive: true }
 		);
+		
+		/* Swipe to next/prev post on mobile */
+		var touchStartX = 0;
+		var touchStartY = 0;
+		scroller.addEventListener('touchstart', function(e) {
+			touchStartX = e.changedTouches[0].screenX;
+			touchStartY = e.changedTouches[0].screenY;
+		}, {passive: true});
+
+		scroller.addEventListener('touchend', function(e) {
+			var touchEndX = e.changedTouches[0].screenX;
+			var touchEndY = e.changedTouches[0].screenY;
+			var dx = touchEndX - touchStartX;
+			var dy = touchEndY - touchStartY;
+			
+			// Swipe left = Next post, Swipe right = Prev post
+			if ( Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 2 ) {
+				var key = dx < 0 ? 'ArrowRight' : 'ArrowLeft';
+				var link = $(
+					'ArrowLeft' === key
+						? '.rs-nextprev a:not(.rs-nextprev__next)'
+						: '.rs-nextprev .rs-nextprev__next',
+					postOverlay
+				);
+				if ( link ) {
+					link.click();
+				}
+			}
+		}, {passive: true});
 
 		/* A closed tab never runs closePost(), so catch that too. */
 		window.addEventListener( 'pagehide', flushPosition );
@@ -2015,7 +2063,15 @@
 		}
 
 		var bar = $( '#rs-progress' );
+		var singleTimeLeft = $( '#rs-single-time-left' );
 		var article = $( '.rs-single .rs-article' );
+		var readTimeStr = '';
+		if ( singleTimeLeft ) {
+			var readTimeEl = $( '.rs-article__read', article );
+			if ( readTimeEl ) {
+				readTimeStr = readTimeEl.textContent;
+			}
+		}
 
 		function travel() {
 			return Math.max(
@@ -2025,14 +2081,29 @@
 		}
 
 		function update() {
-			if ( ! bar ) {
-				return;
-			}
-
 			var room = travel();
 			var pct = room > 0 ? ( window.pageYOffset / room ) * 100 : 0;
 
-			bar.style.width = Math.min( 100, Math.max( 0, pct ) ) + '%';
+			if ( bar ) {
+				bar.style.width = Math.min( 100, Math.max( 0, pct ) ) + '%';
+			}
+			
+			if ( singleTimeLeft && readTimeStr ) {
+				var bnDigitsStr = readTimeStr.replace(/[^\u09E6-\u09EF]/g, '');
+				if ( bnDigitsStr ) {
+					var enDigits = bnDigitsStr.replace(/[\u09E6-\u09EF]/g, function(d) {
+						return "০১২৩৪৫৬৭৮৯".indexOf(d);
+					});
+					var totalMinutes = parseInt(enDigits, 10);
+					var remaining = Math.ceil( totalMinutes * ( 1 - ( pct / 100 ) ) );
+					if ( remaining > 0 && pct > 5 ) {
+						singleTimeLeft.textContent = "আর " + bnDigits(remaining) + " মিনিট বাকি";
+						singleTimeLeft.classList.add('is-visible');
+					} else {
+						singleTimeLeft.classList.remove('is-visible');
+					}
+				}
+			}
 		}
 
 		function remember() {
@@ -2065,6 +2136,33 @@
 
 		/* A closed tab never fires the timer. */
 		window.addEventListener( 'pagehide', remember );
+
+		/* Swipe to next/prev post on mobile for single page */
+		var touchStartX = 0;
+		var touchStartY = 0;
+		document.addEventListener('touchstart', function(e) {
+			touchStartX = e.changedTouches[0].screenX;
+			touchStartY = e.changedTouches[0].screenY;
+		}, {passive: true});
+
+		document.addEventListener('touchend', function(e) {
+			var touchEndX = e.changedTouches[0].screenX;
+			var touchEndY = e.changedTouches[0].screenY;
+			var dx = touchEndX - touchStartX;
+			var dy = touchEndY - touchStartY;
+			
+			if ( Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 2 ) {
+				var key = dx < 0 ? 'ArrowRight' : 'ArrowLeft';
+				var link = $(
+					'ArrowLeft' === key
+						? '.rs-nextprev a:not(.rs-nextprev__next)'
+						: '.rs-nextprev .rs-nextprev__next'
+				);
+				if ( link ) {
+					window.location.href = link.href;
+				}
+			}
+		}, {passive: true});
 
 		update();
 	}() );

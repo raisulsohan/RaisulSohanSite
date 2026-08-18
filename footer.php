@@ -54,6 +54,7 @@ $rs_about = rs_about();
 <div class="rs-overlay" id="rs-post-overlay" role="dialog" aria-modal="true" aria-labelledby="rs-post-title" hidden>
 	<div class="rs-modal rs-modal--post">
 		<div class="rs-modal__progress" aria-hidden="true"><span id="rs-modal-progress"></span></div>
+		<div id="rs-time-left" class="rs-time-left" aria-hidden="true"></div>
 		<button class="rs-modal__close" type="button" data-rs-close aria-label="বন্ধ করুন">
 			<?php echo wp_kses( rs_icon( 'close', 18 ), rs_svg_tags() ); ?>
 		</button>

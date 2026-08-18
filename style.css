@@ -1188,6 +1188,29 @@ a.rs-pagination__step:focus-visible {
 	background: var(--rs-hover);
 }
 
+.rs-time-left {
+	position: absolute;
+	top: 1rem;
+	left: 50%;
+	transform: translateX(-50%) translateY(-10px);
+	background: var(--rs-bg);
+	color: var(--rs-muted-fg);
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	padding: 0.25rem 0.75rem;
+	border-radius: 1rem;
+	box-shadow: var(--rs-shadow-sm);
+	z-index: 4;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.rs-time-left.is-visible {
+	opacity: 1;
+	transform: translateX(-50%) translateY(0);
+}
+
 /*
  * The scroller sits inside the modal rather than being the modal, so
  * .rs-modal__close — positioned against .rs-modal — stays put while the
