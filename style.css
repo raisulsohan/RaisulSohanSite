@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: রাইসুল সোহানের লেখার সাইট। Figma Make ডিজাইন থেকে পোর্ট করা একটি হালকা ক্লাসিক থিম। পোস্ট মডালে খোলে, কিন্তু প্রতিটা লেখার নিজস্ব URL থাকে।
-Version: 2.22.5
+Version: 2.22.7
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -493,6 +493,8 @@ button {
 	font-weight: 400;
 	color: var(--rs-muted-fg);
 	letter-spacing: 0.02em;
+	position: relative;
+	z-index: 2;
 }
 
 .rs-post-count__number{
@@ -922,12 +924,42 @@ a.rs-pagination__step:focus-visible {
  * offset is measured from that control's own height: it is centred on
  * the viewport, so half of it reaches 3rem above the middle.
  */
-.rs-tint {
+.rs-floats {
 	position: fixed;
 	top: calc(50% - 3rem - 0.75rem);
 	left: calc(50% - 24rem - 2rem);
 	transform: translateY(-100%);
 	z-index: 30;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+}
+
+.rs-floats__anim {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	color: var(--rs-muted-fg);
+	background: var(--rs-surface);
+	border: 1px solid var(--rs-border);
+	border-radius: 50%;
+	box-shadow: var(--rs-shadow-md);
+	transition: color 0.15s ease, background 0.15s ease;
+}
+
+.rs-floats__anim:hover {
+	color: var(--rs-fg);
+}
+
+.rs-floats__anim.is-active {
+	color: var(--rs-fg);
+	background: var(--rs-accent);
+}
+
+.rs-tint {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -1833,6 +1865,18 @@ a.rs-article__cat:hover {
 	padding: 0;
 }
 
+.rs-post-count {
+	display: flex;
+	align-items: center;
+	gap: 0.375rem;
+	margin: 3.5rem 0 0;
+	font-family: var(--rs-sans);
+	font-size: 0.8125rem;
+	color: var(--rs-fg);
+	position: relative;
+	z-index: 2;
+}
+
 .rs-back {
 	display: inline-flex;
 	align-items: center;
@@ -1927,9 +1971,16 @@ a.rs-article__cat:hover {
 
 /* The floating controls need room outside the 48rem column. */
 @media (max-width: 1100px) {
-	.rs-fontctl--float,
-	.rs-tint {
+	.rs-fontctl--float {
 		display: none;
+	}
+
+	.rs-floats {
+		top: auto;
+		bottom: 1.5rem;
+		left: 1.5rem;
+		transform: none;
+		z-index: 40;
 	}
 
 	.rs-top {
@@ -2036,6 +2087,7 @@ a.rs-article__cat:hover {
 	.rs-related,
 	.rs-resume,
 	.rs-progress,
+	.rs-floats,
 	.rs-tint,
 	.rs-pagination {
 		display: none !important;
@@ -2069,6 +2121,38 @@ a.rs-article__cat:hover {
 		box-shadow: 0 8px 24px var(--rs-border);
 		z-index: 100;
 	}
+}
+
+/* ==========================================================================
+   Smooth entrance animations (toggle: Customizer → Enable smooth animations)
+   Only active when body carries .rs-animated, which PHP adds when the
+   Customizer toggle is on.
+   ========================================================================== */
+
+@keyframes rs-fade-up {
+	from { opacity: 0; transform: translateY(12px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Featured post — fades in from AJAX */
+.rs-animated .rs-featured {
+	animation: rs-fade-up 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* "আপনি পড়ছিলেন" resume banner */
+.rs-animated .rs-resume {
+	animation: rs-fade-up 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Post list rows — staggered via --i set by JS */
+.rs-animated .rs-row {
+	animation: rs-fade-up 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+	animation-delay: calc(var(--i, 0) * 30ms);
+}
+
+/* Pagination loading/unloading fade */
+.rs-animated .rs-list-wrap {
+	transition: opacity 200ms ease;
 }
 
 /* ==========================================================================
