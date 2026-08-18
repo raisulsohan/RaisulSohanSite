@@ -20,6 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
+<script>try{var a=window.localStorage.getItem('rs-anim');if(a==='false')document.body.classList.remove('rs-animated');else if(a==='true')document.body.classList.add('rs-animated');}catch(e){}</script>
 
 <a class="rs-sr" href="#rs-content">মূল লেখায় যান</a>
 

@@ -51,11 +51,11 @@ get_header();
 <?php rs_render_count(); ?>
 
 <?php
-/* The random featured post */
-if ( ! is_paged() ) {
-    rs_render_featured_post();
-}
-?>
+/* The featured post placeholder — rendered entirely by JavaScript so that
+   page caches never serve a stale featured post. */
+if ( ! is_paged() ) : ?>
+<div class="rs-wrap" id="rs-featured-wrap"></div>
+<?php endif; ?>
 
 <?php
 /* Filled by app.js when this browser left a story unfinished. Empty in

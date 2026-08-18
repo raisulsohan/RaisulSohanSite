@@ -99,6 +99,17 @@
 		return null;
 	}
 
+	/* Set --i on each .rs-row so CSS can stagger the fade-up animation. */
+	function staggerRows( root ) {
+		if ( ! cfg.animations ) {
+			return;
+		}
+		var rows = ( root || document ).querySelectorAll( '.rs-row' );
+		for ( var i = 0; i < rows.length; i++ ) {
+			rows[ i ].style.setProperty( '--i', i );
+		}
+	}
+
 	function getJSON( url ) {
 		return window.fetch( url, { credentials: 'same-origin' } ).then( function ( res ) {
 			if ( ! res.ok ) {
@@ -1431,6 +1442,8 @@
 				   whichever page of the list is underneath. */
 				baseTitle = title;
 			}
+
+			staggerRows( wrap );
 		}
 
 		function load( url, push ) {
@@ -1866,6 +1879,38 @@
 	( function () {
 		var btn = $( '[data-rs-theme]' );
 
+		var animBtn = $( '#rs-anim-toggle' );
+		if ( animBtn ) {
+			var savedAnim = window.localStorage.getItem( 'rs-anim' );
+			var isAnim = savedAnim !== null ? savedAnim === 'true' : !!cfg.animations;
+
+			function applyAnim() {
+				if ( isAnim ) {
+					document.body.classList.add( 'rs-animated' );
+					animBtn.classList.add( 'is-active' );
+					cfg.animations = true;
+					staggerRows();
+				} else {
+					document.body.classList.remove( 'rs-animated' );
+					animBtn.classList.remove( 'is-active' );
+					cfg.animations = false;
+					var rows = document.querySelectorAll( '.rs-row' );
+					for ( var i = 0; i < rows.length; i++ ) {
+						rows[ i ].style.removeProperty( '--i' );
+					}
+				}
+			}
+
+			applyAnim();
+
+			animBtn.addEventListener( 'click', function () {
+				isAnim = ! isAnim;
+				try { window.localStorage.setItem( 'rs-anim', isAnim ? 'true' : 'false' ); } catch(e) {}
+				applyAnim();
+			} );
+		}
+
+
 		if ( ! btn ) {
 			return;
 		}
@@ -2130,6 +2175,23 @@
 		} );
 	}() );
 
+		/* ---------------------------------------------------------------
+	 * Fetch dynamic featured post
+	 * ------------------------------------------------------------ */
+	( function () {
+		var wrap = $( '#rs-featured-wrap' );
+
+		if ( ! wrap ) {
+			return;
+		}
+
+		getJSON( rest + 'featured' + ( cfg.catId ? '?cat=' + cfg.catId : '' ) ).then( function ( data ) {
+			if ( data && data.html ) {
+				wrap.innerHTML = data.html;
+			}
+		} ).catch( function () {} );
+	}() );
+
 	/* A post opened at its own address, rather than in the modal. Zero on
 	   every other kind of page, and countView() ignores zero. */
 	var mainPid = parseInt( cfg.postId, 10 );
@@ -2138,5 +2200,6 @@
 	}
 
 	markRead();
+	staggerRows();
 }() );
 
