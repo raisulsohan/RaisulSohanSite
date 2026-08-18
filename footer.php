@@ -32,11 +32,16 @@ $rs_about = rs_about();
 /* Above the floating size control, and hidden on the same narrow screens.
    The whole palette is worked out from this one colour by app.js. */
 ?>
-<div class="rs-tint" role="group" aria-label="সাইটের রং">
-	<input class="rs-tint__input" type="color" id="rs-tint" aria-label="সাইটের রং বেছে নিন">
-	<button class="rs-tint__reset" type="button" id="rs-tint-reset" hidden aria-label="আগের রঙে ফিরুন">
-		<?php echo wp_kses( rs_icon( 'undo', 13 ), rs_svg_tags() ); ?>
+<div class="rs-floats" role="group" aria-label="সাইটের নিয়ন্ত্রণ">
+	<button class="rs-floats__anim" type="button" id="rs-anim-toggle" aria-label="অ্যানিমেশন অন/অফ করুন" title="অ্যানিমেশন অন/অফ করুন">
+		<?php echo wp_kses( rs_icon( 'sparkles', 16 ), rs_svg_tags() ); ?>
 	</button>
+	<div class="rs-tint" role="group" aria-label="সাইটের রং">
+		<input class="rs-tint__input" type="color" id="rs-tint" aria-label="সাইটের রং বেছে নিন">
+		<button class="rs-tint__reset" type="button" id="rs-tint-reset" hidden aria-label="আগের রঙে ফিরুন">
+			<?php echo wp_kses( rs_icon( 'undo', 13 ), rs_svg_tags() ); ?>
+		</button>
+	</div>
 </div>
 
 <button class="rs-top" type="button" id="rs-top" aria-label="উপরে যান">
