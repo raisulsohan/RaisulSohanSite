@@ -911,7 +911,12 @@
 
 	function readPositions() {
 		try {
-			return JSON.parse( store( POS_KEY ) || '{}' ) || {};
+			var map = JSON.parse( store( POS_KEY ) || '{}' ) || {};
+			if ( map['p0'] ) {
+				delete map['p0'];
+				store( POS_KEY, JSON.stringify( map ) );
+			}
+			return map;
 		} catch ( e ) {
 			return {};
 		}
@@ -932,7 +937,7 @@
 		return found;
 	}
 
-	function savePosition( id, top, travel, title, url ) {
+	function savePosition( id, top, travel, title, url, catId ) {
 		if ( ! id ) {
 			return;
 		}
@@ -952,6 +957,7 @@
 				t: Math.round( top ),
 				n: title || '',
 				u: url || '',
+				c: parseInt( catId, 10 ) || 0,
 			};
 		}
 
@@ -979,7 +985,8 @@
 			scroller.scrollTop,
 			scroller.scrollHeight - scroller.clientHeight,
 			known.title,
-			known.link
+			known.link,
+			known.categoryId
 		);
 	}
 
@@ -1114,6 +1121,7 @@
 		}
 
 		flushPosition();
+		if ( typeof renderResume === 'function' ) renderResume();
 		currentPostId = null;
 
 		closeOverlay( postOverlay );
@@ -1956,7 +1964,8 @@
 	 * ------------------------------------------------------------ */
 
 	( function () {
-		if ( ! cfg.postId ) {
+		var pid = parseInt( cfg.postId, 10 );
+		if ( ! pid ) {
 			return;
 		}
 
@@ -1985,11 +1994,12 @@
 			var title = $( '.rs-article__title', article );
 
 			savePosition(
-				cfg.postId,
+				pid,
 				window.pageYOffset,
 				travel(),
 				title ? title.textContent : document.title,
-				window.location.href
+				window.location.href,
+				cfg.catId
 			);
 		}
 
@@ -2024,23 +2034,37 @@
 	 * again on their own.
 	 * ------------------------------------------------------------ */
 
-	( function () {
+	function renderResume() {
 		var host = $( '#rs-resume' );
-
-		if ( ! host ) {
-			return;
-		}
+		if ( ! host ) { return; }
 
 		var map = readPositions();
 		var keys = Object.keys( map );
-		var last = keys.length ? map[ keys[ keys.length - 1 ] ] : null;
 
-		/* Entries from before titles were stored have nothing to show. */
+		var targetKey = null;
+		var currentCat = parseInt( cfg.catId, 10 ) || 0;
+		if ( currentCat > 0 ) {
+			for ( var i = keys.length - 1; i >= 0; i-- ) {
+				var entry = map[ keys[ i ] ];
+				if ( entry && entry.c === currentCat ) {
+					targetKey = keys[ i ];
+					break;
+				}
+			}
+		}
+
+		if ( ! targetKey && keys.length > 0 ) {
+			targetKey = keys[ keys.length - 1 ];
+		}
+
+		var last = targetKey ? map[ targetKey ] : null;
+
 		if ( ! last || 'number' === typeof last || ! last.n || ! last.u ) {
+			host.innerHTML = '';
 			return;
 		}
 
-		var id = keys[ keys.length - 1 ].slice( 1 );
+		var id = targetKey.slice( 1 );
 
 		host.innerHTML =
 			'<div class="rs-resume">' +
@@ -2053,16 +2077,13 @@
 			'</div>';
 
 		$( '.rs-resume__close', host ).addEventListener( 'click', function () {
-			/* Dropped rather than hidden: they have said they are not
-			   going back to it. */
 			var fresh = readPositions();
-
 			delete fresh[ 'p' + id ];
 			store( POS_KEY, JSON.stringify( fresh ) );
-
 			host.innerHTML = '';
 		} );
-	}() );
+	}
+	renderResume();
 
 	/* ---------------------------------------------------------------
 	 * Carry the source along with copied text
@@ -2111,7 +2132,11 @@
 
 	/* A post opened at its own address, rather than in the modal. Zero on
 	   every other kind of page, and countView() ignores zero. */
-	countView( cfg.postId );
+	var mainPid = parseInt( cfg.postId, 10 );
+	if ( mainPid ) {
+		countView( mainPid );
+	}
 
 	markRead();
 }() );
+

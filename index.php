@@ -51,6 +51,13 @@ get_header();
 <?php rs_render_count(); ?>
 
 <?php
+/* The random featured post */
+if ( ! is_paged() ) {
+    rs_render_featured_post();
+}
+?>
+
+<?php
 /* Filled by app.js when this browser left a story unfinished. Empty in
    the markup, because only the browser knows whether there is one. */
 ?>
