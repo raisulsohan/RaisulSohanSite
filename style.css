@@ -1195,7 +1195,7 @@ a.rs-pagination__step:focus-visible {
  * which is this element.
  */
 .rs-modal__scroll {
-	max-height: 80vh;
+	max-height: 90vh;
 	overflow-y: auto;
 	overscroll-behavior: contain;
 	border-radius: inherit;
