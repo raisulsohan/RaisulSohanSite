@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.20.1' );
+define( 'RS_VERSION', '2.22.5' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -161,6 +161,7 @@ function rs_assets() {
 			/* Which post this page is, for the read count. Zero everywhere
 			   else, and app.js counts nothing when it is zero. */
 			'postId'  => is_singular( 'post' ) ? get_queried_object_id() : 0,
+			'catId'   => is_category() ? get_queried_object_id() : 0,
 			/* Base URL for the modal's edit link, empty for readers. The
 			   capability is checked here, in a normally authenticated page
 			   request; the REST call carries no nonce, so current_user_can()
@@ -617,6 +618,8 @@ function rs_defaults() {
 		'rs_home_per_page'    => RS_PER_PAGE,
 		'rs_archive_per_page' => RS_PER_PAGE,
 		'rs_verify'   => 'UGbwgVSquWFpv2qZcQYRQzJSyEFaryG9PHAIpY2ZsYA',
+		'rs_featured_block_offset' => 0,
+		'rs_featured_summary_length' => 250,
 	);
 }
 
@@ -811,6 +814,18 @@ function rs_settings_fields() {
 			'text',
 			'sanitize_text_field',
 			__( 'From Search Console: the content value of the HTML tag on its own. Empty means no tag.', 'raisul-sohan' ),
+		),
+		'rs_featured_block_offset' => array(
+			__( 'Featured block vertical offset (px)', 'raisul-sohan' ),
+			'number',
+			'intval',
+			__( 'Adjust the vertical position of the entire featured section. Can be negative, e.g., -5, 10.', 'raisul-sohan' ),
+		),
+		'rs_featured_summary_length' => array(
+			__( 'Featured summary length (chars)', 'raisul-sohan' ),
+			'number',
+			'absint',
+			__( 'How many characters to show in the featured post sneak peek. Default is 250.', 'raisul-sohan' ),
 		),
 	);
 }
@@ -1719,6 +1734,93 @@ function rs_render_count() {
 }
 
 /**
+ * Featured post block
+ */
+function rs_render_featured_post() {
+	if ( is_search() ) {
+		return;
+	}
+
+	$args = array(
+		'post_type'      => 'post',
+		'post_status'    => 'publish',
+		'posts_per_page' => 1,
+		'orderby'        => 'rand',
+		'no_found_rows'  => true,
+	);
+
+	if ( is_category() ) {
+		$term = get_queried_object();
+		if ( $term instanceof WP_Term ) {
+			$args['cat'] = $term->term_id;
+		}
+	}
+
+	$q = new WP_Query( $args );
+
+	if ( ! $q->have_posts() ) {
+		return;
+	}
+
+	$q->the_post();
+	global $post;
+
+	$length = (int) rs_option( 'rs_featured_summary_length' );
+	if ( ! $length ) $length = 250;
+	
+	if ( $length > 200 ) {
+		$text = has_excerpt( $post )
+			? trim( html_entity_decode( wp_strip_all_tags( $post->post_excerpt ), ENT_QUOTES, 'UTF-8' ) )
+			: rs_plain_text( $post );
+		$summary = rs_shorten( $text, $length );
+	} else {
+		$summary = rs_summary( $post, $length );
+	}
+
+	// Match first letter and its combining marks/virama-linked letters
+	$pattern = '/^([\x{0980}-\x{09FF}](?:\x{09CD}[\x{0980}-\x{09FF}])*[\x{09BE}-\x{09CC}\x{09D7}\x{09E2}\x{09E3}]?[\x{0981}-\x{0983}]?)/u';
+	if ( preg_match( $pattern, $summary, $matches ) ) {
+		$dropcap = $matches[0];
+	} else {
+		// Fallback for non-Bengali or basic chars
+		preg_match('/^\X/u', $summary, $matches);
+		$dropcap = $matches[0] ?? '';
+	}
+	$rest = mb_substr( $summary, mb_strlen( $dropcap, 'UTF-8' ), null, 'UTF-8' );
+
+	$offset = (int) rs_option( 'rs_featured_block_offset' );
+	$style = $offset ? ' style="margin-top: ' . $offset . 'px;"' : '';
+	?>
+	<div class="rs-wrap"<?php echo $style; ?>>
+		<div class="rs-featured">
+			<div class="rs-featured__label">
+				<span class="rs-featured__line"></span>ফিচার্ড
+			</div>
+			<h2 class="rs-featured__title">
+				<a href="<?php the_permalink(); ?>" data-rs-post="<?php the_ID(); ?>"><?php the_title(); ?></a>
+			</h2>
+			<div class="rs-featured__date">
+				<?php echo esc_html( rs_bn_date( $post ) ); ?>
+				<span style="margin: 0 0.5rem; opacity: 0.5;">&bull;</span>
+				<?php echo esc_html( rs_reading_time( $post ) ); ?>
+				<?php if ( $cat = rs_category( $post ) ) : ?>
+					<span style="margin: 0 0.5rem; opacity: 0.5;">&bull;</span>
+					<a href="<?php echo esc_url( rs_category_link( $post ) ); ?>" style="color: inherit; text-decoration: none;"><?php echo esc_html( $cat ); ?></a>
+				<?php endif; ?>
+			</div>
+			<div class="rs-featured__summary">
+				<span class="rs-featured__dropcap"><?php echo esc_html( $dropcap ); ?></span><?php echo esc_html( $rest ); ?>
+			</div>
+			<div class="rs-featured__action">
+				<a href="<?php the_permalink(); ?>" class="rs-featured__btn" data-rs-post="<?php the_ID(); ?>">সম্পূর্ণ লেখা পড়ুন &rarr;</a>
+			</div>
+		</div>
+	</div>
+	<?php
+	wp_reset_postdata();
+}
+
+/**
  * The list of posts, with its page links.
  *
  * Both the full page and the fragment that app.js swaps in go through
@@ -1929,6 +2031,7 @@ function rs_rest_post( $request ) {
 			'link'         => get_permalink( $item ),
 			'category'     => rs_category( $item ),
 			'categoryLink' => rs_category_link( $item ),
+			'categoryId'   => rs_primary_category( $item ) ? rs_primary_category( $item )->term_id : 0,
 			'readingTime'  => rs_reading_time( $item ),
 			'related'      => rs_related_payload( $item ),
 			'prev'         => rs_adjacent_payload( $prev ),
@@ -2832,3 +2935,52 @@ function rs_dequeue_block_css() {
 	}
 }
 add_action( 'wp_enqueue_scripts', 'rs_dequeue_block_css', 100 );
+
+/**
+ * Add Featured Post settings to the WordPress Customizer for live editing.
+ */
+function rs_customize_register( $wp_customize ) {
+	$wp_customize->add_section( 'rs_featured_section', array(
+		'title'    => __( 'Featured Post Settings', 'raisul-sohan' ),
+		'priority' => 30,
+	) );
+
+	$wp_customize->add_setting( 'rs_featured_block_offset', array(
+		'default'   => 0,
+		'type'      => 'theme_mod',
+		'transport' => 'refresh',
+	) );
+	$wp_customize->add_control( 'rs_featured_block_offset', array(
+		'label'       => __( 'Featured block vertical offset (px)', 'raisul-sohan' ),
+		'description' => __( 'Adjust the vertical position of the entire featured section.', 'raisul-sohan' ),
+		'section'     => 'rs_featured_section',
+		'type'        => 'range',
+		'input_attrs' => array(
+			'min'  => -100,
+			'max'  => 100,
+			'step' => 1,
+		),
+	) );
+
+	$wp_customize->add_setting( 'rs_featured_summary_length', array(
+		'default'   => 250,
+		'type'      => 'theme_mod',
+		'transport' => 'refresh',
+	) );
+	$wp_customize->add_control( 'rs_featured_summary_length', array(
+		'label'       => __( 'Featured summary length (chars)', 'raisul-sohan' ),
+		'description' => __( 'How many characters to show in the featured post sneak peek.', 'raisul-sohan' ),
+		'section'     => 'rs_featured_section',
+		'type'        => 'number',
+		'input_attrs' => array(
+			'min'  => 50,
+			'max'  => 1000,
+			'step' => 10,
+		),
+	) );
+}
+add_action( 'customize_register', 'rs_customize_register' );
+
+
+
+

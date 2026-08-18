@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: রাইসুল সোহানের লেখার সাইট। Figma Make ডিজাইন থেকে পোর্ট করা একটি হালকা ক্লাসিক থিম। পোস্ট মডালে খোলে, কিন্তু প্রতিটা লেখার নিজস্ব URL থাকে।
-Version: 2.20.1
+Version: 2.22.5
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -528,7 +528,9 @@ button {
 	max-width: var(--rs-wrap);
 	margin: 1.25rem auto 0;
 	padding: 0.625rem 0.875rem;
-	background: var(--rs-muted);
+	background: var(--rs-surface);
+	border: 1px solid var(--rs-rule);
+	box-shadow: 0 4px 12px var(--rs-border-40);
 	border-radius: var(--rs-radius-lg);
 }
 
@@ -1132,7 +1134,7 @@ a.rs-pagination__step:focus-visible {
  * the eye does not have to travel far to find the next one.
  */
 .rs-modal--post {
-	max-width: 44rem;
+	max-width: 60rem;
 }
 
 /* Reading progress, pinned to the top edge of the modal. */
@@ -1244,7 +1246,7 @@ a.rs-pagination__step:focus-visible {
    ========================================================================== */
 
 .rs-article {
-	padding: 2.5rem 2rem;
+	padding: 3.5rem 2rem;
 }
 
 .rs-article__meta {
@@ -1986,11 +1988,11 @@ a.rs-article__cat:hover {
 	}
 
 	.rs-article {
-		padding: 2.5rem 1.25rem 2rem;
+		padding: 3.5rem 1.25rem 2rem;
 	}
 
 	.rs-modal--about {
-		padding: 2.5rem 1.25rem 1.5rem;
+		padding: 3.5rem 1.25rem 1.5rem;
 	}
 
 	.rs-article__title {
@@ -2043,3 +2045,122 @@ a.rs-article__cat:hover {
 		background: #fff;
 	}
 }
+
+@media (max-width: 640px) {
+	.rs-article__body .alignleft,
+	.rs-about__body .alignleft,
+	.rs-article__body .alignright,
+	.rs-about__body .alignright {
+		float: none;
+		margin: 1.5rem auto;
+		display: block;
+		text-align: center;
+	}
+	
+	.rs-resume {
+		position: fixed;
+		bottom: 1rem;
+		left: 1rem;
+		right: 1rem;
+		width: auto;
+		max-width: none;
+		margin: 0;
+		padding: 1rem 1.25rem;
+		box-shadow: 0 8px 24px var(--rs-border);
+		z-index: 100;
+	}
+}
+
+/* ==========================================================================
+   Featured Post
+   ========================================================================== */
+
+.rs-featured {
+	margin: 3rem 0;
+	padding: 2.5rem 0;
+	border-bottom: 1px solid var(--rs-rule);
+}
+
+.rs-featured__label {
+	display: flex;
+	align-items: center;
+	font-family: var(--rs-sans);
+	font-size: 0.875rem;
+	color: var(--rs-hover);
+	margin-bottom: 1.5rem;
+}
+
+.rs-featured__line {
+	display: inline-block;
+	width: 40px;
+	height: 1px;
+	background-color: var(--rs-hover);
+	margin-right: 12px;
+}
+
+.rs-featured__title {
+	font-family: var(--rs-serif);
+	font-size: 2.5rem;
+	line-height: 1.2;
+	margin: 0 0 0.5rem 0;
+}
+
+.rs-featured__title a {
+	color: var(--rs-fg);
+	text-decoration: none;
+}
+
+.rs-featured__title a:hover {
+	color: var(--rs-hover);
+}
+
+.rs-featured__date {
+	font-family: var(--rs-sans);
+	font-size: 0.875rem;
+	color: var(--rs-muted-fg);
+	margin-bottom: 2rem;
+}
+
+.rs-featured__summary {
+	font-family: var(--rs-serif);
+	font-size: 1.125rem;
+	line-height: 1.8;
+	color: var(--rs-body-fg);
+	margin-bottom: 2rem;
+	text-align: justify;
+}
+
+.rs-featured__dropcap {
+	float: left;
+	font-size: 4rem;
+	line-height: 0.8;
+	padding-right: 0.5rem;
+	padding-top: 0.2rem;
+	color: var(--rs-hover);
+}
+
+.rs-featured__action {
+	display: flex;
+}
+
+.rs-featured__btn {
+	display: inline-flex;
+	align-items: center;
+	background-color: var(--rs-solid-bg);
+	color: var(--rs-solid-fg);
+	font-family: var(--rs-sans);
+	font-size: 0.875rem;
+	font-weight: 500;
+	padding: 0.75rem 1.5rem;
+	border-radius: 2rem;
+	text-decoration: none;
+	transition: opacity 0.2s;
+}
+
+.rs-featured__btn:hover {
+	opacity: 0.85;
+	color: var(--rs-solid-fg);
+}
+
+
+
