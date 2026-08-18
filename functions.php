@@ -1808,7 +1808,7 @@ function rs_render_featured_post( $cat_id = 0 ) {
 	
 	$style = ! empty( $styles ) ? ' style="' . implode( '; ', $styles ) . ';"' : '';
 	?>
-	<div class="rs-wrap"<?php echo $style; ?>>
+	<div<?php echo $style; ?>>
 		<div class="rs-featured">
 			<div class="rs-featured__label">
 				<span class="rs-featured__line"></span>ফিচার্ড
