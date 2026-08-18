@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.22.5' );
+define( 'RS_VERSION', '2.22.8' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -162,6 +162,7 @@ function rs_assets() {
 			   else, and app.js counts nothing when it is zero. */
 			'postId'  => is_singular( 'post' ) ? get_queried_object_id() : 0,
 			'catId'   => is_category() ? get_queried_object_id() : 0,
+			'animations' => get_theme_mod( 'rs_enable_animations', true ) ? 1 : 0,
 			/* Base URL for the modal's edit link, empty for readers. The
 			   capability is checked here, in a normally authenticated page
 			   request; the REST call carries no nonce, so current_user_can()
@@ -1258,6 +1259,7 @@ function rs_icon( $name, $size = 15 ) {
 		'right'    => '<path d="m9 18 6-6-6-6"/>',
 		'undo'     => '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>',
 		'edit'     => '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>',
+		'sparkles' => '<path d=\"m12 3-1.9 5.8a2 2 0 0 1-1.2 1.2L3 12l5.8 1.9a2 2 0 0 1 1.2 1.2L12 21l1.9-5.8a2 2 0 0 1 1.2-1.2L21 12l-5.8-1.9a2 2 0 0 1-1.2-1.2Z\"/>',
 		'sun'      => '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
 		'moon'     => '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
 	);
@@ -1727,7 +1729,7 @@ function rs_render_count() {
 			?>
 			<a class="rs-post-count__any"
 				href="<?php echo esc_url( rs_random_url() ); ?>"
-				data-rs-random="<?php echo (int) rs_random_cat(); ?>">যেকোনো একটা</a>
+				data-rs-random="<?php echo (int) rs_random_cat(); ?>">যেকোনো একটা লেখা</a>
 		</p>
 	</div>
 	<?php
@@ -1736,7 +1738,7 @@ function rs_render_count() {
 /**
  * Featured post block
  */
-function rs_render_featured_post() {
+function rs_render_featured_post( $cat_id = 0 ) {
 	if ( is_search() ) {
 		return;
 	}
@@ -1749,7 +1751,9 @@ function rs_render_featured_post() {
 		'no_found_rows'  => true,
 	);
 
-	if ( is_category() ) {
+	if ( $cat_id ) {
+		$args['cat'] = $cat_id;
+	} elseif ( is_category() ) {
 		$term = get_queried_object();
 		if ( $term instanceof WP_Term ) {
 			$args['cat'] = $term->term_id;
@@ -1952,6 +1956,21 @@ function rs_rest_routes() {
 
 	register_rest_route(
 		'rs/v1',
+		'/featured',
+		array(
+			'methods'             => WP_REST_Server::READABLE,
+			'callback'            => 'rs_rest_featured',
+			'permission_callback' => '__return_true',
+			'args'                => array(
+				'cat' => array(
+					'sanitize_callback' => 'absint',
+				),
+			),
+		)
+	);
+
+	register_rest_route(
+		'rs/v1',
 		'/random',
 		array(
 			'methods'             => WP_REST_Server::READABLE,
@@ -2129,6 +2148,17 @@ function rs_rest_search( $request ) {
  * @param WP_REST_Request $request Request.
  * @return WP_REST_Response|WP_Error
  */
+function rs_rest_featured( $request ) {
+	nocache_headers();
+	$cat_id = (int) $request->get_param( 'cat' );
+	
+	ob_start();
+	rs_render_featured_post( $cat_id );
+	$html = ob_get_clean();
+	
+	return rest_ensure_response( array( 'html' => $html ) );
+}
+
 function rs_rest_random( $request ) {
 	$items = rs_random_posts( 1, 0, (int) $request->get_param( 'cat' ) );
 
@@ -2682,6 +2712,10 @@ function rs_body_class( $classes ) {
 		$classes[] = 'rs-is-list';
 	}
 
+	if ( get_theme_mod( 'rs_enable_animations', true ) ) {
+		$classes[] = 'rs-animated';
+	}
+
 	return $classes;
 }
 add_filter( 'body_class', 'rs_body_class' );
@@ -2943,6 +2977,19 @@ function rs_customize_register( $wp_customize ) {
 	$wp_customize->add_section( 'rs_featured_section', array(
 		'title'    => __( 'Featured Post Settings', 'raisul-sohan' ),
 		'priority' => 30,
+	) );
+
+	/* ---- Animation master toggle ---- */
+	$wp_customize->add_setting( 'rs_enable_animations', array(
+		'default'   => true,
+		'type'      => 'theme_mod',
+		'transport' => 'refresh',
+	) );
+	$wp_customize->add_control( 'rs_enable_animations', array(
+		'label'       => __( 'Enable smooth animations', 'raisul-sohan' ),
+		'description' => __( 'Fade-up transitions on featured post, resume bar, list rows and pagination.', 'raisul-sohan' ),
+		'section'     => 'rs_featured_section',
+		'type'        => 'checkbox',
 	) );
 
 	$wp_customize->add_setting( 'rs_featured_block_offset', array(
