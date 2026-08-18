@@ -1799,16 +1799,8 @@ function rs_render_featured_post( $cat_id = 0 ) {
 	}
 	$rest = mb_substr( $summary, mb_strlen( $dropcap, 'UTF-8' ), null, 'UTF-8' );
 
-	$offset = (int) rs_option( 'rs_featured_block_offset' );
-	$bottom_gap = (int) rs_option( 'rs_featured_bottom_gap' );
-	
-	$styles = array();
-	if ( $offset ) $styles[] = 'margin-top: ' . $offset . 'px';
-	if ( $bottom_gap ) $styles[] = 'margin-bottom: ' . $bottom_gap . 'px';
-	
-	$style = ! empty( $styles ) ? ' style="' . implode( '; ', $styles ) . ';"' : '';
 	?>
-	<div<?php echo $style; ?>>
+	<div>
 		<div class="rs-featured">
 			<div class="rs-featured__label">
 				<span class="rs-featured__line"></span>ফিচার্ড
@@ -3003,40 +2995,6 @@ function rs_customize_register( $wp_customize ) {
 		'description' => __( 'Fade-up transitions on featured post, resume bar, list rows and pagination.', 'raisul-sohan' ),
 		'section'     => 'rs_featured_section',
 		'type'        => 'checkbox',
-	) );
-
-	$wp_customize->add_setting( 'rs_featured_block_offset', array(
-		'default'   => 0,
-		'type'      => 'theme_mod',
-		'transport' => 'refresh',
-	) );
-	$wp_customize->add_control( 'rs_featured_block_offset', array(
-		'label'       => __( 'Featured block vertical offset (px)', 'raisul-sohan' ),
-		'description' => __( 'Adjust the vertical position of the entire featured section.', 'raisul-sohan' ),
-		'section'     => 'rs_featured_section',
-		'type'        => 'range',
-		'input_attrs' => array(
-			'min'  => -100,
-			'max'  => 100,
-			'step' => 1,
-		),
-	) );
-
-	$wp_customize->add_setting( 'rs_featured_bottom_gap', array(
-		'default'   => 0,
-		'type'      => 'theme_mod',
-		'transport' => 'refresh',
-	) );
-	$wp_customize->add_control( 'rs_featured_bottom_gap', array(
-		'label'       => __( 'Featured bottom gap (px)', 'raisul-sohan' ),
-		'description' => __( 'Adjust the gap between the featured post and the list below it.', 'raisul-sohan' ),
-		'section'     => 'rs_featured_section',
-		'type'        => 'range',
-		'input_attrs' => array(
-			'min'  => -200,
-			'max'  => 200,
-			'step' => 1,
-		),
 	) );
 
 	$wp_customize->add_setting( 'rs_featured_summary_length', array(
