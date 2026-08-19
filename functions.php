@@ -3016,6 +3016,55 @@ function rs_customize_register( $wp_customize ) {
 }
 add_action( 'customize_register', 'rs_customize_register' );
 
+/**
+ * Auto-convert uploaded images to WebP and resize them to save space.
+ */
+function rs_optimize_image_upload( $upload ) {
+	if ( $upload['type'] === 'image/jpeg' || $upload['type'] === 'image/png' ) {
+		$file_path = $upload['file'];
+		
+		if ( ! file_exists( $file_path ) ) {
+			return $upload;
+		}
 
+		$image_editor = wp_get_image_editor( $file_path );
+		
+		if ( ! is_wp_error( $image_editor ) && $image_editor->supports_mime_type( 'image/webp' ) ) {
+			// Resize if it's too large
+			$max_width = 1600;
+			$size = $image_editor->get_size();
+			if ( ! is_wp_error( $size ) && ( $size['width'] > $max_width || $size['height'] > $max_width ) ) {
+				$image_editor->resize( $max_width, $max_width, false );
+			}
+			
+			$image_editor->set_quality( 80 );
+			
+			$path_parts    = pathinfo( $file_path );
+			$webp_filename = $path_parts['filename'] . '.webp';
+			$webp_path     = $path_parts['dirname'] . '/' . $webp_filename;
+			
+			$saved = $image_editor->save( $webp_path, 'image/webp' );
+			
+			if ( ! is_wp_error( $saved ) && file_exists( $saved['path'] ) ) {
+				@unlink( $file_path );
+				
+				$upload['file'] = $saved['path'];
+				$url_parts      = pathinfo( $upload['url'] );
+				$upload['url']  = $url_parts['dirname'] . '/' . $webp_filename;
+				$upload['type'] = 'image/webp';
+			}
+		}
+	}
+	return $upload;
+}
+add_filter( 'wp_handle_upload', 'rs_optimize_image_upload' );
+
+/**
+ * Set standard thumbnail generation quality to 80.
+ */
+function rs_image_quality( $quality ) {
+	return 80;
+}
+add_filter( 'wp_editor_set_quality', 'rs_image_quality' );
 
 
