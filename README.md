@@ -1,147 +1,107 @@
-# রাইসুল সোহান (WordPress থিম)
+# Raisul Sohan (Custom WordPress Theme)
 
-Figma Make সাইটটার WordPress সংস্করণ। ডিজাইন হুবহু এক, কিন্তু ভেতরের কাজটা আলাদা: প্রতিটা লেখার নিজস্ব URL আছে, সার্চ সার্ভারে চলে, আর লেখা যোগ করতে কোড ছুঁতে হয় না।
-
----
-
-## ইনস্টল
-
-১. `raisul-sohan` ফোল্ডারটা জিপ করে **Appearance → Themes → Add New → Upload Theme** দিয়ে আপলোড করুন, অথবা সরাসরি `wp-content/themes/` এ রাখুন।
-২. থিমটা **Activate** করুন।
-৩. **Settings → Permalinks** এ গিয়ে **Post name** বেছে **Save Changes** চাপুন। এটা বাধ্যতামূলক, নাহলে লেখার আলাদা লিংক কাজ করবে না।
-৪. **Settings → Reading** এ "Your homepage displays" অবশ্যই **Your latest posts** থাকতে হবে।
-
-এরপর প্রতিটা লেখা সাধারণ Post হিসেবে লিখলেই তালিকায় চলে আসবে।
+A beautifully crafted, bespoke WordPress theme designed from the ground up with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
 
-## সেটিংস
+## Installation
 
-**Appearance → Theme Settings** এ পাবেন:
+1. Upload the `raisul-sohan` folder by navigating to **Appearance -> Themes -> Add New -> Upload Theme** in your WordPress dashboard, or extract it directly into `wp-content/themes/`.
+2. **Activate** the theme.
+3. Go to **Settings -> Permalinks**, select **Post name**, and hit **Save Changes**. This is mandatory for the individual post URLs to work correctly.
+4. In **Settings -> Reading**, ensure "Your homepage displays" is set to **Your latest posts**.
 
-| সেটিং | কাজ |
+From now on, simply publish your writings as standard Posts, and they will automatically appear in the beautiful grid.
+
+---
+
+## Settings
+
+You can customize the theme via **Appearance -> Theme Settings**:
+
+| Setting | Function |
 |---|---|
-| Posts per page, front page | হোমপেজে কতগুলো লেখা দেখাবে (১–১০০) |
-| Posts per page, archives | ক্যাটাগরি, ট্যাগ আর সার্চে কতগুলো (১–১০০) |
-| Heading text | টাইপরাইটার হেডিং। কমা দিয়ে একাধিক লেখা দিলে ঘুরে ঘুরে আসবে। একটা দিলে স্থির থাকবে |
-| Heading image | দিলে হেডিংয়ের লেখার বদলে এই ছবিটা বসে (ব্যানারের মতো), যে ছবিই দিন ১৬০০×৩০০ অনুপাতে কেটে বসবে, তাই হেডিংয়ের জায়গাটা সবসময় একই আকারের থাকে। সেটিংসে ছবিটা ড্র্যাগ করে ঠিক করতে পারবেন কোন অংশটা দেখা যাবে — তবে মনে রাখবেন সাইটে ডার্ক মোড আছে আর পাঠক নিজেও রং বদলাতে পারে |
-| Email | হেডারের মেইল আইকনে ক্লিক করলে যেটা কপি হয় |
-| Facebook URL | খালি রাখলে আইকনটা দেখাবে না |
-| LinkedIn URL | খালি রাখলে আইকনটা দেখাবে না |
-| Footer text | `{year}` লিখলে সেখানে বাংলা সালটা বসবে |
-| Google verification code | Search Console এর `google-site-verification` কোডটা, শুধু ভেতরের `content` অংশটুকু। খালি রাখলে ট্যাগটা বসবে না |
-| About page | একটা Page বানিয়ে এখানে বেছে দিন, তার লেখাই মডালে দেখাবে |
-| Share image | যেসব লেখার নিজের ছবি নেই, শেয়ার করলে সেগুলোর কার্ডে যেটা বসবে। বর্গাকার, ৬০০×৬০০ বা বড়। লেখার ভেতরের ছবি থাকলে সেটাই আগে বসে |
-| Featured block vertical offset (px) | হোমপেজের পুরো ফিচার্ড অংশটির পজিশন উপরে/নিচে অ্যাডজাস্ট করার জন্য। যেমন: -5, 10 ইত্যাদি। |
-| Featured summary length (chars) | হোমপেজের ফিচার্ড অংশে লেখার কতগুলো অক্ষর সামারি হিসেবে দেখাবে (যেমন: ২৫০ বা ৪০০)। |
+| Posts per page, front page | Number of posts to display on the homepage (1-100) |
+| Posts per page, archives | Number of posts to display in categories, tags, and search results (1-100) |
+| Heading text | The typewriter heading effect. Enter multiple phrases separated by commas to rotate them, or a single phrase to keep it static. |
+| Heading image | Replaces the heading text with a banner image. It automatically crops to a 1600x300 ratio. You can drag to adjust the focal point on the settings page. |
+| Email | The email address copied to the clipboard when a reader clicks the email icon in the header. |
+| Facebook URL | Your Facebook profile/page link. Leave empty to hide the icon. |
+| LinkedIn URL | Your LinkedIn profile link. Leave empty to hide the icon. |
+| Footer text | Copyright text. Use `{year}` to dynamically display the current Bengali year. |
+| Google verification code | The `content` value from your Google Search Console `google-site-verification` meta tag. Leave empty to disable. |
+| About page | Select a static Page to serve as the "About" content, which opens elegantly in a modal. |
+| Share image | The default fallback Open Graph image used when a post is shared on social media and doesn't contain any images of its own. Needs to be 600x600 or larger. |
 
-সেটিংসগুলো আগে কাস্টমাইজারে ছিল, এখন নিজস্ব পাতায়। তবে ফিচার্ড পোস্টের (Featured Post Settings) সেটিংসগুলো লাইভ এডিট এবং প্রিভিউ দেখার সুবিধার্থে WordPress-এর মূল Customizer (Appearance → Customize) -এ যোগ করা হয়েছে। **অ্যাডমিনের লেখাগুলো ইংরেজিতে** — কারণ সেগুলো WordPress-এর নিজের লেবেলের পাশে পড়া হয়, আর অর্ধেক এক ভাষা অর্ধেক আরেক ভাষা হলে পড়তে অসুবিধা। সাইটের সামনের দিকের সব লেখা বাংলাই আছে।
+*Note: The settings for the "Featured Post" have been moved to the native WordPress Customizer (**Appearance -> Customize**) under **Featured Post Settings**, allowing you to tweak summary lengths with a live preview.* 
 
-সাইটের নাম (হেডারের মাঝখানে) আসে **Settings → General** এর Site Title থেকে। মডালে লেখকের নাম আসে **Users → Profile** এর Display name থেকে।
+The site title (centered in the header) is pulled from **Settings -> General**, and the author's name in the modal is pulled from the **Display name** in **Users -> Profile**.
 
 ---
 
-## কীভাবে কাজ করে
+## How It Works
 
-**তালিকা থেকে ক্লিক করলে** মডাল খোলে, কিন্তু একই সাথে ব্রাউজারের ঠিকানা বদলে গিয়ে ওই লেখার আসল URL হয়ে যায়। ব্যাক বাটন চাপলে মডাল বন্ধ হয়ে ঠিকানা আবার হোমপেজে ফেরে।
-
-**কেউ সরাসরি ওই লিংকে ঢুকলে** বা Google ক্রল করলে `single.php` পুরো পেজ হিসেবে লোড হয়, দেখতে মডালের মতোই। তাই শেয়ার করা লিংক আর সার্চ ইঞ্জিন দুইটাই কাজ করে। এটাই মূল পার্থক্য Figma Make সংস্করণের সাথে, যেখানে কোনো লেখার আলাদা ঠিকানা ছিল না।
-
-**সার্চ** সার্ভারে চলে (`/wp-json/rs/v1/search`)। ম্যাচ করা শব্দের আশপাশের অংশ কেটে এনে হলুদ হাইলাইট করে দেখায়। ২০০ হোক বা ৬০০ লেখা, পেজের ওজন বাড়ে না।
-
-**তালিকা** পাতায় পাতায় ভাগ হয়ে আসে। হোমপেজে আর আর্কাইভে কতগুলো করে দেখাবে সেটা আলাদা আলাদা ঠিক করা যায় **Appearance → Theme Settings** এ।
-
-নিচের **১ ২ ৩** লিংকগুলো সাধারণ `/page/2/` লিংক, কিন্তু ক্লিক করলে পুরো পেজ রিলোড হয় না — সার্ভার থেকে শুধু তালিকাটুকু (`?rs_ajax=1`) এনে বসিয়ে দেওয়া হয়। হেডিং, হেডার আর পাঠকের বেছে নেওয়া লেখার আকার সব জায়গায় থাকে, শুধু সারিগুলো বদলায়। ঠিকানা বদলে যায় বলে ব্যাক বাটন আর শেয়ার করা লিংক দুটোই কাজ করে, আর JavaScript বন্ধ থাকলে লিংকগুলো স্বাভাবিকভাবেই পেজ লোড করে।
-
-পাতা কোন লেখাগুলো নিয়ে সাজবে সেটা ঠিক করে সার্ভার, তাই ক্যাটাগরি, ট্যাগ বা সার্চের ভেতরে পেজিনেশন সেই প্রসঙ্গের লেখাতেই সীমাবদ্ধ থাকে।
-
-**তারিখ** স্বয়ংক্রিয়ভাবে বাংলা সংখ্যায় আসে (১৫ অক্টো ২০২৬)। মাসের সংক্ষিপ্ত নাম `rs_bn_months()` ফাংশনে আছে, বদলাতে চাইলে ওখানে।
-	
-**অ্যানিমেশন ও ফিচার্ড পোস্ট**: সাইটটিতে স্মুথ ফেড-আপ অ্যানিমেশন যুক্ত করা হয়েছে, যা ব্রাউজারে প্রথমবার লোড হবার সময় লেখাগুলোকে একটার পর একটা সুন্দরভাবে ভিজ্যুয়ালাইজ করে। পাঠকরা চাইলে কালার পিকারের উপরের '✨' বাটনটি দিয়ে যেকোনো সময় অ্যানিমেশন অন বা অফ করতে পারেন (পছন্দটি ব্রাউজারে সেভ থাকে)। এছাড়া, মোবাইল বা অন্যান্য ডিভাইসে ক্যাশজনিত সমস্যা এড়ানোর জন্য ফিচার্ড পোস্টটি এখন AJAX-এর মাধ্যমে পেজ লোডের ঠিক পরপরই যুক্ত হয়, ফলে সবসময় ফ্রেশ ডাটা দেখা যায়।
-
-**লেখার আকার** (A- A A+) পাঠকের ব্রাউজারে মনে থাকে, পরের বার এসেও একই আকার পাবে।
-
-**সাইটের রং** পাঠক নিজে বেছে নিতে পারে — A- A A+ এর উপরের গোল বোতামটা। একটা রং দিলে বাকি পুরো প্যালেটটা তা থেকে হিসাব করে বসে: লেখার রং হয় প্রায়-কালো বা প্রায়-সাদা যাতে বেছে নেওয়া রঙের আভা থাকে, ধূসরগুলো ব্যাকগ্রাউন্ড থেকে সামান্য সরিয়ে বানানো, আর যা কিছু পড়তে হবে তা ব্যাকগ্রাউন্ড থেকে সরাতে সরাতে ৪.৫:১ কনট্রাস্ট না পাওয়া পর্যন্ত এগোনো হয় — অনুমান করা হয় না। **অর্থাৎ যে রংই দিন, লেখা পড়া যাবে।** পাশের ↺ বোতামে আগের রঙে ফেরা যায়, চাঁদ/সূর্য বোতামেও।
-
-হিসাবটা করে `app.js`, কিন্তু জমা থাকে তৈরি হওয়া CSS ভেরিয়েবলগুলো — তাই `wp_head` এর ছোট স্ক্রিপ্টটা পেজ আঁকার আগেই সেগুলো বসিয়ে দিতে পারে, কোনো রঙের অঙ্ক ছাড়াই।
-
-**যে লেখাগুলো পাঠক আগে খুলেছে** সেগুলোর শিরোনাম তালিকায় ম্লান দেখায়। ভিউ গণনার জন্য ব্রাউজার এমনিতেই যে তালিকাটা রাখে সেটাই কাজে লাগানো, নতুন কোনো তথ্য জমা হয় না। ৩০টা লেখা মাথায় রাখা যায়, ৬০০টা যায় না।
-
-যিনি লেখা সম্পাদনা করতে পারেন তাঁর ক্ষেত্রে এটা চলে না — নিজের লেখা তো বারবার খুলতেই হয়, সব সারি ধূসর হয়ে গেলে তালিকাটা কিছুই বলে না। সিদ্ধান্তটা সার্ভারের, কারণ পেজ ক্যাশ থেকে এলে ব্রাউজারের কাছে লগইনের খবর থাকে না: গণনার এন্ডপয়েন্ট উত্তরে `counted` জানায়, আর ব্রাউজার সেটা সত্যি হলেই লেখাটা নিজের তালিকায় তোলে।
-
-**লেখার শেষে একই ক্যাটাগরির আরও তিনটা লেখা** দেখায়, এলোমেলো করে বাছা — তাই প্রতিটা গল্পের নিচে একই তিনটা বসে থাকে না। তার নিচের আগের/পরের লিংক দুটো তারিখ অনুযায়ী, যেটা একটা গল্প শেষ করা পাঠকের কাজে খুব একটা আসে না।
-
-**RSS ফিড** চালু আছে (`/feed/`), কিন্তু ফুটারে বা কোথাও তার লিংক নেই — ইচ্ছাকৃতভাবে। ব্রাউজার বহু বছর আগেই ফিড সুন্দর করে দেখানো বন্ধ করেছে, তাই লিংকটায় ক্লিক করলে পাঠক এক পর্দা কাঁচা XML দেখে ভাবে সাইট ভেঙে গেছে। যাঁরা সত্যিই ফিড রিডার ব্যবহার করেন তাঁরা সাইটের ঠিকানাটাই অ্যাপে দেন, আর `wp_head` এর `alternate` লিংক দেখে অ্যাপ নিজেই ফিডটা খুঁজে নেয়।
-
-**"যেকোনো একটা"** এলোমেলো বাছা একটা লেখা **মডালে** খুলে দেয়, তালিকার যেকোনো সারির মতোই — `/rs/v1/random` থেকে শুধু আইডিটা এনে বাকিটা মডালের নিজের কোডই করে। ক্যাটাগরির ভেতরে থাকলে সেই ক্যাটাগরিতেই বাছে। লিংকটার `href` একটা সাধারণ রিডাইরেক্ট (`?rs_random=1`), তাই JavaScript বন্ধ থাকলে লেখাটা নিজের পাতায় খোলে।
-
-**"আপনি পড়ছিলেন"** — কেউ কোনো লেখা শুরু করে শেষ না করে চলে গেলে, ফিরে এসে হোমপেজের উপরে সেটার লিংক পাবে। শুধু তাই নয়, পপ-আপ থেকে লেখা পড়া বাদ দিয়ে বের হয়ে আসলে কোনো পেজ রিলোড ছাড়াই সাথে সাথে নোটিফিকেশনটি ভেসে উঠবে। এছাড়া এটি স্মার্টভাবে কাজ করে: পাঠক যদি কোনো নির্দিষ্ট ক্যাটাগরিতে (যেমন: গল্প) থাকেন, তবে ওই ক্যাটাগরির সর্বশেষ অসম্পূর্ণ পাঠটিই নোটিফিকেশনে দেখাবে। ক্লিক করলে ঠিক যেখানে থেমেছিল সেখান থেকেই খুলবে। ক্রস চেপে সরিয়ে দেওয়া যায়।
-
-**পড়ার অগ্রগতির বার** এখন লেখার নিজস্ব পাতাতেও, মডালের মতোই — ফেসবুক থেকে আসা পাঠক তো সরাসরি ওখানেই নামে।
-
-**লেখা কপি করলে** শেষে লেখকের নাম আর লিংক জুড়ে যায়। ৬০ অক্ষরের কম কপি করলে নয়, যাতে একটা শব্দ খুঁজতে গিয়ে বিরক্ত না লাগে।
-
-**আর্কাইভের কাউন্টে ক্যাটাগরির নাম** বসে — "গল্প ক্যাটাগরিতে ৯টি লেখা প্রকাশিত"। হেডিংয়ে টাইপরাইটার লেখাটাই থাকে, তাই এই লাইনটাই বলে পাঠক কোথায় দাঁড়িয়ে আছে।
-
-**পড়ার সময় আর সারাংশ** প্রথমবার হিসাব করে post meta-তে রাখা হয়, পরে ওখান থেকেই আসে। লেখা সেভ করলে মুছে যায়, পরের পাঠক এলে আবার হিসাব হয়। এতে তালিকার পাতায় কোনো লেখার পুরো বডি আর পড়তে হয় না।
-
-**কোন লেখা কতবার পড়া হয়েছে** সেটা থিমই গোনে, আলাদা প্লাগইন লাগে না। দুটো সংখ্যা, দুটো আলাদা প্রশ্নের উত্তর:
-
-| কলাম | কী গোনে |
-|---|---|
-| Readers | যতগুলো ব্রাউজার লেখাটা **প্রথমবার** খুলেছে |
-| Reads | **প্রতিবার** খোলা, একই পাঠক ফিরে এলেও |
-
-যে গল্পে মানুষ বারবার ফিরে আসে, তার দুটো সংখ্যার ফারাক বড় হবে। Posts তালিকায় Readers আর Reads কলাম দুটোয় দেখা যায় (শিরোনামে ক্লিক করলে সাজানো যায়), আর এডিটরের Publish বাক্সেও থাকে।
-
-গণনাটা হয় ব্রাউজার থেকে (`POST /wp-json/rs/v1/view/<id>`), কারণ পেজ ক্যাশ থাকলে সার্ভারের কোড চলেই না। "প্রথমবার কিনা" ব্রাউজারই জানায়, কারণ সেটা কেবল সে-ই জানে — অর্থাৎ Readers আসলে ব্রাউজার গোনে, মানুষ নয়: একই লোক ফোনে আর ল্যাপটপে পড়লে দুই। যিনি লেখা সম্পাদনা করতে পারেন তিনি কোনোটাতেই গোনা হন না; সেটা যাচাই হয় সার্ভারে `wp_validate_auth_cookie()` দিয়ে, ব্রাউজারে নয়, কারণ ক্যাশ করা পেজে ব্রাউজারের কাছে ওই তথ্যটা থাকে না।
+- **Modal Reading Experience:** Clicking on a post opens it in a distraction-free modal, while the browser URL intelligently updates to the post's actual permalink. Hitting the back button closes the modal and restores the homepage URL seamlessly.
+- **Direct Access:** If a reader visits a post's URL directly or comes from a search engine, `single.php` loads the post as a full page that visually mimics the modal experience. 
+- **Server-Side Search:** The search feature operates via a custom REST API endpoint (`/wp-json/rs/v1/search`), highlighting matched keywords. Whether you have 200 or 600 posts, the page weight remains incredibly light.
+- **AJAX Pagination:** Clicking pagination links doesn't trigger a full page reload. Instead, the server fetches just the new list (`?rs_ajax=1`) and updates the grid instantly. The URL updates, meaning back buttons and shared links work perfectly.
+- **Bengali Dates:** Dates are automatically rendered with Bengali digits. Month abbreviations are managed by the `rs_bn_months()` function.
+- **Animations & Featured Posts:** The site features smooth fade-up animations on load. Readers can toggle this using the toggle button. The featured post is fetched via AJAX immediately after page load to prevent caching issues.
+- **Typography Controls:** The text size controls (A- A A+) save the reader's preference in the browser's local storage for future visits.
+- **Dynamic Color Themes:** Readers can choose the site's accent color. A sophisticated algorithm calculates the entire color palette based on this single choice, adjusting contrasts to guarantee a WCAG compliant 4.5:1 ratio. **No matter what color is picked, the text remains highly readable.**
+- **Read History:** Posts the reader has already opened appear faded in the list. This relies purely on local browser storage (up to 30 posts) and tracks no personal data.
+- **Smart Recommendations:** At the bottom of each post, three random posts from the same category are displayed, keeping content discovery fresh rather than just showing chronological next/previous posts.
+- **"Resume Reading" System:** If a reader leaves halfway through a post, a smart notification will appear at the top of the homepage (or via a toast if they close the modal) offering to resume exactly where they left off. 
+- **Progress Bar & Time Left:** A reading progress bar tracks the scroll depth, and a dynamic "Time Left to Read" indicator actively updates as the reader scrolls.
+- **Smart Copy Attribution:** Copying text from an article automatically appends the author's name and a link back to the post, provided the copied snippet is over 60 characters.
+- **Reading Time & Summaries:** Automatically calculated on the first load and cached in post meta to avoid heavy server processing on archive pages.
+- **Native View Counter:** The theme tracks "Readers" (unique browsers) and "Reads" (total views) natively via a REST API endpoint (`POST /wp-json/rs/v1/view/<id>`). This bypasses page caching and accurately counts real human interactions. Logged-in editors are excluded from the counts.
+- **Frontend Quick Edit:** Logged-in admins can edit a post's text directly from the reading interface without jumping into the heavy backend dashboard, complete with save protections and revision history integration.
+- **Auto Image Optimization:** Uploaded JPG/PNG images are natively converted to WebP, auto-resized to max 1600px width, and optimized for quality directly within the theme, entirely replacing the need for image optimization plugins.
 
 ---
 
-## SEO
+## SEO Optimization
 
-আলাদা প্লাগইন লাগে না, থিমেই আছে:
+Everything you need for SEO is built right into the theme, eliminating the need for bulky plugins:
 
-- **description, Open Graph আর Twitter কার্ড** — লেখা, হোমপেজ, Page, ক্যাটাগরি আর ট্যাগ, সবগুলোতেই। বিবরণ আসে লেখার শুরুর অংশ থেকে, নিজে কিছু লিখতে হয় না
-- **শেয়ার-ছবি** তিন জায়গায় খোঁজা হয়: ফিচার্ড ইমেজ → লেখার ভেতরের প্রথম ছবি → সেটিংস পেজের ডিফল্ট। থিম ফিচার্ড ইমেজ কোথাও দেখায় না, তাই শুধু শেয়ারের জন্য আলাদা করে সেট করার দরকার নেই — লেখায় ছবি দিলেই সেটা কার্ডে চলে আসবে
-- ছবিটা **medium সাইজে** পাঠানো হয়, ইচ্ছাকৃতভাবে। ফেসবুক ছবির আকার দেখে কার্ডের চেহারা ঠিক করে: ৬০০×৩১৫ বা তার বড় হলে বড় কার্ড বানায় যেখানে শুধু ছবি আর শিরোনাম থাকে, তার ছোট হলে কমপ্যাক্ট কার্ড — পাশে ছোট ছবি, ডানে শিরোনামের সাথে লেখার প্রথম কয়েক লাইন। এখানে শেয়ার হচ্ছে গদ্য, তাই লেখাটা দেখানো কার্ডটাই বেছে নেওয়া
-- **JSON-LD** (`BlogPosting`) — শিরোনাম, প্রকাশ ও সম্পাদনার তারিখ, লেখক, ভাষা, বিভাগ
-- **canonical** — WordPress শুধু একক লেখায় দেয়, থিম বাকি পাতাগুলোতে বসায়। পেজিনেশনের দ্বিতীয় পাতা তাই নিজের ঠিকানাই বলে, হোমপেজের নকল মনে হয় না
-- **ডেট আর অথর আর্কাইভে `noindex`** — ওগুলো হোমপেজেরই পুনরাবৃত্তি। সার্চ পেজ WordPress নিজেই সামলায়। অথর আর্কাইভটা সাইটম্যাপ থেকেও বাদ, নাহলে "ইনডেক্স করো" আর "কোরো না" একসাথে বলা হতো
+- **Open Graph & Twitter Cards:** Automatically generated for posts, homepages, categories, and tags. Descriptions are dynamically pulled from the post content.
+- **Smart Share Images:** The theme looks for a featured image, then the first image inside the post, and finally falls back to the default image set in the settings. Images are sent at `medium` size to ensure compact, text-focused preview cards on social media.
+- **JSON-LD Structured Data:** Automatically generates `BlogPosting` schema including titles, dates, authors, and language.
+- **Canonical URLs:** Handled gracefully across paginated archives so they are never flagged as duplicate content.
+- **Smart `noindex`:** Date and author archives are set to `noindex` to prevent diluting search rankings with duplicate homepage content.
 
-**Yoast বা Rank Math সক্রিয় করলে** উপরের সবটা নিজে থেকে বন্ধ হয়ে যায়, ডুপ্লিকেট হবে না।
+*Note: If you activate a dedicated SEO plugin like Yoast or Rank Math, the theme's native meta tags will gracefully disable themselves to prevent duplication.*
 
-কোডের বাইরে যেটুকু হাতে করতে হবে: **Google Search Console** এ `/wp-sitemap.xml` জমা দেওয়া (সাইটম্যাপটা WordPress নিজেই বানায়), **Settings → General → Site Language** বাংলা রাখা, আর শেয়ার-ছবি বদলালে ফেসবুকের Sharing Debugger এ একবার ক্যাশ রিফ্রেশ করা।
-
----
-
-## যা জেনে রাখা ভালো
-
-- **ফন্ট** (Noto Serif Bengali, Noto Sans Bengali) থিমের ভেতরেই আছে, `assets/fonts/` এ। Google Fonts এ কোনো রিকোয়েস্ট যায় না। unicode-range অনুযায়ী ভাগ করা, তাই বাংলা-ছাড়া সাবসেটগুলো দরকার না হলে নামেও না।
-- **ব্লক এডিটর বন্ধ**, লেখা হয় ক্লাসিক এডিটরে। Classic Editor প্লাগইনটা এর জন্য লাগে না — থিমেই `use_block_editor_for_post_type` ফিল্টারটা বসানো আছে, আর ক্লাসিক এডিটর সাইটের ফন্টেই লেখা দেখায় (`assets/editor.css`)।
-- **ব্লক এডিটরের ডিফল্ট CSS বন্ধ** করা আছে, যাতে পেজ হালকা থাকে। ছবি, ক্যাপশন, কোট, লিস্টের স্টাইল থিমেই লেখা। জটিল ব্লক (কলাম, গ্যালারি, কভার) ব্যবহার করলে `functions.php` এর নিচে `rs_dequeue_block_css` ফাংশনটা মুছে দিন।
-- **SEO প্লাগইন** (Yoast বা Rank Math) সক্রিয় থাকলে থিমের নিজের মেটা ট্যাগ নিজে থেকেই বন্ধ হয়ে যায়, ডুপ্লিকেট হবে না।
-- **JavaScript বন্ধ থাকলেও** সাইট ভাঙবে না। তালিকার প্রতিটা আইটেম আর প্রতিটা পাতার নম্বর আসল লিংক, ক্লিক করলে পুরো পেজ খুলবে।
-- **উপরের কালো টুলবারটা** সাইটের পাতায়ও আপনার প্রোফাইলের ভাষায় দেখাবে (Users → Profile → Language)। WordPress সাধারণত সেখানে সাইটের ভাষা ব্যবহার করে, তাই সাইট বাংলা হলে টুলবারও বাংলা হয়ে যেত।
-- **মোবাইলে** ভাসমান লেখার আকার (A- A A+) কন্ট্রোলটা লুকানো থাকে, কারণ কনটেন্ট কলামের বাইরে জায়গা নেই। তবে কালার পিকার ও অ্যানিমেশন টগল বাটনটি স্ক্রিনের নিচে বামপাশে ভাসমান অবস্থায় থাকে। মডালের ভেতরের কন্ট্রোলগুলোও আগের মতোই কাজ করে।
+**Manual Steps Required:** 
+Submit `/wp-sitemap.xml` (natively generated by WordPress) to **Google Search Console**, ensure **Settings -> General -> Site Language** is set correctly, and clear Facebook's Sharing Debugger cache if you ever change the default share image.
 
 ---
 
-## ফাইলগুলো
+## Good to Know
 
-```
+- **Self-Hosted Fonts:** Noto Serif Bengali and Noto Sans Bengali are served locally from `assets/fonts/`. No external requests are made to Google Fonts, ensuring maximum privacy and speed.
+- **Block Editor Disabled:** The theme forces the Classic Editor interface using the `use_block_editor_for_post_type` filter because the reading experience is designed for clean, prose-heavy text. 
+- **Graceful Degradation:** If JavaScript is disabled, the site won't break. Modals gracefully fall back to full-page loads, and pagination links work like standard links.
+- **Admin Toolbar Language:** The top admin toolbar matches your personal profile language (Users -> Profile -> Language) rather than forcing the site's frontend language, ensuring an accessible dashboard experience.
+
+---
+
+## File Structure
+
+```text
 raisul-sohan/
-├── style.css          ডিজাইন টোকেন ও সব স্টাইল
-├── functions.php      সেটআপ, বাংলা তারিখ, তালিকা ও পেজিনেশন, REST, সেটিংস পেজ
-├── header.php         হেডার
-├── footer.php         ফুটার ও তিনটা মডালের খোলস
-├── index.php          লেখার তালিকার পেজ
-├── single.php         একক লেখার পেজ
-├── page.php           সাধারণ পেজ
-├── 404.php            না পাওয়া গেলে
+├── style.css          Design tokens and all stylesheets
+├── functions.php      Setup, API endpoints, hooks, and backend logic
+├── header.php         Document header
+├── footer.php         Document footer and modal shells
+├── index.php          Post list template
+├── single.php         Single post template
+├── page.php           Standard page template
+├── 404.php            Error 404 template
 └── assets/
-    ├── app.js         হেডিং, মডাল, সার্চ, পেজিনেশন, টুলটিপ, টোস্ট
-    ├── editor.css     এডিটরের ভেতরের স্টাইল
-    ├── fonts.css      সেলফ-হোস্টেড ফন্টের @font-face
-    └── fonts/         Noto Serif ও Noto Sans Bengali (woff2)
+    ├── app.js         Core JavaScript (modals, search, pagination, themes)
+    ├── editor.css     Classic editor typography styles
+    ├── fonts.css      Self-hosted @font-face declarations
+    └── fonts/         Noto Serif and Noto Sans Bengali (woff2 files)
 ```
