@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: রাইসুল সোহানের লেখার সাইট। Figma Make ডিজাইন থেকে পোর্ট করা একটি হালকা ক্লাসিক থিম। পোস্ট মডালে খোলে, কিন্তু প্রতিটা লেখার নিজস্ব URL থাকে।
-Version: 3.0
+Version: 3.5
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -1345,6 +1345,74 @@ a.rs-pagination__step:focus-visible {
 	display: block;
 }
 
+/* ==========================================================================
+   Editing in place
+   ========================================================================== */
+
+/*
+ * The editable regions are marked by a rule down their left rather than a
+ * box around them: the words must not move by a pixel when editing opens,
+ * or the first thing the author sees is the paragraph they were aiming at
+ * jumping somewhere else.
+ */
+.rs-article.is-editing .rs-article__title,
+.rs-article.is-editing .rs-article__body {
+	outline: none;
+	box-shadow: -0.75rem 0 0 -0.6875rem var(--rs-hover);
+}
+
+.rs-article.is-editing .rs-article__title:focus,
+.rs-article.is-editing .rs-article__body:focus {
+	box-shadow: -0.75rem 0 0 -0.5625rem var(--rs-hover);
+}
+
+/* Pictures are held out of the edit, so say so on the way past. */
+.rs-article.is-editing .rs-article__body img {
+	cursor: default;
+	opacity: 0.85;
+}
+
+.rs-edit {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem;
+	margin-top: 1.5rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--rs-border-40);
+}
+
+.rs-edit__btn {
+	padding: 0.375rem 1rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	border: 1px solid var(--rs-border-60);
+	border-radius: var(--rs-radius-lg);
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.rs-edit__btn:hover {
+	background: var(--rs-accent);
+}
+
+.rs-edit__btn--save {
+	background: var(--rs-solid-bg);
+	color: var(--rs-solid-fg);
+	border-color: var(--rs-solid-bg);
+}
+
+.rs-edit__btn--save:hover {
+	opacity: 0.85;
+	background: var(--rs-solid-bg);
+}
+
+.rs-edit__note {
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	color: var(--rs-muted-fg);
+}
+
 .rs-article__date {
 	margin: 0;
 	font-family: var(--rs-sans);
@@ -2101,6 +2169,7 @@ a.rs-article__cat:hover {
 	.rs-progress,
 	.rs-floats,
 	.rs-tint,
+	.rs-edit,
 	.rs-pagination {
 		display: none !important;
 	}

@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '2.22.8' );
+define( 'RS_VERSION', '3.5' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -171,6 +171,17 @@ function rs_assets() {
 			   whether the button is worth showing. */
 			'editBase' => current_user_can( 'edit_posts' )
 				? admin_url( 'post.php?action=edit&post=' )
+				: '',
+			/*
+			 * The nonce that lets the editing endpoint trust the cookie.
+			 * It rides alongside editBase on purpose: both are written
+			 * only into a page rendered for a logged in user, and a
+			 * logged in user is served past the page cache. So a stale
+			 * nonce and a visible edit button cannot happen together —
+			 * where there is no button there is nothing to go stale.
+			 */
+			'editNonce' => current_user_can( 'edit_posts' )
+				? wp_create_nonce( 'wp_rest' )
 				: '',
 			'strings' => array(
 				'copied'   => __( 'Mail copied!', 'raisul-sohan' ),
@@ -1327,6 +1338,32 @@ function rs_svg_tags() {
  * ====================================================================== */
 
 /**
+ * The two ways in to editing a post, for whoever may.
+ *
+ * Two plain links rather than a menu: there are only two of them, and a
+ * menu would be a thing to open before you could choose. Prints nothing
+ * for a reader, so the capability check is the whole gate.
+ *
+ * @param int|WP_Post|null $post Post.
+ */
+function rs_edit_links( $post = null ) {
+	$post = get_post( $post );
+
+	if ( ! $post || ! current_user_can( 'edit_post', $post->ID ) ) {
+		return;
+	}
+	?>
+	<button class="rs-article__edit" type="button" data-rs-edit>
+		<?php echo wp_kses( rs_icon( 'edit', 13 ), rs_svg_tags() ); ?>
+		সম্পাদনা
+	</button>
+	<a class="rs-article__edit" href="<?php echo esc_url( get_edit_post_link( $post->ID ) ); ?>">
+		ড্যাশবোর্ডে
+	</a>
+	<?php
+}
+
+/**
  * Render the share row for a post.
  *
  * @param int|WP_Post|null $post Post.
@@ -1991,6 +2028,21 @@ function rs_rest_routes() {
 
 	register_rest_route(
 		'rs/v1',
+		'/edit/(?P<id>\d+)',
+		array(
+			'methods'             => WP_REST_Server::EDITABLE,
+			'callback'            => 'rs_rest_edit',
+			'permission_callback' => 'rs_can_edit',
+			'args'                => array(
+				'id' => array(
+					'sanitize_callback' => 'absint',
+				),
+			),
+		)
+	);
+
+	register_rest_route(
+		'rs/v1',
 		'/view/(?P<id>\d+)',
 		array(
 			'methods'             => WP_REST_Server::CREATABLE,
@@ -2179,6 +2231,87 @@ function rs_rest_random( $request ) {
 		array(
 			'id'   => $items[0]->ID,
 			'link' => get_permalink( $items[0] ),
+		)
+	);
+}
+
+/**
+ * Whether the caller may edit the post they are asking about.
+ *
+ * Unlike the counting endpoint next door, this one is a normal
+ * authenticated REST call: app.js sends the X-WP-Nonce it was given in the
+ * page, WordPress recognises the cookie because of it, and
+ * current_user_can() means what it usually means in here.
+ *
+ * @param WP_REST_Request $request Request.
+ * @return bool|WP_Error
+ */
+function rs_can_edit( $request ) {
+	$id   = (int) $request['id'];
+	$item = get_post( $id );
+
+	if ( ! $item || 'post' !== $item->post_type ) {
+		return new WP_Error( 'rs_not_found', 'পোস্ট পাওয়া যায়নি', array( 'status' => 404 ) );
+	}
+
+	return current_user_can( 'edit_post', $id );
+}
+
+/**
+ * Save a title or a body edited in place.
+ *
+ * Nothing is filtered here on the way past. wp_update_post() runs the
+ * content through the same hooks the editor screen does — kses for anyone
+ * without unfiltered_html, and nothing extra for anyone with it — so a
+ * post edited from the front of the site ends up in exactly the state the
+ * dashboard would have left it in. Adding a second pass of our own would
+ * only mean the two paths could disagree, and the one that strips
+ * something the author was allowed to keep is the front end.
+ *
+ * It also writes a revision, which is the real safety net under all of
+ * this: anything a stray keystroke does here is one click away from being
+ * undone under Posts → Revisions.
+ *
+ * @param WP_REST_Request $request Request.
+ * @return WP_REST_Response|WP_Error
+ */
+function rs_rest_edit( $request ) {
+	$id     = (int) $request['id'];
+	$title  = $request->get_param( 'title' );
+	$body   = $request->get_param( 'content' );
+	$update = array( 'ID' => $id );
+
+	if ( is_string( $title ) && '' !== trim( $title ) ) {
+		/* Sent from a field that only ever holds text, and read out of it
+		   as text; tags here would be an accident either way. */
+		$update['post_title'] = wp_strip_all_tags( $title );
+	}
+
+	if ( is_string( $body ) ) {
+		$update['post_content'] = $body;
+	}
+
+	if ( count( $update ) < 2 ) {
+		return new WP_Error( 'rs_nothing', 'বদলানোর মতো কিছু আসেনি', array( 'status' => 400 ) );
+	}
+
+	$saved = wp_update_post( $update, true );
+
+	if ( is_wp_error( $saved ) ) {
+		return $saved;
+	}
+
+	$item = get_post( $id );
+
+	/* Handed back rather than assumed, because what was saved is not
+	   always what was sent: kses may have trimmed it, and the reading
+	   time is worked out again from whatever survived. */
+	return rest_ensure_response(
+		array(
+			'id'          => $item->ID,
+			'title'       => rs_plain_title( $item ),
+			'content'     => apply_filters( 'the_content', $item->post_content ),
+			'readingTime' => rs_reading_time( $item ),
 		)
 	);
 }

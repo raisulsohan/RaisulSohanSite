@@ -33,20 +33,15 @@ get_header();
 			সব লেখা
 		</a>
 
-		<article class="rs-article">
+		<?php /* app.js finds the post to save by this, in the modal too. */ ?>
+		<article class="rs-article" data-rs-id="<?php the_ID(); ?>">
 			<div class="rs-article__meta">
 				<p class="rs-article__date"><?php echo esc_html( rs_bn_date() ); ?></p>
 				<span class="rs-article__read"><?php echo esc_html( rs_reading_time() ); ?></span>
 				<?php
-				/* edit_post_link() checks the capability itself and prints
-				   nothing for readers. */
-				edit_post_link(
-					__( 'সম্পাদনা', 'raisul-sohan' ),
-					'',
-					'',
-					0,
-					'rs-article__edit'
-				);
+				/* Checks the capability itself and prints nothing for
+				   readers, as edit_post_link() did before it. */
+				rs_edit_links();
 				?>
 				<div class="rs-fontctl" role="group" aria-label="লেখার আকার">
 					<button type="button" data-rs-font="down" data-step="0" aria-label="ছোট করুন">A-</button>
