@@ -61,6 +61,18 @@ The site title (centered in the header) is pulled from **Settings -> General**, 
 
 ---
 
+## Digital Book Library
+
+The theme includes a specialized system for tracking and displaying your reading list natively, powered by a custom `rs_book` post type.
+
+- **Digital Bookshelf View:** Readers can toggle between a classic list and an interactive "Digital Bookshelf" (`page-book-list.php`). The shelf view renders completely in CSS (no images required). Book spine colors are procedurally generated using a hash of the book's genre, and heights vary realistically based on the length of the book title.
+- **Client-Side Search & Filters:** A lightning-fast, real-time search box instantly filters books by title and author with autocomplete suggestions. You can also filter by Genre and Author dropdowns.
+- **Seamless AJAX Pagination:** Book lists paginate instantly without page reloads, mimicking the smooth navigation style of the main site.
+- **Native Author Management:** Instead of a complex taxonomy, authors are managed via dynamic meta-queries. The WordPress backend features a clean UI to select existing authors from a dropdown or add new ones on the fly.
+- **Auto-Deployment via WP Pusher:** The theme is configured to support WP Pusher for 1-click or fully automated webhook deployments directly from this GitHub repository.
+
+---
+
 ## SEO Optimization
 
 Everything you need for SEO is built right into the theme, eliminating the need for bulky plugins:
