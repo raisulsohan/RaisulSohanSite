@@ -78,9 +78,9 @@ function rs_get_spine_color( $genre ) {
 
 function rs_get_spine_height( $title ) {
 	$len = mb_strlen( $title, 'UTF-8' );
-	/* Base padding + approx 12px per character */
-	$height = 60 + ( $len * 12 );
-	return max( 180, min( 400, $height ) );
+	/* Shorter height since we now allow 2 lines of wrapping */
+	$height = 120 + ( $len * 4 );
+	return max( 160, min( 260, $height ) );
 }
 ?>
 
@@ -172,22 +172,20 @@ function rs_get_spine_height( $title ) {
 			box-shadow: inset -4px 0 10px rgba(0,0,0,0.2), inset 2px 0 4px rgba(255,255,255,0.15), 1px 0 3px rgba(0,0,0,0.3);
 			transition: transform 0.2s, filter 0.2s;
 			position: relative;
-			overflow: visible; /* Visible so the shelf can extend */
+			overflow: visible; 
 			align-self: end;
 		}
 
-		/* Draw the shelf segment under each book */
+		/* Draw the shelf segment under each book (seamless merge) */
 		.rs-list.is-shelf-view .rs-row::after {
 			content: '';
 			position: absolute;
 			bottom: -12px;
-			left: -8px; 
-			right: -12px; /* Bridges the 4px gap and overlaps next book */
+			left: -10px; 
+			right: -10px; 
 			height: 12px;
 			background: var(--rs-border);
-			border-radius: 2px;
 			z-index: -1;
-			box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 		}
 
 		.rs-list.is-shelf-view .rs-row:hover {
@@ -197,34 +195,41 @@ function rs_get_spine_height( $title ) {
 		}
 
 		.rs-list.is-shelf-view .rs-row__link {
-			display: flex;
-			align-items: center;
-			justify-content: center;
+			position: relative;
+			display: block;
 			width: 100%;
 			height: 100%;
 			padding: 0;
-			overflow: hidden; /* Hide overflow here instead */
+			overflow: hidden; 
 			border-radius: 3px 3px 0 0;
 		}
 
 		.rs-list.is-shelf-view .rs-row__head {
-			transform: rotate(90deg);
-			white-space: nowrap;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%) rotate(90deg);
 			width: var(--spine-h, 200px);
-			text-align: center;
+			height: 44px;
 			margin: 0;
 			padding: 0 10px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			text-align: center;
 		}
 
 		.rs-list.is-shelf-view .rs-row__title {
-			font-size: 0.95rem;
+			font-size: 0.85rem;
 			color: #fff;
 			text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
 			font-weight: 500;
-			display: inline-block;
-			width: 100%;
+			line-height: 1.3;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
 			overflow: hidden;
-			text-overflow: ellipsis;
+			white-space: normal;
 		}
 
 		.rs-list.is-shelf-view .rs-row__aside,
