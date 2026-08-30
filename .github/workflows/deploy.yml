@@ -25,6 +25,5 @@ jobs:
           **/.git*/**
           **/.github*/**
         # The path on your server where the theme should be uploaded.
-        # If your FTP drops you in the root of your hosting, it's usually:
-        # public_html/wp-content/themes/raisul-sohan/
-        server-dir: public_html/wp-content/themes/raisul-sohan/
+        # The path on your server where the theme should be uploaded.
+        server-dir: public_html/wp-content/themes/RaisulSohanSite/
