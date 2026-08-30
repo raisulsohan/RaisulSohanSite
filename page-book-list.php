@@ -145,14 +145,20 @@ function rs_get_spine_height( $title ) {
 		<style>
 		/* ---- Bookshelf CSS ---- */
 		.rs-list.is-shelf-view {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: flex-end;
+			display: grid;
+			grid-template-columns: repeat(auto-fit, 44px);
 			justify-content: center;
-			gap: 4px;
-			padding-bottom: 0.5rem;
-			border-bottom: 12px solid var(--rs-border); /* The physical wooden shelf */
+			column-gap: 4px;
+			row-gap: 45px; /* Space between shelves */
+			padding-bottom: 0;
+			border-bottom: none;
 			margin-top: 2rem;
+		}
+
+		@media (max-width: 480px) {
+			.rs-list.is-shelf-view {
+				grid-template-columns: repeat(5, 44px); /* Exactly 5 books per row on mobile */
+			}
 		}
 
 		.rs-list.is-shelf-view .rs-row {
@@ -166,7 +172,22 @@ function rs_get_spine_height( $title ) {
 			box-shadow: inset -4px 0 10px rgba(0,0,0,0.2), inset 2px 0 4px rgba(255,255,255,0.15), 1px 0 3px rgba(0,0,0,0.3);
 			transition: transform 0.2s, filter 0.2s;
 			position: relative;
-			overflow: hidden;
+			overflow: visible; /* Visible so the shelf can extend */
+			align-self: end;
+		}
+
+		/* Draw the shelf segment under each book */
+		.rs-list.is-shelf-view .rs-row::after {
+			content: '';
+			position: absolute;
+			bottom: -12px;
+			left: -8px; 
+			right: -12px; /* Bridges the 4px gap and overlaps next book */
+			height: 12px;
+			background: var(--rs-border);
+			border-radius: 2px;
+			z-index: -1;
+			box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 		}
 
 		.rs-list.is-shelf-view .rs-row:hover {
@@ -182,6 +203,8 @@ function rs_get_spine_height( $title ) {
 			width: 100%;
 			height: 100%;
 			padding: 0;
+			overflow: hidden; /* Hide overflow here instead */
+			border-radius: 3px 3px 0 0;
 		}
 
 		.rs-list.is-shelf-view .rs-row__head {
