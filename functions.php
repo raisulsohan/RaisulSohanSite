@@ -3200,4 +3200,359 @@ function rs_image_quality( $quality ) {
 }
 add_filter( 'wp_editor_set_quality', 'rs_image_quality' );
 
+/* =========================================================================
+ * 13. Book list
+ * ====================================================================== */
 
+/**
+ * Register the rs_book post type.
+ *
+ * Not public: books have no individual pages, no feed entries, no sitemap
+ * lines. They only appear on the page that uses the Book List template.
+ * The admin menu says "Books" and sits below Pages.
+ */
+function rs_register_book_cpt() {
+	register_post_type( 'rs_book', array(
+		'labels' => array(
+			'name'               => 'Books',
+			'singular_name'      => 'Book',
+			'add_new'            => 'Add New',
+			'add_new_item'       => 'Add New Book',
+			'edit_item'          => 'Edit Book',
+			'new_item'           => 'New Book',
+			'view_item'          => 'View Book',
+			'search_items'       => 'Search Books',
+			'not_found'          => 'No books found.',
+			'not_found_in_trash' => 'No books found in Trash.',
+			'all_items'          => 'All Books',
+			'menu_name'          => 'Books',
+		),
+		'public'              => false,
+		'show_ui'             => true,
+		'show_in_menu'        => true,
+		'menu_position'       => 21,
+		'menu_icon'           => 'dashicons-book-alt',
+		'supports'            => array( 'title' ),
+		'publicly_queryable'  => false,
+		'exclude_from_search' => true,
+		'has_archive'         => false,
+		'rewrite'             => false,
+		'show_in_rest'        => false,
+	) );
+}
+add_action( 'init', 'rs_register_book_cpt' );
+
+/**
+ * Register the rs_book_genre taxonomy.
+ *
+ * Hierarchical like categories but private: no archive pages, no URLs.
+ * Only attached to rs_book, never to regular posts.
+ */
+function rs_register_book_genre_taxonomy() {
+	register_taxonomy( 'rs_book_genre', 'rs_book', array(
+		'labels' => array(
+			'name'              => 'Genres',
+			'singular_name'     => 'Genre',
+			'search_items'      => 'Search Genres',
+			'all_items'         => 'All Genres',
+			'edit_item'         => 'Edit Genre',
+			'update_item'       => 'Update Genre',
+			'add_new_item'      => 'Add New Genre',
+			'new_item_name'     => 'New Genre Name',
+			'menu_name'         => 'Genres',
+		),
+		'hierarchical'      => true,
+		'public'            => false,
+		'show_ui'           => true,
+		'show_admin_column' => true,
+		'show_in_rest'      => false,
+		'rewrite'           => false,
+	) );
+}
+add_action( 'init', 'rs_register_book_genre_taxonomy' );
+
+/**
+ * Add meta boxes for book details: author, translator, read status.
+ */
+function rs_book_meta_boxes() {
+	add_meta_box(
+		'rs_book_details',
+		'Book Details',
+		'rs_book_details_html',
+		'rs_book',
+		'normal',
+		'high'
+	);
+}
+add_action( 'add_meta_boxes', 'rs_book_meta_boxes' );
+
+/**
+ * Render the Book Details meta box.
+ *
+ * @param WP_Post $post Current post.
+ */
+function rs_book_details_html( $post ) {
+	wp_nonce_field( 'rs_book_save', 'rs_book_nonce' );
+
+	$author     = get_post_meta( $post->ID, '_rs_book_author', true );
+	$translator = get_post_meta( $post->ID, '_rs_book_translator', true );
+	$is_read    = get_post_meta( $post->ID, '_rs_book_read', true );
+	?>
+	<table class="form-table">
+		<tr>
+			<th><label for="rs_book_author">Author</label></th>
+			<td><input type="text" id="rs_book_author" name="rs_book_author"
+			           value="<?php echo esc_attr( $author ); ?>"
+			           class="regular-text" /></td>
+		</tr>
+		<tr>
+			<th><label for="rs_book_translator">Translator / Editor</label></th>
+			<td><input type="text" id="rs_book_translator" name="rs_book_translator"
+			           value="<?php echo esc_attr( $translator ); ?>"
+			           class="regular-text" /></td>
+		</tr>
+		<tr>
+			<th><label for="rs_book_read">Read</label></th>
+			<td><label>
+				<input type="checkbox" id="rs_book_read" name="rs_book_read"
+				       value="1" <?php checked( $is_read, '1' ); ?> />
+				Finished reading this book
+			</label></td>
+		</tr>
+	</table>
+	<?php
+}
+
+/**
+ * Save book meta on post save.
+ *
+ * @param int $post_id Post ID.
+ */
+function rs_book_save_meta( $post_id ) {
+	if ( ! isset( $_POST['rs_book_nonce'] ) ||
+	     ! wp_verify_nonce( $_POST['rs_book_nonce'], 'rs_book_save' ) ) {
+		return;
+	}
+
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return;
+	}
+
+	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
+	}
+
+	if ( isset( $_POST['rs_book_author'] ) ) {
+		update_post_meta( $post_id, '_rs_book_author',
+			sanitize_text_field( $_POST['rs_book_author'] ) );
+	}
+
+	if ( isset( $_POST['rs_book_translator'] ) ) {
+		update_post_meta( $post_id, '_rs_book_translator',
+			sanitize_text_field( $_POST['rs_book_translator'] ) );
+	}
+
+	update_post_meta( $post_id, '_rs_book_read',
+		! empty( $_POST['rs_book_read'] ) ? '1' : '' );
+}
+add_action( 'save_post_rs_book', 'rs_book_save_meta' );
+
+/**
+ * Add custom columns to the Books admin list table.
+ *
+ * @param array $columns Default columns.
+ * @return array
+ */
+function rs_book_admin_columns( $columns ) {
+	$new = array();
+	foreach ( $columns as $key => $label ) {
+		$new[ $key ] = $label;
+		if ( 'title' === $key ) {
+			$new['rs_author'] = 'Author';
+			/* Genre column is auto-added by show_admin_column on the taxonomy. */
+			$new['rs_read']   = 'Read';
+		}
+	}
+	return $new;
+}
+add_filter( 'manage_rs_book_posts_columns', 'rs_book_admin_columns' );
+
+/**
+ * Fill the custom columns.
+ *
+ * @param string $column  Column name.
+ * @param int    $post_id Post ID.
+ */
+function rs_book_admin_column_data( $column, $post_id ) {
+	if ( 'rs_author' === $column ) {
+		$author = get_post_meta( $post_id, '_rs_book_author', true );
+		$translator = get_post_meta( $post_id, '_rs_book_translator', true );
+		echo esc_html( $author );
+		if ( $translator ) {
+			echo ' <small style="opacity:.6;">(' . esc_html( $translator ) . ')</small>';
+		}
+	} elseif ( 'rs_read' === $column ) {
+		echo get_post_meta( $post_id, '_rs_book_read', true ) ? '✓' : '—';
+	}
+}
+add_action( 'manage_rs_book_posts_custom_column', 'rs_book_admin_column_data', 10, 2 );
+
+/**
+ * Make the Author column sortable.
+ *
+ * @param array $columns Sortable columns.
+ * @return array
+ */
+function rs_book_sortable_columns( $columns ) {
+	$columns['rs_author'] = 'rs_author';
+	return $columns;
+}
+add_filter( 'manage_edit-rs_book_sortable_columns', 'rs_book_sortable_columns' );
+
+/**
+ * Handle sorting by the author meta key.
+ *
+ * @param WP_Query $query The query.
+ */
+function rs_book_sort_by_author( $query ) {
+	if ( ! is_admin() || ! $query->is_main_query() ) {
+		return;
+	}
+	if ( 'rs_author' === $query->get( 'orderby' ) ) {
+		$query->set( 'meta_key', '_rs_book_author' );
+		$query->set( 'orderby', 'meta_value' );
+	}
+}
+add_action( 'pre_get_posts', 'rs_book_sort_by_author' );
+
+/**
+ * One-time CSV importer: fetches the Google Sheet and creates rs_book posts.
+ *
+ * Fires on admin_init when the import button is clicked. After import,
+ * sets a transient so the button never appears again.
+ */
+function rs_book_import_csv() {
+	if ( ! is_admin() || ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	if ( ! isset( $_GET['rs_import_books'] ) || $_GET['rs_import_books'] !== '1' ) {
+		return;
+	}
+
+	if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'rs_import_books' ) ) {
+		return;
+	}
+
+	/* Already imported? */
+	if ( get_option( 'rs_books_imported' ) ) {
+		return;
+	}
+
+	$csv_url  = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5wLOw3k0BZaXvxdLgjmVISNEHVzIRKWinmATyx3Dnwa1--CbGvyUVoMLtZ7cQY1IDqsRqbwOiO65o/pub?gid=1051931047&single=true&output=csv';
+	$response = wp_remote_get( $csv_url, array( 'timeout' => 30 ) );
+
+	if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
+		add_action( 'admin_notices', function () {
+			echo '<div class="notice notice-error"><p>Book import failed: could not fetch CSV.</p></div>';
+		} );
+		return;
+	}
+
+	$csv_data = wp_remote_retrieve_body( $response );
+	$lines    = explode( "\n", $csv_data );
+	array_shift( $lines ); /* header */
+
+	$count = 0;
+
+	foreach ( $lines as $line ) {
+		if ( empty( trim( $line ) ) ) {
+			continue;
+		}
+
+		$cols = str_getcsv( $line );
+		if ( count( $cols ) < 4 ) {
+			continue;
+		}
+
+		$title       = trim( $cols[0] );
+		$author      = trim( $cols[1] );
+		$translator  = isset( $cols[2] ) ? trim( $cols[2] ) : '';
+		$genre       = trim( $cols[3] );
+		$read_status = isset( $cols[4] ) ? trim( $cols[4] ) : '';
+
+		if ( empty( $title ) ) {
+			continue;
+		}
+
+		$post_id = wp_insert_post( array(
+			'post_type'   => 'rs_book',
+			'post_title'  => $title,
+			'post_status' => 'publish',
+		) );
+
+		if ( is_wp_error( $post_id ) ) {
+			continue;
+		}
+
+		if ( $author ) {
+			update_post_meta( $post_id, '_rs_book_author', $author );
+		}
+		if ( $translator ) {
+			update_post_meta( $post_id, '_rs_book_translator', $translator );
+		}
+		if ( $read_status ) {
+			update_post_meta( $post_id, '_rs_book_read', '1' );
+		}
+
+		if ( $genre ) {
+			/* Create the term if it does not exist yet. */
+			$term = term_exists( $genre, 'rs_book_genre' );
+			if ( ! $term ) {
+				$term = wp_insert_term( $genre, 'rs_book_genre' );
+			}
+			if ( ! is_wp_error( $term ) ) {
+				wp_set_object_terms( $post_id, (int) $term['term_id'], 'rs_book_genre' );
+			}
+		}
+
+		$count++;
+	}
+
+	update_option( 'rs_books_imported', true );
+
+	add_action( 'admin_notices', function () use ( $count ) {
+		echo '<div class="notice notice-success is-dismissible"><p>';
+		echo esc_html( $count ) . ' books imported successfully!</p></div>';
+	} );
+}
+add_action( 'admin_init', 'rs_book_import_csv' );
+
+/**
+ * Show the import button on the Books list page — only until import is done.
+ */
+function rs_book_import_button() {
+	$screen = get_current_screen();
+	if ( ! $screen || 'edit-rs_book' !== $screen->id ) {
+		return;
+	}
+
+	if ( get_option( 'rs_books_imported' ) ) {
+		return;
+	}
+
+	$url = wp_nonce_url(
+		admin_url( 'edit.php?post_type=rs_book&rs_import_books=1' ),
+		'rs_import_books'
+	);
+	?>
+	<div class="notice notice-info">
+		<p>
+			<strong>Import books from Google Sheets?</strong>
+			This will create all 104 books from your spreadsheet. This can only be done once.
+		</p>
+		<p><a href="<?php echo esc_url( $url ); ?>" class="button button-primary">Import Books Now</a></p>
+	</div>
+	<?php
+}
+add_action( 'admin_notices', 'rs_book_import_button' );
