@@ -3297,13 +3297,68 @@ function rs_book_details_html( $post ) {
 	$author     = get_post_meta( $post->ID, '_rs_book_author', true );
 	$translator = get_post_meta( $post->ID, '_rs_book_translator', true );
 	$is_read    = get_post_meta( $post->ID, '_rs_book_read', true );
+
+	/* Fetch all existing unique authors to build the dropdown */
+	global $wpdb;
+	$existing_authors = $wpdb->get_col( "
+		SELECT DISTINCT meta_value 
+		FROM {$wpdb->postmeta} 
+		WHERE meta_key = '_rs_book_author' AND meta_value != '' 
+		ORDER BY meta_value ASC
+	" );
 	?>
 	<table class="form-table">
 		<tr>
 			<th><label for="rs_book_author">Author</label></th>
-			<td><input type="text" id="rs_book_author" name="rs_book_author"
-			           value="<?php echo esc_attr( $author ); ?>"
-			           class="regular-text" /></td>
+			<td>
+				<div id="rs_author_select_wrap">
+					<select id="rs_book_author_select" name="rs_book_author_select" class="regular-text">
+						<option value="">-- Select Author --</option>
+						<?php foreach ( $existing_authors as $a ) : ?>
+							<option value="<?php echo esc_attr( $a ); ?>" <?php selected( $author, $a ); ?>>
+								<?php echo esc_html( $a ); ?>
+							</option>
+						<?php endforeach; ?>
+						<?php 
+						/* If the current author is somehow not in the DB list yet, add it so it's selected */
+						if ( $author && ! in_array( $author, $existing_authors, true ) ) : ?>
+							<option value="<?php echo esc_attr( $author ); ?>" selected>
+								<?php echo esc_html( $author ); ?>
+							</option>
+						<?php endif; ?>
+					</select>
+					<a href="#" id="rs_add_author_btn" style="margin-left: 10px; text-decoration: none;">+ Add new Author</a>
+				</div>
+				
+				<div id="rs_author_new_wrap" style="display: none;">
+					<input type="text" id="rs_book_author_new" name="rs_book_author_new" value="" class="regular-text" placeholder="Type new author name" />
+					<a href="#" id="rs_cancel_author_btn" style="margin-left: 10px; color: #d63638; text-decoration: none;">Cancel</a>
+				</div>
+
+				<script>
+				document.addEventListener('DOMContentLoaded', function() {
+					var selectWrap = document.getElementById('rs_author_select_wrap');
+					var newWrap    = document.getElementById('rs_author_new_wrap');
+					var select     = document.getElementById('rs_book_author_select');
+					var input      = document.getElementById('rs_book_author_new');
+
+					document.getElementById('rs_add_author_btn').addEventListener('click', function(e) {
+						e.preventDefault();
+						selectWrap.style.display = 'none';
+						newWrap.style.display = 'block';
+						select.value = ''; /* Clear dropdown selection so new input takes precedence */
+						input.focus();
+					});
+
+					document.getElementById('rs_cancel_author_btn').addEventListener('click', function(e) {
+						e.preventDefault();
+						newWrap.style.display = 'none';
+						selectWrap.style.display = 'block';
+						input.value = '';
+					});
+				});
+				</script>
+			</td>
 		</tr>
 		<tr>
 			<th><label for="rs_book_translator">Translator / Editor</label></th>
@@ -3342,10 +3397,14 @@ function rs_book_save_meta( $post_id ) {
 		return;
 	}
 
-	if ( isset( $_POST['rs_book_author'] ) ) {
-		update_post_meta( $post_id, '_rs_book_author',
-			sanitize_text_field( $_POST['rs_book_author'] ) );
+	/* Author: Check the new input first, fallback to dropdown */
+	$final_author = '';
+	if ( ! empty( trim( $_POST['rs_book_author_new'] ?? '' ) ) ) {
+		$final_author = sanitize_text_field( $_POST['rs_book_author_new'] );
+	} elseif ( ! empty( trim( $_POST['rs_book_author_select'] ?? '' ) ) ) {
+		$final_author = sanitize_text_field( $_POST['rs_book_author_select'] );
 	}
+	update_post_meta( $post_id, '_rs_book_author', $final_author );
 
 	if ( isset( $_POST['rs_book_translator'] ) ) {
 		update_post_meta( $post_id, '_rs_book_translator',
