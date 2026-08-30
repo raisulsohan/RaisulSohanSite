@@ -77,8 +77,10 @@ function rs_get_spine_color( $genre ) {
 }
 
 function rs_get_spine_height( $title ) {
-	$hash = crc32( $title );
-	return 170 + ( $hash % 70 ); /* Height between 170px and 240px */
+	$len = mb_strlen( $title, 'UTF-8' );
+	/* Base padding + approx 12px per character */
+	$height = 60 + ( $len * 12 );
+	return max( 180, min( 400, $height ) );
 }
 ?>
 
