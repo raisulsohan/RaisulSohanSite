@@ -64,6 +64,22 @@ if ( $book_query->have_posts() ) {
 
 sort( $genres );
 sort( $authors );
+
+/* ---- Shelf Helpers ---- */
+function rs_get_spine_color( $genre ) {
+	if ( ! $genre ) return 'hsl(0, 0%, 40%)';
+	$hash = crc32( $genre );
+	$hue  = $hash % 360;
+	/* Saturation 40-60%, Lightness 30-45% for a classy book cover look */
+	$sat  = 40 + ( $hash % 20 );
+	$lit  = 30 + ( $hash % 15 );
+	return "hsl({$hue}, {$sat}%, {$lit}%)";
+}
+
+function rs_get_spine_height( $title ) {
+	$hash = crc32( $title );
+	return 170 + ( $hash % 70 ); /* Height between 170px and 240px */
+}
 ?>
 
 <div class="rs-hero<?php echo $rs_hero ? ' rs-hero--image' : ''; ?>">
@@ -120,15 +136,90 @@ sort( $authors );
 			</div>
 
 			<button id="rs-filter-reset" style="padding: 0.5rem 1rem; border: 1px solid var(--rs-border); border-radius: 4px; background: var(--rs-surface); color: var(--rs-fg); cursor: pointer; font-family: inherit; display: none;">রিসেট</button>
+			
+			<button id="rs-view-toggle" title="ভিউ পরিবর্তন করুন" style="padding: 0.5rem 0.75rem; border: 1px solid var(--rs-border); border-radius: 4px; background: var(--rs-bg); color: var(--rs-fg); cursor: pointer; font-family: inherit; font-size: 1.1rem; display: flex; align-items: center;">📚</button>
 		</div>
+
+		<style>
+		/* ---- Bookshelf CSS ---- */
+		.rs-list.is-shelf-view {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: flex-end;
+			justify-content: center;
+			gap: 4px;
+			padding-bottom: 0.5rem;
+			border-bottom: 12px solid var(--rs-border); /* The physical wooden shelf */
+			margin-top: 2rem;
+		}
+
+		.rs-list.is-shelf-view .rs-row {
+			width: 44px;
+			height: var(--spine-h, 200px);
+			background-color: var(--spine-bg, #666);
+			border: none;
+			border-radius: 3px 3px 0 0;
+			margin: 0;
+			padding: 0;
+			box-shadow: inset -4px 0 10px rgba(0,0,0,0.2), inset 2px 0 4px rgba(255,255,255,0.15), 1px 0 3px rgba(0,0,0,0.3);
+			transition: transform 0.2s, filter 0.2s;
+			position: relative;
+			overflow: hidden;
+		}
+
+		.rs-list.is-shelf-view .rs-row:hover {
+			transform: translateY(-10px) scale(1.02);
+			filter: brightness(1.2);
+			z-index: 2;
+		}
+
+		.rs-list.is-shelf-view .rs-row__link {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 100%;
+			height: 100%;
+			padding: 0;
+		}
+
+		.rs-list.is-shelf-view .rs-row__head {
+			transform: rotate(90deg);
+			white-space: nowrap;
+			width: var(--spine-h, 200px);
+			text-align: center;
+			margin: 0;
+			padding: 0 10px;
+		}
+
+		.rs-list.is-shelf-view .rs-row__title {
+			font-size: 0.95rem;
+			color: #fff;
+			text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+			font-weight: 500;
+			display: inline-block;
+			width: 100%;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.rs-list.is-shelf-view .rs-row__aside,
+		.rs-list.is-shelf-view .rs-row__cat {
+			display: none;
+		}
+		</style>
 
 		<div class="rs-list" id="rs-book-list">
 			<?php foreach ( $books as $idx => $book ) : ?>
+				<?php 
+					$spine_bg = rs_get_spine_color( $book['genre'] );
+					$spine_h  = rs_get_spine_height( $book['title'] );
+				?>
 				<article class="rs-row book-item"
 				         data-genre="<?php echo esc_attr( $book['genre'] ); ?>"
 				         data-author="<?php echo esc_attr( $book['author'] ); ?>"
-				         data-title="<?php echo esc_attr( $book['title'] ); ?>">
-					<div class="rs-row__link" style="cursor: default;">
+				         data-title="<?php echo esc_attr( $book['title'] ); ?>"
+				         style="--spine-bg: <?php echo esc_attr( $spine_bg ); ?>; --spine-h: <?php echo esc_attr( $spine_h ); ?>px;">
+					<div class="rs-row__link" style="cursor: default;" title="<?php echo esc_attr( $book['title'] . ( $book['author'] ? ' - ' . $book['author'] : '' ) ); ?>">
 						<span class="rs-row__head">
 							<span class="rs-row__title"><?php echo esc_html( $book['title'] ); ?></span>
 							<?php if ( $book['genre'] ) : ?>
@@ -168,6 +259,7 @@ sort( $authors );
 	var searchInput  = document.getElementById('rs-book-search');
 	var suggestBox   = document.getElementById('rs-search-suggest');
 	var resetBtn     = document.getElementById('rs-filter-reset');
+	var viewToggleBtn= document.getElementById('rs-view-toggle');
 	var allItems     = [].slice.call(document.querySelectorAll('.book-item'));
 	var countDisplay = document.getElementById('rs-book-count');
 	var listEl       = document.getElementById('rs-book-list');
@@ -176,6 +268,32 @@ sort( $authors );
 
 	var filtered  = allItems.slice();
 	var curPage   = 1;
+	var isShelf   = false;
+
+	/* ---- View Toggle (Shelf vs List) ---- */
+	function setView(shelf) {
+		isShelf = shelf;
+		if (isShelf) {
+			listEl.classList.add('is-shelf-view');
+			viewToggleBtn.innerHTML = '📄';
+			viewToggleBtn.title = 'লিস্ট ভিউ দেখুন';
+		} else {
+			listEl.classList.remove('is-shelf-view');
+			viewToggleBtn.innerHTML = '📚';
+			viewToggleBtn.title = 'বুকশেলফ ভিউ দেখুন';
+		}
+		try { localStorage.setItem('rs_book_view', isShelf ? 'shelf' : 'list'); } catch (e) {}
+	}
+
+	try {
+		if (localStorage.getItem('rs_book_view') === 'shelf') {
+			setView(true);
+		}
+	} catch (e) {}
+
+	viewToggleBtn.addEventListener('click', function() {
+		setView(!isShelf);
+	});
 
 	/* Bengali digits */
 	function bn(str) {
