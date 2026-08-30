@@ -105,3 +105,7 @@ raisul-sohan/
     ├── fonts.css      Self-hosted @font-face declarations
     └── fonts/         Noto Serif and Noto Sans Bengali (woff2 files)
 ```
+ 
+ # #   A u t o   D e p l o y m e n t  
+ T h i s   t h e m e   i s   a u t o m a t i c a l l y   d e p l o y e d   u s i n g   W P   P u s h e r .  
+ 
