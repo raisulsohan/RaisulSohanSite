@@ -280,5 +280,7 @@ final class RS_GitHub_Updater {
 	}
 }
 
-/* Fire it up. */
-new RS_GitHub_Updater();
+/* Fire it up after WordPress has fully loaded the theme. */
+add_action( 'after_setup_theme', function() {
+	new RS_GitHub_Updater();
+} );

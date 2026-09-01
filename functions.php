@@ -38,7 +38,7 @@ define( 'RS_SUMMARY_KEY', '_rs_summary' );
  * GitHub Auto-Updater
  * ====================================================================== */
 
-require_once RS_DIR . '/inc/github-updater.php';
+require_once get_template_directory() . '/inc/github-updater.php';
 
 /* =========================================================================
  * 1. Theme setup
