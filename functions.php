@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '4.5' );
+define( 'RS_VERSION', '5.0' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -33,6 +33,12 @@ define( 'RS_READERS_KEY', '_rs_readers' );
     time they are asked for and thrown away when the post is saved. */
 define( 'RS_MINUTES_KEY', '_rs_minutes' );
 define( 'RS_SUMMARY_KEY', '_rs_summary' );
+
+/* =========================================================================
+ * GitHub Auto-Updater
+ * ====================================================================== */
+
+require_once RS_DIR . '/inc/github-updater.php';
 
 /* =========================================================================
  * 1. Theme setup
