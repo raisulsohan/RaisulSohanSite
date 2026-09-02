@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '6.0' );
+define( 'RS_VERSION', '6.1' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -132,6 +132,31 @@ function rs_mce_buttons( $buttons ) {
 	return $buttons;
 }
 add_filter( 'mce_buttons', 'rs_mce_buttons' );
+
+/**
+ * Force justify alignment on pasted text in post editor.
+ */
+function rs_tinymce_paste_justify_script() {
+	$screen = get_current_screen();
+	if ( ! $screen || ! in_array( $screen->base, array( 'post' ), true ) ) {
+		return;
+	}
+	?>
+	<script>
+	jQuery(document).on('tinymce-editor-init', function( event, editor ) {
+		editor.on('PastePostProcess', function( e ) {
+			if ( e.node ) {
+				var elements = e.node.querySelectorAll('p, h1, h2, h3, h4, h5, h6');
+				for ( var i = 0; i < elements.length; i++ ) {
+					elements[i].style.textAlign = 'justify';
+				}
+			}
+		});
+	});
+	</script>
+	<?php
+}
+add_action( 'admin_print_footer_scripts', 'rs_tinymce_paste_justify_script', 99 );
 
 /* =========================================================================
  * 2. Assets
