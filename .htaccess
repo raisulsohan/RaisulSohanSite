@@ -1,0 +1,27 @@
+# Cache headers for this theme's own static files.
+#
+# The server sends an ETag for these and nothing else, so a returning reader
+# asks about every stylesheet, script and font on every single page — six
+# round trips before a word appears, only to be told nothing changed. These
+# two blocks let the browser stop asking.
+#
+# A year is safe because every one of these files is requested with a ?ver=
+# that carries RS_VERSION. Raising the theme version changes the URL, and a
+# changed URL is a different file as far as the cache is concerned. Nothing
+# here is ever served stale; it is simply not asked about again.
+#
+# Both blocks are wrapped in IfModule, so a server missing either module
+# skips the rules rather than refusing the request.
+
+<IfModule mod_headers.c>
+	<FilesMatch "\.(css|js|woff2|woff|ttf|png|jpe?g|webp|gif|svg|ico)$">
+		Header set Cache-Control "public, max-age=31536000, immutable"
+	</FilesMatch>
+</IfModule>
+
+<IfModule mod_expires.c>
+	ExpiresActive On
+	<FilesMatch "\.(css|js|woff2|woff|ttf|png|jpe?g|webp|gif|svg|ico)$">
+		ExpiresDefault "access plus 1 year"
+	</FilesMatch>
+</IfModule>

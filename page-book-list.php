@@ -39,7 +39,10 @@ if ( $book_query->have_posts() ) {
 		$translator = get_post_meta( get_the_ID(), '_rs_book_translator', true );
 		$is_read    = get_post_meta( get_the_ID(), '_rs_book_read', true );
 
-		$genre_terms = wp_get_object_terms( get_the_ID(), 'rs_book_genre' );
+		/* get_the_terms() reads the term cache WP_Query already filled for
+		   every book in one go. wp_get_object_terms() ignores that cache and
+		   goes to the database, which was one query per book on the shelf. */
+		$genre_terms = get_the_terms( get_the_ID(), 'rs_book_genre' );
 		$genre       = ! empty( $genre_terms ) && ! is_wp_error( $genre_terms )
 			? $genre_terms[0]->name
 			: '';
@@ -325,18 +328,23 @@ function rs_get_spine_height( $title ) {
 		setView(!isShelf);
 	});
 
+	/* Book titles and author names are written by hand in the dashboard, and
+	   a hand can write an ampersand or an angle bracket. Everything below
+	   builds HTML by joining strings, so anything going into it goes through
+	   here first — otherwise one such title silently breaks the dropdown. */
+	function esc(str) {
+		return String(str == null ? '' : str)
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#39;');
+	}
+
 	/* Bengali digits */
 	function bn(str) {
 		var d = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
 		return String(str).replace(/[0-9]/g, function(c) { return d[c]; });
-	}
-
-	/* ---- Stagger animation (matches the site's existing style) ---- */
-	function staggerVisible() {
-		var visible = listEl.querySelectorAll('.book-item[style=""],.book-item:not([style])');
-		for (var i = 0; i < visible.length; i++) {
-			visible[i].style.setProperty('--i', i);
-		}
 	}
 
 	/* ---- Filtering ---- */
@@ -375,15 +383,21 @@ function rs_get_spine_height( $title ) {
 		wrap.classList.add('is-loading');
 
 		setTimeout(function() {
-			/* Hide everything, then show the right slice */
+			/* Hide everything, then show the right slice.
+			   The stagger index is counted over what is actually shown, so
+			   the fade-in walks 0, 1, 2 … down the visible page rather than
+			   following the position of a book in the unfiltered list. */
 			allItems.forEach(function(item) { item.style.display = 'none'; });
+
+			var shown = 0;
 			filtered.forEach(function(item, i) {
-				item.style.display = (i >= start && i < end) ? '' : 'none';
+				var on = ( i >= start && i < end );
+				item.style.display = on ? '' : 'none';
+				if (on) { item.style.setProperty('--i', shown++); }
 			});
 
 			countDisplay.textContent = bn(filtered.length);
 			buildPagination(total);
-			staggerVisible();
 
 			wrap.classList.remove('is-loading');
 		}, 200);
@@ -472,10 +486,10 @@ function rs_get_spine_height( $title ) {
 		if (suggestions.length > 0 && q.length > 0) {
 			var html = '';
 			suggestions.slice(0, 8).forEach(function(s) {
-				html += '<div class="rs-suggest-item" data-value="' + s.text.replace(/"/g, '&quot;') + '"'
+				html += '<div class="rs-suggest-item" data-value="' + esc(s.text) + '"'
 				     + ' style="padding:0.5rem 0.75rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--rs-border-40);font-size:0.85rem;">'
-				     + '<span>' + s.text + '</span>'
-				     + '<small style="opacity:0.5;font-size:0.75rem;">' + s.type + '</small>'
+				     + '<span>' + esc(s.text) + '</span>'
+				     + '<small style="opacity:0.5;font-size:0.75rem;">' + esc(s.type) + '</small>'
 				     + '</div>';
 			});
 			suggestBox.innerHTML = html;

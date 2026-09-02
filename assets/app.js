@@ -1132,7 +1132,11 @@
 			/* Here rather than at the top of openPost(), so a fetch that
 			   never arrives is not counted as a reading. */
 			countView( id );
-			document.title = data.title + ' · ' + ( cfg.siteName || baseTitle );
+			/* An en dash, because that is what WordPress puts between a title
+			   and the site name on the post's own page. The modal and the
+			   page are the same reading; a reader flicking between browser
+			   tabs should not be able to tell which one they are on. */
+			document.title = data.title + ' – ' + ( cfg.siteName || baseTitle );
 
 			var close = $( '.rs-modal__close', postOverlay );
 
@@ -2461,7 +2465,7 @@
 			}
 
 			if ( postBody && article === postBody ) {
-				document.title = data.title + ' · ' + ( cfg.siteName || baseTitle );
+				document.title = data.title + ' – ' + ( cfg.siteName || baseTitle );
 			}
 		}
 
