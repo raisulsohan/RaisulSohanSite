@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '6.8' );
+define( 'RS_VERSION', '6.9' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -366,6 +366,33 @@ function rs_bn_months() {
 		10 => 'অক্টো',
 		11 => 'নভে',
 		12 => 'ডিসে',
+	);
+}
+
+/**
+ * Month names in full, for the one place that has room for them.
+ *
+ * The abbreviations above earn their shortness in a list row, where the
+ * date sits beside a title and must not compete with it. On the index the
+ * month is a heading of its own with a line to itself, and an abbreviation
+ * there reads as a saving nobody asked for.
+ *
+ * @return array
+ */
+function rs_bn_months_full() {
+	return array(
+		1  => 'জানুয়ারি',
+		2  => 'ফেব্রুয়ারি',
+		3  => 'মার্চ',
+		4  => 'এপ্রিল',
+		5  => 'মে',
+		6  => 'জুন',
+		7  => 'জুলাই',
+		8  => 'আগস্ট',
+		9  => 'সেপ্টেম্বর',
+		10 => 'অক্টোবর',
+		11 => 'নভেম্বর',
+		12 => 'ডিসেম্বর',
 	);
 }
 
@@ -800,6 +827,49 @@ function rs_about() {
 		'title'   => 'আমার সম্পর্কে',
 		'content' => '<p>আমি রাইসুল সোহান। আমার সাহিত্যচর্চার মূল মাধ্যম গল্প। সমকালীন মানুষের জীবন, সম্পর্ক, স্মৃতি ও শহরের নীরব রূপান্তর আমার লেখার আগ্রহের জায়গা। জীবিকার জন্য মোশন গ্রাফিক্স ও অ্যানিমেশন নিয়ে কাজ করলেও, আমার কাছে দুটি মাধ্যমই শেষ পর্যন্ত গল্প বলার ভিন্ন ভিন্ন উপায়।</p>',
 	);
+
+	return $cached;
+}
+
+/**
+ * Where the index lives, if it has been made.
+ *
+ * Found by looking for the page that uses the Index template rather than
+ * by asking for it in the settings. There is nothing to choose here — the
+ * template can only sensibly be on one page, and a setting would be a
+ * second place to keep the same fact in step with the first.
+ *
+ * Empty until such a page exists, which is what lets the count on the
+ * front page stay ordinary text until there is somewhere for it to go.
+ *
+ * @return string Permalink, or '' when there is no index page.
+ */
+function rs_index_url() {
+	static $cached = null;
+
+	if ( null !== $cached ) {
+		return $cached;
+	}
+
+	$cached = '';
+
+	// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- One row, once per request, and only on the front page.
+	$pages = get_posts(
+		array(
+			'post_type'        => 'page',
+			'post_status'      => 'publish',
+			'meta_key'         => '_wp_page_template',
+			'meta_value'       => 'page-index.php',
+			'numberposts'      => 1,
+			'fields'           => 'ids',
+			'no_found_rows'    => true,
+			'suppress_filters' => false,
+		)
+	);
+
+	if ( $pages ) {
+		$cached = get_permalink( $pages[0] );
+	}
 
 	return $cached;
 }
@@ -2034,16 +2104,32 @@ function rs_render_count() {
 		$before = '';
 		$after  = 'টি লেখা প্রকাশিত';
 	}
+	/*
+	 * On the front page the sentence is already a description of the index,
+	 * so it becomes the way in rather than growing a button beside itself.
+	 * Only there: on an archive it counts that archive's posts, and sending
+	 * a reader from "গল্প ক্যাটাগরিতে ১৫টি" to a list of all forty seven
+	 * would answer a question they did not ask.
+	 */
+	$index = ( is_home() || is_front_page() ) ? rs_index_url() : '';
 	?>
 	<div class="rs-wrap">
 		<p class="rs-post-count">
-			<?php
-			/* No line breaks around the number: টি is a suffix, and any
-			   whitespace here would render as a space inside the word. */
-			echo esc_html( $before );
-			?><span class="rs-post-count__number"><?php echo esc_html( rs_bn_digits( $count ) ); ?></span><?php
-			echo esc_html( $after );
-			?>
+			<?php if ( $index ) : ?>
+				<a class="rs-post-count__all" href="<?php echo esc_url( $index ); ?>"><?php
+					echo esc_html( $before );
+					?><span class="rs-post-count__number"><?php echo esc_html( rs_bn_digits( $count ) ); ?></span><?php
+					echo esc_html( $after );
+				?></a>
+			<?php else : ?>
+				<?php
+				/* No line breaks around the number: টি is a suffix, and any
+				   whitespace here would render as a space inside the word. */
+				echo esc_html( $before );
+				?><span class="rs-post-count__number"><?php echo esc_html( rs_bn_digits( $count ) ); ?></span><?php
+				echo esc_html( $after );
+				?>
+			<?php endif; ?>
 			<a class="rs-post-count__any"
 				href="<?php echo esc_url( rs_random_url() ); ?>"
 				data-rs-random="<?php echo (int) rs_random_cat(); ?>">যেকোনো একটা লেখা</a>

@@ -162,7 +162,10 @@
 	 * these have I read" is the question a long archive keeps asking.
 	 */
 	function markRead() {
-		var wrap = $( '#rs-list-wrap' );
+		/* The list on the front page and archives, and the index, which is
+		   the same question asked of a longer list: forty seven titles is
+		   well past what anyone holds in their head. */
+		var wrap = $( '#rs-list-wrap' ) || $( '.rs-index' );
 
 		if ( ! wrap ) {
 			return;
@@ -171,7 +174,7 @@
 		var read = readList();
 
 		$$( '[data-rs-post]', wrap ).forEach( function ( link ) {
-			var row = link.closest ? link.closest( '.rs-row' ) : null;
+			var row = link.closest ? link.closest( '.rs-row, .rs-index__row' ) : null;
 
 			if ( row && hasRead( read, link.getAttribute( 'data-rs-post' ) ) ) {
 				row.classList.add( 'is-read' );

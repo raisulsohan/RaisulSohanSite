@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
-Version: 6.8
+Version: 6.9
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -500,6 +500,21 @@ button {
 .rs-post-count__number{
 	font-weight:600;
 	color:var(--rs-hover);
+}
+
+/* The count made into the way in to the index. The number was already in
+   the accent, so becoming a link carries the rest of the sentence up to
+   meet it rather than introducing a colour — the line gains a destination
+   without gaining a decoration. Only on the front page; see
+   rs_render_count(). */
+.rs-post-count__all {
+	color: var(--rs-hover);
+	transition: opacity 0.15s ease;
+}
+
+.rs-post-count__all:hover,
+.rs-post-count__all:focus-visible {
+	opacity: 0.75;
 }
 
 /* Sends the reader to a story chosen for them. Set apart by a rule rather
@@ -1718,6 +1733,179 @@ a.rs-article__cat:hover {
 
 .rs-can-share .rs-share__btn[data-rs-share] {
 	display: inline-flex;
+}
+
+/* ==========================================================================
+   লেখার সূচি — every post on one page
+   ========================================================================== */
+
+.rs-index {
+	padding-block: 1rem 4rem;
+}
+
+.rs-index__head {
+	margin-bottom: 2.5rem;
+}
+
+.rs-index__title {
+	margin: 0 0 0.25rem;
+	font-family: var(--rs-serif);
+	font-size: 1.75rem;
+	font-weight: 500;
+	letter-spacing: -0.01em;
+	text-wrap: balance;
+}
+
+.rs-index__intro {
+	font-family: var(--rs-sans);
+	font-size: 0.8125rem;
+	color: var(--rs-muted-fg);
+}
+
+.rs-index__intro p {
+	margin: 0.25rem 0 0;
+}
+
+/* The year, with a rule running out from it to the edge of the column. */
+.rs-index__year {
+	display: flex;
+	align-items: baseline;
+	gap: 0.75rem;
+	margin: 3rem 0 0.25rem;
+}
+
+.rs-index__year::after {
+	content: "";
+	flex: 1;
+	height: 1px;
+	background: var(--rs-rule);
+}
+
+.rs-index__year-n {
+	margin: 0;
+	font-family: var(--rs-sans);
+	font-size: 1.5rem;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	font-variant-numeric: tabular-nums;
+}
+
+.rs-index__year-c {
+	font-family: var(--rs-sans);
+	font-size: 0.6875rem;
+	color: var(--rs-muted-fg);
+}
+
+.rs-index__month {
+	margin-top: 1.75rem;
+}
+
+.rs-index__month-n {
+	margin: 0 0 0.25rem;
+	font-family: var(--rs-sans);
+	font-size: 0.6875rem;
+	font-weight: 600;
+	letter-spacing: 0.09em;
+	text-transform: uppercase;
+	color: var(--rs-muted-fg);
+}
+
+.rs-index__rows {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.rs-index__row {
+	display: flex;
+	align-items: baseline;
+	gap: 0.85rem;
+	padding: 0.7rem 0;
+	border-bottom: 1px solid var(--rs-rule);
+}
+
+/* Fixed width and tabular figures so the days line up as a column rather
+   than shuffling with the width of each numeral. */
+.rs-index__day {
+	flex: 0 0 1.6rem;
+	text-align: right;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	color: var(--rs-muted-fg);
+	font-variant-numeric: tabular-nums;
+}
+
+/* min-width so a long Bengali title wraps inside the row instead of
+   pushing the reading time off the end of it. */
+.rs-index__link {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	align-items: baseline;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.rs-index__t {
+	font-family: var(--rs-serif);
+	font-size: 1.0625rem;
+	color: var(--rs-fg);
+	transition: color 0.15s ease;
+}
+
+.rs-index__link:hover .rs-index__t,
+.rs-index__link:focus-visible .rs-index__t {
+	color: var(--rs-hover);
+}
+
+.rs-index__c {
+	font-family: var(--rs-serif);
+	font-style: italic;
+	font-size: 0.75rem;
+	color: var(--rs-cat);
+	white-space: nowrap;
+}
+
+.rs-index__r {
+	flex: 0 0 auto;
+	font-family: var(--rs-sans);
+	font-size: 0.6875rem;
+	color: var(--rs-muted-fg);
+	white-space: nowrap;
+}
+
+/* Already opened, dimmed the same way and for the same reason as a row on
+   the front page. Forty seven titles is exactly the length at which
+   "which of these have I read" starts being worth answering. */
+.rs-index__row.is-read .rs-index__t,
+.rs-index__row.is-read .rs-index__c {
+	opacity: 0.55;
+}
+
+/* The row keeps its three columns on a phone rather than stacking them.
+   The title already wraps inside its own column — min-width: 0 above is
+   what allows that — so breaking the row apart only stranded the day on a
+   line of its own and made every entry three lines tall. Narrower gaps and
+   a slightly smaller title buy back the width instead. */
+@media (max-width: 640px) {
+	.rs-index__row {
+		gap: 0.6rem;
+	}
+
+	.rs-index__day {
+		flex-basis: 1.35rem;
+	}
+
+	.rs-index__t {
+		font-size: 1rem;
+	}
+
+	/* The category is the one thing here the reader can do without when
+	   the room runs out; the month heading above already groups these, and
+	   the title is what they came to read. */
+	.rs-index__c {
+		display: none;
+	}
 }
 
 /* ==========================================================================
