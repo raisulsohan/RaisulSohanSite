@@ -40,6 +40,17 @@ final class RS_GitHub_Updater {
 	private $transient_key;
 
 	/**
+	 * What GitHub said during this page load.
+	 *
+	 * Null means nobody has looked yet. Anything else — including false,
+	 * meaning the question could not be answered — is a settled answer and
+	 * is handed back without asking again.
+	 *
+	 * @var array|false|null
+	 */
+	private $remote = null;
+
+	/**
 	 * Boot the updater.
 	 */
 	public function __construct() {
@@ -218,6 +229,10 @@ final class RS_GitHub_Updater {
 			'theme' === $options['type']
 		) {
 			delete_transient( $this->transient_key );
+
+			/* The answer held for this page load describes the theme that
+			   was just replaced, so it is no longer an answer. */
+			$this->remote = null;
 		}
 	}
 
@@ -233,12 +248,31 @@ final class RS_GitHub_Updater {
 	private function get_remote_version() {
 		global $pagenow;
 
+		/*
+		 * One page load asks GitHub once, whatever happens afterwards.
+		 *
+		 * This sits behind site_transient_update_themes, which WordPress
+		 * reads several times while an admin screen is drawn — and on the
+		 * Themes and Updates screens the cache below is deliberately
+		 * skipped. Without this line each of those reads opened its own
+		 * connection, every one of them free to wait ten seconds, so a
+		 * slow GitHub could hold Appearance → Themes for the better part
+		 * of a minute before a single theme appeared.
+		 *
+		 * A failure is remembered along with a success, because repeating
+		 * a failure is precisely what costs the ten seconds.
+		 */
+		if ( null !== $this->remote ) {
+			return $this->remote;
+		}
+
 		/* When on the Updates or Themes screen, or when user clicks 'Check Again', bypass cache */
 		$force = isset( $_GET['force-check'] ) || ( is_admin() && in_array( $pagenow, array( 'update-core.php', 'themes.php' ), true ) );
 
 		if ( ! $force ) {
 			$cached = get_transient( $this->transient_key );
 			if ( false !== $cached ) {
+				$this->remote = $cached;
 				return $cached;
 			}
 		}
@@ -256,6 +290,7 @@ final class RS_GitHub_Updater {
 		) );
 
 		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			$this->remote = false;
 			return false;
 		}
 
@@ -267,9 +302,11 @@ final class RS_GitHub_Updater {
 			/* Cache for 2 hours in normal circumstances */
 			set_transient( $this->transient_key, $data, 2 * HOUR_IN_SECONDS );
 
+			$this->remote = $data;
 			return $data;
 		}
 
+		$this->remote = false;
 		return false;
 	}
 
