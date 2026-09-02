@@ -116,7 +116,7 @@ final class RS_GitHub_Updater {
 				'theme'       => $this->slug,
 				'new_version' => $remote['version'],
 				'url'         => 'https://github.com/' . $this->repo,
-				'package'     => $this->get_zip_url(),
+				'package'     => $this->get_zip_url( isset( $remote['sha'] ) ? $remote['sha'] : '' ),
 			);
 		}
 
@@ -159,7 +159,7 @@ final class RS_GitHub_Updater {
 		$info->version       = $remote['version'];
 		$info->author        = $theme->get( 'Author' );
 		$info->homepage      = 'https://github.com/' . $this->repo;
-		$info->download_link = $this->get_zip_url();
+		$info->download_link = $this->get_zip_url( isset( $remote['sha'] ) ? $remote['sha'] : '' );
 		$info->sections      = array(
 			'description' => $theme->get( 'Description' ),
 			'changelog'   => sprintf(
@@ -297,7 +297,11 @@ final class RS_GitHub_Updater {
 		$body = wp_remote_retrieve_body( $response );
 
 		if ( preg_match( '/^[ \t\/*#@]*Version:\s*(.+)$/mi', $body, $matches ) ) {
-			$data = array( 'version' => trim( $matches[1] ) );
+			$data = array(
+				'version' => trim( $matches[1] ),
+				/* Which commit that version was read out of. See get_zip_url(). */
+				'sha'     => $this->get_head_sha(),
+			);
 
 			/* Cache for 2 hours in normal circumstances */
 			set_transient( $this->transient_key, $data, 2 * HOUR_IN_SECONDS );
@@ -311,11 +315,71 @@ final class RS_GitHub_Updater {
 	}
 
 	/**
+	 * Which commit the main branch is currently pointing at.
+	 *
+	 * Asked for as a bare string rather than as the commit's full JSON —
+	 * that Accept header makes GitHub answer with forty characters instead
+	 * of several kilobytes describing a commit nobody here needs to read.
+	 *
+	 * Unauthenticated calls to this API are limited to sixty an hour per
+	 * address. The answer is kept in the same transient as the version, and
+	 * the memo above holds it for the rest of the page load, so an ordinary
+	 * day costs a handful.
+	 *
+	 * @return string Forty hex characters, or '' if it could not be had.
+	 */
+	private function get_head_sha() {
+		$response = wp_remote_get(
+			sprintf( 'https://api.github.com/repos/%s/commits/main', $this->repo ),
+			array(
+				'timeout' => 10,
+				'headers' => array(
+					'Accept'     => 'application/vnd.github.sha',
+					'User-Agent' => 'RaisulSohanSite-Updater',
+				),
+			)
+		);
+
+		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			return '';
+		}
+
+		$sha = trim( wp_remote_retrieve_body( $response ) );
+
+		/* Checked rather than trusted: this string is about to become part
+		   of a download address, and an error page would otherwise be built
+		   into one. */
+		return preg_match( '/^[0-9a-f]{40}$/', $sha ) ? $sha : '';
+	}
+
+	/**
 	 * Build the URL for downloading the repo as a zip.
 	 *
+	 * Pinned to a commit wherever one is known, because a branch's archive
+	 * is a moving target: GitHub serves it from a cache that can still be
+	 * holding the previous snapshot for a while after a push. WordPress
+	 * would then install that older copy over the current one and report
+	 * success, having genuinely done what it was asked — the update simply
+	 * arrives as a copy of what was already there.
+	 *
+	 * A commit's archive cannot go stale. The address changes every time
+	 * the content does, so a cached copy of it is always the right one.
+	 *
+	 * Falls back to the branch when the commit could not be looked up,
+	 * since an update that might be stale still beats no update at all.
+	 *
+	 * @param string $sha Commit to pin to, or '' for the branch.
 	 * @return string
 	 */
-	private function get_zip_url() {
+	private function get_zip_url( $sha = '' ) {
+		if ( $sha ) {
+			return sprintf(
+				'https://github.com/%s/archive/%s.zip',
+				$this->repo,
+				$sha
+			);
+		}
+
 		return sprintf(
 			'https://github.com/%s/archive/refs/heads/main.zip',
 			$this->repo

@@ -70,7 +70,7 @@ The theme includes a specialized system for tracking and displaying your reading
 - **Client-Side Search & Filters:** A lightning-fast, real-time search box instantly filters books by title and author with autocomplete suggestions. You can also filter by Genre and Author dropdowns.
 - **Seamless AJAX Pagination:** Book lists paginate instantly without page reloads, mimicking the smooth navigation style of the main site.
 - **Native Author Management:** Instead of a complex taxonomy, authors are managed via dynamic meta-queries. The WordPress backend features a clean UI to select existing authors from a dropdown or add new ones on the fly.
-- **GitHub Auto-Updater:** The theme includes a built-in self-updater (`inc/github-updater.php`) that hooks into WordPress's native update system. When a new version is pushed to GitHub, the standard "Update Available" notice appears in the dashboard — no third-party plugins required.
+- **GitHub Auto-Updater:** The theme includes a built-in self-updater (`inc/github-updater.php`) that hooks into WordPress's native update system. When a new version is pushed to GitHub, the standard "Update Available" notice appears in the dashboard — no third-party plugins required. The download is pinned to the **commit SHA**, not to the `main` branch: a branch archive is served from a GitHub cache that can still hold the previous snapshot shortly after a push, which would make WordPress install the old copy and report success. A commit's archive address changes whenever its content does, so it can never be stale.
 
 ---
 
