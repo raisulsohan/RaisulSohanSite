@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '5.6' );
+define( 'RS_VERSION', '5.7' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -33,6 +33,34 @@ define( 'RS_READERS_KEY', '_rs_readers' );
     time they are asked for and thrown away when the post is saved. */
 define( 'RS_MINUTES_KEY', '_rs_minutes' );
 define( 'RS_SUMMARY_KEY', '_rs_summary' );
+
+/* Define constants early */
+define( 'RS_DIR', get_template_directory() );
+define( 'RS_URI', get_template_directory_uri() );
+
+if ( isset( $_GET['rs_updater_test'] ) ) {
+	add_action( 'init', function() {
+		$theme = wp_get_theme();
+		$slug = $theme->get_stylesheet();
+		
+		$transient = get_site_transient( 'update_themes' );
+		$cached = get_transient( 'rs_gh_update_' . $slug );
+		
+		$raw_url = 'https://raw.githubusercontent.com/raisulsohan/RaisulSohanSite/main/style.css?_=' . time();
+		$response = wp_remote_get( $raw_url );
+		
+		header( 'Content-Type: application/json' );
+		echo json_encode( array(
+			'slug' => $slug,
+			'current_version' => $theme->get('Version'),
+			'update_themes_transient' => $transient,
+			'our_transient' => $cached,
+			'wp_remote_get_code' => is_wp_error($response) ? $response->get_error_message() : wp_remote_retrieve_response_code($response),
+			'wp_remote_get_body_start' => is_wp_error($response) ? '' : substr( wp_remote_retrieve_body($response), 0, 100 )
+		) );
+		exit;
+	} );
+}
 
 /* =========================================================================
  * GitHub Auto-Updater
