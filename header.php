@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
-<script>try{var a=window.localStorage.getItem('rs-anim');if(a==='false')document.body.classList.remove('rs-animated');else if(a==='true')document.body.classList.add('rs-animated');}catch(e){}</script>
+<script>try{if(window.history&&window.history.replaceState&&window.location.search){var p=new URLSearchParams(window.location.search),d=false,t=['fbclid','gclid','utm_source','utm_medium','utm_campaign','utm_term','utm_content'];for(var i=0;i<t.length;i++){if(p.has(t[i])){p.delete(t[i]);d=true;}}if(d){var n=window.location.pathname+(p.toString()?'?'+p.toString():'')+window.location.hash;window.history.replaceState(null,'',n);}}var a=window.localStorage.getItem('rs-anim');if(a==='false')document.body.classList.remove('rs-animated');else if(a==='true')document.body.classList.add('rs-animated');}catch(e){}</script>
 
 <a class="rs-sr" href="#rs-content">মূল লেখায় যান</a>
 
