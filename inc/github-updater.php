@@ -39,32 +39,29 @@ final class RS_GitHub_Updater {
 	/** @var string  Transient key for caching the remote version check. */
 	private $transient_key;
 
-	/** @var string  GitHub API URL for the repo. */
-	private $api_url;
-
 	/**
-	 * Boot the updater. Called once at the bottom of this file.
+	 * Boot the updater.
 	 */
 	public function __construct() {
-		$theme = wp_get_theme( get_template() );
+		$theme = wp_get_theme();
 
-		$this->slug            = get_template();
+		$this->slug            = $theme->get_stylesheet();
 		$this->current_version = $theme->get( 'Version' );
 		$this->transient_key   = 'rs_gh_update_' . $this->slug;
 
 		/* Parse owner/repo from the Theme URI header.
 		   Expected format: https://github.com/owner/repo  */
 		$theme_uri = $theme->get( 'ThemeURI' );
-		$path      = trim( wp_parse_url( $theme_uri, PHP_URL_PATH ), '/' );
+		$path      = trim( (string) wp_parse_url( $theme_uri, PHP_URL_PATH ), '/' );
 
 		if ( ! $path || substr_count( $path, '/' ) < 1 ) {
 			return; // Not a valid GitHub URL — bail silently.
 		}
 
-		$this->repo    = $path; // e.g. "raisulsohan/RaisulSohanSite"
-		$this->api_url = 'https://api.github.com/repos/' . $this->repo;
+		$this->repo = $path; // e.g. "raisulsohan/RaisulSohanSite"
 
-		/* Hook into WordPress's update system. */
+		/* Hook into WordPress's update system (both get and set). */
+		add_filter( 'site_transient_update_themes',         array( $this, 'check_update' ) );
 		add_filter( 'pre_set_site_transient_update_themes', array( $this, 'check_update' ) );
 		add_filter( 'themes_api',                           array( $this, 'theme_info' ), 10, 3 );
 		add_filter( 'upgrader_source_selection',            array( $this, 'fix_directory_name' ), 10, 4 );
@@ -78,25 +75,32 @@ final class RS_GitHub_Updater {
 	   ------------------------------------------------------------------ */
 
 	/**
-	 * Called by WordPress when it checks for theme updates.
-	 * We fetch the remote style.css from GitHub, compare versions,
-	 * and inject our theme into the update response if newer.
+	 * Called by WordPress when checking or reading theme updates.
+	 * Compares the GitHub version with the installed version.
 	 *
-	 * @param object $transient  The update_themes transient object.
+	 * @param mixed $transient  The update_themes transient object.
 	 * @return object
 	 */
 	public function check_update( $transient ) {
-		if ( empty( $transient->checked ) ) {
-			return $transient;
+		if ( ! is_object( $transient ) ) {
+			$transient = new stdClass();
 		}
+
+		$current_ver = ! empty( $transient->checked[ $this->slug ] )
+			? $transient->checked[ $this->slug ]
+			: $this->current_version;
 
 		$remote = $this->get_remote_version();
 
 		if (
 			$remote &&
-			isset( $remote['version'] ) &&
-			version_compare( $remote['version'], $this->current_version, '>' )
+			! empty( $remote['version'] ) &&
+			version_compare( $remote['version'], $current_ver, '>' )
 		) {
+			if ( ! isset( $transient->response ) || ! is_array( $transient->response ) ) {
+				$transient->response = array();
+			}
+
 			$transient->response[ $this->slug ] = array(
 				'theme'       => $this->slug,
 				'new_version' => $remote['version'],
@@ -224,22 +228,26 @@ final class RS_GitHub_Updater {
 	/**
 	 * Fetch and cache the remote version from GitHub.
 	 *
-	 * We read the raw style.css from GitHub's CDN and parse
-	 * the "Version:" header — the same way WordPress does.
-	 *
 	 * @return array|false  Array with 'version' key, or false on failure.
 	 */
 	private function get_remote_version() {
-		$cached = get_transient( $this->transient_key );
+		global $pagenow;
 
-		if ( false !== $cached ) {
-			return $cached;
+		/* When on the Updates or Themes screen, or when user clicks 'Check Again', bypass cache */
+		$force = isset( $_GET['force-check'] ) || ( is_admin() && in_array( $pagenow, array( 'update-core.php', 'themes.php' ), true ) );
+
+		if ( ! $force ) {
+			$cached = get_transient( $this->transient_key );
+			if ( false !== $cached ) {
+				return $cached;
+			}
 		}
 
-		/* Fetch raw style.css from the main branch. */
-		$raw_url  = sprintf(
-			'https://raw.githubusercontent.com/%s/main/style.css',
-			$this->repo
+		/* Fetch raw style.css from main branch with cache-busting timestamp */
+		$raw_url = sprintf(
+			'https://raw.githubusercontent.com/%s/main/style.css?_=%d',
+			$this->repo,
+			time()
 		);
 
 		$response = wp_remote_get( $raw_url, array(
@@ -248,8 +256,6 @@ final class RS_GitHub_Updater {
 		) );
 
 		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
-			/* Cache the failure for 1 hour so we don't hammer GitHub. */
-			set_transient( $this->transient_key, array( 'version' => '0.0.0' ), HOUR_IN_SECONDS );
 			return false;
 		}
 
@@ -258,8 +264,8 @@ final class RS_GitHub_Updater {
 		if ( preg_match( '/^[ \t\/*#@]*Version:\s*(.+)$/mi', $body, $matches ) ) {
 			$data = array( 'version' => trim( $matches[1] ) );
 
-			/* Cache for 12 hours to stay well within GitHub's rate limits. */
-			set_transient( $this->transient_key, $data, 12 * HOUR_IN_SECONDS );
+			/* Cache for 2 hours in normal circumstances */
+			set_transient( $this->transient_key, $data, 2 * HOUR_IN_SECONDS );
 
 			return $data;
 		}
