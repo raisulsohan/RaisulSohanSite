@@ -817,10 +817,15 @@
 		);
 	}
 
-	function shareHtml( link, title ) {
+	/* Kept in step with rs_share_row() in functions.php, which draws the
+	   same row on a post's own page. */
+	function shareHtml( data ) {
+		var link = data.link;
+		var title = data.title;
 		var svg = 'width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
 		var cpIcon = '<svg ' + svg + '><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
 		var shIcon = '<svg ' + svg + '><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>';
+		var bmIcon = '<svg ' + svg + '><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
 
 		return (
 			'<div class="rs-share">' +
@@ -831,6 +836,13 @@
 			shIcon + 'শেয়ার করুন</button>' +
 			'<button class="rs-share__btn" type="button" data-rs-copy="' + escapeHtml( link ) + '">' +
 			cpIcon + 'লিঙ্ক কপি</button>' +
+			/* The modal was built from a fetch, so this button has no row to
+			   read itself out of and carries what it needs instead. */
+			'<button class="rs-share__btn rs-share__btn--save" type="button" data-rs-later="' +
+			escapeHtml( data.id ) + '" data-rs-later-url="' + escapeHtml( link ) +
+			'" data-rs-later-title="' + escapeHtml( title || '' ) +
+			'" data-rs-later-time="' + escapeHtml( data.readingTime || '' ) + '">' +
+			bmIcon + '<span data-rs-later-text>পরে পড়ব</span></button>' +
 			'</div></div>'
 		);
 	}
@@ -871,7 +883,7 @@
 			'</div>' +
 			'<p class="rs-article__author"></p>' +
 			'<div class="rs-article__body"></div>' +
-			shareHtml( data.link, data.title ) +
+			shareHtml( data ) +
 			relatedHtml( data ) +
 			nextPrevHtml( data );
 
@@ -909,6 +921,11 @@
 		$( '.rs-article__body', postBody ).innerHTML = data.content;
 
 		applyFont();
+
+		/* The share row this just built carries a save button, and it has
+		   to be told whether the story is already on the shelf. */
+		markLater();
+
 		var resume = positionEntry( data.id );
 
 		restoreScroll( postBody.parentNode, resume ? resume.t : 0 );
@@ -1500,6 +1517,7 @@
 
 					swap( html );
 					markRead();
+					markLater();
 
 					listUrl = url;
 					wrap.classList.remove( 'is-loading' );
@@ -2270,6 +2288,198 @@
 		} );
 	}
 	renderResume();
+
+	/* ---------------------------------------------------------------
+	 * পরে পড়ব — a shelf the reader stocks on purpose
+	 *
+	 * The two lists above both watch: one records what has been opened,
+	 * the other where a story was put down. Neither catches the thought
+	 * a long piece most often provokes, which is "not now" — because
+	 * nothing has happened yet when the reader thinks it. That one has
+	 * to be said out loud, so it gets a button.
+	 *
+	 * One localStorage entry, { p<id>: { n: title, u: url, r: reading
+	 * time } }. The "p" prefix is there for the same reason as in the
+	 * positions above: JavaScript orders integer-like object keys
+	 * numerically, which would throw away the insertion order this list
+	 * is drawn from.
+	 *
+	 * The title and the address are kept alongside the id so the front
+	 * page can draw the list without asking the server anything — which
+	 * is what lets it work on a page served from the cache.
+	 * ------------------------------------------------------------ */
+
+	var LATER_KEY = 'rs-later';
+	var LATER_KEEP = 50;
+
+	function readLater() {
+		try {
+			return JSON.parse( store( LATER_KEY ) || '{}' ) || {};
+		} catch ( e ) {
+			/* Private mode, or something else wrote here. Either way an
+			   empty shelf is the honest answer. */
+			return {};
+		}
+	}
+
+	/*
+	 * A row already carries everything worth saving, so it is read rather
+	 * than repeated into attributes ten times over. The button in a post's
+	 * share row has no row to read, and is told instead.
+	 */
+	function laterEntry( btn ) {
+		var row = btn.closest ? btn.closest( '.rs-row' ) : null;
+
+		if ( row ) {
+			var link = $( '.rs-row__link', row );
+			var title = $( '.rs-row__title', row );
+			var read = $( '.rs-row__read', row );
+
+			return {
+				n: title ? title.textContent.trim() : '',
+				u: link ? link.getAttribute( 'href' ) : '',
+				r: read ? read.textContent.trim() : '',
+			};
+		}
+
+		return {
+			n: btn.getAttribute( 'data-rs-later-title' ) || '',
+			u: btn.getAttribute( 'data-rs-later-url' ) || '',
+			r: btn.getAttribute( 'data-rs-later-time' ) || '',
+		};
+	}
+
+	/* Every toggle on the page, told what the shelf currently holds. Runs
+	   again after the list is paginated and after the modal is built,
+	   because both put new buttons on the page. */
+	function markLater() {
+		var map = readLater();
+
+		$$( '[data-rs-later]' ).forEach( function ( btn ) {
+			var on = !! map[ 'p' + btn.getAttribute( 'data-rs-later' ) ];
+			var text = $( '[data-rs-later-text]', btn );
+
+			btn.classList.toggle( 'is-saved', on );
+			btn.setAttribute( 'aria-pressed', on ? 'true' : 'false' );
+			btn.setAttribute( 'title', on ? 'তালিকা থেকে সরান' : 'পরে পড়ব' );
+
+			/* The icon-only buttons in the list have no label to swap. */
+			if ( text ) {
+				text.textContent = on ? 'তালিকায় আছে' : 'পরে পড়ব';
+			} else {
+				btn.setAttribute( 'aria-label', on ? 'তালিকা থেকে সরান' : 'পরে পড়ব' );
+			}
+		} );
+	}
+
+	function renderLater() {
+		var host = $( '#rs-later' );
+
+		if ( ! host ) {
+			return;
+		}
+
+		var map = readLater();
+		var keys = Object.keys( map );
+		var html = '';
+
+		/* Backwards, so the story just put aside is the one at the top. */
+		for ( var i = keys.length - 1; i >= 0; i-- ) {
+			var entry = map[ keys[ i ] ];
+
+			if ( ! entry || ! entry.u || ! entry.n ) {
+				continue;
+			}
+
+			var id = keys[ i ].slice( 1 );
+
+			html += '<li class="rs-later__item">' +
+				'<a href="' + escapeHtml( entry.u ) + '" data-rs-post="' + escapeHtml( id ) + '">' +
+				'<span class="rs-related__title">' + escapeHtml( entry.n ) + '</span>' +
+				'<span class="rs-related__meta">' + escapeHtml( entry.r || '' ) + '</span>' +
+				'</a>' +
+				'<button class="rs-later__drop" type="button" data-rs-later-drop="' +
+				escapeHtml( id ) + '" aria-label="তালিকা থেকে সরান">&times;</button>' +
+				'</li>';
+		}
+
+		host.innerHTML = html
+			? '<nav class="rs-related rs-later" aria-label="পরে পড়ব">' +
+				'<p class="rs-related__label">পরে পড়ব</p>' +
+				'<ul class="rs-related__list">' + html + '</ul></nav>'
+			: '';
+	}
+
+	function dropLater( id ) {
+		var map = readLater();
+
+		delete map[ 'p' + id ];
+		store( LATER_KEY, JSON.stringify( map ) );
+
+		markLater();
+		renderLater();
+	}
+
+	document.addEventListener( 'click', function ( event ) {
+		if ( ! event.target.closest ) {
+			return;
+		}
+
+		var drop = event.target.closest( '[data-rs-later-drop]' );
+
+		if ( drop ) {
+			event.preventDefault();
+			dropLater( drop.getAttribute( 'data-rs-later-drop' ) );
+			return;
+		}
+
+		var btn = event.target.closest( '[data-rs-later]' );
+
+		if ( ! btn ) {
+			return;
+		}
+
+		event.preventDefault();
+
+		var id = btn.getAttribute( 'data-rs-later' );
+		var entry = laterEntry( btn );
+
+		/* Without a title and an address the entry could be stored but never
+		   drawn, which would look like the button doing nothing. */
+		if ( ! id || ! entry.n || ! entry.u ) {
+			return;
+		}
+
+		var map = readLater();
+		var key = 'p' + id;
+		var saving = ! map[ key ];
+
+		if ( saving ) {
+			map[ key ] = entry;
+
+			var keys = Object.keys( map );
+
+			while ( keys.length > LATER_KEEP ) {
+				delete map[ keys.shift() ];
+			}
+		} else {
+			delete map[ key ];
+		}
+
+		store( LATER_KEY, JSON.stringify( map ) );
+
+		markLater();
+		renderLater();
+
+		toast( saving ? 'পরে পড়ার তালিকায় রাখা হলো' : 'তালিকা থেকে সরানো হলো' );
+	} );
+
+	/* The buttons only do something once this file has run, so they stay
+	   out of sight until it has. Same arrangement as the share button. */
+	document.body.classList.add( 'rs-can-save' );
+
+	markLater();
+	renderLater();
 
 	/* ---------------------------------------------------------------
 	 * Carry the source along with copied text

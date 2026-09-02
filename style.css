@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
-Version: 6.6
+Version: 6.7
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -1720,6 +1720,117 @@ a.rs-article__cat:hover {
 	display: inline-flex;
 }
 
+/* ==========================================================================
+   পরে পড়ব — the reader's own shelf
+   ========================================================================== */
+
+/* Both save buttons do nothing until app.js has run, so neither appears
+   until it has marked the page. Same arrangement as the share button above,
+   and the same reason: a control that cannot work should not be offered. */
+.rs-row__save {
+	display: none;
+}
+
+/* Both class names on purpose. The .rs-share__btn rule further down this
+   file sets display too, and at equal weight the later rule would win —
+   so this one is given the heavier hand rather than a position to defend. */
+.rs-share__btn.rs-share__btn--save {
+	display: none;
+}
+
+.rs-can-save .rs-share__btn.rs-share__btn--save {
+	display: inline-flex;
+}
+
+.rs-can-save #rs-list .rs-row__save {
+	display: flex;
+}
+
+/* Scoped to the post list by id. The book shelf builds its spines out of
+   .rs-row too, and turning every one of those into a flex row would take
+   the shelf apart. */
+#rs-list .rs-row {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+#rs-list .rs-row__link {
+	/* min-width lets a long Bengali title wrap instead of pushing the
+	   button off the row: a flex item will not shrink below its content
+	   without being told it may. */
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+/* The same weight as the reading time and the date it sits beside, so it
+   reads as the third thing in that group rather than as an intruder. The
+   lighter border tokens were tried first and measured 1.2:1 against the
+   page — quiet to the point of being undiscoverable. */
+.rs-row__save {
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	margin-inline-start: 0.25rem;
+	color: var(--rs-muted-fg);
+	border-radius: 50%;
+	transition: color 0.15s ease, background 0.15s ease;
+}
+
+.rs-row__save:hover,
+.rs-row__save:focus-visible {
+	color: var(--rs-fg);
+	background: var(--rs-surface);
+}
+
+/* Saved is a filled mark rather than a different one, so tapping it reads
+   as the same shape being coloured in and not as the button changing. */
+.rs-row__save.is-saved,
+.rs-share__btn--save.is-saved {
+	color: var(--rs-cat);
+}
+
+.rs-row__save.is-saved svg,
+.rs-share__btn--save.is-saved svg {
+	fill: currentColor;
+}
+
+.rs-share__btn--save.is-saved {
+	border-color: var(--rs-cat);
+}
+
+/* The saved list reuses .rs-related wholesale — same heading, same rows —
+   and adds only the means of taking something back off the shelf. */
+.rs-later__item {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.rs-later__item a {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.rs-later__drop {
+	flex: 0 0 auto;
+	width: 1.5rem;
+	height: 1.5rem;
+	font-size: 1rem;
+	line-height: 1;
+	color: var(--rs-muted-fg);
+	border-radius: 50%;
+	transition: color 0.15s ease, background 0.15s ease;
+}
+
+.rs-later__drop:hover,
+.rs-later__drop:focus-visible {
+	color: var(--rs-fg);
+	background: var(--rs-surface);
+}
+
 .rs-share__btn {
 	display: inline-flex;
 	align-items: center;
@@ -2187,6 +2298,7 @@ a.rs-article__cat:hover {
 	.rs-floats,
 	.rs-tint,
 	.rs-edit,
+	.rs-row__save,
 	.rs-pagination {
 		display: none !important;
 	}

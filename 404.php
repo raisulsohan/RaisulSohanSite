@@ -10,6 +10,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 get_header();
+
+/* The address the reader typed or followed is itself a description of what
+   they wanted, so it gets asked first. */
+$rs_guesses = rs_missing_matches( 3 );
 ?>
 
 <main id="rs-content">
@@ -21,10 +25,16 @@ get_header();
 
 	<?php
 	/* A shared link that has gone stale drops the reader here with nothing
-	   to do. Three stories is at least an offer. */
+	   to do. When the address still resembles something that exists, saying
+	   so is worth more than three stories drawn at random — and when it
+	   does not, three stories are at least an offer. */
 	?>
 	<div class="rs-wrap rs-notice__more">
-		<?php rs_suggestions( rs_random_posts( 3 ), 'এদিকেও দেখতে পারেন' ); ?>
+		<?php if ( $rs_guesses ) : ?>
+			<?php rs_suggestions( $rs_guesses, 'এটা খুঁজছিলেন?' ); ?>
+		<?php else : ?>
+			<?php rs_suggestions( rs_random_posts( 3 ), 'এদিকেও দেখতে পারেন' ); ?>
+		<?php endif; ?>
 	</div>
 </main>
 

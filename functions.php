@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '6.6' );
+define( 'RS_VERSION', '6.7' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -1344,6 +1344,10 @@ function rs_icon( $name, $size = 15 ) {
 		'right'    => '<path d="m9 18 6-6-6-6"/>',
 		'undo'     => '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>',
 		'edit'     => '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>',
+		/* One outline for both states. Saved fills it in from CSS, which is
+		   a colour change rather than a different shape — so the mark does
+		   not appear to move when the reader taps it. */
+		'bookmark' => '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>',
 		'sparkles' => '<path d=\"m12 3-1.9 5.8a2 2 0 0 1-1.2 1.2L3 12l5.8 1.9a2 2 0 0 1 1.2 1.2L12 21l1.9-5.8a2 2 0 0 1 1.2-1.2L21 12l-5.8-1.9a2 2 0 0 1-1.2-1.2Z\"/>',
 		'sun'      => '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
 		'moon'     => '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
@@ -1463,9 +1467,211 @@ function rs_share_row( $post = null ) {
 				<?php echo wp_kses( rs_icon( 'copy', 14 ), rs_svg_tags() ); ?>
 				লিঙ্ক কপি
 			</button>
+
+			<?php
+			/* Kept in step with shareHtml() in app.js, which draws this same
+			   row inside the modal. Unlike a list row this one has nothing
+			   around it to read the title from, so it is told outright. */
+			?>
+			<button class="rs-share__btn rs-share__btn--save" type="button"
+				data-rs-later="<?php echo (int) $post->ID; ?>"
+				data-rs-later-url="<?php echo esc_attr( $url ); ?>"
+				data-rs-later-title="<?php echo esc_attr( rs_plain_title( $post ) ); ?>"
+				data-rs-later-time="<?php echo esc_attr( rs_reading_time( $post ) ); ?>"
+				aria-pressed="false">
+				<?php echo wp_kses( rs_icon( 'bookmark', 14 ), rs_svg_tags() ); ?>
+				<span data-rs-later-text>পরে পড়ব</span>
+			</button>
 		</div>
 	</div>
 	<?php
+}
+
+/**
+ * Break an address fragment into the words it is made of.
+ *
+ * Slugs on this site are romanised — "rituparno-ghosh-cinema" — while the
+ * writing they name is Bengali, so searching the posts for those words finds
+ * nothing. The slug is the only Latin thing about a post, which makes slug
+ * against slug the comparison that can actually work. Percent-encoded
+ * Bengali slugs decode back into Bengali words and compare the same way.
+ *
+ * Anything under three characters is dropped: "er" and "o" sit in half the
+ * slugs on the site and would make every post look like a match.
+ *
+ * @param string $text A slug, or the tail of a requested path.
+ * @return string[] Lowercased words, each one unique.
+ */
+function rs_slug_words( $text ) {
+	$text  = strtolower( urldecode( (string) $text ) );
+	$parts = preg_split( '/[^\p{L}\p{N}]+/u', $text, -1, PREG_SPLIT_NO_EMPTY );
+
+	if ( ! $parts ) {
+		return array();
+	}
+
+	$words = array();
+
+	foreach ( $parts as $part ) {
+		if ( mb_strlen( $part, 'UTF-8' ) >= 3 ) {
+			$words[] = $part;
+		}
+	}
+
+	return array_values( array_unique( $words ) );
+}
+
+/**
+ * Posts whose address resembles the one the reader asked for.
+ *
+ * A link that has gone stale is the commonest way to land on the missing
+ * page, and the address itself says what was wanted. WordPress already
+ * redirects when the request is the beginning of exactly one slug; this
+ * covers what that cannot — a word changed in the middle, a word dropped
+ * from the end, two posts it could equally have been. Those are offered
+ * rather than redirected to, because a near miss guessed wrongly is worse
+ * than a choice.
+ *
+ * Every published slug is read in one go and the comparison happens here.
+ * At this size that is a single small query against two columns; a site of
+ * several thousand posts would want to push the work into SQL instead.
+ *
+ * @param int $limit How many to offer.
+ * @return WP_Post[] Best matches first, empty when nothing resembles it.
+ */
+function rs_missing_matches( $limit = 3 ) {
+	global $wp, $wpdb;
+
+	$request = isset( $wp->request ) ? $wp->request : '';
+
+	if ( ! $request ) {
+		return array();
+	}
+
+	/* The last segment names the thing; the ones before it are the shelf it
+	   was expected to be on. A trailing "page" and a number are WordPress's
+	   own punctuation and belong to no title, so they are walked back past
+	   rather than mistaken for the name. */
+	$parts = array_values( array_filter( explode( '/', $request ) ) );
+
+	while ( count( $parts ) > 1 ) {
+		$last = $parts[ count( $parts ) - 1 ];
+
+		if ( ! is_numeric( $last ) && 'page' !== $last ) {
+			break;
+		}
+
+		array_pop( $parts );
+	}
+
+	$words = rs_slug_words( end( $parts ) );
+
+	if ( ! $words ) {
+		return array();
+	}
+
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Two columns, on a page nobody meant to reach.
+	$rows = $wpdb->get_results(
+		"SELECT ID, post_name FROM {$wpdb->posts} WHERE post_type = 'post' AND post_status = 'publish'"
+	);
+
+	if ( ! $rows ) {
+		return array();
+	}
+
+	/*
+	 * How ordinary each word is, counted from this site rather than from a
+	 * list of English stopwords — because the slugs here are romanised
+	 * Bengali as often as they are English, and no ready-made list knows
+	 * what is unremarkable in either. "the" turns up in nearly a fifth of
+	 * these slugs and so tells us nothing; "ghosh" turns up once and tells
+	 * us everything.
+	 *
+	 * The floor keeps the rule from eating a small site alive: with a dozen
+	 * posts a share of them is a very small number.
+	 */
+	$slugs  = array();
+	$common = array();
+
+	foreach ( $rows as $row ) {
+		$slugs[ (int) $row->ID ] = rs_slug_words( $row->post_name );
+
+		foreach ( $slugs[ (int) $row->ID ] as $word ) {
+			$common[ $word ] = isset( $common[ $word ] ) ? $common[ $word ] + 1 : 1;
+		}
+	}
+
+	$ceiling = max( 4, (int) ceil( count( $rows ) * 0.15 ) );
+	$scored  = array();
+
+	foreach ( $slugs as $id => $slug_words ) {
+		$shared = array_intersect( $words, $slug_words );
+		$strong = array();
+
+		foreach ( $shared as $word ) {
+			if ( $common[ $word ] < $ceiling ) {
+				$strong[] = $word;
+			}
+		}
+
+		/* Sharing nothing but a word half the site shares is not a match. */
+		if ( ! $strong ) {
+			continue;
+		}
+
+		$longest = 0;
+
+		foreach ( $strong as $word ) {
+			$longest = max( $longest, mb_strlen( $word, 'UTF-8' ) );
+		}
+
+		$scored[] = array(
+			'id'      => $id,
+			'shared'  => count( $strong ),
+			'longest' => $longest,
+		);
+	}
+
+	if ( ! $scored ) {
+		return array();
+	}
+
+	/* Most words in common first. Where two share the same number, the one
+	   sharing the longer word wins: length is the only measure of weight
+	   available once the ordinary words are gone. */
+	usort(
+		$scored,
+		function ( $a, $b ) {
+			if ( $a['shared'] !== $b['shared'] ) {
+				return $b['shared'] - $a['shared'];
+			}
+
+			return $b['longest'] - $a['longest'];
+		}
+	);
+
+	/*
+	 * Only the joint best are offered. Padding the answer out to three with
+	 * whatever else brushed against a word turns a confident "this one" into
+	 * a shrug — and the heading over these says the reader was looking for
+	 * one of them.
+	 */
+	$best  = $scored[0]['shared'];
+	$items = array();
+
+	foreach ( $scored as $hit ) {
+		if ( $hit['shared'] < $best || count( $items ) >= max( 1, (int) $limit ) ) {
+			break;
+		}
+
+		$item = get_post( $hit['id'] );
+
+		if ( $item ) {
+			$items[] = $item;
+		}
+	}
+
+	return $items;
 }
 
 /**
@@ -1971,6 +2177,23 @@ function rs_render_list() {
 								<span class="rs-row__date"><?php echo esc_html( rs_bn_date() ); ?></span>
 							</span>
 						</a>
+						<?php
+						/* Outside the link rather than inside it. A button
+						   nested in an anchor is invalid markup, and every
+						   press of it would also open the post — which is
+						   the one thing this button exists to postpone.
+
+						   It carries only the id: app.js reads the title,
+						   the address and the reading time off the row it
+						   sits in rather than having them repeated into
+						   attributes on every row of every page. */
+						?>
+						<button class="rs-row__save" type="button"
+							data-rs-later="<?php the_ID(); ?>"
+							aria-pressed="false"
+							aria-label="পরে পড়ব">
+							<?php echo wp_kses( rs_icon( 'bookmark', 14 ), rs_svg_tags() ); ?>
+						</button>
 					</article>
 				<?php endwhile; ?>
 			</div>
@@ -2779,6 +3002,89 @@ function rs_seo_meta() {
 add_action( 'wp_head', 'rs_seo_meta', 1 );
 
 /**
+ * The trail from the front page to whatever is being shown.
+ *
+ * This is the half of structured data a reader actually sees: given it,
+ * Google prints "raisulsohan.com › গল্প › …" above a result instead of the
+ * bare address. It belongs on the post as much as on the archive — the post
+ * is the page that turns up in a search, so the post is the page whose
+ * result the trail improves.
+ *
+ * The last step carries no "item" on purpose. It is the page already being
+ * read, and schema.org treats a trail that ends without a link as ending
+ * here rather than pointing somewhere else.
+ *
+ * @return array|null BreadcrumbList node, or null where there is no trail.
+ */
+function rs_breadcrumb_schema() {
+	$items = array(
+		array(
+			'@type'    => 'ListItem',
+			'position' => 1,
+			'name'     => get_bloginfo( 'name' ),
+			'item'     => home_url( '/' ),
+		),
+	);
+
+	if ( is_singular( 'post' ) ) {
+		$term = rs_primary_category();
+
+		if ( $term ) {
+			$link = get_term_link( $term );
+
+			$items[] = array(
+				'@type'    => 'ListItem',
+				'position' => 2,
+				'name'     => $term->name,
+				/* get_term_link() answers with an error object when a term
+				   has lost its taxonomy; a step without an address is still
+				   a usable step. */
+				'item'     => is_wp_error( $link ) ? null : $link,
+			);
+		}
+
+		$items[] = array(
+			'@type'    => 'ListItem',
+			'position' => count( $items ) + 1,
+			/* Decoded for the same reason the headline above is: this is
+			   JSON, and an "&#8217;" would reach Google as those characters
+			   rather than as the apostrophe it stands for. */
+			'name'     => html_entity_decode( get_the_title(), ENT_QUOTES, 'UTF-8' ),
+		);
+	} elseif ( is_category() || is_tag() ) {
+		$term = get_queried_object();
+
+		if ( ! $term || is_wp_error( $term ) || empty( $term->name ) ) {
+			return null;
+		}
+
+		$items[] = array(
+			'@type'    => 'ListItem',
+			'position' => 2,
+			'name'     => $term->name,
+		);
+	} else {
+		return null;
+	}
+
+	/* A trail of one step is the front page pointing at itself. */
+	if ( count( $items ) < 2 ) {
+		return null;
+	}
+
+	foreach ( $items as $index => $item ) {
+		if ( array_key_exists( 'item', $item ) && null === $item['item'] ) {
+			unset( $items[ $index ]['item'] );
+		}
+	}
+
+	return array(
+		'@type'           => 'BreadcrumbList',
+		'itemListElement' => array_values( $items ),
+	);
+}
+
+/**
  * JSON-LD, so a search engine can tell a story from a page about stories.
  *
  * Person rather than Organization as the publisher: this is one writer's
@@ -2797,7 +3103,6 @@ function rs_schema() {
 		$image  = rs_share_image();
 
 		$data = array(
-			'@context'         => 'https://schema.org',
 			'@type'            => 'BlogPosting',
 			/*
 			 * schema.org asks for 110 characters or fewer here.
@@ -2839,17 +3144,56 @@ function rs_schema() {
 		}
 	} elseif ( is_home() || is_front_page() ) {
 		$data = array(
-			'@context'    => 'https://schema.org',
 			'@type'       => 'WebSite',
 			'name'        => get_bloginfo( 'name' ),
 			'description' => get_bloginfo( 'description' ),
 			'url'         => home_url( '/' ),
 			'inLanguage'  => get_bloginfo( 'language' ),
+			/*
+			 * The site's own search, described so a machine can use it.
+			 *
+			 * Google stopped drawing a search box under a result for this
+			 * in late 2023, so it is not the reason to keep it. It stays
+			 * because it is true, it costs nine lines, and it is still read
+			 * by everything else that reads structured data.
+			 */
+			'potentialAction' => array(
+				'@type'       => 'SearchAction',
+				'target'      => array(
+					'@type'       => 'EntryPoint',
+					'urlTemplate' => home_url( '/?s={search_term_string}' ),
+				),
+				'query-input' => 'required name=search_term_string',
+			),
 		);
 	}
 
-	if ( ! $data ) {
+	/* Built for the same pages either way, and appended rather than folded
+	   in, because a trail is its own thing and not a property of the post. */
+	$graph = array();
+
+	if ( $data ) {
+		$graph[] = $data;
+	}
+
+	$crumbs = rs_breadcrumb_schema();
+
+	if ( $crumbs ) {
+		$graph[] = $crumbs;
+	}
+
+	if ( ! $graph ) {
 		return;
+	}
+
+	/* One object stays one object; more than one goes in a @graph. Either
+	   way @context is stated once, at the top. */
+	$payload = array( '@context' => 'https://schema.org' );
+
+	if ( 1 === count( $graph ) ) {
+		$payload = array_merge( $payload, $graph[0] );
+	} else {
+		$payload['@graph'] = $graph;
 	}
 
 	/* Unicode is left alone so the Bengali stays readable in view source,
@@ -2857,7 +3201,7 @@ function rs_schema() {
 	   a title from closing this block early. */
 	printf(
 		"\n<script type=\"application/ld+json\">%s</script>\n",
-		wp_json_encode( $data, JSON_UNESCAPED_UNICODE ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		wp_json_encode( $payload, JSON_UNESCAPED_UNICODE ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	);
 }
 add_action( 'wp_head', 'rs_schema', 2 );

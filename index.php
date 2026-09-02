@@ -64,6 +64,15 @@ if ( ! is_paged() ) : ?>
 ?>
 <div class="rs-wrap" id="rs-resume"></div>
 
+<?php
+/* The shelf the reader fills on purpose, drawn by app.js from this
+   browser's own storage. Only on the front page's first screen: it is a
+   place to come back to, and repeating it down every archive and every
+   page of results would turn it into furniture. */
+if ( ( is_home() || is_front_page() ) && ! is_paged() ) : ?>
+<div class="rs-wrap" id="rs-later"></div>
+<?php endif; ?>
+
 <div class="rs-fontctl rs-fontctl--float" role="group" aria-label="লেখার আকার">
 	<button type="button" data-rs-font="down" data-step="0" aria-label="ছোট করুন">A-</button>
 	<span class="rs-fontctl__sep"></span>
