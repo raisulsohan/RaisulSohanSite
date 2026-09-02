@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '5.7' );
+define( 'RS_VERSION', '5.8' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -37,30 +37,6 @@ define( 'RS_SUMMARY_KEY', '_rs_summary' );
 /* Define constants early */
 define( 'RS_DIR', get_template_directory() );
 define( 'RS_URI', get_template_directory_uri() );
-
-if ( isset( $_GET['rs_updater_test'] ) ) {
-	add_action( 'init', function() {
-		$theme = wp_get_theme();
-		$slug = $theme->get_stylesheet();
-		
-		$transient = get_site_transient( 'update_themes' );
-		$cached = get_transient( 'rs_gh_update_' . $slug );
-		
-		$raw_url = 'https://raw.githubusercontent.com/raisulsohan/RaisulSohanSite/main/style.css?_=' . time();
-		$response = wp_remote_get( $raw_url );
-		
-		header( 'Content-Type: application/json' );
-		echo json_encode( array(
-			'slug' => $slug,
-			'current_version' => $theme->get('Version'),
-			'update_themes_transient' => $transient,
-			'our_transient' => $cached,
-			'wp_remote_get_code' => is_wp_error($response) ? $response->get_error_message() : wp_remote_retrieve_response_code($response),
-			'wp_remote_get_body_start' => is_wp_error($response) ? '' : substr( wp_remote_retrieve_body($response), 0, 100 )
-		) );
-		exit;
-	} );
-}
 
 /* =========================================================================
  * GitHub Auto-Updater
@@ -2663,9 +2639,11 @@ function rs_seo_context() {
 	}
 
 	if ( is_home() || is_front_page() ) {
+		$site_name = get_bloginfo( 'name' );
+		$tagline   = get_bloginfo( 'description' );
 		return array(
-			'title'       => get_bloginfo( 'name' ),
-			'description' => get_bloginfo( 'description' ),
+			'title'       => $site_name . ' - ' . $tagline,
+			'description' => $site_name . ' - ' . $tagline . '। রাইসুল সোহানের ব্যক্তিগত ওয়েবসাইট ও ব্লগ (Personal Website & Blog)।',
 			'url'         => $paged > 1 ? rs_page_url( $paged ) : home_url( '/' ),
 			'type'        => 'website',
 		);
@@ -2733,6 +2711,13 @@ function rs_seo_meta() {
 	   picture across a wide frame and drop the description underneath it,
 	   which is the trade this theme has already declined once. */
 	printf( "<meta name=\"twitter:card\" content=\"summary\">\n" );
+	printf( "<meta name=\"twitter:title\" content=\"%s\">\n", esc_attr( $view['title'] ) );
+	printf( "<meta name=\"twitter:description\" content=\"%s\">\n", esc_attr( $view['description'] ) );
+	printf( "<meta name=\"twitter:site\" content=\"@raisulsohan\">\n" );
+	printf( "<meta name=\"twitter:creator\" content=\"@raisulsohan\">\n" );
+	if ( $image ) {
+		printf( "<meta name=\"twitter:image\" content=\"%s\">\n", esc_url( $image['url'] ) );
+	}
 }
 add_action( 'wp_head', 'rs_seo_meta', 1 );
 

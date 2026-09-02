@@ -31,12 +31,13 @@ get_header();
 				'large',
 				false,
 				array(
-					'class' => 'rs-hero__image',
-					'alt'   => rs_phrases()[0],
-					'sizes' => '(max-width: 48rem) 100vw, 720px',
+					'class'         => 'rs-hero__image',
+					'alt'           => rs_phrases()[0],
+					'sizes'         => '(max-width: 48rem) 100vw, 720px',
+					'fetchpriority' => 'high',
 					/* Which part of the picture survives the crop, chosen
 					   by dragging it on the settings screen. */
-					'style' => 'object-position: ' . esc_attr( rs_option( 'rs_hero_pos' ) ) . ';',
+					'style'         => 'object-position: ' . esc_attr( rs_option( 'rs_hero_pos' ) ) . ';',
 				)
 			);
 			?>
