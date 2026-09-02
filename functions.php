@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '6.1' );
+define( 'RS_VERSION', '6.2' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -137,26 +137,58 @@ add_filter( 'mce_buttons', 'rs_mce_buttons' );
  * Force justify alignment on pasted text in post editor.
  */
 function rs_tinymce_paste_justify_script() {
-	$screen = get_current_screen();
-	if ( ! $screen || ! in_array( $screen->base, array( 'post' ), true ) ) {
-		return;
-	}
 	?>
 	<script>
-	jQuery(document).on('tinymce-editor-init', function( event, editor ) {
-		editor.on('PastePostProcess', function( e ) {
-			if ( e.node ) {
-				var elements = e.node.querySelectorAll('p, h1, h2, h3, h4, h5, h6');
-				for ( var i = 0; i < elements.length; i++ ) {
-					elements[i].style.textAlign = 'justify';
+	(function($) {
+		function applyJustify(editor) {
+			if (!editor || editor._rsJustifyBound) return;
+			editor._rsJustifyBound = true;
+
+			// 1. Process pasted HTML nodes
+			editor.on('PastePostProcess', function(e) {
+				if (e.node) {
+					var nodes = $(e.node).find('p, h1, h2, h3, h4, h5, h6, div, blockquote, li').addBack('p, h1, h2, h3, h4, h5, h6, div, blockquote, li');
+					nodes.each(function() {
+						$(this).css('text-align', 'justify');
+					});
+				}
+			});
+
+			// 2. Also run right after paste to trigger TinyMCE's native justify command
+			editor.on('paste', function() {
+				setTimeout(function() {
+					try {
+						editor.formatter.apply('alignjustify');
+					} catch(err) {}
+
+					try {
+						var node = editor.selection.getNode();
+						if (node) {
+							$(node).closest('p, h1, h2, h3, h4, h5, h6, div, blockquote, li').css('text-align', 'justify');
+						}
+					} catch(err) {}
+				}, 30);
+			});
+		}
+
+		// Attach to future editors
+		$(document).on('tinymce-editor-init', function(event, editor) {
+			applyJustify(editor);
+		});
+
+		// Attach to already initialized editors
+		$(document).ready(function() {
+			if (typeof tinymce !== 'undefined' && tinymce.editors) {
+				for (var i = 0; i < tinymce.editors.length; i++) {
+					applyJustify(tinymce.editors[i]);
 				}
 			}
 		});
-	});
+	})(jQuery);
 	</script>
 	<?php
 }
-add_action( 'admin_print_footer_scripts', 'rs_tinymce_paste_justify_script', 99 );
+add_action( 'admin_footer', 'rs_tinymce_paste_justify_script', 99 );
 
 /* =========================================================================
  * 2. Assets
