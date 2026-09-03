@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-	<link rel="profile" href="https://gmpg.org/xfn/11">
+	<link rel="preload" href="<?php echo esc_url( get_template_directory_uri() . '/assets/fonts/noto-serif-bengali-bengali.woff2' ); ?>" as="font" type="font/woff2" crossorigin>
 	<?php wp_head(); ?>
 </head>
 

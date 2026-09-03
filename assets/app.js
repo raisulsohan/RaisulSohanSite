@@ -2529,13 +2529,13 @@
 		} );
 	}() );
 
-		/* ---------------------------------------------------------------
-	 * Fetch dynamic featured post
+	/* ---------------------------------------------------------------
+	 * Fetch dynamic featured post (only if not already rendered by server)
 	 * ------------------------------------------------------------ */
 	( function () {
 		var wrap = $( '#rs-featured-wrap' );
 
-		if ( ! wrap ) {
+		if ( ! wrap || wrap.firstElementChild ) {
 			return;
 		}
 
