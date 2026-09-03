@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '6.9' );
+define( 'RS_VERSION', '7.0' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -977,12 +977,17 @@ function rs_settings_fields() {
 			'intval',
 			__( 'Adjust the gap below the featured post. Can be negative to bring the list closer.', 'raisul-sohan' ),
 		),
-		'rs_featured_summary_length' => array(
-			__( 'Featured summary length (chars)', 'raisul-sohan' ),
-			'number',
-			'absint',
-			__( 'How many characters to show in the featured post sneak peek. Default is 250.', 'raisul-sohan' ),
-		),
+		/*
+		 * rs_featured_summary_length is deliberately absent. It lives in the
+		 * Customizer, where a change can be seen against the actual post
+		 * while it is being made, and a setting belongs on one screen only.
+		 *
+		 * Two screens over one theme_mod is not a duplicate label, it is a
+		 * way to lose a value: rs_settings_save() writes every field in this
+		 * array on every save, so pressing Save here would have overwritten
+		 * whatever the Customizer had with whatever this form happened to be
+		 * holding — without anyone touching that field.
+		 */
 	);
 }
 

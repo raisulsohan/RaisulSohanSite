@@ -33,7 +33,7 @@ You can customize the theme via **Appearance -> Theme Settings**:
 | About page | Select a static Page to serve as the "About" content, which opens elegantly in a modal. |
 | Share image | The default fallback Open Graph image used when a post is shared on social media and doesn't contain any images of its own. Needs to be 600x600 or larger. |
 
-*Note: The settings for the "Featured Post" have been moved to the native WordPress Customizer (**Appearance -> Customize**) under **Featured Post Settings**, allowing you to tweak summary lengths with a live preview.* 
+*Note: **Featured summary length** and **Enable smooth animations** live in the native WordPress Customizer (**Appearance -> Customize -> Featured Post Settings**), where a change can be seen against the real post as it is made. Each setting lives on exactly one screen: `rs_settings_save()` writes every field on the Theme Settings page on each save, so a setting listed on both screens would be silently overwritten by whichever was saved last.*
 
 The site title (centered in the header) is pulled from **Settings -> General**, and the author's name in the modal is pulled from the **Display name** in **Users -> Profile**.
 
