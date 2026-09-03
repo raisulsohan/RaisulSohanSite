@@ -277,11 +277,14 @@ final class RS_GitHub_Updater {
 			}
 		}
 
-		/* Fetch raw style.css from main branch with cache-busting timestamp */
+		/* Read current HEAD commit first. Querying raw content by SHA completely bypasses Fastly's 5-minute CDN cache on the branch path. */
+		$sha = $this->get_head_sha();
+		$ref = $sha ? $sha : 'main';
+
 		$raw_url = sprintf(
-			'https://raw.githubusercontent.com/%s/main/style.css?_=%d',
+			'https://raw.githubusercontent.com/%s/%s/style.css',
 			$this->repo,
-			time()
+			$ref
 		);
 
 		$response = wp_remote_get( $raw_url, array(
@@ -300,7 +303,7 @@ final class RS_GitHub_Updater {
 			$data = array(
 				'version' => trim( $matches[1] ),
 				/* Which commit that version was read out of. See get_zip_url(). */
-				'sha'     => $this->get_head_sha(),
+				'sha'     => $sha,
 			);
 
 			/* Cache for 2 hours in normal circumstances */
