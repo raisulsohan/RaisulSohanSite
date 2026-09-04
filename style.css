@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
-Version: 7.4.60
+Version: 7.4.61
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -3581,12 +3581,22 @@ a.rs-article__cat:hover {
 
 /* Visual Mockup inside Modal */
 .rs-case-study-visual {
-	height: 220px;
 	border-radius: var(--rs-radius-lg);
 	overflow: hidden;
 	margin-bottom: 1.75rem;
 	background: var(--rs-surface);
 	border: 1px solid var(--rs-border-40);
+	position: relative;
+}
+
+.rs-case-study-visual:not(.is-full-view) {
+	height: 220px;
+}
+
+.rs-case-study-visual.is-full-view {
+	height: auto;
+	max-height: 520px;
+	background: #0d1117;
 }
 
 .rs-case-study-visual__inner {
@@ -3605,8 +3615,19 @@ a.rs-article__cat:hover {
 	justify-content: center;
 }
 
+.rs-case-study-visual.is-full-view .rs-case-study-img-wrap {
+	height: auto;
+	max-height: 520px;
+	background: #0d1117;
+}
+
 .rs-case-study-web-mockup .rs-case-study-img-wrap {
 	height: calc(100% - 28px);
+}
+
+.rs-case-study-visual.is-full-view .rs-case-study-web-mockup .rs-case-study-img-wrap {
+	height: auto;
+	max-height: 480px;
 }
 
 .rs-case-study-img {
@@ -3617,6 +3638,14 @@ a.rs-article__cat:hover {
 	display: block;
 }
 
+.rs-case-study-visual.is-full-view .rs-case-study-img {
+	height: auto;
+	max-height: 520px;
+	object-fit: contain;
+	object-position: center;
+	margin: 0 auto;
+}
+
 .rs-case-study-img-wrap.is-contain {
 	background: var(--rs-surface);
 	padding: 1.5rem;
@@ -3624,8 +3653,140 @@ a.rs-article__cat:hover {
 
 .rs-case-study-img-wrap.is-contain .rs-case-study-img {
 	object-fit: contain;
-	max-height: 100%;
+	max-height: 140px;
 	max-width: 100%;
+}
+
+/* Zoomable preview affordance */
+.rs-case-study-img-wrap.is-zoomable {
+	cursor: zoom-in;
+}
+
+.rs-case-study-zoom-badge {
+	position: absolute;
+	bottom: 0.75rem;
+	right: 0.75rem;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.35rem 0.75rem;
+	background: rgba(15, 23, 42, 0.85);
+	color: #ffffff;
+	border: 1px solid rgba(255, 255, 255, 0.15);
+	border-radius: var(--rs-radius-full, 9999px);
+	font-size: 0.75rem;
+	font-weight: 500;
+	font-family: var(--rs-sans);
+	letter-spacing: 0.02em;
+	pointer-events: none;
+	opacity: 0.88;
+	transform: translateY(0);
+	transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
+	z-index: 3;
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.rs-case-study-img-wrap.is-zoomable:hover .rs-case-study-zoom-badge,
+.rs-case-study-img-wrap.is-zoomable:focus-visible .rs-case-study-zoom-badge {
+	opacity: 1;
+	background: rgba(15, 23, 42, 0.96);
+	transform: scale(1.05);
+	border-color: rgba(255, 255, 255, 0.3);
+}
+
+.rs-case-study-zoom-badge svg {
+	display: block;
+	flex-shrink: 0;
+}
+
+/* Lightbox Modal */
+.rs-overlay--lightbox {
+	z-index: 80;
+	background: rgba(0, 0, 0, 0.92);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	cursor: zoom-out;
+	padding: 1.5rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.rs-lightbox__wrap {
+	max-width: 95vw;
+	max-height: 94vh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	cursor: default;
+}
+
+.rs-lightbox__img {
+	max-width: 100%;
+	max-height: calc(88vh - 44px);
+	width: auto;
+	height: auto;
+	object-fit: contain;
+	border-radius: var(--rs-radius-lg);
+	box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9);
+	cursor: zoom-out;
+	background: #0d1117;
+	border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.rs-lightbox__footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	margin-top: 0.75rem;
+	font-family: var(--rs-sans);
+	font-size: 0.825rem;
+	color: rgba(255, 255, 255, 0.9);
+	padding: 0 0.5rem;
+	gap: 1rem;
+}
+
+.rs-lightbox__caption {
+	font-weight: 500;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.rs-lightbox__tip {
+	font-size: 0.75rem;
+	color: rgba(255, 255, 255, 0.55);
+	flex-shrink: 0;
+}
+
+.rs-lightbox__close {
+	position: fixed;
+	top: 1.25rem;
+	right: 1.25rem;
+	z-index: 85;
+	background: rgba(255, 255, 255, 0.18);
+	color: #fff;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	border-radius: var(--rs-radius-full, 9999px);
+	width: 2.75rem;
+	height: 2.75rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.rs-lightbox__close:hover {
+	background: rgba(255, 255, 255, 0.35);
+	color: #fff;
+	transform: scale(1.06);
+	border-color: rgba(255, 255, 255, 0.5);
 }
 
 .rs-case-study-video-mockup {
@@ -3767,8 +3928,21 @@ a.rs-article__cat:hover {
 	.rs-case-study-article {
 		padding: 1.5rem 1.15rem;
 	}
-	.rs-case-study-visual {
+	.rs-case-study-visual:not(.is-full-view) {
 		height: 160px;
+	}
+	.rs-case-study-visual.is-full-view {
+		height: auto;
+		max-height: 320px;
+	}
+	.rs-case-study-visual.is-full-view .rs-case-study-img-wrap,
+	.rs-case-study-visual.is-full-view .rs-case-study-img {
+		max-height: 320px;
+	}
+	.rs-lightbox__footer {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.25rem;
 	}
 	.rs-portfolio-card__footer {
 		flex-direction: column;

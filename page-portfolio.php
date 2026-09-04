@@ -849,6 +849,22 @@ $projects = array(
 	</div>
 </div>
 
+<!-- =========================================================================
+     Full-Resolution Image Lightbox Overlay
+     ====================================================================== -->
+<div class="rs-overlay rs-overlay--lightbox" id="rs-image-lightbox" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr( $rs_is_en ? 'Full Image Preview' : 'ছবির পূর্ণাঙ্গ প্রিভিউ' ); ?>" hidden>
+	<button class="rs-lightbox__close" type="button" id="rs-lightbox-close" aria-label="<?php echo esc_attr( $rs_is_en ? 'Close preview' : 'প্রিভিউ বন্ধ করুন' ); ?>" title="<?php echo esc_attr( $rs_is_en ? 'Close (Esc)' : 'বন্ধ করুন (Esc)' ); ?>">
+		<?php echo wp_kses( rs_icon( 'close', 18 ), rs_svg_tags() ); ?>
+	</button>
+	<div class="rs-lightbox__wrap" id="rs-lightbox-wrap">
+		<img src="" alt="" class="rs-lightbox__img" id="rs-lightbox-img">
+		<div class="rs-lightbox__footer">
+			<span class="rs-lightbox__caption" id="rs-lightbox-caption"></span>
+			<span class="rs-lightbox__tip"><?php echo esc_html( $rs_is_en ? 'Click anywhere or press Esc to close' : 'যেকোনো স্থানে ক্লিক করে বা Esc চেপে বন্ধ করুন' ); ?></span>
+		</div>
+	</div>
+</div>
+
 <!-- Structured Projects Data for Client-Side Modal -->
 <script id="rs-portfolio-data" type="application/json">
 <?php
@@ -945,11 +961,16 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	var solutionEl   = document.getElementById('rs-modal-solution');
 	var highlightsEl = document.getElementById('rs-modal-highlights');
 	var tagsEl       = document.getElementById('rs-modal-tags');
-	var visualEl     = document.getElementById('rs-modal-visual-content');
-	var actionBtn    = document.getElementById('rs-modal-action-btn');
-	var actionLabel  = document.getElementById('rs-modal-action-label');
-	var githubBtn    = document.getElementById('rs-modal-github-btn');
-	var topBtn       = document.getElementById('rs-case-study-top');
+	var visualContainer = document.getElementById('rs-modal-visual');
+	var visualEl        = document.getElementById('rs-modal-visual-content');
+	var actionBtn       = document.getElementById('rs-modal-action-btn');
+	var actionLabel     = document.getElementById('rs-modal-action-label');
+	var githubBtn       = document.getElementById('rs-modal-github-btn');
+	var topBtn          = document.getElementById('rs-case-study-top');
+	var lightboxOverlay = document.getElementById('rs-image-lightbox');
+	var lightboxClose   = document.getElementById('rs-lightbox-close');
+	var lightboxImg     = document.getElementById('rs-lightbox-img');
+	var lightboxCaption = document.getElementById('rs-lightbox-caption');
 
 	function renderRichText(container, text) {
 		container.innerHTML = '';
@@ -962,9 +983,25 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		});
 	}
 
+	function openLightbox(src, title) {
+		if (!lightboxOverlay || !lightboxImg) return;
+		lightboxImg.src = src;
+		lightboxImg.alt = title || '';
+		if (lightboxCaption) lightboxCaption.textContent = title || '';
+		lightboxOverlay.hidden = false;
+	}
+
+	function closeLightbox() {
+		if (!lightboxOverlay || lightboxOverlay.hidden) return;
+		lightboxOverlay.hidden = true;
+		if (lightboxImg) lightboxImg.src = '';
+	}
+
 	function openCaseStudy(projectId) {
 		var p = projectsMap[projectId];
 		if (!p || !overlay) return;
+
+		var isEn = document.documentElement.lang.indexOf('en') === 0;
 
 		titleEl.textContent    = p.title;
 		badgeEl.textContent    = p.badge;
@@ -1004,7 +1041,6 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		if (p.github_url && githubBtn && p.github_url !== p.direct_url) {
 			githubBtn.href = p.github_url;
 			githubBtn.style.display = 'inline-flex';
-			var isEn = document.documentElement.lang.indexOf('en') === 0;
 			githubBtn.querySelector('span').textContent = isEn ? 'View on GitHub' : 'গিটহাবে কোড দেখুন';
 		} else if (githubBtn) {
 			githubBtn.style.display = 'none';
@@ -1012,21 +1048,53 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 
 		// Dynamic Visual Banner (Real Screenshot or CSS Mockup)
 		var displayDomain = p.direct_url.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+		var isZoomable = Boolean(p.image && p.image_fit !== 'contain');
+
+		if (visualContainer) {
+			visualContainer.classList.toggle('is-full-view', isZoomable);
+		}
+
 		if (p.image) {
+			var zoomHint = isZoomable
+				? '<div class="rs-case-study-zoom-badge">' +
+				  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>' +
+				  '<span>' + (isEn ? 'Click to zoom' : 'বড় করে দেখুন') + '</span>' +
+				  '</div>'
+				: '';
+			var zoomClass = isZoomable ? ' is-zoomable' : '';
+			var fitClass = p.image_fit === 'contain' ? ' is-contain' : '';
+			var zoomAttrs = isZoomable
+				? ' role="button" tabindex="0" title="' + (isEn ? 'Click to view full image' : 'সম্পূর্ণ ছবি দেখতে ক্লিক করুন') + '"'
+				: '';
+
 			if (p.category === 'web') {
-				var fitClass = p.image_fit === 'contain' ? ' is-contain' : '';
-				visualEl.innerHTML = '<div class="rs-case-study-web-mockup"><div class="rs-portfolio-card__browser-bar"><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-card__url">' + displayDomain + '</span></div><div class="rs-case-study-img-wrap' + fitClass + '"><img src="' + p.image + '" alt="' + p.title + '" class="rs-case-study-img"></div></div>';
+				visualEl.innerHTML = '<div class="rs-case-study-web-mockup"><div class="rs-portfolio-card__browser-bar"><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-card__url">' + displayDomain + '</span></div><div class="rs-case-study-img-wrap' + fitClass + zoomClass + '"' + zoomAttrs + '><img src="' + p.image + '" alt="' + p.title + '" class="rs-case-study-img">' + zoomHint + '</div></div>';
 			} else if (p.category === 'video') {
-				visualEl.innerHTML = '<div class="rs-case-study-video-mockup" style="background-image: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.45)), url(' + p.image + '); background-size: cover; background-position: center;"><div class="rs-portfolio-card__play-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div><span class="rs-case-study-video-label">' + (document.documentElement.lang.indexOf('en') === 0 ? 'HD Video Preview' : 'এইচডি ভিডিও প্রিভিউ') + '</span></div>';
+				visualEl.innerHTML = '<div class="rs-case-study-video-mockup" style="background-image: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.45)), url(' + p.image + '); background-size: cover; background-position: center;"><div class="rs-portfolio-card__play-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div><span class="rs-case-study-video-label">' + (isEn ? 'HD Video Preview' : 'এইচডি ভিডিও প্রিভিউ') + '</span></div>';
 			} else {
-				var fitClass = p.image_fit === 'contain' ? ' is-contain' : '';
-				visualEl.innerHTML = '<div class="rs-case-study-img-wrap' + fitClass + '"><img src="' + p.image + '" alt="' + p.title + '" class="rs-case-study-img"></div>';
+				visualEl.innerHTML = '<div class="rs-case-study-img-wrap' + fitClass + zoomClass + '"' + zoomAttrs + '><img src="' + p.image + '" alt="' + p.title + '" class="rs-case-study-img">' + zoomHint + '</div>';
+			}
+
+			if (isZoomable) {
+				var zoomTrigger = visualEl.querySelector('.is-zoomable');
+				if (zoomTrigger) {
+					zoomTrigger.addEventListener('click', function(e) {
+						e.stopPropagation();
+						openLightbox(p.image, p.title);
+					});
+					zoomTrigger.addEventListener('keydown', function(e) {
+						if (e.key === 'Enter' || e.key === ' ') {
+							e.preventDefault();
+							openLightbox(p.image, p.title);
+						}
+					});
+				}
 			}
 		} else {
 			if (p.category === 'video') {
-				visualEl.innerHTML = '<div class="rs-case-study-video-mockup"><div class="rs-portfolio-card__play-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div><span class="rs-case-study-video-label">' + (document.documentElement.lang.indexOf('en') === 0 ? 'HD Video Preview' : 'এইচডি ভিডিও প্রিভিউ') + '</span></div>';
+				visualEl.innerHTML = '<div class="rs-case-study-video-mockup"><div class="rs-portfolio-card__play-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div><span class="rs-case-study-video-label">' + (isEn ? 'HD Video Preview' : 'এইচডি ভিডিও প্রিভিউ') + '</span></div>';
 			} else if (p.category === 'web') {
-				visualEl.innerHTML = '<div class="rs-case-study-web-mockup"><div class="rs-portfolio-card__browser-bar"><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-card__url">' + displayDomain + '</span></div><div class="rs-case-study-web-body"><span>⚡ ' + (document.documentElement.lang.indexOf('en') === 0 ? 'Fast Responsive Zero-Plugin Web Platform' : 'দ্রুতগতির জিরো-প্লাগিন রেসপনসিভ ওয়েবসাইট') + '</span></div></div>';
+				visualEl.innerHTML = '<div class="rs-case-study-web-mockup"><div class="rs-portfolio-card__browser-bar"><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-card__url">' + displayDomain + '</span></div><div class="rs-case-study-web-body"><span>⚡ ' + (isEn ? 'Fast Responsive Zero-Plugin Web Platform' : 'দ্রুতগতির জিরো-প্লাগিন রেসপনসিভ ওয়েবসাইট') + '</span></div></div>';
 			} else {
 				visualEl.innerHTML = '<div class="rs-case-study-tool-mockup"><div class="rs-case-study-tool-badge">' + (p.icon === 'extension' ? '🧩' : (p.icon === 'terminal' ? '⌨️' : '⚙️')) + '</div><span>' + p.type + '</span></div>';
 			}
@@ -1040,6 +1108,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	}
 
 	function closeCaseStudy() {
+		closeLightbox();
 		if (!overlay || overlay.hidden) return;
 		overlay.hidden = true;
 		document.body.style.overflow = '';
@@ -1082,6 +1151,20 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	if (closeBtn) closeBtn.addEventListener('click', closeCaseStudy);
 	if (dismissBtn) dismissBtn.addEventListener('click', closeCaseStudy);
 
+	// Lightbox close button
+	if (lightboxClose) {
+		lightboxClose.addEventListener('click', closeLightbox);
+	}
+
+	// Lightbox backdrop click closes
+	if (lightboxOverlay) {
+		lightboxOverlay.addEventListener('click', function(e) {
+			if (e.target === lightboxOverlay || e.target.id === 'rs-lightbox-wrap' || e.target === lightboxImg) {
+				closeLightbox();
+			}
+		});
+	}
+
 	// Backdrop click closes
 	if (overlay) {
 		overlay.addEventListener('mousedown', function(e) {
@@ -1091,11 +1174,16 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		});
 	}
 
-	// ESC key closes
+	// ESC key closes (closes Lightbox first if open, else Case Study modal)
 	document.addEventListener('keydown', function(e) {
-		if ((e.key === 'Escape' || e.key === 'Esc') && overlay && !overlay.hidden) {
-			e.preventDefault();
-			closeCaseStudy();
+		if (e.key === 'Escape' || e.key === 'Esc') {
+			if (lightboxOverlay && !lightboxOverlay.hidden) {
+				e.preventDefault();
+				closeLightbox();
+			} else if (overlay && !overlay.hidden) {
+				e.preventDefault();
+				closeCaseStudy();
+			}
 		}
 	});
 
