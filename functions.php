@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '7.4.0' );
+define( 'RS_VERSION', '7.4.1' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -219,7 +219,7 @@ function rs_lang_switcher_data() {
 	if ( rs_is_en() ) {
 		$main_id = function_exists( 'get_main_site_id' ) ? get_main_site_id() : 1;
 		$url     = is_multisite() ? get_home_url( $main_id, '/' ) : home_url( '/' );
-		$label   = 'বাং';
+		$label   = 'BN';
 		$title   = 'বাংলায় পড়ুন';
 	} else {
 		$url = home_url( '/en/' );
@@ -963,11 +963,43 @@ function rs_about() {
 		}
 	}
 
+	/* Auto-detect page by slug */
+	if ( rs_is_en() ) {
+		$page = get_page_by_path( 'myself' );
+		if ( ! $page ) {
+			$page = get_page_by_path( 'about' );
+		}
+		if ( ! $page ) {
+			$page = get_page_by_path( 'about-me' );
+		}
+		if ( $page && 'publish' === $page->post_status ) {
+			$cached = array(
+				'title'   => get_the_title( $page ),
+				'content' => apply_filters( 'the_content', $page->post_content ),
+			);
+
+			return $cached;
+		}
+	} else {
+		$page = get_page_by_path( 'about' );
+		if ( ! $page ) {
+			$page = get_page_by_path( 'amar-shomporke' );
+		}
+		if ( $page && 'publish' === $page->post_status ) {
+			$cached = array(
+				'title'   => get_the_title( $page ),
+				'content' => apply_filters( 'the_content', $page->post_content ),
+			);
+
+			return $cached;
+		}
+	}
+
 	$cached = rs_is_en() ? array(
-		'title'   => 'About Me',
+		'title'   => 'Myself',
 		'content' => '<p>I am Raisul Sohan. My primary literary focus is storytelling and essays. My writings explore the quiet transformations of contemporary life, memory, and human connections. While I work in motion graphics and animation, both are ultimately different ways of telling stories.</p>',
 	) : array(
-		'title'   => 'আমার সম্পর্কে',
+		'title'   => 'আমি',
 		'content' => '<p>আমি রাইসুল সোহান। আমার সাহিত্যচর্চার মূল মাধ্যম গল্প। সমকালীন মানুষের জীবন, সম্পর্ক, স্মৃতি ও শহরের নীরব রূপান্তর আমার লেখার আগ্রহের জায়গা। জীবিকার জন্য মোশন গ্রাফিক্স ও অ্যানিমেশন নিয়ে কাজ করলেও, আমার কাছে দুটি মাধ্যমই শেষ পর্যন্ত গল্প বলার ভিন্ন ভিন্ন উপায়।</p>',
 	);
 

@@ -30,6 +30,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<button class="rs-header__link" type="button" data-rs-open="about">
 				<?php echo esc_html( rs_about()['title'] ); ?>
 			</button>
+			<?php $rs_switcher = rs_lang_switcher_data(); ?>
+			<a class="rs-lang-switcher" href="<?php echo esc_url( $rs_switcher['url'] ); ?>" title="<?php echo esc_attr( $rs_switcher['title'] ); ?>" aria-label="<?php echo esc_attr( $rs_switcher['title'] ); ?>">
+				<span><?php echo esc_html( $rs_switcher['label'] ); ?></span>
+			</a>
 		</nav>
 
 		<a class="rs-header__brand" href="<?php echo esc_url( home_url( '/' ) ); ?>">
@@ -37,11 +41,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</a>
 
 		<nav class="rs-header__nav rs-header__nav--right">
-			<?php $rs_switcher = rs_lang_switcher_data(); ?>
-			<a class="rs-icon rs-lang-switcher" href="<?php echo esc_url( $rs_switcher['url'] ); ?>" title="<?php echo esc_attr( $rs_switcher['title'] ); ?>" aria-label="<?php echo esc_attr( $rs_switcher['title'] ); ?>">
-				<span><?php echo esc_html( $rs_switcher['label'] ); ?></span>
-			</a>
-
 			<button class="rs-icon rs-theme" type="button" data-rs-theme aria-label="<?php echo esc_attr( rs_is_en() ? 'Toggle theme' : 'ডার্ক ও লাইট মোড বদলান' ); ?>">
 				<span class="rs-theme__moon"><?php echo wp_kses( rs_icon( 'moon' ), rs_svg_tags() ); ?></span>
 				<span class="rs-theme__sun"><?php echo wp_kses( rs_icon( 'sun' ), rs_svg_tags() ); ?></span>
