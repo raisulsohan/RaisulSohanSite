@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '7.3.4' );
+define( 'RS_VERSION', '7.4.0' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -191,6 +191,70 @@ function rs_tinymce_paste_justify_script() {
 add_action( 'admin_footer', 'rs_tinymce_paste_justify_script', 99 );
 
 /* =========================================================================
+ * 1.1 Language detection & Switcher
+ * ====================================================================== */
+
+/**
+ * Check if the current context is English (subsite or English locale).
+ *
+ * @return bool
+ */
+function rs_is_en() {
+	if ( is_multisite() && ! is_main_site() ) {
+		return true;
+	}
+	$locale = get_locale();
+	if ( 0 === strpos( $locale, 'en' ) ) {
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Language switcher data for header toggle.
+ *
+ * @return array
+ */
+function rs_lang_switcher_data() {
+	if ( rs_is_en() ) {
+		$main_id = function_exists( 'get_main_site_id' ) ? get_main_site_id() : 1;
+		$url     = is_multisite() ? get_home_url( $main_id, '/' ) : home_url( '/' );
+		$label   = 'বাং';
+		$title   = 'বাংলায় পড়ুন';
+	} else {
+		$url = home_url( '/en/' );
+		if ( is_multisite() ) {
+			$sites = get_sites( array( 'path' => '/en/', 'number' => 1 ) );
+			if ( ! empty( $sites ) ) {
+				$url = get_home_url( $sites[0]->blog_id, '/' );
+			}
+		}
+		$label = 'EN';
+		$title = 'Read in English';
+	}
+
+	return array(
+		'url'   => esc_url( $url ),
+		'label' => $label,
+		'title' => $title,
+	);
+}
+
+/**
+ * Add language class to body.
+ *
+ * @param array $classes Body classes.
+ * @return array
+ */
+function rs_body_classes( $classes ) {
+	if ( rs_is_en() ) {
+		$classes[] = 'rs-en';
+	}
+	return $classes;
+}
+add_filter( 'body_class', 'rs_body_classes' );
+
+/* =========================================================================
  * 2. Assets
  * ====================================================================== */
 
@@ -219,46 +283,98 @@ function rs_assets() {
 		'rs-app',
 		'RS',
 		array(
-			'rest'    => esc_url_raw( rest_url( 'rs/v1/' ) ),
-			'home'    => esc_url_raw( home_url( '/' ) ),
-			'total'   => rs_published_count(),
-			'phrases' => rs_phrases(),
-			'email'   => rs_option( 'rs_email' ),
-			'siteName'=> get_bloginfo( 'name' ),
-			/* Which post this page is, for the read count. Zero everywhere
-			   else, and app.js counts nothing when it is zero. */
-			'postId'  => is_singular( 'post' ) ? get_queried_object_id() : 0,
-			'catId'   => is_category() ? get_queried_object_id() : 0,
+			'rest'       => esc_url_raw( rest_url( 'rs/v1/' ) ),
+			'home'       => esc_url_raw( home_url( '/' ) ),
+			'total'      => rs_published_count(),
+			'phrases'    => rs_phrases(),
+			'email'      => rs_option( 'rs_email' ),
+			'siteName'   => get_bloginfo( 'name' ),
+			'postId'     => is_singular( 'post' ) ? get_queried_object_id() : 0,
+			'catId'      => is_category() ? get_queried_object_id() : 0,
 			'animations' => get_theme_mod( 'rs_enable_animations', true ) ? 1 : 0,
-			/* Base URL for the modal's edit link, empty for readers. The
-			   capability is checked here, in a normally authenticated page
-			   request; the REST call carries no nonce, so current_user_can()
-			   would see a logged out user inside the endpoint. WordPress
-			   still gates the edit screen itself, so this only decides
-			   whether the button is worth showing. */
-			'editBase' => current_user_can( 'edit_posts' )
+			'isEn'       => rs_is_en(),
+			'editBase'   => current_user_can( 'edit_posts' )
 				? admin_url( 'post.php?action=edit&post=' )
 				: '',
-			/*
-			 * The nonce that lets the editing endpoint trust the cookie.
-			 * It rides alongside editBase on purpose: both are written
-			 * only into a page rendered for a logged in user, and a
-			 * logged in user is served past the page cache. So a stale
-			 * nonce and a visible edit button cannot happen together —
-			 * where there is no button there is nothing to go stale.
-			 */
-			'editNonce' => current_user_can( 'edit_posts' )
+			'editNonce'  => current_user_can( 'edit_posts' )
 				? wp_create_nonce( 'wp_rest' )
 				: '',
-			'strings' => array(
-				'copied'   => __( 'Mail copied!', 'raisul-sohan' ),
-				'copyFail' => __( 'কপি হয়নি', 'raisul-sohan' ),
-				'linkCopy' => __( 'লিঙ্ক কপি হয়েছে', 'raisul-sohan' ),
-				'noResult' => __( 'কোনো ফলাফল পাওয়া যায়নি', 'raisul-sohan' ),
-				'hint'     => __( 'শিরোনাম বা লেখার অংশ লিখুন', 'raisul-sohan' ),
-				'results'  => __( 'টি ফলাফল', 'raisul-sohan' ),
-				'loading'  => __( 'আসছে...', 'raisul-sohan' ),
-				'error'    => __( 'লেখাটি আনা যায়নি', 'raisul-sohan' ),
+			'strings'    => rs_is_en() ? array(
+				'copied'       => 'Mail copied!',
+				'copyFail'     => 'Failed to copy',
+				'linkCopy'     => 'Link copied to clipboard',
+				'noResult'     => 'No results found',
+				'hint'         => 'Type title or content keyword',
+				'results'      => ' results',
+				'loading'      => 'Loading...',
+				'error'        => 'Could not load writing',
+				'fontSize'     => 'Text size',
+				'fontDown'     => 'Decrease font size',
+				'fontReset'    => 'Reset font size',
+				'fontUp'       => 'Increase font size',
+				'edit'         => 'Edit',
+				'dashboard'    => 'Dashboard',
+				'shareLabel'   => 'Share with others',
+				'shareBtn'     => 'Share',
+				'copyBtn'      => 'Copy link',
+				'readLater'    => 'Read later',
+				'inLater'      => 'Saved to list',
+				'removeLater'  => 'Remove from list',
+				'laterAdded'   => 'Added to reading list',
+				'laterRemoved' => 'Removed from reading list',
+				'resumeLabel'  => 'You were reading',
+				'dismiss'      => 'Dismiss',
+				'timeLeft'     => 'min left',
+				'cardTitle'    => 'Quote card',
+				'download'     => 'Download',
+				'cardSaved'    => 'Card downloaded',
+				'saveBtn'      => 'Save',
+				'cancelBtn'    => 'Cancel',
+				'saving'       => 'Saving...',
+				'saved'        => 'Saved successfully',
+				'saveFail'     => 'Failed to save',
+				'confirmExit'  => 'Changes not saved. Leave anyway?',
+				'installing'   => 'Installing app...',
+				'installed'    => 'App installed successfully!',
+				'iosInstall'   => 'Tap the share icon in Safari and select "Add to Home Screen"',
+			) : array(
+				'copied'       => __( 'Mail copied!', 'raisul-sohan' ),
+				'copyFail'     => __( 'কপি হয়নি', 'raisul-sohan' ),
+				'linkCopy'     => __( 'লিঙ্ক কপি হয়েছে', 'raisul-sohan' ),
+				'noResult'     => __( 'কোনো ফলাফল পাওয়া যায়নি', 'raisul-sohan' ),
+				'hint'         => __( 'শিরোনাম বা লেখার অংশ লিখুন', 'raisul-sohan' ),
+				'results'      => __( 'টি ফলাফল', 'raisul-sohan' ),
+				'loading'      => __( 'আসছে...', 'raisul-sohan' ),
+				'error'        => __( 'লেখাটি আনা যায়নি', 'raisul-sohan' ),
+				'fontSize'     => 'লেখার আকার',
+				'fontDown'     => 'ছোট করুন',
+				'fontReset'    => 'স্বাভাবিক আকার',
+				'fontUp'       => 'বড় করুন',
+				'edit'         => 'সম্পাদনা',
+				'dashboard'    => 'ড্যাশবোর্ডে',
+				'shareLabel'   => 'অন্যদেরও পড়তে দিন',
+				'shareBtn'     => 'শেয়ার করুন',
+				'copyBtn'      => 'লিঙ্ক কপি',
+				'readLater'    => 'পরে পড়ব',
+				'inLater'      => 'তালিকায় আছে',
+				'removeLater'  => 'তালিকা থেকে সরান',
+				'laterAdded'   => 'পরে পড়ার তালিকায় রাখা হলো',
+				'laterRemoved' => 'তালিকা থেকে সরানো হলো',
+				'resumeLabel'  => 'আপনি পড়ছিলেন',
+				'dismiss'      => 'সরিয়ে দিন',
+				'timeLeft'     => 'মিনিট বাকি',
+				'cardTitle'    => 'উদ্ধৃতি কার্ড',
+				'download'     => 'ডাউনলোড',
+				'cardSaved'    => 'কার্ড ডাউনলোড হয়েছে',
+				'saveBtn'      => 'সেভ করুন',
+				'cancelBtn'    => 'বাতিল',
+				'saving'       => 'সেভ হচ্ছে...',
+				'saved'        => 'সেভ হয়েছে',
+				'saveFail'     => 'সেভ হয়নি',
+				'confirmExit'  => 'সম্পাদনা সেভ করা হয়নি। বাতিল করে বেরিয়ে যাবেন?',
+				'installing'   => 'অ্যাপ ইনস্টল হচ্ছে...',
+				'installed'    => 'অ্যাপ সফলভাবে ইনস্টল হয়েছে!',
+				'iosInstall'   => 'সাফারির নিচে শেয়ার আইকনে ট্যাপ করে "Add to Home Screen" বেছে নিন',
 			),
 		)
 	);
@@ -323,10 +439,17 @@ add_action( 'wp_head', 'rs_theme_boot', 1 );
  * attribute — without it the browser downloads the file twice.
  */
 function rs_preload_font() {
-	printf(
-		'<link rel="preload" href="%s" as="font" type="font/woff2" crossorigin>' . "\n",
-		esc_url( get_template_directory_uri() . '/assets/fonts/noto-serif-bengali-bengali.woff2' )
-	);
+	if ( ! rs_is_en() ) {
+		printf(
+			'<link rel="preload" href="%s" as="font" type="font/woff2" crossorigin>' . "\n",
+			esc_url( get_template_directory_uri() . '/assets/fonts/noto-serif-bengali-bengali.woff2' )
+		);
+	} else {
+		printf(
+			'<link rel="preload" href="%s" as="font" type="font/woff2" crossorigin>' . "\n",
+			esc_url( get_template_directory_uri() . '/assets/fonts/noto-serif-bengali-latin.woff2' )
+		);
+	}
 }
 add_action( 'wp_head', 'rs_preload_font', 2 );
 
@@ -341,6 +464,10 @@ add_action( 'wp_head', 'rs_preload_font', 2 );
  * @return string
  */
 function rs_bn_digits( $value ) {
+	if ( rs_is_en() ) {
+		return (string) $value;
+	}
+
 	$en = array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' );
 	$bn = array( '০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯' );
 
@@ -397,7 +524,7 @@ function rs_bn_months_full() {
 }
 
 /**
- * Format a post date as "১৫ অক্টো ২০২৬".
+ * Format a post date as "১৫ অক্টো ২০২৬" or "Oct 15, 2026".
  *
  * @param int|WP_Post|null $post Post.
  * @return string
@@ -407,6 +534,10 @@ function rs_bn_date( $post = null ) {
 
 	if ( ! $post ) {
 		return '';
+	}
+
+	if ( rs_is_en() ) {
+		return get_the_time( 'M j, Y', $post );
 	}
 
 	$months = rs_bn_months();
@@ -537,6 +668,10 @@ function rs_reading_time( $post = null ) {
 		$minutes = max( 1, (int) round( $words / 180 ) );
 
 		update_post_meta( $post->ID, RS_MINUTES_KEY, $minutes );
+	}
+
+	if ( rs_is_en() ) {
+		return (string) (int) $minutes . ' min read';
 	}
 
 	return rs_bn_digits( (int) $minutes ) . ' মিনিট';
@@ -793,7 +928,12 @@ function rs_hero_image() {
  * @return string
  */
 function rs_footer_text() {
-	return str_replace( '{year}', rs_bn_digits( gmdate( 'Y' ) ), (string) rs_option( 'rs_footer' ) );
+	$text = (string) rs_option( 'rs_footer' );
+	if ( '' === $text ) {
+		$text = rs_is_en() ? '© {year} Raisul Sohan. All rights reserved.' : '© {year} রইসুল সোহান';
+	}
+	$year = rs_is_en() ? gmdate( 'Y' ) : rs_bn_digits( gmdate( 'Y' ) );
+	return str_replace( '{year}', $year, $text );
 }
 
 /**
@@ -823,7 +963,10 @@ function rs_about() {
 		}
 	}
 
-	$cached = array(
+	$cached = rs_is_en() ? array(
+		'title'   => 'About Me',
+		'content' => '<p>I am Raisul Sohan. My primary literary focus is storytelling and essays. My writings explore the quiet transformations of contemporary life, memory, and human connections. While I work in motion graphics and animation, both are ultimately different ways of telling stories.</p>',
+	) : array(
 		'title'   => 'আমার সম্পর্কে',
 		'content' => '<p>আমি রাইসুল সোহান। আমার সাহিত্যচর্চার মূল মাধ্যম গল্প। সমকালীন মানুষের জীবন, সম্পর্ক, স্মৃতি ও শহরের নীরব রূপান্তর আমার লেখার আগ্রহের জায়গা। জীবিকার জন্য মোশন গ্রাফিক্স ও অ্যানিমেশন নিয়ে কাজ করলেও, আমার কাছে দুটি মাধ্যমই শেষ পর্যন্ত গল্প বলার ভিন্ন ভিন্ন উপায়।</p>',
 	);
@@ -1502,10 +1645,10 @@ function rs_edit_links( $post = null ) {
 	?>
 	<button class="rs-article__edit" type="button" data-rs-edit>
 		<?php echo wp_kses( rs_icon( 'edit', 13 ), rs_svg_tags() ); ?>
-		সম্পাদনা
+		<?php echo esc_html( rs_is_en() ? 'Edit' : 'সম্পাদনা' ); ?>
 	</button>
 	<a class="rs-article__edit" href="<?php echo esc_url( get_edit_post_link( $post->ID ) ); ?>">
-		ড্যাশবোর্ডে
+		<?php echo esc_html( rs_is_en() ? 'Dashboard' : 'ড্যাশবোর্ডে' ); ?>
 	</a>
 	<?php
 }
@@ -1525,7 +1668,7 @@ function rs_share_row( $post = null ) {
 	$url = get_permalink( $post );
 	?>
 	<div class="rs-share">
-		<p class="rs-share__label">অন্যদেরও পড়তে দিন</p>
+		<p class="rs-share__label"><?php echo esc_html( rs_is_en() ? 'Share with others' : 'অন্যদেরও পড়তে দিন' ); ?></p>
 		<div class="rs-share__row">
 			<?php
 			/* Hidden by CSS until app.js finds navigator.share and marks
@@ -1536,12 +1679,12 @@ function rs_share_row( $post = null ) {
 				data-rs-share="<?php echo esc_attr( $url ); ?>"
 				data-rs-share-title="<?php echo esc_attr( rs_plain_title( $post ) ); ?>">
 				<?php echo wp_kses( rs_icon( 'share', 14 ), rs_svg_tags() ); ?>
-				শেয়ার করুন
+				<?php echo esc_html( rs_is_en() ? 'Share' : 'শেয়ার করুন' ); ?>
 			</button>
 
 			<button class="rs-share__btn" type="button" data-rs-copy="<?php echo esc_attr( $url ); ?>">
 				<?php echo wp_kses( rs_icon( 'copy', 14 ), rs_svg_tags() ); ?>
-				লিঙ্ক কপি
+				<?php echo esc_html( rs_is_en() ? 'Copy link' : 'লিঙ্ক কপি' ); ?>
 			</button>
 
 			<?php
@@ -1556,7 +1699,7 @@ function rs_share_row( $post = null ) {
 				data-rs-later-time="<?php echo esc_attr( rs_reading_time( $post ) ); ?>"
 				aria-pressed="false">
 				<?php echo wp_kses( rs_icon( 'bookmark', 14 ), rs_svg_tags() ); ?>
-				<span data-rs-later-text>পরে পড়ব</span>
+				<span data-rs-later-text><?php echo esc_html( rs_is_en() ? 'Read later' : 'পরে পড়ব' ); ?></span>
 			</button>
 		</div>
 	</div>
@@ -1911,9 +2054,12 @@ function rs_suggestions( $items, $label ) {
  * @param int|WP_Post|null $post Post.
  */
 function rs_related_row( $post = null ) {
-	$term = rs_primary_category( $post );
+	$term  = rs_primary_category( $post );
+	$label = rs_is_en()
+		? ( 'More in ' . ( $term ? $term->name : 'writings' ) )
+		: ( 'আরও ' . ( $term ? $term->name : 'লেখা' ) );
 
-	rs_suggestions( rs_related( $post ), 'আরও ' . ( $term ? $term->name : 'লেখা' ) );
+	rs_suggestions( rs_related( $post ), $label );
 }
 
 /**
@@ -2034,10 +2180,13 @@ function rs_pagination() {
 	}
 
 	$current = max( 1, (int) get_query_var( 'paged' ) );
+	$nav_label  = rs_is_en() ? 'Pagination' : 'পাতা';
+	$prev_label = rs_is_en() ? 'Previous page' : 'আগের পাতা';
+	$next_label = rs_is_en() ? 'Next page' : 'পরের পাতা';
 	?>
-	<nav class="rs-pagination" aria-label="<?php esc_attr_e( 'পাতা', 'raisul-sohan' ); ?>">
+	<nav class="rs-pagination" aria-label="<?php echo esc_attr( $nav_label ); ?>">
 		<?php
-		rs_pagination_step( $current - 1, $current > 1, 'left', 'prev', __( 'আগের পাতা', 'raisul-sohan' ) );
+		rs_pagination_step( $current - 1, $current > 1, 'left', 'prev', $prev_label );
 
 		foreach ( rs_page_slots( $current, $total ) as $slot ) {
 			if ( 0 === $slot ) {
@@ -2055,16 +2204,19 @@ function rs_pagination() {
 				continue;
 			}
 
+			$page_label = rs_is_en()
+				? sprintf( 'Page %s', $digits )
+				: sprintf( '%s নম্বর পাতা', $digits );
+
 			printf(
 				'<a class="rs-pagination__num" href="%s" aria-label="%s">%s</a>',
 				esc_url( rs_page_url( $slot ) ),
-				/* translators: %s: page number in Bengali digits. */
-				esc_attr( sprintf( __( '%s নম্বর পাতা', 'raisul-sohan' ), $digits ) ),
+				esc_attr( $page_label ),
 				esc_html( $digits )
 			);
 		}
 
-		rs_pagination_step( $current + 1, $current < $total, 'right', 'next', __( 'পরের পাতা', 'raisul-sohan' ) );
+		rs_pagination_step( $current + 1, $current < $total, 'right', 'next', $next_label );
 		?>
 	</nav>
 	<?php
@@ -2094,21 +2246,40 @@ function rs_render_count() {
 
 	$term = ( is_category() || is_tag() ) ? get_queried_object() : null;
 
-	if ( $term instanceof WP_Term && is_category() ) {
-		/* The name rather than "this category": it is the only line on an
-		   archive that says which one the reader is standing in, since the
-		   heading above keeps the site's own phrase. */
-		$before = $term->name . ' ক্যাটাগরিতে ';
-		$after  = 'টি লেখা প্রকাশিত';
-	} elseif ( $term instanceof WP_Term ) {
-		$before = $term->name . ' ট্যাগে ';
-		$after  = 'টি লেখা প্রকাশিত';
-	} elseif ( is_search() ) {
-		$before = '';
-		$after  = 'টি লেখা পাওয়া গেছে';
+	if ( rs_is_en() ) {
+		$plural = 1 === (int) $count ? 'writing' : 'writings';
+		if ( $term instanceof WP_Term && is_category() ) {
+			$before = '';
+			$after  = ' ' . $plural . ' in ' . $term->name;
+		} elseif ( $term instanceof WP_Term ) {
+			$before = '';
+			$after  = ' ' . $plural . ' tagged with ' . $term->name;
+		} elseif ( is_search() ) {
+			$before = '';
+			$after  = ' ' . ( 1 === (int) $count ? 'result' : 'results' ) . ' found';
+		} else {
+			$before = '';
+			$after  = ' ' . $plural . ' published';
+		}
+		$random_label = 'Random writing';
 	} else {
-		$before = '';
-		$after  = 'টি লেখা প্রকাশিত';
+		if ( $term instanceof WP_Term && is_category() ) {
+			/* The name rather than "this category": it is the only line on an
+			   archive that says which one the reader is standing in, since the
+			   heading above keeps the site's own phrase. */
+			$before = $term->name . ' ক্যাটাগরিতে ';
+			$after  = 'টি লেখা প্রকাশিত';
+		} elseif ( $term instanceof WP_Term ) {
+			$before = $term->name . ' ট্যাগে ';
+			$after  = 'টি লেখা প্রকাশিত';
+		} elseif ( is_search() ) {
+			$before = '';
+			$after  = 'টি লেখা পাওয়া গেছে';
+		} else {
+			$before = '';
+			$after  = 'টি লেখা প্রকাশিত';
+		}
+		$random_label = 'যেকোনো একটা লেখা';
 	}
 	/*
 	 * On the front page the sentence is already a description of the index,
@@ -2138,7 +2309,7 @@ function rs_render_count() {
 			<?php endif; ?>
 			<a class="rs-post-count__any"
 				href="<?php echo esc_url( rs_random_url() ); ?>"
-				data-rs-random="<?php echo (int) rs_random_cat(); ?>">যেকোনো একটা লেখা</a>
+				data-rs-random="<?php echo (int) rs_random_cat(); ?>"><?php echo esc_html( $random_label ); ?></a>
 		</p>
 	</div>
 	<?php
@@ -2205,7 +2376,7 @@ function rs_render_featured_post( $cat_id = 0 ) {
 	<div>
 		<div class="rs-featured">
 			<div class="rs-featured__label">
-				<span class="rs-featured__line"></span>ফিচার্ড
+				<span class="rs-featured__line"></span><?php echo esc_html( rs_is_en() ? 'Featured' : 'ফিচার্ড' ); ?>
 			</div>
 			<h2 class="rs-featured__title">
 				<a href="<?php the_permalink(); ?>" data-rs-post="<?php the_ID(); ?>"><?php the_title(); ?></a>
@@ -2223,7 +2394,7 @@ function rs_render_featured_post( $cat_id = 0 ) {
 				<span class="rs-featured__dropcap"><?php echo esc_html( $dropcap ); ?></span><?php echo esc_html( $rest ); ?>
 			</div>
 			<div class="rs-featured__action">
-				<a href="<?php the_permalink(); ?>" class="rs-featured__btn" data-rs-post="<?php the_ID(); ?>">সম্পূর্ণ লেখা পড়ুন &rarr;</a>
+				<a href="<?php the_permalink(); ?>" class="rs-featured__btn" data-rs-post="<?php the_ID(); ?>"><?php echo esc_html( rs_is_en() ? 'Read full article →' : 'সম্পূর্ণ লেখা পড়ুন →' ); ?></a>
 			</div>
 		</div>
 	</div>
@@ -2283,7 +2454,7 @@ function rs_render_list() {
 						<button class="rs-row__save" type="button"
 							data-rs-later="<?php the_ID(); ?>"
 							aria-pressed="false"
-							aria-label="পরে পড়ব">
+							aria-label="<?php echo esc_attr( rs_is_en() ? 'Read later' : 'পরে পড়ব' ); ?>">
 							<?php echo wp_kses( rs_icon( 'bookmark', 14 ), rs_svg_tags() ); ?>
 						</button>
 					</article>
@@ -2296,11 +2467,11 @@ function rs_render_list() {
 
 			<div class="rs-notice">
 				<?php if ( is_search() ) : ?>
-					<h2>কিছু পাওয়া যায়নি</h2>
-					<p>অন্য শব্দ দিয়ে খুঁজে দেখুন।</p>
+					<h2><?php echo esc_html( rs_is_en() ? 'No results found' : 'কিছু পাওয়া যায়নি' ); ?></h2>
+					<p><?php echo esc_html( rs_is_en() ? 'Try searching with different keywords.' : 'অন্য শব্দ দিয়ে খুঁজে দেখুন।' ); ?></p>
 				<?php else : ?>
-					<h2>এখনো কোনো লেখা নেই</h2>
-					<p>প্রথম লেখাটা প্রকাশ করলে এখানে দেখা যাবে।</p>
+					<h2><?php echo esc_html( rs_is_en() ? 'No writings yet' : 'এখনো কোনো লেখা নেই' ); ?></h2>
+					<p><?php echo esc_html( rs_is_en() ? 'Published articles will appear here.' : 'প্রথম লেখাটা প্রকাশ করলে এখানে দেখা যাবে।' ); ?></p>
 				<?php endif; ?>
 			</div>
 

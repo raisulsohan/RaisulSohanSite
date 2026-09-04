@@ -10,6 +10,7 @@
 
 	var cfg = window.RS || {};
 	var strings = cfg.strings || {};
+	var isEn = Boolean( cfg.isEn );
 	var rest = cfg.rest || '/wp-json/rs/v1/';
 
 	/* Five steps, two either side of the default. FONT_DEFAULT must stay
@@ -42,6 +43,9 @@
 	}
 
 	function bnDigits( value ) {
+		if ( isEn ) {
+			return String( value );
+		}
 		return String( value ).replace( /[0-9]/g, function ( d ) {
 			return '০১২৩৪৫৬৭৮৯'.charAt( Number( d ) );
 		} );
@@ -777,13 +781,18 @@
 	};
 
 	function fontControlsHtml() {
+		var fontLabel = ( strings && strings.fontSize ) || 'লেখার আকার';
+		var fontDown  = ( strings && strings.fontDown ) || 'ছোট করুন';
+		var fontReset = ( strings && strings.fontReset ) || 'স্বাভাবিক আকার';
+		var fontUp    = ( strings && strings.fontUp ) || 'বড় করুন';
+
 		return (
-			'<div class="rs-fontctl" role="group" aria-label="লেখার আকার">' +
-			'<button type="button" data-rs-font="down" data-step="0" aria-label="ছোট করুন">A-</button>' +
+			'<div class="rs-fontctl" role="group" aria-label="' + escapeHtml( fontLabel ) + '">' +
+			'<button type="button" data-rs-font="down" data-step="0" aria-label="' + escapeHtml( fontDown ) + '">A-</button>' +
 			'<span class="rs-fontctl__sep"></span>' +
-			'<button type="button" data-rs-font="reset" data-step="1" aria-label="স্বাভাবিক আকার">A</button>' +
+			'<button type="button" data-rs-font="reset" data-step="1" aria-label="' + escapeHtml( fontReset ) + '">A</button>' +
 			'<span class="rs-fontctl__sep"></span>' +
-			'<button type="button" data-rs-font="up" data-step="2" aria-label="বড় করুন">A+</button>' +
+			'<button type="button" data-rs-font="up" data-step="2" aria-label="' + escapeHtml( fontUp ) + '">A+</button>' +
 			'</div>'
 		);
 	}
@@ -813,10 +822,12 @@
 	/* The same pair rs_edit_links() prints on a post's own page. */
 	function editLinkHtml() {
 		var icon = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>';
+		var editLabel = ( strings && strings.edit ) || 'সম্পাদনা';
+		var dashLabel = ( strings && strings.dashboard ) || 'ড্যাশবোর্ডে';
 
 		return (
-			'<button class="rs-article__edit" type="button" data-rs-edit>' + icon + 'সম্পাদনা</button>' +
-			'<a class="rs-article__edit rs-article__edit--dash" href="">ড্যাশবোর্ডে</a>'
+			'<button class="rs-article__edit" type="button" data-rs-edit>' + icon + escapeHtml( editLabel ) + '</button>' +
+			'<a class="rs-article__edit rs-article__edit--dash" href="">' + escapeHtml( dashLabel ) + '</a>'
 		);
 	}
 
@@ -830,22 +841,27 @@
 		var shIcon = '<svg ' + svg + '><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>';
 		var bmIcon = '<svg ' + svg + '><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
 
+		var shareLabel = ( strings && strings.shareLabel ) || 'অন্যদেরও পড়তে দিন';
+		var shareBtn   = ( strings && strings.shareBtn ) || 'শেয়ার করুন';
+		var copyBtn    = ( strings && strings.copyBtn ) || 'লিঙ্ক কপি';
+		var readLater  = ( strings && strings.readLater ) || 'পরে পড়ব';
+
 		return (
 			'<div class="rs-share">' +
-			'<p class="rs-share__label">অন্যদেরও পড়তে দিন</p>' +
+			'<p class="rs-share__label">' + escapeHtml( shareLabel ) + '</p>' +
 			'<div class="rs-share__row">' +
 			'<button class="rs-share__btn" type="button" data-rs-share="' + escapeHtml( link ) +
 			'" data-rs-share-title="' + escapeHtml( title || '' ) + '">' +
-			shIcon + 'শেয়ার করুন</button>' +
+			shIcon + escapeHtml( shareBtn ) + '</button>' +
 			'<button class="rs-share__btn" type="button" data-rs-copy="' + escapeHtml( link ) + '">' +
-			cpIcon + 'লিঙ্ক কপি</button>' +
+			cpIcon + escapeHtml( copyBtn ) + '</button>' +
 			/* The modal was built from a fetch, so this button has no row to
 			   read itself out of and carries what it needs instead. */
 			'<button class="rs-share__btn rs-share__btn--save" type="button" data-rs-later="' +
 			escapeHtml( data.id ) + '" data-rs-later-url="' + escapeHtml( link ) +
 			'" data-rs-later-title="' + escapeHtml( title || '' ) +
 			'" data-rs-later-time="' + escapeHtml( data.readingTime || '' ) + '">' +
-			bmIcon + '<span data-rs-later-text>পরে পড়ব</span></button>' +
+			bmIcon + '<span data-rs-later-text>' + escapeHtml( readLater ) + '</span></button>' +
 			'</div></div>'
 		);
 	}
@@ -855,8 +871,12 @@
 			return '';
 		}
 
+		var relLabel = ( window.RS && window.RS.isEn )
+			? ( 'More in ' + ( data.category || 'writings' ) )
+			: ( 'আরও ' + ( data.category || 'লেখা' ) );
+
 		var html = '<nav class="rs-related"><p class="rs-related__label">' +
-			escapeHtml( 'আরও ' + ( data.category || 'লেখা' ) ) +
+			escapeHtml( relLabel ) +
 			'</p><ul class="rs-related__list">';
 
 		/* data-rs-post again, so these open in this modal rather than
@@ -2021,15 +2041,25 @@
 				var timeLeftIndicator = $( '#rs-time-left' );
 				if ( timeLeftIndicator && currentPostId && cache[currentPostId] && cache[currentPostId].readingTime ) {
 					var rt = cache[currentPostId].readingTime;
+					var totalMinutes = 0;
 					var bnDigitsStr = rt.replace(/[^\u09E6-\u09EF]/g, '');
 					if ( bnDigitsStr ) {
 						var enDigits = bnDigitsStr.replace(/[\u09E6-\u09EF]/g, function(d) {
 							return "০১২৩৪৫৬৭৮৯".indexOf(d);
 						});
-						var totalMinutes = parseInt(enDigits, 10);
+						totalMinutes = parseInt(enDigits, 10);
+					} else {
+						var m = rt.match(/\d+/);
+						if ( m ) {
+							totalMinutes = parseInt(m[0], 10);
+						}
+					}
+					if ( totalMinutes > 0 ) {
 						var remaining = Math.ceil( totalMinutes * ( 1 - ( pct / 100 ) ) );
 						if ( remaining > 0 && pct > 5 ) {
-							timeLeftIndicator.textContent = "আর " + bnDigits(remaining) + " মিনিট বাকি";
+							timeLeftIndicator.textContent = ( window.RS && window.RS.isEn )
+								? ( remaining + " min left" )
+								: ( "আর " + bnDigits(remaining) + " মিনিট বাকি" );
 							timeLeftIndicator.classList.add('is-visible');
 						} else {
 							timeLeftIndicator.classList.remove('is-visible');
@@ -2148,15 +2178,25 @@
 			}
 			
 			if ( singleTimeLeft && readTimeStr ) {
+				var totalMinutes = 0;
 				var bnDigitsStr = readTimeStr.replace(/[^\u09E6-\u09EF]/g, '');
 				if ( bnDigitsStr ) {
 					var enDigits = bnDigitsStr.replace(/[\u09E6-\u09EF]/g, function(d) {
 						return "০১২৩৪৫৬৭৮৯".indexOf(d);
 					});
-					var totalMinutes = parseInt(enDigits, 10);
+					totalMinutes = parseInt(enDigits, 10);
+				} else {
+					var m = readTimeStr.match(/\d+/);
+					if ( m ) {
+						totalMinutes = parseInt(m[0], 10);
+					}
+				}
+				if ( totalMinutes > 0 ) {
 					var remaining = Math.ceil( totalMinutes * ( 1 - ( pct / 100 ) ) );
 					if ( remaining > 0 && pct > 5 ) {
-						singleTimeLeft.textContent = "আর " + bnDigits(remaining) + " মিনিট বাকি";
+						singleTimeLeft.textContent = ( window.RS && window.RS.isEn )
+							? ( remaining + " min left" )
+							: ( "আর " + bnDigits(remaining) + " মিনিট বাকি" );
 						singleTimeLeft.classList.add('is-visible');
 					} else {
 						singleTimeLeft.classList.remove('is-visible');
@@ -2273,14 +2313,17 @@
 
 		var id = targetKey.slice( 1 );
 
+		var resLabel = ( strings && strings.resumeLabel ) || 'আপনি পড়ছিলেন';
+		var resClose = ( strings && strings.dismiss ) || 'সরিয়ে দিন';
+
 		host.innerHTML =
 			'<div class="rs-resume">' +
 			'<a class="rs-resume__link" href="' + escapeHtml( last.u ) +
 			'" data-rs-post="' + escapeHtml( id ) + '">' +
-			'<span class="rs-resume__label">আপনি পড়ছিলেন</span>' +
+			'<span class="rs-resume__label">' + escapeHtml( resLabel ) + '</span>' +
 			'<span class="rs-resume__title">' + escapeHtml( last.n ) + '</span>' +
 			'</a>' +
-			'<button class="rs-resume__close" type="button" aria-label="সরিয়ে দিন">&times;</button>' +
+			'<button class="rs-resume__close" type="button" aria-label="' + escapeHtml( resClose ) + '">&times;</button>' +
 			'</div>';
 
 		$( '.rs-resume__close', host ).addEventListener( 'click', function () {
@@ -2357,6 +2400,9 @@
 	   because both put new buttons on the page. */
 	function markLater() {
 		var map = readLater();
+		var removeText = ( strings && strings.removeLater ) || 'তালিকা থেকে সরান';
+		var laterText  = ( strings && strings.readLater ) || 'পরে পড়ব';
+		var inText     = ( strings && strings.inLater ) || 'তালিকায় আছে';
 
 		$$( '[data-rs-later]' ).forEach( function ( btn ) {
 			var on = !! map[ 'p' + btn.getAttribute( 'data-rs-later' ) ];
@@ -2364,13 +2410,13 @@
 
 			btn.classList.toggle( 'is-saved', on );
 			btn.setAttribute( 'aria-pressed', on ? 'true' : 'false' );
-			btn.setAttribute( 'title', on ? 'তালিকা থেকে সরান' : 'পরে পড়ব' );
+			btn.setAttribute( 'title', on ? removeText : laterText );
 
 			/* The icon-only buttons in the list have no label to swap. */
 			if ( text ) {
-				text.textContent = on ? 'তালিকায় আছে' : 'পরে পড়ব';
+				text.textContent = on ? inText : laterText;
 			} else {
-				btn.setAttribute( 'aria-label', on ? 'তালিকা থেকে সরান' : 'পরে পড়ব' );
+				btn.setAttribute( 'aria-label', on ? removeText : laterText );
 			}
 		} );
 	}
@@ -2385,6 +2431,8 @@
 		var map = readLater();
 		var keys = Object.keys( map );
 		var html = '';
+		var removeText = ( strings && strings.removeLater ) || 'তালিকা থেকে সরান';
+		var laterText  = ( strings && strings.readLater ) || 'পরে পড়ব';
 
 		/* Backwards, so the story just put aside is the one at the top. */
 		for ( var i = keys.length - 1; i >= 0; i-- ) {
@@ -2402,13 +2450,13 @@
 				'<span class="rs-related__meta">' + escapeHtml( entry.r || '' ) + '</span>' +
 				'</a>' +
 				'<button class="rs-later__drop" type="button" data-rs-later-drop="' +
-				escapeHtml( id ) + '" aria-label="তালিকা থেকে সরান">&times;</button>' +
+				escapeHtml( id ) + '" aria-label="' + escapeHtml( removeText ) + '">&times;</button>' +
 				'</li>';
 		}
 
 		host.innerHTML = html
-			? '<nav class="rs-related rs-later" aria-label="পরে পড়ব">' +
-				'<p class="rs-related__label">পরে পড়ব</p>' +
+			? '<nav class="rs-related rs-later" aria-label="' + escapeHtml( laterText ) + '">' +
+				'<p class="rs-related__label">' + escapeHtml( laterText ) + '</p>' +
 				'<ul class="rs-related__list">' + html + '</ul></nav>'
 			: '';
 	}
@@ -2476,7 +2524,9 @@
 		markLater();
 		renderLater();
 
-		toast( saving ? 'পরে পড়ার তালিকায় রাখা হলো' : 'তালিকা থেকে সরানো হলো' );
+		var addedText   = ( strings && strings.laterAdded ) || 'পরে পড়ার তালিকায় রাখা হলো';
+		var removedText = ( strings && strings.laterRemoved ) || 'তালিকা থেকে সরানো হলো';
+		toast( saving ? addedText : removedText );
 	} );
 
 	/* The buttons only do something once this file has run, so they stay
@@ -2597,7 +2647,7 @@
 				'stroke="currentColor" stroke-width="2" stroke-linecap="round" ' +
 				'stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/>' +
 				'<path d="M8 8h.01"/><path d="M8 12h8"/><path d="M8 16h5"/></svg>' +
-				'উদ্ধৃতি কার্ড';
+				( ( strings && strings.cardTitle ) || 'উদ্ধৃতি কার্ড' );
 
 			var scrollY = window.pageYOffset || document.documentElement.scrollTop;
 			var scrollX = window.pageXOffset || document.documentElement.scrollLeft;
@@ -2822,11 +2872,14 @@
 				'<circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>' +
 				'<path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>';
 
+			var dlText = ( strings && strings.download ) || 'ডাউনলোড';
+			var shText = ( strings && strings.shareBtn ) || 'শেয়ার';
+
 			overlay.innerHTML =
 				'<div class="rs-quote-panel">' +
 				'<div class="rs-quote-actions">' +
-				'<button type="button" data-rs-quote-dl>' + dlIcon + 'ডাউনলোড</button>' +
-				'<button type="button" data-rs-quote-share>' + shIcon + 'শেয়ার</button>' +
+				'<button type="button" data-rs-quote-dl>' + dlIcon + escapeHtml( dlText ) + '</button>' +
+				'<button type="button" data-rs-quote-share>' + shIcon + escapeHtml( shText ) + '</button>' +
 				'</div></div>';
 
 			var panel = overlay.querySelector( '.rs-quote-panel' );
@@ -2885,7 +2938,7 @@
 					a.download = 'quote-card.png';
 					a.click();
 					URL.revokeObjectURL( a.href );
-					toast( 'কার্ড ডাউনলোড হয়েছে' );
+					toast( ( strings && strings.cardSaved ) || 'কার্ড ডাউনলোড হয়েছে' );
 				}, 'image/png' );
 			} );
 
@@ -2908,7 +2961,7 @@
 					a.download = 'quote-card.png';
 					a.click();
 					URL.revokeObjectURL( a.href );
-					toast( 'কার্ড ডাউনলোড হয়েছে' );
+					toast( ( strings && strings.cardSaved ) || 'কার্ড ডাউনলোড হয়েছে' );
 				}, 'image/png' );
 			} );
 		}
@@ -2950,8 +3003,8 @@
 		function barHtml() {
 			return (
 				'<div class="rs-edit">' +
-				'<button class="rs-edit__btn rs-edit__btn--save" type="button" data-rs-edit-save>সেভ করুন</button>' +
-				'<button class="rs-edit__btn" type="button" data-rs-edit-cancel>বাতিল</button>' +
+				'<button class="rs-edit__btn rs-edit__btn--save" type="button" data-rs-edit-save>' + ( ( strings && strings.saveBtn ) || 'সেভ করুন' ) + '</button>' +
+				'<button class="rs-edit__btn" type="button" data-rs-edit-cancel>' + ( ( strings && strings.cancelBtn ) || 'বাতিল' ) + '</button>' +
 				'<span class="rs-edit__note" aria-live="polite"></span>' +
 				'</div>'
 			);
@@ -3077,11 +3130,11 @@
 			var id = article.getAttribute( 'data-rs-id' );
 
 			if ( ! id || ! cfg.editNonce ) {
-				toast( 'সেভ হয়নি', 'পাতাটা রিফ্রেশ করে আবার চেষ্টা করুন' );
+				toast( ( strings && strings.saveFail ) || 'সেভ হয়নি', isEn ? 'Refresh page and try again' : 'পাতাটা রিফ্রেশ করে আবার চেষ্টা করুন' );
 				return;
 			}
 
-			note.textContent = 'সেভ হচ্ছে...';
+			note.textContent = ( strings && strings.saving ) || 'সেভ হচ্ছে...';
 
 			window.fetch( rest + 'edit/' + id, {
 				method: 'POST',
@@ -3110,13 +3163,13 @@
 				.then( function ( data ) {
 					apply( article, data );
 					finish();
-					toast( 'সেভ হয়েছে' );
+					toast( ( strings && strings.saved ) || 'সেভ হয়েছে' );
 				} )
 				.then( null, function ( err ) {
 					/* Left open on purpose: the words are still in the box,
 					   and closing it now is the one way to lose them. */
 					note.textContent = '';
-					toast( 'সেভ হয়নি', err && err.message ? String( err.message ) : '' );
+					toast( ( strings && strings.saveFail ) || 'সেভ হয়নি', err && err.message ? String( err.message ) : '' );
 				} );
 		}
 
@@ -3210,7 +3263,7 @@
 				return true;
 			}
 
-			if ( window.confirm( 'সম্পাদনা সেভ করা হয়নি। বাতিল করে বেরিয়ে যাবেন?' ) ) {
+			if ( window.confirm( ( strings && strings.confirmExit ) || 'সম্পাদনা সেভ করা হয়নি। বাতিল করে বেরিয়ে যাবেন?' ) ) {
 				cancel();
 				return true;
 			}
@@ -3297,12 +3350,12 @@
 				deferredPrompt.userChoice.then( function ( choiceResult ) {
 					if ( choiceResult && choiceResult.outcome === 'accepted' ) {
 						hideAll();
-						toast( 'অ্যাপ ইনস্টল হচ্ছে...' );
+						toast( ( strings && strings.installing ) || 'অ্যাপ ইনস্টল হচ্ছে...' );
 					}
 					deferredPrompt = null;
 				} );
 			} else if ( isIos ) {
-				toast( 'সাফারির নিচে শেয়ার আইকনে ট্যাপ করে "Add to Home Screen" বেছে নিন' );
+				toast( ( strings && strings.iosInstall ) || 'সাফারির নিচে শেয়ার আইকনে ট্যাপ করে "Add to Home Screen" বেছে নিন' );
 			}
 		}
 
@@ -3340,7 +3393,7 @@
 
 		window.addEventListener( 'appinstalled', function () {
 			hideAll();
-			toast( 'অ্যাপ সফলভাবে ইনস্টল হয়েছে!' );
+			toast( ( strings && strings.installed ) || 'অ্যাপ সফলভাবে ইনস্টল হয়েছে!' );
 			deferredPrompt = null;
 		} );
 

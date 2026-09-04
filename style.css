@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
-Version: 7.3.4
+Version: 7.4.0
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -105,6 +105,12 @@ Tags: blog, one-column, custom-colors
 	--rs-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
 	--rs-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 	--rs-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* English locale typography */
+body.rs-en {
+	--rs-serif: "Noto Serif Bengali", Georgia, Cambria, "Times New Roman", Times, serif;
+	--rs-sans: "Noto Sans Bengali", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 /*
@@ -334,6 +340,25 @@ button {
 
 .rs-icon svg {
 	display: block;
+}
+
+.rs-lang-switcher {
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1;
+	padding: 0.2rem 0.45rem;
+	border: 1px solid var(--rs-border);
+	border-radius: var(--rs-radius);
+	letter-spacing: 0.04em;
+	text-decoration: none;
+	color: var(--rs-muted-fg);
+	transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.rs-lang-switcher:hover {
+	color: var(--rs-fg);
+	border-color: var(--rs-fg);
 }
 
 /* Shows the mode you would switch to: moon while light, sun while dark. */

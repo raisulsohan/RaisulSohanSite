@@ -97,20 +97,24 @@ function rs_get_spine_height( $title ) {
 				false,
 				array(
 					'class' => 'rs-hero__image',
-					'alt'   => 'আমার বইয়ের তালিকা',
+					'alt'   => rs_is_en() ? 'My Book List' : 'আমার বইয়ের তালিকা',
 					'sizes' => '(max-width: 48rem) 100vw, 720px',
 					'style' => 'object-position: ' . esc_attr( rs_option( 'rs_hero_pos' ) ) . ';',
 				)
 			);
 			?>
 		<?php else : ?>
-			<span>আমার বইয়ের তালিকা</span>
+			<span><?php echo esc_html( rs_is_en() ? 'My Book List' : 'আমার বইয়ের তালিকা' ); ?></span>
 		<?php endif; ?>
 	</h1>
 </div>
 
 <div class="rs-post-count" style="margin-bottom: 1.5rem;">
-	মোট <span id="rs-book-count" class="rs-bn"><?php echo count( $books ); ?></span>টি বই
+	<?php if ( rs_is_en() ) : ?>
+		Total <span id="rs-book-count"><?php echo count( $books ); ?></span> books
+	<?php else : ?>
+		মোট <span id="rs-book-count" class="rs-bn"><?php echo count( $books ); ?></span>টি বই
+	<?php endif; ?>
 </div>
 
 <main class="rs-wrap rs-main" id="rs-content">
@@ -118,21 +122,21 @@ function rs_get_spine_height( $title ) {
 
 		<div style="margin-bottom: 2rem; display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; align-items: center;">
 			<select id="rs-filter-genre" style="padding: 0.5rem; border: 1px solid var(--rs-border); border-radius: 4px; background: var(--rs-bg); color: var(--rs-fg); cursor: pointer; font-family: inherit;">
-				<option value="">বইয়ের ধরন</option>
+				<option value=""><?php echo esc_html( rs_is_en() ? 'Genre' : 'বইয়ের ধরন' ); ?></option>
 				<?php foreach ( $genres as $g ) : ?>
 					<option value="<?php echo esc_attr( $g ); ?>"><?php echo esc_html( $g ); ?></option>
 				<?php endforeach; ?>
 			</select>
 
 			<select id="rs-filter-author" style="padding: 0.5rem; border: 1px solid var(--rs-border); border-radius: 4px; background: var(--rs-bg); color: var(--rs-fg); cursor: pointer; font-family: inherit;">
-				<option value="">সব লেখক</option>
+				<option value=""><?php echo esc_html( rs_is_en() ? 'All Authors' : 'সব লেখক' ); ?></option>
 				<?php foreach ( $authors as $a ) : ?>
 					<option value="<?php echo esc_attr( $a ); ?>"><?php echo esc_html( $a ); ?></option>
 				<?php endforeach; ?>
 			</select>
 
 			<div style="position: relative;">
-				<input type="text" id="rs-book-search" placeholder="বই বা লেখক খুঁজুন..."
+				<input type="text" id="rs-book-search" placeholder="<?php echo esc_attr( rs_is_en() ? 'Search books or authors...' : 'বই বা লেখক খুঁজুন...' ); ?>"
 				       autocomplete="off"
 				       style="padding: 0.5rem 0.5rem 0.5rem 2rem; border: 1px solid var(--rs-border); border-radius: 4px; background: var(--rs-bg); color: var(--rs-fg); font-family: inherit; width: 200px;"
 				/>
@@ -140,9 +144,9 @@ function rs_get_spine_height( $title ) {
 				<div id="rs-search-suggest" style="display:none; position:absolute; top:100%; left:0; right:0; max-height:200px; overflow-y:auto; background:var(--rs-surface); border:1px solid var(--rs-border); border-radius:4px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:10; margin-top:2px;"></div>
 			</div>
 
-			<button id="rs-filter-reset" style="padding: 0.5rem 1rem; border: 1px solid var(--rs-border); border-radius: 4px; background: var(--rs-surface); color: var(--rs-fg); cursor: pointer; font-family: inherit; display: none;">রিসেট</button>
+			<button id="rs-filter-reset" style="padding: 0.5rem 1rem; border: 1px solid var(--rs-border); border-radius: 4px; background: var(--rs-surface); color: var(--rs-fg); cursor: pointer; font-family: inherit; display: none;"><?php echo esc_html( rs_is_en() ? 'Reset' : 'রিসেট' ); ?></button>
 			
-			<button id="rs-view-toggle" title="ভিউ পরিবর্তন করুন" style="padding: 0.5rem 0.75rem; border: 1px solid var(--rs-border); border-radius: 4px; background: var(--rs-bg); color: var(--rs-fg); cursor: pointer; font-family: inherit; font-size: 1.1rem; display: flex; align-items: center;">📚</button>
+			<button id="rs-view-toggle" title="<?php echo esc_attr( rs_is_en() ? 'Toggle view' : 'ভিউ পরিবর্তন করুন' ); ?>" style="padding: 0.5rem 0.75rem; border: 1px solid var(--rs-border); border-radius: 4px; background: var(--rs-bg); color: var(--rs-fg); cursor: pointer; font-family: inherit; font-size: 1.1rem; display: flex; align-items: center;">📚</button>
 		</div>
 
 		<style>
@@ -268,9 +272,9 @@ function rs_get_spine_height( $title ) {
 							</span>
 							<span class="rs-row__date">
 								<?php if ( $book['is_read'] ) : ?>
-									<span style="color: var(--rs-cat);">পড়া হয়েছে ✓</span>
+									<span style="color: var(--rs-cat);"><?php echo esc_html( rs_is_en() ? 'Read ✓' : 'পড়া হয়েছে ✓' ); ?></span>
 								<?php else : ?>
-									<span style="opacity: 0.5;">বাকি আছে</span>
+									<span style="opacity: 0.5;"><?php echo esc_html( rs_is_en() ? 'Unread' : 'বাকি আছে' ); ?></span>
 								<?php endif; ?>
 							</span>
 						</span>
@@ -279,13 +283,14 @@ function rs_get_spine_height( $title ) {
 			<?php endforeach; ?>
 		</div>
 
-		<nav class="rs-pagination" id="rs-book-pagination" aria-label="পাতা"></nav>
+		<nav class="rs-pagination" id="rs-book-pagination" aria-label="<?php echo esc_attr( rs_is_en() ? 'Pagination' : 'পাতা' ); ?>"></nav>
 
 	</div>
 </main>
 
 <script>
 (function () {
+	var isEn         = <?php echo rs_is_en() ? 'true' : 'false'; ?>;
 	var PER_PAGE     = 15;
 	var filterGenre  = document.getElementById('rs-filter-genre');
 	var filterAuthor = document.getElementById('rs-filter-author');
@@ -309,11 +314,11 @@ function rs_get_spine_height( $title ) {
 		if (isShelf) {
 			listEl.classList.add('is-shelf-view');
 			viewToggleBtn.innerHTML = '📄';
-			viewToggleBtn.title = 'লিস্ট ভিউ দেখুন';
+			viewToggleBtn.title = isEn ? 'Switch to list view' : 'লিস্ট ভিউ দেখুন';
 		} else {
 			listEl.classList.remove('is-shelf-view');
 			viewToggleBtn.innerHTML = '📚';
-			viewToggleBtn.title = 'বুকশেলফ ভিউ দেখুন';
+			viewToggleBtn.title = isEn ? 'Switch to bookshelf view' : 'বুকশেলফ ভিউ দেখুন';
 		}
 		try { localStorage.setItem('rs_book_view', isShelf ? 'shelf' : 'list'); } catch (e) {}
 	}
@@ -341,8 +346,9 @@ function rs_get_spine_height( $title ) {
 			.replace(/'/g, '&#39;');
 	}
 
-	/* Bengali digits */
+	/* Digits */
 	function bn(str) {
+		if (isEn) return String(str);
 		var d = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
 		return String(str).replace(/[0-9]/g, function(c) { return d[c]; });
 	}
@@ -413,7 +419,7 @@ function rs_get_spine_height( $title ) {
 
 		/* Prev arrow */
 		if (curPage > 1) {
-			html += '<a class="rs-pagination__num" href="#" data-page="' + (curPage - 1) + '" aria-label="আগের পাতা">‹</a>';
+			html += '<a class="rs-pagination__num" href="#" data-page="' + (curPage - 1) + '" aria-label="' + (isEn ? 'Previous page' : 'আগের পাতা') + '">‹</a>';
 		} else {
 			html += '<span class="rs-pagination__num" style="opacity:.3;pointer-events:none;">‹</span>';
 		}
@@ -431,7 +437,7 @@ function rs_get_spine_height( $title ) {
 
 		/* Next arrow */
 		if (curPage < total) {
-			html += '<a class="rs-pagination__num" href="#" data-page="' + (curPage + 1) + '" aria-label="পরের পাতা">›</a>';
+			html += '<a class="rs-pagination__num" href="#" data-page="' + (curPage + 1) + '" aria-label="' + (isEn ? 'Next page' : 'পরের পাতা') + '">›</a>';
 		} else {
 			html += '<span class="rs-pagination__num" style="opacity:.3;pointer-events:none;">›</span>';
 		}
@@ -475,11 +481,11 @@ function rs_get_spine_height( $title ) {
 
 			if (title.toLowerCase().indexOf(q) > -1 && !seen[title]) {
 				seen[title] = true;
-				suggestions.push({ text: title, type: 'বই' });
+				suggestions.push({ text: title, type: isEn ? 'Book' : 'বই' });
 			}
 			if (author && author.toLowerCase().indexOf(q) > -1 && !seen[author]) {
 				seen[author] = true;
-				suggestions.push({ text: author, type: 'লেখক' });
+				suggestions.push({ text: author, type: isEn ? 'Author' : 'লেখক' });
 			}
 		});
 

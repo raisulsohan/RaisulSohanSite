@@ -75,12 +75,12 @@ if ( ( is_home() || is_front_page() ) && ! is_paged() ) : ?>
 <div class="rs-wrap" id="rs-later"></div>
 <?php endif; ?>
 
-<div class="rs-fontctl rs-fontctl--float" role="group" aria-label="লেখার আকার">
-	<button type="button" data-rs-font="down" data-step="0" aria-label="ছোট করুন">A-</button>
+<div class="rs-fontctl rs-fontctl--float" role="group" aria-label="<?php echo esc_attr( rs_is_en() ? 'Text size' : 'লেখার আকার' ); ?>">
+	<button type="button" data-rs-font="down" data-step="0" aria-label="<?php echo esc_attr( rs_is_en() ? 'Decrease font size' : 'ছোট করুন' ); ?>">A-</button>
 	<span class="rs-fontctl__sep"></span>
-	<button type="button" data-rs-font="reset" data-step="1" aria-label="স্বাভাবিক আকার">A</button>
+	<button type="button" data-rs-font="reset" data-step="1" aria-label="<?php echo esc_attr( rs_is_en() ? 'Reset font size' : 'স্বাভাবিক আকার' ); ?>">A</button>
 	<span class="rs-fontctl__sep"></span>
-	<button type="button" data-rs-font="up" data-step="2" aria-label="বড় করুন">A+</button>
+	<button type="button" data-rs-font="up" data-step="2" aria-label="<?php echo esc_attr( rs_is_en() ? 'Increase font size' : 'বড় করুন' ); ?>">A+</button>
 </div>
 
 <main class="rs-wrap rs-main" id="rs-content">

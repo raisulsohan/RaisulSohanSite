@@ -30,7 +30,7 @@ get_header();
 
 		<a class="rs-back" href="<?php echo esc_url( home_url( '/' ) ); ?>">
 			<?php echo wp_kses( rs_icon( 'left', 14 ), rs_svg_tags() ); ?>
-			সব লেখা
+			<?php echo esc_html( rs_is_en() ? 'All writings' : 'সব লেখা' ); ?>
 		</a>
 
 		<?php /* app.js finds the post to save by this, in the modal too. */ ?>
@@ -43,12 +43,12 @@ get_header();
 				   readers, as edit_post_link() did before it. */
 				rs_edit_links();
 				?>
-				<div class="rs-fontctl" role="group" aria-label="লেখার আকার">
-					<button type="button" data-rs-font="down" data-step="0" aria-label="ছোট করুন">A-</button>
+				<div class="rs-fontctl" role="group" aria-label="<?php echo esc_attr( rs_is_en() ? 'Text size' : 'লেখার আকার' ); ?>">
+					<button type="button" data-rs-font="down" data-step="0" aria-label="<?php echo esc_attr( rs_is_en() ? 'Decrease font size' : 'ছোট করুন' ); ?>">A-</button>
 					<span class="rs-fontctl__sep"></span>
-					<button type="button" data-rs-font="reset" data-step="1" aria-label="স্বাভাবিক আকার">A</button>
+					<button type="button" data-rs-font="reset" data-step="1" aria-label="<?php echo esc_attr( rs_is_en() ? 'Reset font size' : 'স্বাভাবিক আকার' ); ?>">A</button>
 					<span class="rs-fontctl__sep"></span>
-					<button type="button" data-rs-font="up" data-step="2" aria-label="বড় করুন">A+</button>
+					<button type="button" data-rs-font="up" data-step="2" aria-label="<?php echo esc_attr( rs_is_en() ? 'Increase font size' : 'বড় করুন' ); ?>">A+</button>
 				</div>
 			</div>
 
