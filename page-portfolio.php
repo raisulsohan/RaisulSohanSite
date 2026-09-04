@@ -332,44 +332,52 @@ $projects = array(
 		'github_url'  => 'https://github.com/raisulsohan/QuietScroll',
 	),
 	array(
-		'id'          => 'wp-optimizer',
+		'id'          => 'tickersnap',
 		'category'    => 'tools',
-		'type_bn'     => 'ওয়ার্ডপ্রেস প্লাগিন',
-		'type_en'     => 'WordPress Plugin',
-		'badge_bn'    => 'পারফরম্যান্স টুল',
-		'badge_en'    => 'Performance Tool',
-		'title_bn'    => 'ব্লট-রিমুভার ও অ্যাসেট পারফরম্যান্স মডিউল',
-		'title_en'    => 'Zero-Bloat Asset & Script Performance Module',
-		'summary_bn'  => 'অপ্রয়োজনীয় ডিফল্ট স্ক্রিপ্ট ছাঁটাই, ফন্ট প্রি-লোডিং এবং রেন্ডার-ব্লকিং অ্যাসেট অপ্টিমাইজ করার কাস্টম মডিউল যা পেজস্পিড ১০০/১০০ করে।',
-		'summary_en'  => 'Custom utility module engineered to prune unused core assets, configure font preloading, and eliminate render-blocking resources for 100/100 Core Web Vitals.',
-		'role_bn'     => 'প্লাগিন ডেভেলপার',
-		'role_en'     => 'WordPress Plugin Developer',
-		'context_bn'  => 'কোর পারফরম্যান্স ও অ্যাসেট কন্ট্রোল',
-		'context_en'  => 'Core Performance & Asset Optimizer',
-		'challenge_bn'=> 'ওয়ার্ডপ্রেস কোর নিজে থেকেই অনেক অব্যবহৃত সিএসএস/জেএস (যেমন: ইমোজি স্ক্রিপ্ট, গুটেনবার্গ ব্লক স্টাইলস) লোড করে পেজ সাইজ বড় করে ফেলে।',
-		'challenge_en'=> 'WordPress default core scripts and styles (emojis, block CSS on non-block pages) add unnecessary HTTP requests and inflate load latency.',
-		'solution_bn' => 'একটি হাইপার-লাইটওয়েট ড্রপ-ইন প্লাগিন তৈরি করা হয়েছে যা অপ্রয়োজনীয় হ্যান্ডেলগুলো আন-রেজিস্টার করে এবং ফন্ট ফাইলগুলো আগেই প্রিলোড করে।',
-		'solution_en' => 'Constructed a conditional asset pipeline that deregisters unused core assets, inlines critical render paths, and preloads custom typography.',
+		'type_bn'     => 'ক্রোম এক্সটেনশন',
+		'type_en'     => 'Chrome Extension',
+		'badge_bn'    => 'Manifest V3 • ডুয়েল এক্সট্র্যাক্টর',
+		'badge_en'    => 'Manifest V3 • Dual Extractor',
+		'title_bn'    => 'TickerSnap — ফুটবল কমেন্টারি ও আর্টিকেল টেক্সট এক্সট্র্যাক্টর',
+		'title_en'    => 'TickerSnap — Match Commentary & Article Text Extractor',
+		'summary_bn'  => 'ফুটবল ম্যাচ চলাকালীন লাইভ টেক্সট কমেন্টারি (FotMob ও Sofascore) এবং মোজিলা রিড্যাবিলিটি ইঞ্জিনের সাহায্যে যেকোনো নিউজ আর্টিকেল, পিডিএফ ও গুগল ডক্স থেকে বিজ্ঞাপনমুক্ত ক্লিন টেক্সট এক ক্লিকে এক্সট্র্যাক্ট করার ব্রাউজার এক্সটেনশন।',
+		'summary_en'  => 'A high-performance Chrome extension featuring two one-click extractors: automated live football match commentary from FotMob/Sofascore and distraction-free article text powered by Mozilla\'s Readability.js engine.',
+		'role_bn'     => 'একক এক্সটেনশন ডিজাইনার ও ডেভেলপার',
+		'role_en'     => 'Solo Extension Architect & Developer',
+		'context_bn'  => 'ক্রোমিয়াম ব্রাউজার এক্সটেনশন • Manifest V3',
+		'context_en'  => 'Chromium Browser Extension • Manifest V3',
+		'challenge_bn'=> "ফুটবল ম্যাচ চলাকালীন লাইভ টেক্সট কমেন্টারি সাধারণত লেজি-লোড (Lazy-load) হয়ে ধাপে ধাপে আসে এবং বিভিন্ন সাইটে (FotMob, Sofascore) ডম স্ট্রাকচার ও ক্লাসনেম ঘন ঘন পরিবর্তিত হয়। ফলে সাধারণ সাইট-স্পেসিফিক সিএসএস সিলেক্টর দিয়ে কমেন্টারি স্ক্র্যাপ করতে গেলে কোড ভেঙে যায়।\n\nঅন্য দিকে, আধুনিক ওয়েব আর্টিকেল, ব্লগ এবং অনলাইন পিডিএফগুলোতে বিজ্ঞাপন, সাইডবার, ট্র্যাকিং ব্যানার ও জটিল নেভিগেশনের ভিড়ে মূল টেক্সট আলাদা করা দুরূহ। একই সাথে ব্যবহারকারীর ব্রাউজিং প্রাইভেসি রক্ষা করে কোনো সাইট-ওয়াইড পারমিশন ছাড়া এবং কোনো দূরবর্তী সার্ভারে ডেটা না পাঠিয়ে সম্পূর্ণ ব্রাউজারের ভেতর টেক্সট এক্সট্র্যাক্ট করা ছিল প্রধান চ্যালেঞ্জ।",
+		'challenge_en'=> "Live football commentary feeds on platforms like FotMob and Sofascore are continuously lazy-loaded, dynamically rendered, and frequently change their DOM class signatures. Hardcoded, site-specific CSS selectors break easily and fail to capture full match timelines.\n\nSimultaneously, extracting clean prose from articles, blogs, Google Docs, and web PDFs is heavily obstructed by aggressive ad banners, paywall overlays, navigation clutter, and custom pagination. The challenge was building an adaptive dual-mode extraction engine that operates strictly client-side under Chromium's activeTab privacy sandbox without full-host permissions.",
+		'solution_bn' => "১. ক্লাস্টার-হিওরিস্টিক কমেন্টারি অ্যালগরিদম: কোনো নির্দিষ্ট ক্লাস বা হার্ডকোডেড সিলেক্টরের ওপর নির্ভর না করে পেজের রিয়েল সেন্টেন্স ব্লকগুলোকে কার্ডে গ্রুপ করে এবং সবচেয়ে ঘন ক্লাস্টারটিকে স্বয়ংক্রিয়ভাবে কমেন্টারি ফিড হিসেবে শনাক্ত করে। সাথে স্বয়ংক্রিয় পেজ স্ক্রলিংয়ের মাধ্যমে লেজি-লোডেড পুরনো এন্ট্রিগুলোও নিখুঁতভাবে সংগ্রহ করে।\n\n২. মোজিলা রিড্যাবিলিটি (Readability.js) ইন্টিগ্রেশন: ফায়ারফক্স রিডার ভিউয়ের শক্তিশালী ইঞ্জিন ব্যবহার করে যেকোনো নিউজ সাইট, ব্লগ, স্টোরি পোর্টাল কিংবা অনলাইন পিডিএফ ও গুগল ডক্স থেকে সব জঞ্জাল দূর করে শুধুমাত্র মূল কনটেন্ট নিষ্কাশন।\n\n৩. মিনিট স্ট্যাম্প ও ফরম্যাটিং প্রিজারভেশন: ম্যাচের মিনিট স্ট্যাম্প (যেমন: ৪৫', ৯০+৩') এবং হাফ-টাইম বুলেট সামারি হুবহু ফরম্যাট বজায় রেখে সাজিয়ে দেয়।\n\n৪. রিয়েল-টাইম প্রিভিউ ও সেশন পারসিস্টেন্স: পপ-আপে স্ক্রলেবল লাইভ প্রিভিউ, ওয়ার্ড ও ক্যারেক্টার কাউন্টার প্রদর্শন। পপ-আপ বন্ধ করে দিলেও ক্যাপচার করা টেক্সট ব্রাউজার সেশন জুড়ে মেমোরিতে অক্ষুণ্ণ থাকে।\n\n৫. ওয়ান-ক্লিক কপি ও .txt ডাউনলোড: সংগৃহীত টেক্সট নিমেষেই ক্লিপবোর্ডে কপি করা কিংবা ফাইল আকারে ডাউনলোড করার সুবিধা।\n\n৬. activeTab সিকিউরিটি মডেল: ব্রাউজারের কোনো সাইট-ওয়াইড পারমিশন ওয়ার্নিং নেই; ব্যবহারকারী ক্লিক করলেই কেবল নির্দিষ্ট ট্যাবে এক্সটেনশন কাজ করে এবং সমস্ত টেক্সট ১০০% ইউজারের ডিভাইসেই প্রসেস হয়।",
+		'solution_en' => "1. Density-Cluster Commentary Heuristic: Bypasses fragile CSS selectors by analyzing sentence density clusters across the DOM, identifying the commentary list, and executing programmatic auto-scrolling to accumulate lazy-loaded timelines.\n\n2. Mozilla Readability.js Core: Embeds the proven Mozilla Readability engine (behind Firefox Reader View) to strip ads, sidebars, cookie banners, and navigational clutter, extracting pristine prose from news articles, stories, Google Docs, and PDF.js viewers.\n\n3. Match Minute Precision: Intelligently parses timestamps (e.g., 45', 90+3') and halftime bullet notes across varied typography and apostrophe encodings.\n\n4. Persistent Session Preview Panel: Instant preview with real-time character and word counts; captures survive popup closures and persist across the active browser session.\n\n5. One-Click Copy & .txt File Export: Formats plain-text outputs ready for instant clipboard copying or .txt downloading.\n\n6. Zero-Telemetry activeTab Security: Operates under Chromium's strict activeTab sandbox—only interacts with a page upon explicit user invocation with zero remote servers or telemetry.",
 		'highlights_bn'=> array(
-			'HTTP রিকোয়েস্ট সংখ্যা ৪০% পর্যন্ত হ্রাস',
-			'ইনলাইন ক্রিটিক্যাল সিএসএস ও ফন্ট প্রিলোড কনফিগারেশন',
-			'অ্যাডমিন প্যানেলে কোনো বাড়তি বোঝা বা ভারী সেটিংস পেজ ছাড়া ক্লিন কোড',
-			'সব ধরনের আধুনিক ওয়ার্ডপ্রেস থিমের সাথে প্লাগ-অ্যান্ড-প্লে সামঞ্জস্য'
+			'ডুয়েল এক্সট্র্যাক্টর: ফুটবল কমেন্টারি ও আর্টিকেল রিডার ভিউ একই এক্সটেনশনে',
+			'ক্লাস্টার-হিওরিস্টিক ইঞ্জিন: কোনো নির্দিষ্ট ক্লাসের ওপর নির্ভর না করে স্বয়ংক্রিয় কমেন্টারি শনাক্তকরণ',
+			'লেজি-লোড অটো-স্ক্রলিং: পুরো ৯০ মিনিটের কমেন্টারি স্বয়ংক্রিয়ভাবে স্ক্রল করে ক্যাপচার',
+			'মোজিলা Readability.js পাওয়ারড: যেকোনো ওয়েব পেজ, পিডিএফ ও গুগল ডক্স থেকে ক্লিন টেক্সট',
+			'রিয়েল-টাইম স্ক্রলেবল প্রিভিউ, ওয়ার্ড কাউন্টার ও সেশন পারসিস্টেন্স',
+			'এক ক্লিকে ক্লিপবোর্ডে কপি ও .txt ফাইল ডাউনলোডের সুবিধা',
+			'activeTab পারমিশন: সম্পূর্ণ ১০০% অফলাইন ও ব্যক্তিগত গোপনীয়তা রক্ষা'
 		),
 		'highlights_en'=> array(
-			'Reduces front-end HTTP request count by up to 40%',
-			'Automates font preloading and eliminates render-blocking tags',
-			'Zero administrative overhead: runs cleanly as a lean drop-in utility',
-			'Universal compatibility with modern standard-compliant themes'
+			'Dual Extraction Engine: Live match commentary & clean article reading view in one tool',
+			'Density-cluster heuristics: Identifies commentary feeds without fragile hardcoded selectors',
+			'Automated lazy-load scrolling: Accumulates full 90+ minute timelines seamlessly',
+			'Powered by Mozilla Readability.js: Cleans ads and sidebars from articles, PDFs, and Docs',
+			'Live scrollable preview with word/character counter and persistent session memory',
+			'Instant One-Click Clipboard Copy and .txt file download',
+			'Chromium activeTab security: 100% client-side execution with zero external data transfer'
 		),
-		'tags'        => array( 'PHP', 'WordPress Hooks', 'Core Web Vitals', 'Asset Dequeue' ),
-		'accent'      => '#6c5ce7',
-		'icon'        => 'plugin',
-		'image'       => '',
+		'tags'        => array( 'Chrome Extension', 'Manifest V3', 'Readability.js', 'DOM Heuristics', 'Text Extraction' ),
+		'accent'      => '#00b894',
+		'icon'        => 'extension',
+		'image'       => get_template_directory_uri() . '/assets/img/tickersnap.png',
+		'image_fit'   => 'contain',
 		'action_type' => 'code',
-		'action_bn'   => 'গিটহাব রিপোজিটরি',
-		'action_en'   => 'GitHub Repository',
-		'direct_url'  => 'https://github.com/raisulsohan',
+		'action_bn'   => 'সোর্স কোড (GitHub)',
+		'action_en'   => 'View Source on GitHub',
+		'direct_url'  => 'https://github.com/raisulsohan/Tickersnap',
+		'github_url'  => 'https://github.com/raisulsohan/Tickersnap',
 	),
 	array(
 		'id'          => 'media-script',
@@ -892,7 +900,8 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		actionBtn.href = p.direct_url;
 		actionLabel.textContent = p.action_label;
 
-		if (p.github_url && githubBtn) {
+		// Only show secondary GitHub button if GitHub URL is distinct from the primary action link
+		if (p.github_url && githubBtn && p.github_url !== p.direct_url) {
 			githubBtn.href = p.github_url;
 			githubBtn.style.display = 'inline-flex';
 			var isEn = document.documentElement.lang.indexOf('en') === 0;
