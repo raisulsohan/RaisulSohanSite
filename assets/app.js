@@ -3257,6 +3257,7 @@
 		var installBtn = $( '#rs-install-btn' );
 		var installBar = $( '#rs-install-bar' );
 		var installBarBtn = $( '#rs-install-bar-btn' );
+		var installBarClose = $( '#rs-install-bar-close' );
 		var DISMISSED_KEY = 'rs-install-dismissed';
 		var SNOOZE_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
 
@@ -3312,9 +3313,10 @@
 
 			if ( ! isDismissed() && installBar ) {
 				installBar.hidden = false;
+				installBar.style.display = '';
 				setTimeout( function () {
 					installBar.classList.add( 'is-visible' );
-				}, 2000 );
+				}, 1500 );
 			}
 		}
 
@@ -3325,9 +3327,8 @@
 
 			if ( installBar ) {
 				installBar.classList.remove( 'is-visible' );
-				setTimeout( function () {
-					installBar.hidden = true;
-				}, 300 );
+				installBar.hidden = true;
+				installBar.style.display = 'none';
 			}
 		}
 
@@ -3343,32 +3344,44 @@
 			deferredPrompt = null;
 		} );
 
-		if ( installBtn ) {
-			installBtn.addEventListener( 'click', function ( e ) {
-				e.preventDefault();
-				triggerInstall();
-			} );
-		}
+		/* Delegated click handler on document — handles close and install clicks reliably */
+		document.addEventListener( 'click', function ( e ) {
+			if ( ! e.target || ! e.target.closest ) {
+				return;
+			}
 
-		if ( installBarBtn ) {
-			installBarBtn.addEventListener( 'click', function ( e ) {
-				e.preventDefault();
-				triggerInstall();
-			} );
-		}
+			var close = e.target.closest( '#rs-install-bar-close' );
 
-		if ( installBarClose ) {
-			installBarClose.addEventListener( 'click', function ( e ) {
+			if ( close ) {
 				e.preventDefault();
+				e.stopPropagation();
 				store( DISMISSED_KEY, String( Date.now() ) );
 				if ( installBar ) {
 					installBar.classList.remove( 'is-visible' );
-					setTimeout( function () {
-						installBar.hidden = true;
-					}, 300 );
+					installBar.hidden = true;
+					installBar.style.display = 'none';
 				}
-			} );
-		}
+				return;
+			}
+
+			var barClick = e.target.closest( '#rs-install-bar-btn' );
+
+			if ( barClick ) {
+				e.preventDefault();
+				e.stopPropagation();
+				triggerInstall();
+				return;
+			}
+
+			var floatBtn = e.target.closest( '#rs-install-btn' );
+
+			if ( floatBtn ) {
+				e.preventDefault();
+				e.stopPropagation();
+				triggerInstall();
+				return;
+			}
+		} );
 
 		/* For iOS where beforeinstallprompt doesn't fire */
 		if ( isIos && ! isDismissed() ) {
