@@ -22,6 +22,131 @@ $rs_hero  = rs_hero_image();
 
 /* ---- Portfolio Projects & Case Studies Data ---- */
 $projects = array(
+	// Web Development (Featured First)
+	array(
+		'id'          => 'bichitro-biggan',
+		'category'    => 'web',
+		'type_bn'     => 'ম্যাগাজিন ও ডিজিটাল পাবলিকেশন থিম',
+		'type_en'     => 'Digital Magazine Platform',
+		'badge_bn'    => 'ফ্ল্যাগশিপ প্রজেক্ট',
+		'badge_en'    => 'Flagship Project',
+		'title_bn'    => 'বিচিত্র বিজ্ঞান — জিরো-প্লাগিন ডিজিটাল সায়েন্স ম্যাগাজিন',
+		'title_en'    => 'Bichitro Biggan — Zero-Plugin Science Magazine Platform',
+		'summary_bn'  => 'বাংলা বিজ্ঞান ম্যাগাজিনের জন্য স্ক্র্যাচ থেকে তৈরি অত্যাধুনিক, সুপারফাস্ট এবং সম্পূর্ণ জিরো-প্লাগিন ক্লাসিক ওয়ার্ডপ্রেস থিম। এতে রয়েছে ৮-কার্ড হিরো মোজাইক, সিনেমেটিক ভিডিও পপ-আপ, লাইভ সার্চ ও নেটিভ এসইও ইঞ্জিন।',
+		'summary_en'  => 'A modern, ultra-fast, zero-plugin classic WordPress theme engineered from scratch for a Bengali science magazine. Features an 8-card mosaic hero, native AJAX reading modal, built-in SEO engine, and dynamic video popups.',
+		'role_bn'     => 'একক ডিজাইনার ও ফুলস্ট্যাক থিম ডেভেলপার',
+		'role_en'     => 'Lead Designer & Full-Stack Theme Developer',
+		'context_bn'  => 'বিজ্ঞান ম্যাগাজিন ও ডিজিটাল প্রকাশনা • ভার্সন ৭.৩',
+		'context_en'  => 'Science Magazine & Digital Publication • v7.3',
+		'challenge_bn'=> 'অনলাইন নিউজ ও ম্যাগাজিন সাইটগুলোতে সাধারণত ২০-৩০টি ভারী প্লাগিন ও থার্ড-পার্টি স্ক্রিপ্ট ব্যবহারের ফলে পেজ লোডিং অনেক স্লো হয়ে যায়। কোনো এক্সটার্নাল প্লাগিন ও কোনো jQuery ছাড়াই ১০০% নেটিভ পিএইচপি ও ভ্যানিলা জাভাস্ক্রিপ্টে একটি পূর্ণাঙ্গ আধুনিক ম্যাগাজিনের সব ফিচার (রিয়েল-টাইম সার্চ, সিনেমেটিক ভিডিও পপ-আপ, রিডিং মডাল, বুকমার্ক স্লাইড ড্রয়ার, এসইও মেটাবক্স) তৈরি করাই ছিল মূল চ্যালেঞ্জ।',
+		'challenge_en'=> 'Online publications traditionally suffer from severe speed penalties due to dependency on dozens of plugins. The challenge was architecting an expansive, feature-dense publication platform with zero third-party plugins and zero jQuery—relying purely on native WordPress PHP APIs and clean ES6+ JavaScript.',
+		'solution_bn' => 'সম্পূর্ণ কাস্টম আর্কিটেকচারে থিমটি স্ক্র্যাচ থেকে তৈরি করা হয়েছে। ফিগমা-স্টাইল ৮-কার্ড হিরো মোজাইক গ্রিড, নেটিভ এজেক্স রিডিং মডাল, লোকালস্টোরেজ ভিত্তিক বুকমার্ক স্লাইড-আউট ড্রয়ার, ইউটিউব রেসপনসিভ ভিডিও পপ-আপ (১৬:৯, ৯:১৬, ৪:৫, ১:১) এবং ইয়োস্টের বিকল্প হিসেবে নিজস্ব লাইভ গুগল প্রিভিউ এসইও মেটাবক্স ও JSON-LD স্কিমা ইঞ্জিন তৈরি করা হয়েছে। সাথে রয়েছে স্বয়ংক্রিয় গিটহাব আপডেটার ও লাইসেন্সিং সিস্টেম।',
+		'solution_en' => 'Engineered a bespoke zero-plugin foundation from the ground up: an 8-card hero mosaic grid, native AJAX reading modal with zero page reloads, a slide-out localStorage bookmark drawer, dynamic aspect-ratio YouTube video popups, and an in-editor Google search snippet preview with automated JSON-LD schema. Integrated a native GitHub auto-updater and license manager.',
+		'highlights_bn'=> array(
+			'০টি এক্সটার্নাল প্লাগিন — এসইও, লাইভ সার্চ, বুকমার্ক ও মডাল সম্পূর্ণ নেটিভ কোডে নির্মিত',
+			'ফিগমা ও ম্যাগাজিন লেআউট: ৮-কার্ড হিরো মোজাইক এবং রেসপনসিভ মাল্টি-কলাম ক্যাটাগরি গ্রিড',
+			'ইউটিউবের জন্য সিনেমেটিক ভিডিও পপ-আপ (১৬:৯, ৯:১৬, ৪:৫, ১:১ অ্যাসপেক্ট রেশিও সাপোর্ট)',
+			'ওয়ার্ডপ্রেস ক্লাসিক এডিটরে লাইভ গুগল স্নিপেট প্রিভিউ সহ নিজস্ব এসইও মেটাবক্স ও JSON-LD স্কিমা',
+			'নেটিভ গিটহাব অটো-আপডেটার — ড্যাশবোর্ড থেকেই এক ক্লিকে থিম আপডেট পাওয়ার সুবিধা',
+			'কোনো jQuery নেই — সম্পূর্ণ আধুনিক ভ্যানিলা জাভাস্ক্রিপ্ট (ES6+) ও সিএসএস ভ্যারিয়েবল আর্কিটেকচার'
+		),
+		'highlights_en'=> array(
+			'Zero-Plugin Architecture: Native built-in SEO, live search, bookmarks, and modals without third-party plugins',
+			'Figma Mac & Magazine layout: 8-card hero mosaic and responsive multi-column category grids',
+			'Cinematic video popups supporting dynamic aspect ratios (16:9, 9:16, 4:5, 1:1) from YouTube',
+			'In-editor Google search snippet preview, Open Graph cards, and native JSON-LD schema generator',
+			'Native GitHub Auto-Updater delivering instant dashboard updates via commit SHA verification',
+			'Pure Vanilla ES6+ JavaScript (zero jQuery) and modern CSS variable architecture for sub-second speeds'
+		),
+		'tags'        => array( 'WordPress', 'PHP 7.4+', 'Vanilla JS (ES6+)', 'CSS3 Grid', 'Built-in SEO', 'Auto-Updater' ),
+		'accent'      => '#00b894',
+		'icon'        => 'code',
+		'action_type' => 'web',
+		'action_bn'   => 'লাইভ সাইট দেখুন',
+		'action_en'   => 'Visit Live Website',
+		'direct_url'  => 'https://bichitrobiggan.com',
+		'github_url'  => 'https://github.com/raisulsohan/BichitroBiggan',
+	),
+	array(
+		'id'          => 'theme-dev',
+		'category'    => 'web',
+		'type_bn'     => 'ব্যক্তিগত ব্লগ ও সাহিত্য থিম',
+		'type_en'     => 'Personal Bespoke Theme',
+		'badge_bn'    => 'ওপেন সোর্স থিম',
+		'badge_en'    => 'Open Source Theme',
+		'title_bn'    => 'জিরো-প্লাগিন বেস্পোক ওয়ার্ডপ্রেস থিম আর্কিটেকচার',
+		'title_en'    => 'Zero-Plugin Bespoke WordPress Theme Architecture',
+		'summary_bn'  => 'কোনো থার্ড-পার্টি প্লাগিন ছাড়াই নির্মিত সুপারফাস্ট ব্যক্তিগত ওয়েবসাইট থিম। এতে রয়েছে এজেক্স নেভিগেশন, ডার্ক মোড ও ডায়নামিক কালার প্যালেট জেনারেশন।',
+		'summary_en'  => 'An ultra-fast, zero-plugin custom WordPress theme featuring seamless AJAX pagination, distraction-free reading modal, and WCAG-compliant dynamic theming.',
+		'role_bn'     => 'ফুলস্ট্যাক থিম আর্কিটেক্ট',
+		'role_en'     => 'Full-Stack Theme Architect',
+		'context_bn'  => 'ব্যক্তিগত সাহিত্য ও ব্লগ পোর্টাল • ভার্সন ৭.৪',
+		'context_en'  => 'Personal Literature & Blog Portal • v7.4',
+		'challenge_bn'=> 'সাধারণ ওয়ার্ডপ্রেস সাইটে ২০-৩০টি ভারী প্লাগিন ব্যবহারের ফলে সাইট ভারী ও স্লো হয়ে যায়। কোনো প্লাগিন ছাড়া সম্পূর্ণ নেটিভ পিএইচপি ও জাভাস্ক্রিপ্টে সব ফিচার তৈরি করা।',
+		'challenge_en'=> 'Overcoming standard WordPress bloat caused by plugin dependence, achieving instant loading without sacrificing advanced interactive features.',
+		'solution_bn' => 'সম্পূর্ণ বেস্পোক ফাংশনস আর্কিটেকচার তৈরি করা হয়েছে। বিল্ট-ইন এজেক্স ফ্র্যাগমেন্ট রেন্ডারিং, লোকালস্টোরেজ ডার্ক মোড, এসইও মেটাডাটা ও নিজস্ব গিটহাব অটো-আপডেটার যুক্ত।',
+		'solution_en' => 'Engineered a bespoke zero-plugin framework: built-in lightweight REST search, local browser state persistence, WCAG 4.5:1 dynamic theming, and GitHub self-updater.',
+		'highlights_bn'=> array(
+			'০টি এক্সটার্নাল প্লাগিন — সম্পূর্ণ নিরাপদ ও স্বাবলম্বী কোডবেস',
+			'১০০/১০০ গুগল পেজস্পিড ও কোর ওয়েব ভাইটালস স্কোর',
+			'স্মুথ রিডিং মডাল যা ব্রাউজার হিস্ট্রি পুশ-স্টেট সাপোর্ট করে',
+			'দ্বিভাষিক মাল্টিসাইট পারমালিংক অপ্টিমাইজেশন (/blog প্রিফিক্স ক্লিন)'
+		),
+		'highlights_en'=> array(
+			'Zero third-party plugins: clean, highly auditable codebase',
+			'100/100 Google PageSpeed & Core Web Vitals across mobile and desktop',
+			'Distraction-free reading modal with pushState browser history synchronization',
+			'Custom rewrite system eliminating multisite /blog prefix issues'
+		),
+		'tags'        => array( 'WordPress', 'PHP 8', 'Vanilla JS', 'Semantic CSS', 'REST API' ),
+		'accent'      => '#0984e3',
+		'icon'        => 'code',
+		'action_type' => 'web',
+		'action_bn'   => 'লাইভ সাইট দেখুন',
+		'action_en'   => 'Visit Live Site',
+		'direct_url'  => home_url( '/' ),
+		'github_url'  => 'https://github.com/raisulsohan/RaisulSohanSite',
+	),
+	array(
+		'id'          => 'digital-shelf',
+		'category'    => 'web',
+		'type_bn'     => 'ওয়েব অ্যাপ্লিকেশন',
+		'type_en'     => 'Web Application',
+		'badge_bn'    => 'সিএসএস ইন্টারঅ্যাকশন',
+		'badge_en'    => 'CSS Interaction',
+		'title_bn'    => 'ইন্টারেক্টিভ ডিজিটাল বুকশেল্ফ ও রিডিং পোর্টাল',
+		'title_en'    => 'Interactive Digital Bookshelf & Reading Hub',
+		'summary_bn'  => 'কোনো ভারী ইমেজ ছাড়াই পিওর সিএসএস স্পাইন জেনারেশন, লাইভ ইনস্ট্যান্ট ফিল্টারিং ও সার্চ সহ রেসপনসিভ বুকশেল্ফ ইন্টারফেস।',
+		'summary_en'  => 'Procedural CSS book spine rendering without heavy images, instant author & genre filtering, and client-side search with near-zero latency.',
+		'role_bn'     => 'ফ্রন্টএন্ড ইঞ্জিনিয়ার',
+		'role_en'     => 'Frontend UI Engineer',
+		'context_bn'  => 'বই পড়ার লাইব্রেরি ও বুক ট্র্যাকার',
+		'context_en'  => 'Native Reading Tracker & Library Shelf',
+		'challenge_bn'=> 'শত শত বইয়ের জন্য কভার ইমেজ লোড করলে পেজের ওজন অনেক বেড়ে যায়। ইমেজ ছাড়া কীভাবে একটি সত্যিকারের কাঠের বুকশেল্ফের অনুভূতি তৈরি করা যায়?',
+		'challenge_en'=> 'Displaying an extensive library of books without the bandwidth penalty of heavy cover images while maintaining the warmth of a real wooden bookshelf.',
+		'solution_bn' => 'বইয়ের জঁরা (Genre) থেকে অ্যালগরিদমিক কালার হ্যাশ এবং নামের দৈর্ঘ্য থেকে বইয়ের উচ্চতা হিসাব করে পিওর সিএসএস দিয়ে স্পাইন রেন্ডার করা হয়েছে।',
+		'solution_en' => 'Generated procedural spine colors using CRC32 hash algorithms mapped to HSL palettes, and calculated realistic spine heights based on character counts.',
+		'highlights_bn'=> array(
+			'কোনো এক্সটার্নাল ইমেজ ছাড়াই ০ কিলোবাইট গ্রাফিক্স লোড',
+			'ক্লায়েন্ট-সাইড লাইভ ফিল্টার ও অটো-সাজেস্ট সার্চ',
+			'মোবাইল স্ক্রিনে প্রতি সারিতে ঠিক ৫টি বইয়ের অপ্টিমাইজড গ্রিড',
+			'ক্লাসিক লিস্ট ভিউ ও বুকশেল্ফ ভিউয়ের মধ্যে ইনস্ট্যান্ট টগল'
+		),
+		'highlights_en'=> array(
+			'Zero external cover images: virtually instantaneous load times',
+			'Real-time client-side genre/author filtering with auto-suggestions',
+			'Tailored mobile layout showing exactly 5 balanced spines per row',
+			'Seamless one-click toggle between classic table list and visual shelf'
+		),
+		'tags'        => array( 'JavaScript', 'CSS Grid', 'Dynamic HSL', 'UX Design' ),
+		'accent'      => '#00b894',
+		'icon'        => 'layout',
+		'action_type' => 'web',
+		'action_bn'   => 'বুকশেল্ফে যান',
+		'action_en'   => 'Open Bookshelf',
+		'direct_url'  => home_url( '/book-list/' ),
+	),
+
 	// Video & Animation
 	array(
 		'id'          => 'docu-story',
@@ -139,86 +264,6 @@ $projects = array(
 		'action_bn'   => 'প্রোমো দেখুন',
 		'action_en'   => 'Watch Promo',
 		'direct_url'  => 'https://www.youtube.com',
-	),
-
-	// Web Development
-	array(
-		'id'          => 'theme-dev',
-		'category'    => 'web',
-		'type_bn'     => 'ওয়েব ডেভেলপমেন্ট',
-		'type_en'     => 'Web Development',
-		'badge_bn'    => 'ওপেন সোর্স থিম',
-		'badge_en'    => 'Open Source Theme',
-		'title_bn'    => 'জিরো-প্লাগিন বেস্পোক ওয়ার্ডপ্রেস থিম আর্কিটেকচার',
-		'title_en'    => 'Zero-Plugin Bespoke WordPress Theme Architecture',
-		'summary_bn'  => 'কোনো থার্ড-পার্টি প্লাগিন ছাড়াই নির্মিত সুপারফাস্ট ব্যক্তিগত ওয়েবসাইট থিম। এতে রয়েছে এজেক্স নেভিগেশন, ডার্ক মোড ও ডায়নামিক কালার প্যালেট জেনারেশন।',
-		'summary_en'  => 'An ultra-fast, zero-plugin custom WordPress theme featuring seamless AJAX pagination, distraction-free reading modal, and WCAG-compliant dynamic theming.',
-		'role_bn'     => 'ফুলস্ট্যাক থিম আর্কিটেক্ট',
-		'role_en'     => 'Full-Stack Theme Architect',
-		'context_bn'  => 'ব্যক্তিগত সাহিত্য ও ব্লগ পোর্টাল',
-		'context_en'  => 'Personal Literature & Blog Portal',
-		'challenge_bn'=> 'সাধারণ ওয়ার্ডপ্রেস সাইটে ২০-৩০টি ভারী প্লাগিন ব্যবহারের ফলে সাইট ভারী ও স্লো হয়ে যায়। কোনো প্লাগিন ছাড়া সম্পূর্ণ নেটিভ পিএইচপি ও জাভাস্ক্রিপ্টে সব ফিচার তৈরি করা।',
-		'challenge_en'=> 'Overcoming standard WordPress bloat caused by plugin dependence, achieving instant loading without sacrificing advanced interactive features.',
-		'solution_bn' => 'সম্পূর্ণ বেস্পোক ফাংশনস আর্কিটেকচার তৈরি করা হয়েছে। বিল্ট-ইন এজেক্স ফ্র্যাগমেন্ট রেন্ডারিং, লোকালস্টোরেজ ডার্ক মোড, এসইও মেটাডাটা ও নিজস্ব গিটহাব অটো-আপডেটার যুক্ত।',
-		'solution_en' => 'Engineered a bespoke zero-plugin framework: built-in lightweight REST search, local browser state persistence, WCAG 4.5:1 dynamic theming, and GitHub self-updater.',
-		'highlights_bn'=> array(
-			'০টি এক্সটার্নাল প্লাগিন — সম্পূর্ণ নিরাপদ ও স্বাবলম্বী কোডবেস',
-			'১০০/১০০ গুগল পেজস্পিড ও কোর ওয়েব ভাইটালস স্কোর',
-			'স্মুথ রিডিং মডাল যা ব্রাউজার হিস্ট্রি পুশ-স্টেট সাপোর্ট করে',
-			'দ্বিভাষিক মাল্টিসাইট পারমালিংক অপ্টিমাইজেশন (/blog প্রিফিক্স ক্লিন)'
-		),
-		'highlights_en'=> array(
-			'Zero third-party plugins: clean, highly auditable codebase',
-			'100/100 Google PageSpeed & Core Web Vitals across mobile and desktop',
-			'Distraction-free reading modal with pushState browser history synchronization',
-			'Custom rewrite system eliminating multisite /blog prefix issues'
-		),
-		'tags'        => array( 'WordPress', 'PHP 8', 'Vanilla JS', 'Semantic CSS', 'REST API' ),
-		'accent'      => '#0984e3',
-		'icon'        => 'code',
-		'action_type' => 'web',
-		'action_bn'   => 'লাইভ সাইট দেখুন',
-		'action_en'   => 'Visit Live Site',
-		'direct_url'  => home_url( '/' ),
-	),
-	array(
-		'id'          => 'digital-shelf',
-		'category'    => 'web',
-		'type_bn'     => 'ওয়েব অ্যাপ্লিকেশন',
-		'type_en'     => 'Web Application',
-		'badge_bn'    => 'সিএসএস ইন্টারঅ্যাকশন',
-		'badge_en'    => 'CSS Interaction',
-		'title_bn'    => 'ইন্টারেক্টিভ ডিজিটাল বুকশেল্ফ ও রিডিং পোর্টাল',
-		'title_en'    => 'Interactive Digital Bookshelf & Reading Hub',
-		'summary_bn'  => 'কোনো ভারী ইমেজ ছাড়াই পিওর সিএসএস স্পাইন জেনারেশন, লাইভ ইনস্ট্যান্ট ফিল্টারিং ও সার্চ সহ রেসপনসিভ বুকশেল্ফ ইন্টারফেস।',
-		'summary_en'  => 'Procedural CSS book spine rendering without heavy images, instant author & genre filtering, and client-side search with near-zero latency.',
-		'role_bn'     => 'ফ্রন্টএন্ড ইঞ্জিনিয়ার',
-		'role_en'     => 'Frontend UI Engineer',
-		'context_bn'  => 'বই পড়ার লাইব্রেরি ও বুক ট্র্যাকার',
-		'context_en'  => 'Native Reading Tracker & Library Shelf',
-		'challenge_bn'=> 'শত শত বইয়ের জন্য কভার ইমেজ লোড করলে পেজের ওজন অনেক বেড়ে যায়। ইমেজ ছাড়া কীভাবে একটি সত্যিকারের কাঠের বুকশেল্ফের অনুভূতি তৈরি করা যায়?',
-		'challenge_en'=> 'Displaying an extensive library of books without the bandwidth penalty of heavy cover images while maintaining the warmth of a real wooden bookshelf.',
-		'solution_bn' => 'বইয়ের জঁরা (Genre) থেকে অ্যালগরিদমিক কালার হ্যাশ এবং নামের দৈর্ঘ্য থেকে বইয়ের উচ্চতা হিসাব করে পিওর সিএসএস দিয়ে স্পাইন রেন্ডার করা হয়েছে।',
-		'solution_en' => 'Generated procedural spine colors using CRC32 hash algorithms mapped to HSL palettes, and calculated realistic spine heights based on character counts.',
-		'highlights_bn'=> array(
-			'কোনো এক্সটার্নাল ইমেজ ছাড়াই ০ কিলোবাইট গ্রাফিক্স লোড',
-			'ক্লায়েন্ট-সাইড লাইভ ফিল্টার ও অটো-সাজেস্ট সার্চ',
-			'মোবাইল স্ক্রিনে প্রতি সারিতে ঠিক ৫টি বইয়ের অপ্টিমাইজড গ্রিড',
-			'ক্লাসিক লিস্ট ভিউ ও বুকশেল্ফ ভিউয়ের মধ্যে ইনস্ট্যান্ট টগল'
-		),
-		'highlights_en'=> array(
-			'Zero external cover images: virtually instantaneous load times',
-			'Real-time client-side genre/author filtering with auto-suggestions',
-			'Tailored mobile layout showing exactly 5 balanced spines per row',
-			'Seamless one-click toggle between classic table list and visual shelf'
-		),
-		'tags'        => array( 'JavaScript', 'CSS Grid', 'Dynamic HSL', 'UX Design' ),
-		'accent'      => '#00b894',
-		'icon'        => 'layout',
-		'action_type' => 'web',
-		'action_bn'   => 'বুকশেল্ফে যান',
-		'action_en'   => 'Open Bookshelf',
-		'direct_url'  => home_url( '/book-list/' ),
 	),
 
 	// Extensions, Plugins & Scripts
@@ -377,14 +422,14 @@ $projects = array(
 		<!-- Skill Highlights Strip -->
 		<div class="rs-portfolio-skills">
 			<div class="rs-portfolio-skill-pill">
-				<span class="rs-portfolio-skill-pill__icon">🎬</span>
-				<strong><?php echo esc_html( $rs_is_en ? 'Video & Animation' : 'ভিডিও ও মোশন' ); ?></strong>
-				<span class="rs-portfolio-skill-pill__sub">Premiere Pro • After Effects • DaVinci</span>
-			</div>
-			<div class="rs-portfolio-skill-pill">
 				<span class="rs-portfolio-skill-pill__icon">💻</span>
 				<strong><?php echo esc_html( $rs_is_en ? 'Web Development' : 'ওয়েব ডেভেলপমেন্ট' ); ?></strong>
 				<span class="rs-portfolio-skill-pill__sub">WordPress • PHP • Vanilla JS • CSS3</span>
+			</div>
+			<div class="rs-portfolio-skill-pill">
+				<span class="rs-portfolio-skill-pill__icon">🎬</span>
+				<strong><?php echo esc_html( $rs_is_en ? 'Video & Animation' : 'ভিডিও ও মোশন' ); ?></strong>
+				<span class="rs-portfolio-skill-pill__sub">Premiere Pro • After Effects • DaVinci</span>
 			</div>
 			<div class="rs-portfolio-skill-pill">
 				<span class="rs-portfolio-skill-pill__icon">⚡</span>
@@ -401,11 +446,11 @@ $projects = array(
 				<?php echo esc_html( $rs_is_en ? 'All Work' : 'সব কাজ' ); ?>
 				<span class="rs-portfolio-filter__count"><?php echo count( $projects ); ?></span>
 			</button>
-			<button type="button" class="rs-portfolio-filter__btn" data-filter="video" role="tab" aria-selected="false">
-				🎬 <?php echo esc_html( $rs_is_en ? 'Video & Animation' : 'ভিডিও ও অ্যানিমেশন' ); ?>
-			</button>
 			<button type="button" class="rs-portfolio-filter__btn" data-filter="web" role="tab" aria-selected="false">
 				💻 <?php echo esc_html( $rs_is_en ? 'Web Development' : 'ওয়েব ডেভেলপমেন্ট' ); ?>
+			</button>
+			<button type="button" class="rs-portfolio-filter__btn" data-filter="video" role="tab" aria-selected="false">
+				🎬 <?php echo esc_html( $rs_is_en ? 'Video & Animation' : 'ভিডিও ও অ্যানিমেশন' ); ?>
 			</button>
 			<button type="button" class="rs-portfolio-filter__btn" data-filter="tools" role="tab" aria-selected="false">
 				⚡ <?php echo esc_html( $rs_is_en ? 'Extensions & Scripts' : 'এক্সটেনশন ও স্ক্রিপ্ট' ); ?>
@@ -416,6 +461,9 @@ $projects = array(
 	<!-- Projects Grid -->
 	<section class="rs-portfolio-grid" id="rs-portfolio-grid">
 		<?php foreach ( $projects as $p ) : ?>
+			<?php
+			$card_domain = ! empty( $p['direct_url'] ) ? preg_replace( '#^https?://([^/]+).*$#', '$1', $p['direct_url'] ) : 'demo';
+			?>
 			<article class="rs-portfolio-card" data-category="<?php echo esc_attr( $p['category'] ); ?>" data-project-id="<?php echo esc_attr( $p['id'] ); ?>" id="project-<?php echo esc_attr( $p['id'] ); ?>">
 				
 				<!-- Card Visual Mockup (Clickable for Case Study Modal) -->
@@ -432,7 +480,7 @@ $projects = array(
 							<span class="rs-portfolio-dot"></span>
 							<span class="rs-portfolio-dot"></span>
 							<span class="rs-portfolio-dot"></span>
-							<span class="rs-portfolio-card__url">raisulsohan.com</span>
+							<span class="rs-portfolio-card__url"><?php echo esc_html( $card_domain ); ?></span>
 						</div>
 						<div class="rs-portfolio-card__web-preview">
 							<div class="rs-portfolio-card__wire-block"></div>
@@ -621,6 +669,13 @@ $projects = array(
 							<polyline points="7 7 17 7 17 17"></polyline>
 						</svg>
 					</a>
+					<a href="#" class="rs-portfolio-btn rs-portfolio-btn--secondary" id="rs-modal-github-btn" target="_blank" rel="noopener noreferrer" style="display: none;">
+						<span>GitHub</span>
+						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+							<line x1="7" y1="17" x2="17" y2="7"></line>
+							<polyline points="7 7 17 7 17 17"></polyline>
+						</svg>
+					</a>
 					<button type="button" class="rs-portfolio-btn rs-portfolio-btn--secondary" id="rs-modal-dismiss-btn">
 						<?php echo esc_html( $rs_is_en ? 'Close Case Study' : 'বন্ধ করুন' ); ?>
 					</button>
@@ -654,6 +709,7 @@ foreach ( $projects as $p ) {
 		'action_type' => $p['action_type'],
 		'action_label'=> $rs_is_en ? $p['action_en'] : $p['action_bn'],
 		'direct_url'  => $p['direct_url'],
+		'github_url'  => ! empty( $p['github_url'] ) ? $p['github_url'] : '',
 	);
 }
 echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
@@ -727,6 +783,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	var visualEl     = document.getElementById('rs-modal-visual-content');
 	var actionBtn    = document.getElementById('rs-modal-action-btn');
 	var actionLabel  = document.getElementById('rs-modal-action-label');
+	var githubBtn    = document.getElementById('rs-modal-github-btn');
 
 	function openCaseStudy(projectId) {
 		var p = projectsMap[projectId];
@@ -762,15 +819,25 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 			});
 		}
 
-		// Action Button
+		// Action Buttons
 		actionBtn.href = p.direct_url;
 		actionLabel.textContent = p.action_label;
 
+		if (p.github_url && githubBtn) {
+			githubBtn.href = p.github_url;
+			githubBtn.style.display = 'inline-flex';
+			var isEn = document.documentElement.lang.indexOf('en') === 0;
+			githubBtn.querySelector('span').textContent = isEn ? 'View on GitHub' : 'গিটহাবে কোড দেখুন';
+		} else if (githubBtn) {
+			githubBtn.style.display = 'none';
+		}
+
 		// Dynamic Visual Banner
+		var displayDomain = p.direct_url.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
 		if (p.category === 'video') {
 			visualEl.innerHTML = '<div class="rs-case-study-video-mockup"><div class="rs-portfolio-card__play-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div><span class="rs-case-study-video-label">' + (document.documentElement.lang.indexOf('en') === 0 ? 'HD Video Preview' : 'এইচডি ভিডিও প্রিভিউ') + '</span></div>';
 		} else if (p.category === 'web') {
-			visualEl.innerHTML = '<div class="rs-case-study-web-mockup"><div class="rs-portfolio-card__browser-bar"><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-card__url">' + p.direct_url.replace(/^https?:\/\//, '') + '</span></div><div class="rs-case-study-web-body"><span>⚡ Fast Responsive Architecture</span></div></div>';
+			visualEl.innerHTML = '<div class="rs-case-study-web-mockup"><div class="rs-portfolio-card__browser-bar"><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-card__url">' + displayDomain + '</span></div><div class="rs-case-study-web-body"><span>⚡ ' + (document.documentElement.lang.indexOf('en') === 0 ? 'Fast Responsive Zero-Plugin Web Platform' : 'দ্রুতগতির জিরো-প্লাগিন রেসপনসিভ ওয়েবসাইট') + '</span></div></div>';
 		} else {
 			visualEl.innerHTML = '<div class="rs-case-study-tool-mockup"><div class="rs-case-study-tool-badge">' + (p.icon === 'extension' ? '🧩' : (p.icon === 'terminal' ? '⌨️' : '⚙️')) + '</div><span>' + p.type + '</span></div>';
 		}
