@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '7.2.1' );
+define( 'RS_VERSION', '7.3.0' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -3994,3 +3994,101 @@ function rs_book_sort_by_author( $query ) {
 	}
 }
 add_action( 'pre_get_posts', 'rs_book_sort_by_author' );
+
+/* =========================================================================
+ * 14. Progressive Web App
+ * ====================================================================== */
+
+/**
+ * Serve the service worker with the correct scope header.
+ *
+ * The file lives inside the theme directory, but the worker has to control
+ * every page on the site.  Service-Worker-Allowed: / lets the browser
+ * accept a scope wider than the file's own directory.
+ *
+ * A JSON configuration block is prepended so the worker knows the theme
+ * URI, the REST base, and which assets to pre-cache — all values that
+ * only PHP can resolve.
+ */
+function rs_serve_sw() {
+	if ( ! isset( $_GET['rs-sw'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		return;
+	}
+
+	$theme_uri = get_template_directory_uri();
+
+	header( 'Content-Type: application/javascript; charset=UTF-8' );
+	header( 'Service-Worker-Allowed: /' );
+	header( 'Cache-Control: no-cache, no-store, must-revalidate' );
+
+	$config = array(
+		'version'    => RS_VERSION,
+		'themeUri'   => $theme_uri,
+		'restUrl'    => esc_url_raw( rest_url( 'rs/v1/' ) ),
+		'offlineUrl' => $theme_uri . '/offline.html',
+		'shell'      => array(
+			$theme_uri . '/offline.html',
+			$theme_uri . '/assets/fonts.css?ver=' . RS_VERSION,
+			$theme_uri . '/style.css?ver=' . RS_VERSION,
+			$theme_uri . '/assets/app.js?ver=' . RS_VERSION,
+			$theme_uri . '/assets/fonts/noto-serif-bengali-bengali.woff2',
+			$theme_uri . '/assets/fonts/noto-sans-bengali-bengali.woff2',
+		),
+	);
+
+	echo 'var RS_SW_CONFIG = ' . wp_json_encode( $config, JSON_UNESCAPED_SLASHES ) . ";\n\n";
+
+	readfile( get_template_directory() . '/sw.js' );
+	exit;
+}
+add_action( 'template_redirect', 'rs_serve_sw', 0 );
+
+/**
+ * Serve a web app manifest built from the site's own settings.
+ */
+function rs_serve_manifest() {
+	if ( ! isset( $_GET['rs-manifest'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		return;
+	}
+
+	header( 'Content-Type: application/manifest+json; charset=UTF-8' );
+
+	$manifest = array(
+		'name'             => get_bloginfo( 'name' ),
+		'short_name'       => get_bloginfo( 'name' ),
+		'description'      => get_bloginfo( 'description' ),
+		'start_url'        => home_url( '/' ),
+		'display'          => 'standalone',
+		'background_color' => '#eaecf1',
+		'theme_color'      => '#eaecf1',
+		'lang'             => get_bloginfo( 'language' ),
+		'icons'            => array(),
+	);
+
+	$sizes = array( 192, 512 );
+
+	foreach ( $sizes as $px ) {
+		$url = get_site_icon_url( $px );
+
+		if ( $url ) {
+			$manifest['icons'][] = array(
+				'src'   => $url,
+				'sizes' => $px . 'x' . $px,
+				'type'  => 'image/png',
+			);
+		}
+	}
+
+	echo wp_json_encode( $manifest, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT );
+	exit;
+}
+add_action( 'template_redirect', 'rs_serve_manifest', 0 );
+
+/**
+ * PWA meta tags: manifest link and theme colour.
+ */
+function rs_pwa_head() {
+	echo '<link rel="manifest" href="' . esc_url( home_url( '/?rs-manifest' ) ) . "\">\n";
+	echo "<meta name=\"theme-color\" content=\"#eaecf1\">\n";
+}
+add_action( 'wp_head', 'rs_pwa_head', 0 );

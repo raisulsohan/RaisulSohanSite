@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="bn" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>অফলাইন</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+	font-family: 'Noto Serif Bengali', 'Noto Sans Bengali', serif;
+	background: #eaecf1; color: #1a1a1a;
+	display: flex; flex-direction: column; align-items: center;
+	justify-content: center; min-height: 100vh;
+	padding: 2rem; text-align: center;
+}
+@media (prefers-color-scheme: dark) {
+	body { background: #16141f; color: #e8e6f0; }
+	.card { background: #1e1c29; border-color: rgba(255,255,255,0.08); }
+	.btn { background: #2a2838; color: #e8e6f0; border-color: rgba(255,255,255,0.12); }
+	.btn:hover { background: #353344; }
+	.later-link { color: #9c8cff; }
+	.later-list li { border-color: rgba(255,255,255,0.06); }
+}
+.icon { width: 64px; height: 64px; margin-bottom: 1.5rem; opacity: 0.35; }
+h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+.sub { font-size: 1rem; opacity: 0.6; margin-bottom: 2rem; }
+.card {
+	max-width: 420px; width: 100%; background: #fff;
+	border: 1px solid rgba(0,0,0,0.08); border-radius: 12px;
+	padding: 1.5rem; margin-bottom: 1.5rem;
+}
+.card h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+.later-list { list-style: none; text-align: left; }
+.later-list li { padding: 0.6rem 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+.later-list li:last-child { border-bottom: none; }
+.later-link { color: #a24c00; text-decoration: none; font-size: 0.95rem; }
+.later-link:hover { text-decoration: underline; }
+.btn {
+	display: inline-block; padding: 0.65rem 1.5rem;
+	background: #fff; border: 1px solid rgba(0,0,0,0.12);
+	border-radius: 2rem; font-size: 0.95rem; cursor: pointer;
+	text-decoration: none; color: inherit; font-family: inherit;
+	transition: background 0.15s;
+}
+.btn:hover { background: #f0f0f0; }
+</style>
+</head>
+<body>
+
+<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+	<line x1="1" y1="1" x2="23" y2="23"/>
+	<path d="M16.72 11.06A10.94 10.94 0 0119 12.55"/>
+	<path d="M5 12.55a10.94 10.94 0 015.17-2.39"/>
+	<path d="M10.71 5.05A16 16 0 0122.56 9"/>
+	<path d="M1.42 9a15.91 15.91 0 014.7-2.88"/>
+	<path d="M8.53 16.11a6 6 0 016.95 0"/>
+	<line x1="12" y1="20" x2="12.01" y2="20"/>
+</svg>
+
+<h1>ইন্টারনেট সংযোগ নেই</h1>
+<p class="sub">আপনি বর্তমানে অফলাইনে আছেন</p>
+
+<div class="card" id="later-card" hidden>
+	<h2>পরে পড়ার তালিকা</h2>
+	<ul class="later-list" id="later-list"></ul>
+</div>
+
+<button class="btn" onclick="location.reload()">আবার চেষ্টা করুন</button>
+
+<script>
+try {
+	var raw = localStorage.getItem( 'rs-later' );
+	var map = raw ? JSON.parse( raw ) : {};
+	var keys = Object.keys( map );
+
+	if ( keys.length ) {
+		var list = document.getElementById( 'later-list' );
+		var card = document.getElementById( 'later-card' );
+		var html = '';
+
+		for ( var i = keys.length - 1; i >= 0; i-- ) {
+			var entry = map[ keys[ i ] ];
+
+			if ( entry && entry.u && entry.n ) {
+				html += '<li><a class="later-link" href="' +
+					entry.u.replace( /&/g, '&amp;' ).replace( /"/g, '&quot;' ) +
+					'">' +
+					entry.n.replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ) +
+					'</a></li>';
+			}
+		}
+
+		if ( html ) {
+			list.innerHTML = html;
+			card.hidden = false;
+		}
+	}
+} catch ( e ) {}
+</script>
+
+</body>
+</html>
