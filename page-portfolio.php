@@ -292,6 +292,7 @@ $projects = array(
 		'action_bn'   => 'মূল ভিডিও দেখুন',
 		'action_en'   => 'Watch Main Video',
 		'direct_url'  => 'https://www.youtube.com',
+	),
 	array(
 		'id'          => 'brand-promo',
 		'category'    => 'video',
