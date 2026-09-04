@@ -54,7 +54,22 @@ foreach ( $rs_all->posts as $rs_item ) {
 	$rs_per_year[ $rs_y ] = isset( $rs_per_year[ $rs_y ] ) ? $rs_per_year[ $rs_y ] + 1 : 1;
 }
 
-$rs_months = rs_bn_months_full();
+$rs_months = rs_is_en()
+	? array(
+		1  => 'January',
+		2  => 'February',
+		3  => 'March',
+		4  => 'April',
+		5  => 'May',
+		6  => 'June',
+		7  => 'July',
+		8  => 'August',
+		9  => 'September',
+		10 => 'October',
+		11 => 'November',
+		12 => 'December',
+	)
+	: rs_bn_months_full();
 $rs_year   = 0;
 $rs_month  = 0;
 $rs_open   = false;
@@ -63,20 +78,7 @@ $rs_open   = false;
 <div class="rs-hero<?php echo $rs_hero ? ' rs-hero--image' : ''; ?>">
 	<h1 class="rs-hero__title">
 		<?php if ( $rs_hero ) : ?>
-			<?php
-			echo wp_get_attachment_image(
-				$rs_hero,
-				'large',
-				false,
-				array(
-					'class'         => 'rs-hero__image',
-					'alt'           => get_the_title(),
-					'sizes'         => '(max-width: 48rem) 100vw, 720px',
-					'fetchpriority' => 'high',
-					'style'         => 'object-position: ' . esc_attr( rs_option( 'rs_hero_pos' ) ) . ';',
-				)
-			);
-			?>
+			<?php echo rs_render_hero_image_html( get_the_title() ); ?>
 		<?php else : ?>
 			<span><?php the_title(); ?></span>
 		<?php endif; ?>
@@ -110,8 +112,8 @@ $rs_open   = false;
 	<?php if ( ! $rs_all->have_posts() ) : ?>
 
 		<div class="rs-notice">
-			<h2>এখনো কোনো লেখা নেই</h2>
-			<p>প্রথম লেখাটা প্রকাশ করলে এখানে দেখা যাবে।</p>
+			<h2><?php echo esc_html( rs_is_en() ? 'No writings yet' : 'এখনো কোনো লেখা নেই' ); ?></h2>
+			<p><?php echo esc_html( rs_is_en() ? 'Published writings will appear here.' : 'প্রথম লেখাটা প্রকাশ করলে এখানে দেখা যাবে।' ); ?></p>
 		</div>
 
 	<?php else : ?>
@@ -130,8 +132,15 @@ $rs_open   = false;
 				endif;
 				?>
 				<div class="rs-index__year">
-					<h3 class="rs-index__year-n"><?php echo esc_html( rs_bn_digits( $rs_y ) ); ?></h3>
-					<span class="rs-index__year-c"><?php echo esc_html( rs_bn_digits( $rs_per_year[ $rs_y ] ) ); ?>টি</span>
+					<h3 class="rs-index__year-n"><?php echo esc_html( rs_is_en() ? $rs_y : rs_bn_digits( $rs_y ) ); ?></h3>
+					<span class="rs-index__year-c"><?php
+						if ( rs_is_en() ) {
+							$cnt = (int) $rs_per_year[ $rs_y ];
+							echo esc_html( $cnt . ' ' . ( 1 === $cnt ? 'writing' : 'writings' ) );
+						} else {
+							echo esc_html( rs_bn_digits( $rs_per_year[ $rs_y ] ) . 'টি' );
+						}
+					?></span>
 				</div>
 				<?php
 				$rs_year  = $rs_y;
@@ -156,7 +165,7 @@ $rs_open   = false;
 			$rs_cat = rs_category( $rs_item );
 			?>
 			<li class="rs-index__row">
-				<span class="rs-index__day"><?php echo esc_html( rs_bn_digits( (int) get_post_time( 'j', false, $rs_item ) ) ); ?></span>
+				<span class="rs-index__day"><?php echo esc_html( rs_is_en() ? (int) get_post_time( 'j', false, $rs_item ) : rs_bn_digits( (int) get_post_time( 'j', false, $rs_item ) ) ); ?></span>
 				<?php /* data-rs-post is what makes these open in the reading modal, the same as a row on the front page. */ ?>
 				<a class="rs-index__link"
 					href="<?php echo esc_url( get_permalink( $rs_item ) ); ?>"

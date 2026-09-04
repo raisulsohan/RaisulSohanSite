@@ -919,7 +919,78 @@ function rs_brand() {
 function rs_hero_image() {
 	$id = (int) rs_option( 'rs_hero_image' );
 
-	return $id && wp_get_attachment_image_src( $id, 'large' ) ? $id : 0;
+	if ( $id && wp_get_attachment_image_src( $id, 'large' ) ) {
+		return $id;
+	}
+
+	if ( is_multisite() && ! is_main_site() ) {
+		switch_to_blog( get_main_site_id() );
+		$main_id = (int) rs_option( 'rs_hero_image' );
+		$valid   = $main_id && wp_get_attachment_image_src( $main_id, 'large' );
+		restore_current_blog();
+		if ( $valid ) {
+			return $main_id;
+		}
+	}
+
+	return 0;
+}
+
+/**
+ * Render hero image HTML, with automatic multisite fallback to main site if subsite has none set.
+ *
+ * @param string $alt Alt text.
+ * @param string $sizes Sizes attribute.
+ * @param string $class Class attribute.
+ * @return string Image HTML or empty string.
+ */
+function rs_render_hero_image_html( $alt = '', $sizes = '(max-width: 48rem) 100vw, 720px', $class = 'rs-hero__image' ) {
+	$id          = (int) rs_option( 'rs_hero_image' );
+	$pos         = rs_option( 'rs_hero_pos' );
+	$target_blog = 0;
+
+	if ( $id && wp_get_attachment_image_src( $id, 'large' ) ) {
+		$target_blog = get_current_blog_id();
+	} elseif ( is_multisite() && ! is_main_site() ) {
+		$main_site_id = get_main_site_id();
+		switch_to_blog( $main_site_id );
+		$main_id = (int) rs_option( 'rs_hero_image' );
+		if ( $main_id && wp_get_attachment_image_src( $main_id, 'large' ) ) {
+			$id          = $main_id;
+			$pos         = rs_option( 'rs_hero_pos' );
+			$target_blog = $main_site_id;
+		}
+		restore_current_blog();
+	}
+
+	if ( ! $target_blog || ! $id ) {
+		return '';
+	}
+
+	$is_switched = false;
+	if ( $target_blog !== get_current_blog_id() ) {
+		switch_to_blog( $target_blog );
+		$is_switched = true;
+	}
+
+	$html = wp_get_attachment_image(
+		$id,
+		'large',
+		false,
+		array(
+			'class'         => $class,
+			'alt'           => $alt,
+			'sizes'         => $sizes,
+			'fetchpriority' => 'high',
+			'style'         => 'object-position: ' . esc_attr( $pos ? $pos : '50% 50%' ) . ';',
+		)
+	);
+
+	if ( $is_switched ) {
+		restore_current_blog();
+	}
+
+	return $html;
 }
 
 /**
@@ -1044,6 +1115,31 @@ function rs_index_url() {
 
 	if ( $pages ) {
 		$cached = get_permalink( $pages[0] );
+	} elseif ( rs_is_en() ) {
+		// On English subsite, ensure All Writings page exists with template page-index.php.
+		$page = get_page_by_path( 'all-writings' );
+		if ( ! $page ) {
+			$page = get_page_by_path( 'all-write-up' );
+		}
+
+		if ( $page ) {
+			update_post_meta( $page->ID, '_wp_page_template', 'page-index.php' );
+			$cached = get_permalink( $page->ID );
+		} else {
+			$page_id = wp_insert_post(
+				array(
+					'post_title'   => 'All Writings',
+					'post_name'    => 'all-writings',
+					'post_status'  => 'publish',
+					'post_type'    => 'page',
+					'post_content' => '',
+				)
+			);
+			if ( $page_id && ! is_wp_error( $page_id ) ) {
+				update_post_meta( $page_id, '_wp_page_template', 'page-index.php' );
+				$cached = get_permalink( $page_id );
+			}
+		}
 	}
 
 	return $cached;
@@ -3985,6 +4081,124 @@ function rs_register_book_genre_taxonomy() {
 	) );
 }
 add_action( 'init', 'rs_register_book_genre_taxonomy' );
+
+/**
+ * Translate book genres to English if in English mode.
+ *
+ * @param string $genre
+ * @return string
+ */
+function rs_translate_book_genre( $genre ) {
+	static $map = array(
+		'ইতিহাস'           => 'History',
+		'উপন্যাস'          => 'Novel',
+		'উপন্যাস সমগ্র'    => 'Novel Collection',
+		'কবিতা'            => 'Poetry',
+		'গল্পসমগ্র'        => 'Collected Stories',
+		'ছোটগল্প'          => 'Short Stories',
+		'জীবনী'            => 'Biography',
+		'থ্রিলার'          => 'Thriller',
+		'দর্শন'            => 'Philosophy',
+		'প্রবন্ধ'          => 'Essays',
+		'বিজ্ঞান'          => 'Science',
+		'ভ্রমণ'            => 'Travel',
+		'ম্যাগাজিন'        => 'Magazine',
+		'রচনাবলী'          => 'Works',
+		'রচনাসমগ্র'        => 'Collected Works',
+		'রাজনীতি'          => 'Politics',
+		'শিশুতোষ'          => 'Children\'s Literature',
+		'সমগ্র'            => 'Omnibus',
+		'সাক্ষাৎকার সমগ্র' => 'Collected Interviews',
+		'সায়েন্স ফিকশন'    => 'Science Fiction',
+		'স্মৃতিকথা'        => 'Memoirs',
+	);
+
+	if ( rs_is_en() && isset( $map[ $genre ] ) ) {
+		return $map[ $genre ];
+	}
+
+	return $genre;
+}
+
+/**
+ * Auto-sync book genres from main site to English subsite.
+ */
+function rs_sync_book_genres_from_main_site() {
+	if ( ! is_multisite() || is_main_site() ) {
+		return;
+	}
+
+	if ( get_option( 'rs_book_genres_synced_v2' ) ) {
+		return;
+	}
+
+	$genre_map = array(
+		'ইতিহাস'           => 'History',
+		'উপন্যাস'          => 'Novel',
+		'উপন্যাস সমগ্র'    => 'Novel Collection',
+		'কবিতা'            => 'Poetry',
+		'গল্পসমগ্র'        => 'Collected Stories',
+		'ছোটগল্প'          => 'Short Stories',
+		'জীবনী'            => 'Biography',
+		'থ্রিলার'          => 'Thriller',
+		'দর্শন'            => 'Philosophy',
+		'প্রবন্ধ'          => 'Essays',
+		'বিজ্ঞান'          => 'Science',
+		'ভ্রমণ'            => 'Travel',
+		'ম্যাগাজিন'        => 'Magazine',
+		'রচনাবলী'          => 'Works',
+		'রচনাসমগ্র'        => 'Collected Works',
+		'রাজনীতি'          => 'Politics',
+		'শিশুতোষ'          => 'Children\'s Literature',
+		'সমগ্র'            => 'Omnibus',
+		'সাক্ষাৎকার সমগ্র' => 'Collected Interviews',
+		'সায়েন্স ফিকশন'    => 'Science Fiction',
+		'স্মৃতিকথা'        => 'Memoirs',
+	);
+
+	switch_to_blog( get_main_site_id() );
+	$main_books = get_posts(
+		array(
+			'post_type'      => 'rs_book',
+			'posts_per_page' => -1,
+			'post_status'    => 'publish',
+			'fields'         => 'ids',
+			'no_found_rows'  => true,
+		)
+	);
+
+	$slug_to_genres = array();
+	foreach ( $main_books as $mb_id ) {
+		$slug  = get_post_field( 'post_name', $mb_id );
+		$terms = get_the_terms( $mb_id, 'rs_book_genre' );
+		if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
+			$slug_to_genres[ $slug ] = wp_list_pluck( $terms, 'name' );
+		}
+	}
+	restore_current_blog();
+
+	$sub_books = get_posts(
+		array(
+			'post_type'      => 'rs_book',
+			'posts_per_page' => -1,
+			'post_status'    => 'publish',
+			'no_found_rows'  => true,
+		)
+	);
+
+	foreach ( $sub_books as $sb ) {
+		if ( ! empty( $slug_to_genres[ $sb->post_name ] ) ) {
+			$en_genres = array();
+			foreach ( $slug_to_genres[ $sb->post_name ] as $bg ) {
+				$en_genres[] = isset( $genre_map[ $bg ] ) ? $genre_map[ $bg ] : $bg;
+			}
+			wp_set_object_terms( $sb->ID, $en_genres, 'rs_book_genre' );
+		}
+	}
+
+	update_option( 'rs_book_genres_synced_v2', 1 );
+}
+add_action( 'init', 'rs_sync_book_genres_from_main_site', 20 );
 
 /**
  * Add meta boxes for book details: author, translator, read status.

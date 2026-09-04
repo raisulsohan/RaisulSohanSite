@@ -18,6 +18,11 @@ get_header();
 /* ---- Hero: same banner as the homepage ---- */
 $rs_hero = rs_hero_image();
 
+/* ---- Sync Genres if subsite ---- */
+if ( function_exists( 'rs_sync_book_genres_from_main_site' ) ) {
+	rs_sync_book_genres_from_main_site();
+}
+
 /* ---- Fetch every published book ---- */
 $book_query = new WP_Query( array(
 	'post_type'      => 'rs_book',
@@ -46,6 +51,22 @@ if ( $book_query->have_posts() ) {
 		$genre       = ! empty( $genre_terms ) && ! is_wp_error( $genre_terms )
 			? $genre_terms[0]->name
 			: '';
+
+		if ( empty( $genre ) && is_multisite() && ! is_main_site() ) {
+			switch_to_blog( get_main_site_id() );
+			$mb = get_page_by_path( get_post_field( 'post_name', get_the_ID() ), OBJECT, 'rs_book' );
+			if ( $mb ) {
+				$mterms = get_the_terms( $mb->ID, 'rs_book_genre' );
+				if ( ! empty( $mterms ) && ! is_wp_error( $mterms ) ) {
+					$genre = $mterms[0]->name;
+				}
+			}
+			restore_current_blog();
+		}
+
+		if ( function_exists( 'rs_translate_book_genre' ) ) {
+			$genre = rs_translate_book_genre( $genre );
+		}
 
 		$books[] = array(
 			'title'      => get_the_title(),
@@ -90,19 +111,7 @@ function rs_get_spine_height( $title ) {
 <div class="rs-hero<?php echo $rs_hero ? ' rs-hero--image' : ''; ?>">
 	<h1 class="rs-hero__title">
 		<?php if ( $rs_hero ) : ?>
-			<?php
-			echo wp_get_attachment_image(
-				$rs_hero,
-				'large',
-				false,
-				array(
-					'class' => 'rs-hero__image',
-					'alt'   => rs_is_en() ? 'My Book List' : 'আমার বইয়ের তালিকা',
-					'sizes' => '(max-width: 48rem) 100vw, 720px',
-					'style' => 'object-position: ' . esc_attr( rs_option( 'rs_hero_pos' ) ) . ';',
-				)
-			);
-			?>
+			<?php echo rs_render_hero_image_html( rs_is_en() ? 'My Book List' : 'আমার বইয়ের তালিকা' ); ?>
 		<?php else : ?>
 			<span><?php echo esc_html( rs_is_en() ? 'My Book List' : 'আমার বইয়ের তালিকা' ); ?></span>
 		<?php endif; ?>

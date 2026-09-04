@@ -22,25 +22,7 @@ get_header();
 	?>
 	<h1 class="rs-hero__title">
 		<?php if ( $rs_hero ) : ?>
-			<?php
-			/* sizes spelled out because the default assumes a picture
-			   inside prose; this one fills the column, which is the
-			   48rem wrap less its gutters. */
-			echo wp_get_attachment_image(
-				$rs_hero,
-				'large',
-				false,
-				array(
-					'class'         => 'rs-hero__image',
-					'alt'           => rs_phrases()[0],
-					'sizes'         => '(max-width: 48rem) 100vw, 720px',
-					'fetchpriority' => 'high',
-					/* Which part of the picture survives the crop, chosen
-					   by dragging it on the settings screen. */
-					'style'         => 'object-position: ' . esc_attr( rs_option( 'rs_hero_pos' ) ) . ';',
-				)
-			);
-			?>
+			<?php echo rs_render_hero_image_html( rs_phrases()[0] ); ?>
 		<?php else : ?>
 			<?php /* app.js finds this by id; with a picture there is nothing
 			         to type out and the typewriter stays asleep. */ ?>
