@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
-Version: 7.4.66
+Version: 7.4.67
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -3087,7 +3087,19 @@ a.rs-article__cat:hover {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
 	gap: 1.5rem;
+	margin-bottom: 2rem;
+}
+
+/* Portfolio Dynamic Pagination */
+.rs-portfolio-pagination {
+	margin-top: 1rem;
 	margin-bottom: 3.5rem;
+}
+
+.rs-portfolio-pagination .rs-pagination__num,
+.rs-portfolio-pagination .rs-pagination__step {
+	cursor: pointer;
+	text-decoration: none;
 }
 
 .rs-portfolio-card {
@@ -3099,6 +3111,18 @@ a.rs-article__cat:hover {
 	overflow: hidden;
 	box-shadow: var(--rs-shadow-md);
 	transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+	animation: rsCardFadeIn 0.22s ease-out;
+}
+
+@keyframes rsCardFadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 .rs-portfolio-card:hover {

@@ -214,6 +214,9 @@ $projects = function_exists( 'rs_get_portfolio_projects' ) ? rs_get_portfolio_pr
 		<?php endforeach; ?>
 	</section>
 
+	<!-- Dynamic Pagination Controls (4 items per page) -->
+	<nav class="rs-pagination rs-portfolio-pagination" id="rs-portfolio-pagination" aria-label="<?php echo esc_attr( $rs_is_en ? 'Portfolio Pagination' : 'পোর্টফোলিও পেজিনেশন' ); ?>" style="display: none;"></nav>
+
 	<!-- Empty state if no projects match filter -->
 	<div class="rs-portfolio-empty" id="rs-portfolio-empty" style="display: none;">
 		<p><?php echo esc_html( $rs_is_en ? 'No projects found in this category.' : 'এই ক্যাটাগরিতে কোনো প্রজেক্ট পাওয়া যায়নি।' ); ?></p>
@@ -408,15 +411,114 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 (function() {
 	'use strict';
 
-	/* 1. Category Filter Logic */
-	var buttons = document.querySelectorAll('.rs-portfolio-filter__btn');
-	var cards   = document.querySelectorAll('.rs-portfolio-card');
-	var empty   = document.getElementById('rs-portfolio-empty');
+	var isEn = <?php echo $rs_is_en ? 'true' : 'false'; ?>;
+	var bnDigits = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+	function bn(n) {
+		if (isEn) return '' + n;
+		return ('' + n).replace(/\d/g, function(d) { return bnDigits[d]; });
+	}
+
+	/* 1. Category Filter & 4-Item Pagination Logic (2 on top, 2 on bottom) */
+	var buttons      = document.querySelectorAll('.rs-portfolio-filter__btn');
+	var cards        = Array.prototype.slice.call(document.querySelectorAll('.rs-portfolio-card'));
+	var empty        = document.getElementById('rs-portfolio-empty');
+	var paginationEl = document.getElementById('rs-portfolio-pagination');
+	var gridEl       = document.getElementById('rs-portfolio-grid');
+
+	var ITEMS_PER_PAGE = 4;
+	var curFilter      = 'all';
+	var curPage        = 1;
+
+	function getMatchingCards() {
+		if (curFilter === 'all') {
+			return cards;
+		}
+		return cards.filter(function(card) {
+			return card.getAttribute('data-category') === curFilter;
+		});
+	}
+
+	function renderPagination(totalCount) {
+		if (!paginationEl) return;
+		var totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+
+		if (totalPages <= 1) {
+			paginationEl.innerHTML = '';
+			paginationEl.style.display = 'none';
+			return;
+		}
+
+		paginationEl.style.display = 'flex';
+		var html = '';
+
+		/* Prev arrow */
+		if (curPage > 1) {
+			html += '<a class="rs-pagination__num" href="#" data-page="' + (curPage - 1) + '" aria-label="' + (isEn ? 'Previous page' : 'আগের পাতা') + '">‹</a>';
+		} else {
+			html += '<span class="rs-pagination__num" style="opacity:.3;pointer-events:none;">‹</span>';
+		}
+
+		/* Page numbers */
+		for (var p = 1; p <= totalPages; p++) {
+			if (p === curPage) {
+				html += '<span class="rs-pagination__num is-current" aria-current="page">' + bn(p) + '</span>';
+			} else if (p === 1 || p === totalPages || Math.abs(p - curPage) <= 1) {
+				html += '<a class="rs-pagination__num" href="#" data-page="' + p + '">' + bn(p) + '</a>';
+			} else if (Math.abs(p - curPage) === 2) {
+				html += '<span class="rs-pagination__gap" aria-hidden="true">…</span>';
+			}
+		}
+
+		/* Next arrow */
+		if (curPage < totalPages) {
+			html += '<a class="rs-pagination__num" href="#" data-page="' + (curPage + 1) + '" aria-label="' + (isEn ? 'Next page' : 'পরের পাতা') + '">›</a>';
+		} else {
+			html += '<span class="rs-pagination__num" style="opacity:.3;pointer-events:none;">›</span>';
+		}
+
+		paginationEl.innerHTML = html;
+	}
+
+	function applyFilterAndPagination(shouldScroll) {
+		var matching = getMatchingCards();
+		var total = matching.length;
+		var totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+
+		if (curPage > totalPages) {
+			curPage = 1;
+		}
+
+		if (empty) {
+			empty.style.display = total === 0 ? 'block' : 'none';
+		}
+
+		var startIdx = (curPage - 1) * ITEMS_PER_PAGE;
+		var endIdx   = startIdx + ITEMS_PER_PAGE;
+
+		cards.forEach(function(card) {
+			var matchIdx = matching.indexOf(card);
+			if (matchIdx !== -1 && matchIdx >= startIdx && matchIdx < endIdx) {
+				card.style.display = '';
+			} else {
+				card.style.display = 'none';
+			}
+		});
+
+		renderPagination(total);
+
+		if (shouldScroll && gridEl) {
+			var header = document.querySelector('.rs-header');
+			var clear  = header ? header.offsetHeight : 0;
+			var topPos = gridEl.getBoundingClientRect().top + window.pageYOffset - clear - 24;
+			window.scrollTo({ top: Math.max(0, topPos), behavior: 'smooth' });
+		}
+	}
 
 	if (buttons.length && cards.length) {
 		buttons.forEach(function(btn) {
 			btn.addEventListener('click', function() {
 				var filter = this.getAttribute('data-filter');
+				if (filter === curFilter) return;
 
 				buttons.forEach(function(b) {
 					b.classList.remove('is-active');
@@ -425,23 +527,29 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 				this.classList.add('is-active');
 				this.setAttribute('aria-selected', 'true');
 
-				var visibleCount = 0;
-				cards.forEach(function(card) {
-					var cat = card.getAttribute('data-category');
-					if (filter === 'all' || filter === cat) {
-						card.style.display = '';
-						visibleCount++;
-					} else {
-						card.style.display = 'none';
-					}
-				});
-
-				if (empty) {
-					empty.style.display = visibleCount === 0 ? 'block' : 'none';
-				}
+				curFilter = filter;
+				curPage = 1;
+				applyFilterAndPagination(false);
 			});
 		});
 	}
+
+	if (paginationEl) {
+		paginationEl.addEventListener('click', function(e) {
+			var link = e.target.closest('[data-page]');
+			if (!link) return;
+			e.preventDefault();
+
+			var targetPage = parseInt(link.getAttribute('data-page'), 10);
+			if (targetPage && targetPage !== curPage) {
+				curPage = targetPage;
+				applyFilterAndPagination(true);
+			}
+		});
+	}
+
+	// Initial render on page load
+	applyFilterAndPagination(false);
 
 	/* 2. Case Study Pop-up Modal Logic */
 	var rawData = document.getElementById('rs-portfolio-data');
