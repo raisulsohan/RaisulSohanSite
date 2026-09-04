@@ -38,25 +38,27 @@ $projects = array(
 		'role_en'     => 'Lead Designer & Full-Stack Theme Developer',
 		'context_bn'  => 'বিজ্ঞান ম্যাগাজিন ও ডিজিটাল প্রকাশনা • ভার্সন ৭.৩',
 		'context_en'  => 'Science Magazine & Digital Publication • v7.3',
-		'challenge_bn'=> 'অনলাইন নিউজ ও ম্যাগাজিন সাইটগুলোতে সাধারণত ২০-৩০টি ভারী প্লাগিন ও থার্ড-পার্টি স্ক্রিপ্ট ব্যবহারের ফলে পেজ লোডিং অনেক স্লো হয়ে যায়। কোনো এক্সটার্নাল প্লাগিন ও কোনো jQuery ছাড়াই ১০০% নেটিভ পিএইচপি ও ভ্যানিলা জাভাস্ক্রিপ্টে একটি পূর্ণাঙ্গ আধুনিক ম্যাগাজিনের সব ফিচার (রিয়েল-টাইম সার্চ, সিনেমেটিক ভিডিও পপ-আপ, রিডিং মডাল, বুকমার্ক স্লাইড ড্রয়ার, এসইও মেটাবক্স) তৈরি করাই ছিল মূল চ্যালেঞ্জ।',
-		'challenge_en'=> 'Online publications traditionally suffer from severe speed penalties due to dependency on dozens of plugins. The challenge was architecting an expansive, feature-dense publication platform with zero third-party plugins and zero jQuery—relying purely on native WordPress PHP APIs and clean ES6+ JavaScript.',
-		'solution_bn' => 'সম্পূর্ণ কাস্টম আর্কিটেকচারে থিমটি স্ক্র্যাচ থেকে তৈরি করা হয়েছে। ফিগমা-স্টাইল ৮-কার্ড হিরো মোজাইক গ্রিড, নেটিভ এজেক্স রিডিং মডাল, লোকালস্টোরেজ ভিত্তিক বুকমার্ক স্লাইড-আউট ড্রয়ার, ইউটিউব রেসপনসিভ ভিডিও পপ-আপ (১৬:৯, ৯:১৬, ৪:৫, ১:১) এবং ইয়োস্টের বিকল্প হিসেবে নিজস্ব লাইভ গুগল প্রিভিউ এসইও মেটাবক্স ও JSON-LD স্কিমা ইঞ্জিন তৈরি করা হয়েছে। সাথে রয়েছে স্বয়ংক্রিয় গিটহাব আপডেটার ও লাইসেন্সিং সিস্টেম।',
-		'solution_en' => 'Engineered a bespoke zero-plugin foundation from the ground up: an 8-card hero mosaic grid, native AJAX reading modal with zero page reloads, a slide-out localStorage bookmark drawer, dynamic aspect-ratio YouTube video popups, and an in-editor Google search snippet preview with automated JSON-LD schema. Integrated a native GitHub auto-updater and license manager.',
+		'challenge_bn'=> "অনলাইন বিজ্ঞান ও প্রযুক্তি ম্যাগাজিনগুলোতে সাধারণত হিরো গ্রিড, এজেক্স সার্চ, ভিডিও পপ-আপ, এসইও মেটা এবং বুকমার্কের মতো ফিচারগুলোর জন্য অন্তত ২০-৩০টি প্লাগিন ব্যবহার করতে হয়। এতে প্রতিটি পেজে বিপুল পরিমাণ অপ্রয়োজনীয় CSS/JS স্ক্রিপ্ট জমে সাইট ভারী হয়ে যায়, ডাটাবেস কোয়েরি বাড়ে এবং মোবাইল ইন্টারনেটে পাঠকদের জন্য সাইট লোড হতে প্রচুর সময় লাগে।\n\nআমাদের মূল চ্যালেঞ্জ ছিল: কোনো রেডিমেড পেজবিল্ডার (Elementor/Divi), কোনো থার্ড-পার্টি এসইও প্লাগিন (Yoast/RankMath) এবং এমনকি কোনো jQuery লাইব্রেরি ছাড়াই শুধুমাত্র ওয়ার্ডপ্রেসের কোর পিএইচপি এপিআই এবং আধুনিক ভ্যানিলা ES6+ জাভাস্ক্রিপ্ট ব্যবহার করে একটি অত্যন্ত আকর্ষণীয়, ফ্লুইড ও জটিল প্রকাশনা সাইট তৈরি করা।",
+		'challenge_en'=> "Digital magazines traditionally rely on 20 to 30 external plugins to support features like hero mosaics, live search, video popups, SEO meta, and reading bookmarks. This introduces severe database overhead, render-blocking scripts, and sluggish performance on mobile connections.\n\nOur architectural goal was to eliminate third-party dependencies entirely: building a modern, feature-dense science publication without page builders (Elementor/Divi), without SEO plugins (Yoast/RankMath), and without jQuery—relying strictly on native WordPress PHP APIs and clean Vanilla ES6+ JavaScript.",
+		'solution_bn' => "১. ফিগমা স্টাইল ৮-কার্ড হিরো মোজাইক: জটিল পেজবিল্ডার বাদ দিয়ে পিওর আধুনিক CSS Grid ও Flexbox আর্কিটেকচারে একটি রেসপনসিভ ৮-কার্ড মোজাইক তৈরি করা হয়েছে, যা বড় ডেস্কটপ থেকে শুরু করে মোবাইলেও স্বয়ংক্রিয়ভাবে খাপ খেয়ে যায়।\n\n২. নেটিভ এজেক্স রিডিং মডাল: পাঠক কোনো লেখায় ক্লিক করলে পুরো পেজ রিলোড না হয়ে তাৎক্ষণিকভাবে ব্যাকগ্রাউন্ডে কনটেন্ট ফেচ করে একটি সিনেমাটিক রিডিং মডাল ওপেন হয়, যাতে পড়ার অভিজ্ঞতা কোনো বাধা ছাড়াই অব্যাহত থাকে।\n\n৩. ডায়নামিক রেশিও সিনেমেটিক ভিডিও প্লেয়ার: ইউটিউব ভিডিও দেখানোর জন্য ৪টি ভিন্ন অ্যাসপেক্ট রেশিও (১৬:৯, ৯:১৬, ৪:৫, ১:১) সাপোর্ট সহ একটি লাইটওয়েট নেটিভ পপ-আপ প্লেয়ার তৈরি করা হয়েছে।\n\n৪. বিল্ট-ইন এসইও ইঞ্জিন ও লাইভ গুগল প্রিভিউ: ক্লাসিক এডিটরে একটি কাস্টম মেটাবক্স ডিজাইন করা হয়েছে যা গুগল সার্চের মতো রিয়েল-টাইম ডেস্কটপ ও মোবাইল প্রিভিউ দেখায়, মেটা ডেসক্রিপশন তৈরি করে এবং স্বয়ংক্রিয়ভাবে Article ও Organization-এর জন্য বৈধ JSON-LD Rich Snippet স্কিমা জেনারেট করে।\n\n৫. লোকালস্টোরেজ বুকমার্ক ড্রয়ার: সার্ভারে কোনো বাড়তি লোড না দিয়ে ব্রাউজারের নিজস্ব লোকালস্টোরেজে 'পরে পড়ার তালিকা' সংরক্ষণের জন্য স্লাইড-আউট ড্রয়ার ইন্টারফেস তৈরি করা হয়েছে।\n\n৬. গিটহাব সেলফ-আপডেটার ও লাইসেন্স ম্যানেজার: থিমের ভবিষ্যৎ আপডেটগুলো যেন সরাসরি ওয়ার্ডপ্রেস ড্যাশবোর্ডে ওয়ান-ক্লিকে পাওয়া যায়, সেজন্য গিটহাব কমিট এসএইচএ (Commit SHA) ভ্যালিডেশন ভিত্তিক নিজস্ব আপডেটার এবং ডোমেইন লাইসেন্সিং সিস্টেম যুক্ত করা হয়েছে।",
+		'solution_en' => "1. Figma-Grade 8-Card Hero Mosaic: Engineered an adaptive 8-post visual grid using pure CSS Grid and Flexbox, eliminating bulky page builders while maintaining responsive fluid scaling across all viewports.\n\n2. Native AJAX Reading Modal: Clicking any article fetches content via background AJAX and presents a distraction-free cinematic reading modal with zero page reloads.\n\n3. Dynamic Aspect-Ratio Video Engine: Custom lightweight popup player supporting 4 dynamic YouTube aspect ratios (16:9, 9:16, 4:5, 1:1) with responsive sizing.\n\n4. Built-in SEO Suite with Live Google Preview: Custom classic editor metabox rendering real-time mobile/desktop Google snippet previews, automated meta generation, and valid JSON-LD Article & Organization structured data.\n\n5. LocalStorage Reading Bookmarks Drawer: Zero server database overhead; articles are saved directly to the reader's device storage with a sleek slide-out drawer interface.\n\n6. Native GitHub Auto-Updater & License Manager: Delivers one-click updates directly inside the WordPress dashboard pinned to commit SHAs, integrated with a domain licensing validation screen.",
 		'highlights_bn'=> array(
-			'০টি এক্সটার্নাল প্লাগিন — এসইও, লাইভ সার্চ, বুকমার্ক ও মডাল সম্পূর্ণ নেটিভ কোডে নির্মিত',
+			'০টি এক্সটার্নাল প্লাগিন — এসইও, লাইভ সার্চ, বুকমার্ক, মডাল ও কাস্টমাইজার সম্পূর্ণ নেটিভ কোডে নির্মিত',
+			'১০০% ভ্যানিলা ES6+ জাভাস্ক্রিপ্ট (কোনো jQuery নেই) ও আধুনিক CSS ভ্যারিয়েবল আর্কিটেকচার',
 			'ফিগমা ও ম্যাগাজিন লেআউট: ৮-কার্ড হিরো মোজাইক এবং রেসপনসিভ মাল্টি-কলাম ক্যাটাগরি গ্রিড',
 			'ইউটিউবের জন্য সিনেমেটিক ভিডিও পপ-আপ (১৬:৯, ৯:১৬, ৪:৫, ১:১ অ্যাসপেক্ট রেশিও সাপোর্ট)',
 			'ওয়ার্ডপ্রেস ক্লাসিক এডিটরে লাইভ গুগল স্নিপেট প্রিভিউ সহ নিজস্ব এসইও মেটাবক্স ও JSON-LD স্কিমা',
 			'নেটিভ গিটহাব অটো-আপডেটার — ড্যাশবোর্ড থেকেই এক ক্লিকে থিম আপডেট পাওয়ার সুবিধা',
-			'কোনো jQuery নেই — সম্পূর্ণ আধুনিক ভ্যানিলা জাভাস্ক্রিপ্ট (ES6+) ও সিএসএস ভ্যারিয়েবল আর্কিটেকচার'
+			'কোর ওয়েব ভাইটালস ও WCAG অপ্টিমাইজড — মোবাইল ও ডেস্কটপ উভয়েই সাব-সেকেন্ড পেজ লোড ও ৯৫+ পারফরম্যান্স স্কোর'
 		),
 		'highlights_en'=> array(
 			'Zero-Plugin Architecture: Native built-in SEO, live search, bookmarks, and modals without third-party plugins',
+			'Pure Vanilla ES6+ JavaScript (zero jQuery) with modular CSS custom property architecture',
 			'Figma Mac & Magazine layout: 8-card hero mosaic and responsive multi-column category grids',
 			'Cinematic video popups supporting dynamic aspect ratios (16:9, 9:16, 4:5, 1:1) from YouTube',
 			'In-editor Google search snippet preview, Open Graph cards, and native JSON-LD schema generator',
 			'Native GitHub Auto-Updater delivering instant dashboard updates via commit SHA verification',
-			'Pure Vanilla ES6+ JavaScript (zero jQuery) and modern CSS variable architecture for sub-second speeds'
+			'Core Web Vitals & WCAG optimized: sub-second load times and 95+ PageSpeed scores on mobile & desktop'
 		),
 		'tags'        => array( 'WordPress', 'PHP 7.4+', 'Vanilla JS (ES6+)', 'CSS3 Grid', 'Built-in SEO', 'Auto-Updater' ),
 		'accent'      => '#00b894',
@@ -80,25 +82,31 @@ $projects = array(
 		'title_en'    => 'Zero-Plugin Bespoke WordPress Theme Architecture',
 		'summary_bn'  => 'কোনো থার্ড-পার্টি প্লাগিন ছাড়াই নির্মিত সুপারফাস্ট ব্যক্তিগত ওয়েবসাইট থিম। এতে রয়েছে এজেক্স নেভিগেশন, ডার্ক মোড ও ডায়নামিক কালার প্যালেট জেনারেশন।',
 		'summary_en'  => 'An ultra-fast, zero-plugin custom WordPress theme featuring seamless AJAX pagination, distraction-free reading modal, and WCAG-compliant dynamic theming.',
-		'role_bn'     => 'ফুলস্ট্যাক থিম আর্কিটেক্ট',
-		'role_en'     => 'Full-Stack Theme Architect',
+		'role_bn'     => 'ফুলস্ট্যাক থিম আর্কিটেক্ট ও লেখক',
+		'role_en'     => 'Full-Stack Theme Architect & Writer',
 		'context_bn'  => 'ব্যক্তিগত সাহিত্য ও ব্লগ পোর্টাল • ভার্সন ৭.৪',
 		'context_en'  => 'Personal Literature & Blog Portal • v7.4',
-		'challenge_bn'=> 'সাধারণ ওয়ার্ডপ্রেস সাইটে ২০-৩০টি ভারী প্লাগিন ব্যবহারের ফলে সাইট ভারী ও স্লো হয়ে যায়। কোনো প্লাগিন ছাড়া সম্পূর্ণ নেটিভ পিএইচপি ও জাভাস্ক্রিপ্টে সব ফিচার তৈরি করা।',
-		'challenge_en'=> 'Overcoming standard WordPress bloat caused by plugin dependence, achieving instant loading without sacrificing advanced interactive features.',
-		'solution_bn' => 'সম্পূর্ণ বেস্পোক ফাংশনস আর্কিটেকচার তৈরি করা হয়েছে। বিল্ট-ইন এজেক্স ফ্র্যাগমেন্ট রেন্ডারিং, লোকালস্টোরেজ ডার্ক মোড, এসইও মেটাডাটা ও নিজস্ব গিটহাব অটো-আপডেটার যুক্ত।',
-		'solution_en' => 'Engineered a bespoke zero-plugin framework: built-in lightweight REST search, local browser state persistence, WCAG 4.5:1 dynamic theming, and GitHub self-updater.',
+		'challenge_bn'=> "সাহিত্যের জন্য একটি বিভ্রান্তিমুক্ত (distraction-free), পরিচ্ছন্ন এবং দীর্ঘ সময় পড়ার উপযোগী ব্যক্তিগত প্রকাশনা সাইট তৈরি করা যেখানে পাঠক স্বাচ্ছন্দ্যে হারিয়ে যেতে পারেন। সাধারণ ওয়ার্ডপ্রেস সাইটে পেজ বদলালে পুরো ব্রাউজার রিলোড হয়ে সাদা পর্দা ভেসে ওঠে, যা পড়ার একাগ্রতা ভেঙে দেয়।\n\nএকই সাথে দ্বিভাষিক মাল্টিসাইট নেটওয়ার্কে পারমালিংক কনফ্লিক্ট এড়ানো, কোনো ট্র্যাকিং স্ক্রিপ্ট বা ভারী ডাটাবেস কোয়েরি ছাড়াই পাঠকের পড়ার অগ্রগতি (Resume Reading) ও বুকমার্ক মনে রাখা এবং ব্যবহারকারীর পছন্দের যে কোনো রঙে সাইটের লেখার স্পষ্টতা (Contrast) নিশ্চিত করাই ছিল প্রধান কারিগরি চ্যালেঞ্জ।",
+		'challenge_en'=> "Creating an immersive, distraction-free digital literature platform that honors long-form reading. Standard WordPress sites suffer from jarring full-page browser reloads that disrupt reading flow, while multisite bilingual installations often introduce permalink collisions and /blog prefix bloat.\n\nThe challenge was achieving seamless pushState AJAX navigation, robust client-side reading state preservation (Resume Reading & Bookmarks) with absolute user privacy, and mathematical color accessibility across any user-selected palette without external plugins.",
+		'solution_bn' => "১. পুশ-স্টেট এজেক্স নেভিগেশন ও সিঙ্গেল ফলব্যাক: প্রতিটি পোস্টের লিংকে ক্লিক করলে ব্যাকগ্রাউন্ডে এজেক্স ফ্র্যাগমেন্ট এনে মডালে ওপেন হয় এবং ব্রাউজারের ইউআরএল বারে আসল পারমালিংক লাইভ আপডেট হয় (window.history.pushState)। পাঠক ব্যাক বাটনে চাপ দিলে মডাল বন্ধ হয়ে আগের তালিকায় ফিরে যায়। আবার সেই পোস্টের ইউআরএল সরাসরি খুললে single.php স্বয়ংক্রিয়ভাবে ফুল-পেজ অভিজ্ঞতায় একই রূপ নিয়ে লোড হয়।\n\n২. গাণিতিক কালার প্যালেট ও WCAG 4.5:1 অ্যাক্সেসিবিলিটি: পাঠক নিজের ইচ্ছেমতো যেকোনো অ্যাকসেন্ট কালার বেছে নিতে পারেন। একটি নিজস্ব অ্যালগরিদম সেই রঙের উজ্জ্বলতা ও স্যাচুরেশন গণনা করে স্বয়ংক্রিয়ভাবে ডার্ক/লাইট মোডের জন্য WCAG অনুমোদিত নিখুঁত ৪.৫:১ কনট্রাস্ট রেশিও তৈরি করে।\n\n৩. জিরো-ইমেজ প্রসিডিউরাল ৩ডি বুকশেল্ফ: শত শত বইয়ের কভার ইমেজ লোড করার ব্যান্ডউইথ খরচ কমাতে একটি পিওর সিএসএস বুকশেল্ফ তৈরি করা হয়েছে। বইয়ের জঁরা (Genre) থেকে হ্যাশ ফাংশন দিয়ে কালার প্যালেট এবং টাইটেলের দৈর্ঘ্য মেপে বইয়ের বাস্তবসম্মত উচ্চতা নির্ধারণ করে স্বয়ংক্রিয়ভাবে স্পাইন আঁকা হয়—এতে ০ কিলোবাইট এক্সটার্নাল ইমেজ খরচ হয়!\n\n৪. রিডিং প্রগ্রেস ও রিজ্যুম নোটিফিকেশন: পাঠক কতদূর পড়েছেন তা স্ক্রল প্রগ্রেস বার ও 'বাকি সময় (Time Left)' দিয়ে লাইভ ট্র্যাক হয়। মাঝপথে চলে গেলে পরবর্তীতে সাইটে এলে স্বয়ংক্রিয়ভাবে যেখান থেকে পড়া শেষ হয়েছিল সেখান থেকে শুরু করার স্মার্ট প্রম্পট দেওয়া হয়।\n\n৫. স্বয়ংসম্পূর্ণ এসইও ও স্মার্ট ৪০৪ রিকভারি: কোনো থার্ড-পার্টি এসইও প্লাগিন ছাড়াই স্বয়ংক্রিয় OpenGraph, Twitter Cards এবং BreadcrumbList সহ JSON-LD স্কিমা তৈরি হয়। কোনো লিংক ভেঙে গেলে স্মার্ট রিকভারি অ্যালগরিদম আর্টিকেলের স্লাগের বানান বিশ্লেষণ করে সবচেয়ে প্রাসঙ্গিক লেখার সন্ধান দেয়।\n\n৬. সেলফ-হোস্টেড বাংলা ফন্ট ও গিটহাব কমিট আপডেটার: কোনো এক্সটার্নাল গুগল ফন্ট রিকোয়েস্ট ছাড়া নিজস্ব সার্ভার থেকে WOFF2 ফরম্যাটে বাংলা ফন্ট পরিবেশন এবং ব্রাঞ্চ ক্যাশিং সমস্যা এড়াতে কমিট হ্যাশ দিয়ে ভ্যালিডেট করে স্বয়ংক্রিয় থিম আপডেট।",
+		'solution_en' => "1. PushState AJAX Architecture & Fallback: Clicking an article opens an instant modal while dynamically synchronizing the browser URL (window.history.pushState). Browser back/forward buttons seamlessly restore navigation state, while direct visits gracefully render single.php with identical visual presentation.\n\n2. Algorithmic Color Engine with WCAG 4.5:1 Contrast: Allows users to choose any custom accent hue. A custom luminance and saturation calculator procedurally adjusts the entire theme palette to strictly guarantee WCAG AA 4.5:1 contrast compliance.\n\n3. Procedural CSS 3D Bookshelf (Zero Images): Renders hundreds of dynamic book spines purely in procedural CSS. Spines calculate HSL colors from genre hashes and dynamic vertical heights from title lengths, incurring 0 KB external image load.\n\n4. Reading Progress & Smart Resume Notification: Tracks scroll depth and dynamically recalculates reading time left. Remembers reading scroll positions locally to display an instant 'Resume Reading' toast on return.\n\n5. Self-Contained SEO & Fuzzy 404 Recovery: Native Open Graph, Twitter Cards, and BreadcrumbList JSON-LD structured data. A custom phoneme-based fuzzy slug analyzer intelligently redirects broken URLs to the closest published article.\n\n6. Self-Hosted Bengali WOFF2 Fonts & Commit-SHA Updater: Completely independent from external Google Fonts servers for optimal privacy and speed, paired with a GitHub self-updater pinned to immutable commit hashes.",
 		'highlights_bn'=> array(
-			'০টি এক্সটার্নাল প্লাগিন — সম্পূর্ণ নিরাপদ ও স্বাবলম্বী কোডবেস',
-			'১০০/১০০ গুগল পেজস্পিড ও কোর ওয়েব ভাইটালস স্কোর',
-			'স্মুথ রিডিং মডাল যা ব্রাউজার হিস্ট্রি পুশ-স্টেট সাপোর্ট করে',
-			'দ্বিভাষিক মাল্টিসাইট পারমালিংক অপ্টিমাইজেশন (/blog প্রিফিক্স ক্লিন)'
+			'১০০/১০০ গুগল পেজস্পিড ও কোর ওয়েব ভাইটালস — কোনো ভারী ফ্রন্টএন্ড ফ্রেমওয়ার্কের বোঝা নেই',
+			'০টি এক্সটার্নাল প্লাগিন — রিডিং মডাল, বুকমার্ক, ভিউ ট্র্যাকার, এসইও ও কাস্টমাইজার সম্পূর্ণ অন্তর্নির্মিত',
+			'দ্বিভাষিক মাল্টিসাইট অপ্টিমাইজেশন — বাংলা (/) ও ইংরেজি (/en/) সাবসাইটের জন্য নিরবচ্ছিন্ন ল্যাঙ্গুয়েজ সুইচিং ও ক্লিন পারমালিংক',
+			'স্মার্ট ভিউ ও রিডার কাউন্টার — ক্যাশ বাইপাস করে রিয়েল ইউনিক রিডার ট্র্যাক করতে নিজস্ব লাইটওয়েট REST এন্ডপয়েন্ট',
+			'অটো ইমেজ অপ্টিমাইজেশন — আপলোড করা ছবি স্বয়ংক্রিয়ভাবে থিমের ভেতর থেকেই WebP ফরম্যাটে রূপান্তর ও রিসাইজ',
+			'গিটহাব পিনড কমিট আপডেটার — ব্রাঞ্চ ক্যাশিং সমস্যা এড়াতে কমিট হ্যাশ দিয়ে ভ্যালিডেট করে স্বয়ংক্রিয় থিম আপডেট',
+			'জিরো-ইমেজ সিএসএস ভার্চুয়াল বুকশেল্ফ — প্রসিডিউরাল অ্যালগরিদম ভিত্তিক অনন্য ইন্টারেক্টিভ ইন্টারফেস'
 		),
 		'highlights_en'=> array(
-			'Zero third-party plugins: clean, highly auditable codebase',
-			'100/100 Google PageSpeed & Core Web Vitals across mobile and desktop',
-			'Distraction-free reading modal with pushState browser history synchronization',
-			'Custom rewrite system eliminating multisite /blog prefix issues'
+			'100/100 Google PageSpeed & Core Web Vitals across mobile and desktop devices',
+			'Zero external plugins: reading modal, bookmarks, view tracking, SEO, and settings completely built-in',
+			'Multisite bilingual optimization: clean permalinks and instant language switching between / and /en/',
+			'Smart reader counter: lightweight native REST endpoint (POST /wp-json/rs/v1/view/<id>) bypassing cache',
+			'Automated image conversion: auto-resizes and converts uploads to next-gen WebP without third-party tools',
+			'GitHub Pinned-Commit Auto-Updater: reliable one-click dashboard updates pinned to immutable commit SHAs',
+			'Procedural 3D CSS Bookshelf: procedural genre-to-HSL hash rendering with zero external graphics load'
 		),
 		'tags'        => array( 'WordPress', 'PHP 8', 'Vanilla JS', 'Semantic CSS', 'REST API' ),
 		'accent'      => '#0984e3',
@@ -671,7 +679,7 @@ $projects = array(
 						<h4 class="rs-case-study-heading">
 							🎯 <?php echo esc_html( $rs_is_en ? 'The Challenge & Context' : 'চ্যালেঞ্জ ও প্রেক্ষাপট' ); ?>
 						</h4>
-						<p id="rs-modal-challenge"></p>
+						<div class="rs-case-study-text" id="rs-modal-challenge"></div>
 					</div>
 
 					<!-- The Solution & Process -->
@@ -679,7 +687,7 @@ $projects = array(
 						<h4 class="rs-case-study-heading">
 							💡 <?php echo esc_html( $rs_is_en ? 'The Solution & Creative Process' : 'সমাধান ও কর্মপ্রক্রিয়া' ); ?>
 						</h4>
-						<p id="rs-modal-solution"></p>
+						<div class="rs-case-study-text" id="rs-modal-solution"></div>
 					</div>
 
 					<!-- Key Highlights -->
@@ -827,6 +835,17 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	var actionLabel  = document.getElementById('rs-modal-action-label');
 	var githubBtn    = document.getElementById('rs-modal-github-btn');
 
+	function renderRichText(container, text) {
+		container.innerHTML = '';
+		if (!text) return;
+		var paras = text.split(/\n\n+/);
+		paras.forEach(function(para) {
+			var p = document.createElement('p');
+			p.innerHTML = para.replace(/\n/g, '<br>');
+			container.appendChild(p);
+		});
+	}
+
 	function openCaseStudy(projectId) {
 		var p = projectsMap[projectId];
 		if (!p || !overlay) return;
@@ -837,8 +856,8 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		roleEl.textContent     = p.role;
 		contextEl.textContent  = p.context;
 		summaryEl.textContent  = p.summary;
-		challengeEl.textContent= p.challenge;
-		solutionEl.textContent = p.solution;
+		renderRichText(challengeEl, p.challenge);
+		renderRichText(solutionEl, p.solution);
 
 		// Render Highlights List
 		highlightsEl.innerHTML = '';
