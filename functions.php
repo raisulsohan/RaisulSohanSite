@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '7.4.4' );
+define( 'RS_VERSION', '7.4.5' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -253,6 +253,81 @@ function rs_body_classes( $classes ) {
 	return $classes;
 }
 add_filter( 'body_class', 'rs_body_classes' );
+
+/* =========================================================================
+ * Fix Multisite Main Site Permalinks (Remove unwanted /blog prefix)
+ * ====================================================================== */
+
+/**
+ * Remove /blog from category_base, tag_base and permalink_structure on main site.
+ */
+if ( is_multisite() ) {
+	foreach ( array( 'permalink_structure', 'category_base', 'tag_base' ) as $option ) {
+		add_filter( "option_{$option}", function( $value ) {
+			if ( is_main_site() && is_string( $value ) ) {
+				return preg_replace( '|^/?blog|', '', $value );
+			}
+			return $value;
+		} );
+	}
+}
+
+/**
+ * Ensure category links on main site never include /blog/.
+ */
+add_filter( 'term_link', function( $termlink, $term, $taxonomy ) {
+	if ( is_multisite() && is_main_site() && 'category' === $taxonomy ) {
+		return str_replace( '/blog/category/', '/category/', $termlink );
+	}
+	return $termlink;
+}, 10, 3 );
+
+/**
+ * Redirect /blog/* to /* on main site to eliminate 404s and keep URLs clean.
+ */
+add_action( 'template_redirect', function() {
+	if ( ! is_multisite() || ! is_main_site() ) {
+		return;
+	}
+
+	$uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : '';
+	if ( 0 === strpos( $uri, '/blog/' ) ) {
+		$target = home_url( substr( $uri, 5 ) );
+		wp_safe_redirect( $target, 301 );
+		exit;
+	}
+} );
+
+/**
+ * Auto-clean database options on main site if /blog was saved by WordPress multisite.
+ */
+add_action( 'init', function() {
+	if ( ! is_multisite() || ! is_main_site() ) {
+		return;
+	}
+
+	$dirty = false;
+	$ps    = get_option( 'permalink_structure' );
+	if ( $ps && false !== strpos( $ps, '/blog' ) ) {
+		$cleaned = preg_replace( '|^/?blog|', '', $ps );
+		if ( empty( $cleaned ) || false !== strpos( $cleaned, '%year%' ) ) {
+			$cleaned = '/%postname%/';
+		}
+		update_option( 'permalink_structure', $cleaned );
+		$dirty = true;
+	}
+
+	$cb = get_option( 'category_base' );
+	if ( $cb && false !== strpos( $cb, 'blog' ) ) {
+		$cleaned_cb = preg_replace( '|^/?blog/?|', '', $cb );
+		update_option( 'category_base', $cleaned_cb );
+		$dirty = true;
+	}
+
+	if ( $dirty ) {
+		flush_rewrite_rules( false );
+	}
+}, 5 );
 
 /* =========================================================================
  * 2. Assets
