@@ -747,6 +747,10 @@ $projects = array(
 
 			</article>
 		</div>
+
+		<button class="rs-modal__top" type="button" id="rs-case-study-top" aria-label="<?php echo esc_attr( $rs_is_en ? 'Back to top' : 'উপরে যান' ); ?>" title="<?php echo esc_attr( $rs_is_en ? 'Back to top' : 'উপরে যান' ); ?>">
+			<?php echo wp_kses( rs_icon( 'up' ), rs_svg_tags() ); ?>
+		</button>
 	</div>
 </div>
 
@@ -850,6 +854,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	var actionBtn    = document.getElementById('rs-modal-action-btn');
 	var actionLabel  = document.getElementById('rs-modal-action-label');
 	var githubBtn    = document.getElementById('rs-modal-github-btn');
+	var topBtn       = document.getElementById('rs-case-study-top');
 
 	function renderRichText(container, text) {
 		container.innerHTML = '';
@@ -936,12 +941,28 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		overlay.hidden = false;
 		document.body.style.overflow = 'hidden';
 		if (scrollArea) scrollArea.scrollTop = 0;
+		if (topBtn) topBtn.classList.remove('is-visible');
 	}
 
 	function closeCaseStudy() {
 		if (!overlay || overlay.hidden) return;
 		overlay.hidden = true;
 		document.body.style.overflow = '';
+		if (topBtn) topBtn.classList.remove('is-visible');
+	}
+
+	// Back to top inside modal scroller
+	if (scrollArea && topBtn) {
+		scrollArea.addEventListener('scroll', function() {
+			topBtn.classList.toggle('is-visible', scrollArea.scrollTop > 220);
+		}, { passive: true });
+
+		topBtn.addEventListener('click', function() {
+			scrollArea.scrollTo({
+				top: 0,
+				behavior: 'smooth'
+			});
+		});
 	}
 
 	// Attach click handlers to triggers
