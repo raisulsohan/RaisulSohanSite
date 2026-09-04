@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.4.51-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.4.52-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -80,11 +80,13 @@ The theme includes a specialized system for tracking and displaying your reading
 
 ---
 
-## Bilingual Portfolio Showcase
+## Bilingual Portfolio & Case Study Showcase
 
 The theme features a dedicated multidisciplinary portfolio template (`page-portfolio.php`) designed to showcase creative and engineering work simultaneously:
 
 - **Bilingual Experience:** Automatically adapts copy, badges, and project metadata between Bengali (`/portfolio/`) and English (`/en/portfolio/`) based on `rs_is_en()`.
+- **Interactive Case Study Pop-up Modal:** Clicking on any project card opens a distraction-free pop-up modal containing the complete case study: context, challenges, solutions, creative workflow, key highlights, and technology stack.
+- **Direct Preview Outbound Links:** Cards feature direct buttons to immediately open the original destination in a new tab: YouTube/Vimeo for videos, live websites for web projects, and GitHub repositories for extensions and scripts.
 - **Multidisciplinary Showcase:** Categorized into Video Editing & Motion Graphics, Web Development, and Browser Extensions/Plugins/Scripts.
 - **Client-Side Live Filtering:** Instant tab filtering with zero page reload and pure vanilla JavaScript.
 - **Dynamic Theming Support:** Adheres strictly to the site's design tokens and automatically adapts to dark, light, and custom user accent color schemes.
