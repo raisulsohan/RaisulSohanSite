@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.4.5-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.4.51-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -77,6 +77,17 @@ The theme includes a specialized system for tracking and displaying your reading
 - **Seamless AJAX Pagination:** Book lists paginate instantly without page reloads, mimicking the smooth navigation style of the main site.
 - **Native Author Management:** Instead of a complex taxonomy, authors are managed via dynamic meta-queries. The WordPress backend features a clean UI to select existing authors from a dropdown or add new ones on the fly.
 - **GitHub Auto-Updater:** The theme includes a built-in self-updater (`inc/github-updater.php`) that hooks into WordPress's native update system. When a new version is pushed to GitHub, the standard "Update Available" notice appears in the dashboard — no third-party plugins required. The download is pinned to the **commit SHA**, not to the `main` branch: a branch archive is served from a GitHub cache that can still hold the previous snapshot shortly after a push, which would make WordPress install the old copy and report success. A commit's archive address changes whenever its content does, so it can never be stale.
+
+---
+
+## Bilingual Portfolio Showcase
+
+The theme features a dedicated multidisciplinary portfolio template (`page-portfolio.php`) designed to showcase creative and engineering work simultaneously:
+
+- **Bilingual Experience:** Automatically adapts copy, badges, and project metadata between Bengali (`/portfolio/`) and English (`/en/portfolio/`) based on `rs_is_en()`.
+- **Multidisciplinary Showcase:** Categorized into Video Editing & Motion Graphics, Web Development, and Browser Extensions/Plugins/Scripts.
+- **Client-Side Live Filtering:** Instant tab filtering with zero page reload and pure vanilla JavaScript.
+- **Dynamic Theming Support:** Adheres strictly to the site's design tokens and automatically adapts to dark, light, and custom user accent color schemes.
 
 ---
 

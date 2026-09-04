@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '7.4.5' );
+define( 'RS_VERSION', '7.4.51' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -216,17 +216,22 @@ function rs_is_en() {
  * @return array
  */
 function rs_lang_switcher_data() {
+	$req          = isset( $_SERVER['REQUEST_URI'] ) ? trim( (string) parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' ) : '';
+	$is_portfolio = ( 'portfolio' === $req || 'en/portfolio' === $req || preg_match( '~(?:^|/)portfolio/?$~i', $req ) );
+
 	if ( rs_is_en() ) {
 		$main_id = function_exists( 'get_main_site_id' ) ? get_main_site_id() : 1;
-		$url     = is_multisite() ? get_home_url( $main_id, '/' ) : home_url( '/' );
+		$path    = $is_portfolio ? '/portfolio/' : '/';
+		$url     = is_multisite() ? get_home_url( $main_id, $path ) : home_url( $path );
 		$label   = 'BN';
 		$title   = 'বাংলায় পড়ুন';
 	} else {
-		$url = home_url( '/en/' );
+		$path = $is_portfolio ? '/en/portfolio/' : '/en/';
+		$url  = home_url( $path );
 		if ( is_multisite() ) {
 			$sites = get_sites( array( 'path' => '/en/', 'number' => 1 ) );
 			if ( ! empty( $sites ) ) {
-				$url = get_home_url( $sites[0]->blog_id, '/' );
+				$url = get_home_url( $sites[0]->blog_id, $is_portfolio ? '/portfolio/' : '/' );
 			}
 		}
 		$label = 'EN';
@@ -4602,3 +4607,39 @@ function rs_pwa_head() {
 	}
 }
 add_action( 'wp_head', 'rs_pwa_head', 0 );
+
+/* =========================================================================
+ * Portfolio Virtual Template & Title Handler
+ * ====================================================================== */
+
+/**
+ * Automatically load page-portfolio.php for /portfolio/ or /en/portfolio/ requests,
+ * even before a static page is created in wp-admin.
+ */
+add_filter( 'template_include', function( $template ) {
+	$req = isset( $_SERVER['REQUEST_URI'] ) ? trim( (string) parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' ) : '';
+	if ( 'portfolio' === $req || 'en/portfolio' === $req || preg_match( '~(?:^|/)portfolio/?$~i', $req ) ) {
+		$portfolio_file = locate_template( array( 'page-portfolio.php' ) );
+		if ( $portfolio_file ) {
+			global $wp_query;
+			if ( $wp_query && $wp_query->is_404 ) {
+				$wp_query->is_404 = false;
+				status_header( 200 );
+			}
+			return $portfolio_file;
+		}
+	}
+	return $template;
+} );
+
+/**
+ * Filter document title for portfolio page if loaded virtually.
+ */
+add_filter( 'pre_get_document_title', function( $title ) {
+	$req = isset( $_SERVER['REQUEST_URI'] ) ? trim( (string) parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' ) : '';
+	if ( 'portfolio' === $req || 'en/portfolio' === $req || preg_match( '~(?:^|/)portfolio/?$~i', $req ) ) {
+		$brand = function_exists( 'rs_brand' ) ? rs_brand() : get_bloginfo( 'name' );
+		return ( function_exists( 'rs_is_en' ) && rs_is_en() ? 'Portfolio' : 'পোর্টফোলিও' ) . ' — ' . $brand;
+	}
+	return $title;
+} );
