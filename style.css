@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
-Version: 7.3.0
+Version: 7.3.1
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -2785,3 +2785,87 @@ a.rs-article__cat:hover {
 		transform: translateY(0);
 	}
 }
+
+/* ==========================================================================
+   16. Install bar
+   ========================================================================== */
+
+.rs-install-bar {
+	position: fixed;
+	bottom: 1.5rem;
+	left: 50%;
+	transform: translateX(-50%) translateY(20px);
+	z-index: 50;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.35rem 0.5rem 0.35rem 0.85rem;
+	background: var(--rs-surface, #fff);
+	color: var(--rs-fg, #1a1a1a);
+	border: 1px solid var(--rs-border, rgba(0, 0, 0, 0.12));
+	border-radius: 9999px;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+	font-family: var(--rs-sans);
+	font-size: 0.8rem;
+	opacity: 0;
+	transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+	pointer-events: none;
+}
+
+.rs-install-bar.is-visible {
+	opacity: 1;
+	transform: translateX(-50%) translateY(0);
+	pointer-events: auto;
+}
+
+.rs-install-bar__btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	background: none;
+	border: none;
+	color: var(--rs-fg);
+	font-family: inherit;
+	font-size: inherit;
+	font-weight: 500;
+	cursor: pointer;
+	padding: 0;
+	transition: color 0.15s ease;
+}
+
+.rs-install-bar__btn:hover {
+	color: var(--rs-hover, #a24c00);
+}
+
+.rs-install-bar__btn svg {
+	flex-shrink: 0;
+}
+
+.rs-install-bar__close {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.4rem;
+	height: 1.4rem;
+	border: none;
+	background: none;
+	color: var(--rs-muted-fg);
+	border-radius: 50%;
+	cursor: pointer;
+	padding: 0;
+	transition: color 0.15s ease, background 0.15s ease;
+}
+
+.rs-install-bar__close:hover {
+	color: var(--rs-fg);
+	background: var(--rs-muted, #dfe3ea);
+}
+
+@media (max-width: 640px) {
+	.rs-install-bar {
+		bottom: 1rem;
+		font-size: 0.75rem;
+		padding: 0.3rem 0.4rem 0.3rem 0.75rem;
+	}
+}
+

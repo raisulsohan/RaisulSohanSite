@@ -50,6 +50,16 @@ $rs_about = rs_about();
 
 <span class="rs-tooltip" id="rs-tooltip" role="tooltip" aria-hidden="true"></span>
 
+<aside class="rs-install-bar" id="rs-install-bar" hidden aria-label="অ্যাপ ইনস্টলেশন">
+	<button class="rs-install-bar__btn" type="button" id="rs-install-bar-btn">
+		<?php echo wp_kses( rs_icon( 'install', 14 ), rs_svg_tags() ); ?>
+		<span>অ্যাপ ইনস্টল করুন</span>
+	</button>
+	<button class="rs-install-bar__close" type="button" id="rs-install-bar-close" aria-label="বন্ধ করুন" title="বন্ধ করুন">
+		<?php echo wp_kses( rs_icon( 'close', 12 ), rs_svg_tags() ); ?>
+	</button>
+</aside>
+
 <!-- Post modal -->
 <div class="rs-overlay" id="rs-post-overlay" role="dialog" aria-modal="true" aria-labelledby="rs-post-title" hidden>
 	<div class="rs-modal rs-modal--post">

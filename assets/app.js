@@ -3248,6 +3248,119 @@
 		} );
 	}() );
 
+	/* ---------------------------------------------------------------
+	 * PWA installation prompt
+	 * ------------------------------------------------------------ */
+
+	( function () {
+		var deferredPrompt = null;
+		var installBtn = $( '#rs-install-btn' );
+		var installBar = $( '#rs-install-bar' );
+		var installBarBtn = $( '#rs-install-bar-btn' );
+		var installBarClose = $( '#rs-install-bar-close' );
+		var DISMISSED_KEY = 'rs-install-dismissed';
+
+		var isStandalone = window.matchMedia( '(display-mode: standalone)' ).matches ||
+			window.navigator.standalone ||
+			document.referrer.indexOf( 'android-app://' ) > -1;
+
+		if ( isStandalone ) {
+			return;
+		}
+
+		var isIos = /iphone|ipad|ipod/i.test( window.navigator.userAgent ) &&
+			! window.MSStream &&
+			/safari/i.test( window.navigator.userAgent ) &&
+			! /crios|fxios/i.test( window.navigator.userAgent );
+
+		function triggerInstall() {
+			if ( deferredPrompt ) {
+				deferredPrompt.prompt();
+				deferredPrompt.userChoice.then( function ( choiceResult ) {
+					if ( choiceResult && choiceResult.outcome === 'accepted' ) {
+						hideAll();
+						toast( 'অ্যাপ ইনস্টল হচ্ছে...' );
+					}
+					deferredPrompt = null;
+				} );
+			} else if ( isIos ) {
+				toast( 'সাফারির নিচে শেয়ার আইকনে ট্যাপ করে "Add to Home Screen" বেছে নিন' );
+			}
+		}
+
+		function showPrompt() {
+			if ( installBtn ) {
+				installBtn.hidden = false;
+			}
+
+			var dismissed = store( DISMISSED_KEY );
+
+			if ( ! dismissed && installBar ) {
+				installBar.hidden = false;
+				setTimeout( function () {
+					installBar.classList.add( 'is-visible' );
+				}, 2000 );
+			}
+		}
+
+		function hideAll() {
+			if ( installBtn ) {
+				installBtn.hidden = true;
+			}
+
+			if ( installBar ) {
+				installBar.classList.remove( 'is-visible' );
+				setTimeout( function () {
+					installBar.hidden = true;
+				}, 300 );
+			}
+		}
+
+		window.addEventListener( 'beforeinstallprompt', function ( e ) {
+			e.preventDefault();
+			deferredPrompt = e;
+			showPrompt();
+		} );
+
+		window.addEventListener( 'appinstalled', function () {
+			hideAll();
+			toast( 'অ্যাপ সফলভাবে ইনস্টল হয়েছে!' );
+			deferredPrompt = null;
+		} );
+
+		if ( installBtn ) {
+			installBtn.addEventListener( 'click', function ( e ) {
+				e.preventDefault();
+				triggerInstall();
+			} );
+		}
+
+		if ( installBarBtn ) {
+			installBarBtn.addEventListener( 'click', function ( e ) {
+				e.preventDefault();
+				triggerInstall();
+			} );
+		}
+
+		if ( installBarClose ) {
+			installBarClose.addEventListener( 'click', function ( e ) {
+				e.preventDefault();
+				store( DISMISSED_KEY, '1' );
+				if ( installBar ) {
+					installBar.classList.remove( 'is-visible' );
+					setTimeout( function () {
+						installBar.hidden = true;
+					}, 300 );
+				}
+			} );
+		}
+
+		/* For iOS where beforeinstallprompt doesn't fire */
+		if ( isIos && ! store( DISMISSED_KEY ) ) {
+			showPrompt();
+		}
+	}() );
+
 	/* A post opened at its own address, rather than in the modal. Zero on
 	   every other kind of page, and countView() ignores zero. */
 	var mainPid = parseInt( cfg.postId, 10 );

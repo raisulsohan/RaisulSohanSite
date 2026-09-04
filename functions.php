@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '7.3.0' );
+define( 'RS_VERSION', '7.3.1' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -1426,6 +1426,7 @@ function rs_icon( $name, $size = 15 ) {
 		'sparkles' => '<path d=\"m12 3-1.9 5.8a2 2 0 0 1-1.2 1.2L3 12l5.8 1.9a2 2 0 0 1 1.2 1.2L12 21l1.9-5.8a2 2 0 0 1 1.2-1.2L21 12l-5.8-1.9a2 2 0 0 1-1.2-1.2Z\"/>',
 		'sun'      => '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
 		'moon'     => '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+		'install'  => '<rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/><path d="m9 10 3 3 3-3"/><path d="M12 6v7"/>',
 	);
 
 	$fill = array(
@@ -4072,11 +4073,21 @@ function rs_serve_manifest() {
 
 		if ( $url ) {
 			$manifest['icons'][] = array(
-				'src'   => $url,
-				'sizes' => $px . 'x' . $px,
-				'type'  => 'image/png',
+				'src'     => $url,
+				'sizes'   => $px . 'x' . $px,
+				'type'    => 'image/png',
+				'purpose' => 'any maskable',
 			);
 		}
+	}
+
+	if ( empty( $manifest['icons'] ) ) {
+		$manifest['icons'][] = array(
+			'src'     => get_template_directory_uri() . '/screenshot.png',
+			'sizes'   => '512x512',
+			'type'    => 'image/png',
+			'purpose' => 'any maskable',
+		);
 	}
 
 	echo wp_json_encode( $manifest, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT );
@@ -4090,5 +4101,12 @@ add_action( 'template_redirect', 'rs_serve_manifest', 0 );
 function rs_pwa_head() {
 	echo '<link rel="manifest" href="' . esc_url( home_url( '/?rs-manifest' ) ) . "\">\n";
 	echo "<meta name=\"theme-color\" content=\"#eaecf1\">\n";
+	echo "<meta name=\"mobile-web-app-capable\" content=\"yes\">\n";
+	echo "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">\n";
+	echo "<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"default\">\n";
+	$icon = get_site_icon_url( 180 );
+	if ( $icon ) {
+		echo '<link rel="apple-touch-icon" href="' . esc_url( $icon ) . "\">\n";
+	}
 }
 add_action( 'wp_head', 'rs_pwa_head', 0 );
