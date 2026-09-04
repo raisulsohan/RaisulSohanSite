@@ -5,8 +5,8 @@
  * Multidisciplinary portfolio showcase: Video Editing, Motion Animation,
  * Web Development, and Browser Extensions / Plugins / Scripts.
  *
- * Features interactive Case Study Pop-up Modals and direct preview links.
- * Fully localized for Bengali and English with identical responsive layout.
+ * Features interactive Case Study Pop-up Modals, screenshot support,
+ * and direct preview links. Fully localized for Bengali and English.
  *
  * @package raisul-sohan
  */
@@ -61,6 +61,8 @@ $projects = array(
 		'tags'        => array( 'WordPress', 'PHP 7.4+', 'Vanilla JS (ES6+)', 'CSS3 Grid', 'Built-in SEO', 'Auto-Updater' ),
 		'accent'      => '#00b894',
 		'icon'        => 'code',
+		'image'       => 'https://bichitrobiggan.com/wp-content/uploads/2026/08/logo-wide.png',
+		'image_fit'   => 'contain',
 		'action_type' => 'web',
 		'action_bn'   => 'লাইভ সাইট দেখুন',
 		'action_en'   => 'Visit Live Website',
@@ -101,6 +103,8 @@ $projects = array(
 		'tags'        => array( 'WordPress', 'PHP 8', 'Vanilla JS', 'Semantic CSS', 'REST API' ),
 		'accent'      => '#0984e3',
 		'icon'        => 'code',
+		'image'       => get_template_directory_uri() . '/screenshot.png',
+		'image_fit'   => 'cover',
 		'action_type' => 'web',
 		'action_bn'   => 'লাইভ সাইট দেখুন',
 		'action_en'   => 'Visit Live Site',
@@ -141,6 +145,7 @@ $projects = array(
 		'tags'        => array( 'JavaScript', 'CSS Grid', 'Dynamic HSL', 'UX Design' ),
 		'accent'      => '#00b894',
 		'icon'        => 'layout',
+		'image'       => '',
 		'action_type' => 'web',
 		'action_bn'   => 'বুকশেল্ফে যান',
 		'action_en'   => 'Open Bookshelf',
@@ -182,6 +187,7 @@ $projects = array(
 		'tags'        => array( 'Premiere Pro', 'DaVinci Resolve', 'Sound Design', 'Storyboarding' ),
 		'accent'      => '#e17055',
 		'icon'        => 'video',
+		'image'       => '',
 		'action_type' => 'video',
 		'action_bn'   => 'মূল ভিডিও দেখুন',
 		'action_en'   => 'Watch Main Video',
@@ -221,6 +227,7 @@ $projects = array(
 		'tags'        => array( 'After Effects', 'Illustrator', '2D Motion', 'Character Rigging' ),
 		'accent'      => '#6c5ce7',
 		'icon'        => 'animation',
+		'image'       => '',
 		'action_type' => 'video',
 		'action_bn'   => 'মোশন রিল দেখুন',
 		'action_en'   => 'View Motion Reel',
@@ -260,6 +267,7 @@ $projects = array(
 		'tags'        => array( 'After Effects', 'Premiere Pro', 'Kinetic Typography', 'Reels' ),
 		'accent'      => '#d63031',
 		'icon'        => 'video',
+		'image'       => '',
 		'action_type' => 'video',
 		'action_bn'   => 'প্রোমো দেখুন',
 		'action_en'   => 'Watch Promo',
@@ -301,6 +309,7 @@ $projects = array(
 		'tags'        => array( 'Chrome API', 'Manifest V3', 'JavaScript', 'Service Worker' ),
 		'accent'      => '#fdcb6e',
 		'icon'        => 'extension',
+		'image'       => '',
 		'action_type' => 'code',
 		'action_bn'   => 'সোর্স কোড (GitHub)',
 		'action_en'   => 'View Source on GitHub',
@@ -340,6 +349,7 @@ $projects = array(
 		'tags'        => array( 'PHP', 'WordPress Hooks', 'Core Web Vitals', 'Asset Dequeue' ),
 		'accent'      => '#6c5ce7',
 		'icon'        => 'plugin',
+		'image'       => '',
 		'action_type' => 'code',
 		'action_bn'   => 'গিটহাব রিপোজিটরি',
 		'action_en'   => 'GitHub Repository',
@@ -379,6 +389,7 @@ $projects = array(
 		'tags'        => array( 'Python', 'FFmpeg', 'Bash Script', 'CLI', 'Automation' ),
 		'accent'      => '#00cec9',
 		'icon'        => 'terminal',
+		'image'       => '',
 		'action_type' => 'code',
 		'action_bn'   => 'স্ক্রিপ্ট কোড দেখুন',
 		'action_en'   => 'View Script on GitHub',
@@ -466,41 +477,70 @@ $projects = array(
 			?>
 			<article class="rs-portfolio-card" data-category="<?php echo esc_attr( $p['category'] ); ?>" data-project-id="<?php echo esc_attr( $p['id'] ); ?>" id="project-<?php echo esc_attr( $p['id'] ); ?>">
 				
-				<!-- Card Visual Mockup (Clickable for Case Study Modal) -->
+				<!-- Card Visual Mockup / Real Screenshot -->
 				<div class="rs-portfolio-card__visual rs-portfolio-card__visual--<?php echo esc_attr( $p['category'] ); ?> rs-open-case-study" data-project-id="<?php echo esc_attr( $p['id'] ); ?>" title="<?php echo esc_attr( $rs_is_en ? 'Open Case Study' : 'কেস স্টাডি দেখুন' ); ?>" role="button" tabindex="0">
-					<?php if ( 'video' === $p['category'] ) : ?>
-						<div class="rs-portfolio-card__media-placeholder">
-							<div class="rs-portfolio-card__play-btn">
-								<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+					
+					<?php if ( ! empty( $p['image'] ) ) : ?>
+						<?php if ( 'web' === $p['category'] ) : ?>
+							<div class="rs-portfolio-card__browser-bar">
+								<span class="rs-portfolio-dot"></span>
+								<span class="rs-portfolio-dot"></span>
+								<span class="rs-portfolio-dot"></span>
+								<span class="rs-portfolio-card__url"><?php echo esc_html( $card_domain ); ?></span>
 							</div>
-							<span class="rs-portfolio-card__media-tag"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></span>
-						</div>
-					<?php elseif ( 'web' === $p['category'] ) : ?>
-						<div class="rs-portfolio-card__browser-bar">
-							<span class="rs-portfolio-dot"></span>
-							<span class="rs-portfolio-dot"></span>
-							<span class="rs-portfolio-dot"></span>
-							<span class="rs-portfolio-card__url"><?php echo esc_html( $card_domain ); ?></span>
-						</div>
-						<div class="rs-portfolio-card__web-preview">
-							<div class="rs-portfolio-card__wire-block"></div>
-							<div class="rs-portfolio-card__wire-line"></div>
-							<div class="rs-portfolio-card__wire-line short"></div>
-						</div>
+							<div class="rs-portfolio-card__img-wrap <?php echo ( ! empty( $p['image_fit'] ) && 'contain' === $p['image_fit'] ) ? 'is-contain' : ''; ?>">
+								<img src="<?php echo esc_url( $p['image'] ); ?>" alt="<?php echo esc_attr( $rs_is_en ? $p['title_en'] : $p['title_bn'] ); ?>" class="rs-portfolio-card__img" loading="lazy">
+							</div>
+						<?php elseif ( 'video' === $p['category'] ) : ?>
+							<div class="rs-portfolio-card__img-wrap" style="background-image: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.45)), url('<?php echo esc_url( $p['image'] ); ?>'); background-size: cover; background-position: center;">
+								<div class="rs-portfolio-card__play-btn">
+									<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+								</div>
+								<span class="rs-portfolio-card__media-tag"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></span>
+							</div>
+						<?php else : ?>
+							<div class="rs-portfolio-card__img-wrap">
+								<img src="<?php echo esc_url( $p['image'] ); ?>" alt="<?php echo esc_attr( $rs_is_en ? $p['title_en'] : $p['title_bn'] ); ?>" class="rs-portfolio-card__img" loading="lazy">
+								<span class="rs-portfolio-card__media-tag"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></span>
+							</div>
+						<?php endif; ?>
 					<?php else : ?>
-						<div class="rs-portfolio-card__tool-banner">
-							<div class="rs-portfolio-card__tool-icon">
-								<?php if ( 'extension' === $p['icon'] ) : ?>
-									🧩
-								<?php elseif ( 'terminal' === $p['icon'] ) : ?>
-									⌨️
-								<?php else : ?>
-									⚙️
-								<?php endif; ?>
+						<!-- Fallback CSS Mockup -->
+						<?php if ( 'video' === $p['category'] ) : ?>
+							<div class="rs-portfolio-card__media-placeholder">
+								<div class="rs-portfolio-card__play-btn">
+									<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+								</div>
+								<span class="rs-portfolio-card__media-tag"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></span>
 							</div>
-							<span class="rs-portfolio-card__media-tag"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></span>
-						</div>
+						<?php elseif ( 'web' === $p['category'] ) : ?>
+							<div class="rs-portfolio-card__browser-bar">
+								<span class="rs-portfolio-dot"></span>
+								<span class="rs-portfolio-dot"></span>
+								<span class="rs-portfolio-dot"></span>
+								<span class="rs-portfolio-card__url"><?php echo esc_html( $card_domain ); ?></span>
+							</div>
+							<div class="rs-portfolio-card__web-preview">
+								<div class="rs-portfolio-card__wire-block"></div>
+								<div class="rs-portfolio-card__wire-line"></div>
+								<div class="rs-portfolio-card__wire-line short"></div>
+							</div>
+						<?php else : ?>
+							<div class="rs-portfolio-card__tool-banner">
+								<div class="rs-portfolio-card__tool-icon">
+									<?php if ( 'extension' === $p['icon'] ) : ?>
+										🧩
+									<?php elseif ( 'terminal' === $p['icon'] ) : ?>
+										⌨️
+									<?php else : ?>
+										⚙️
+									<?php endif; ?>
+								</div>
+								<span class="rs-portfolio-card__media-tag"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></span>
+							</div>
+						<?php endif; ?>
 					<?php endif; ?>
+
 					<div class="rs-portfolio-card__visual-hover">
 						<span>📋 <?php echo esc_html( $rs_is_en ? 'Read Case Study' : 'কেস স্টাডি পড়ুন' ); ?></span>
 					</div>
@@ -706,6 +746,8 @@ foreach ( $projects as $p ) {
 		'tags'        => $p['tags'],
 		'accent'      => $p['accent'],
 		'icon'        => $p['icon'],
+		'image'       => ! empty( $p['image'] ) ? $p['image'] : '',
+		'image_fit'   => ! empty( $p['image_fit'] ) ? $p['image_fit'] : 'cover',
 		'action_type' => $p['action_type'],
 		'action_label'=> $rs_is_en ? $p['action_en'] : $p['action_bn'],
 		'direct_url'  => $p['direct_url'],
@@ -832,14 +874,25 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 			githubBtn.style.display = 'none';
 		}
 
-		// Dynamic Visual Banner
+		// Dynamic Visual Banner (Real Screenshot or CSS Mockup)
 		var displayDomain = p.direct_url.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
-		if (p.category === 'video') {
-			visualEl.innerHTML = '<div class="rs-case-study-video-mockup"><div class="rs-portfolio-card__play-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div><span class="rs-case-study-video-label">' + (document.documentElement.lang.indexOf('en') === 0 ? 'HD Video Preview' : 'এইচডি ভিডিও প্রিভিউ') + '</span></div>';
-		} else if (p.category === 'web') {
-			visualEl.innerHTML = '<div class="rs-case-study-web-mockup"><div class="rs-portfolio-card__browser-bar"><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-card__url">' + displayDomain + '</span></div><div class="rs-case-study-web-body"><span>⚡ ' + (document.documentElement.lang.indexOf('en') === 0 ? 'Fast Responsive Zero-Plugin Web Platform' : 'দ্রুতগতির জিরো-প্লাগিন রেসপনসিভ ওয়েবসাইট') + '</span></div></div>';
+		if (p.image) {
+			if (p.category === 'web') {
+				var fitClass = p.image_fit === 'contain' ? ' is-contain' : '';
+				visualEl.innerHTML = '<div class="rs-case-study-web-mockup"><div class="rs-portfolio-card__browser-bar"><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-card__url">' + displayDomain + '</span></div><div class="rs-case-study-img-wrap' + fitClass + '"><img src="' + p.image + '" alt="' + p.title + '" class="rs-case-study-img"></div></div>';
+			} else if (p.category === 'video') {
+				visualEl.innerHTML = '<div class="rs-case-study-video-mockup" style="background-image: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.45)), url(' + p.image + '); background-size: cover; background-position: center;"><div class="rs-portfolio-card__play-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div><span class="rs-case-study-video-label">' + (document.documentElement.lang.indexOf('en') === 0 ? 'HD Video Preview' : 'এইচডি ভিডিও প্রিভিউ') + '</span></div>';
+			} else {
+				visualEl.innerHTML = '<div class="rs-case-study-img-wrap"><img src="' + p.image + '" alt="' + p.title + '" class="rs-case-study-img"></div>';
+			}
 		} else {
-			visualEl.innerHTML = '<div class="rs-case-study-tool-mockup"><div class="rs-case-study-tool-badge">' + (p.icon === 'extension' ? '🧩' : (p.icon === 'terminal' ? '⌨️' : '⚙️')) + '</div><span>' + p.type + '</span></div>';
+			if (p.category === 'video') {
+				visualEl.innerHTML = '<div class="rs-case-study-video-mockup"><div class="rs-portfolio-card__play-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div><span class="rs-case-study-video-label">' + (document.documentElement.lang.indexOf('en') === 0 ? 'HD Video Preview' : 'এইচডি ভিডিও প্রিভিউ') + '</span></div>';
+			} else if (p.category === 'web') {
+				visualEl.innerHTML = '<div class="rs-case-study-web-mockup"><div class="rs-portfolio-card__browser-bar"><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-card__url">' + displayDomain + '</span></div><div class="rs-case-study-web-body"><span>⚡ ' + (document.documentElement.lang.indexOf('en') === 0 ? 'Fast Responsive Zero-Plugin Web Platform' : 'দ্রুতগতির জিরো-প্লাগিন রেসপনসিভ ওয়েবসাইট') + '</span></div></div>';
+			} else {
+				visualEl.innerHTML = '<div class="rs-case-study-tool-mockup"><div class="rs-case-study-tool-badge">' + (p.icon === 'extension' ? '🧩' : (p.icon === 'terminal' ? '⌨️' : '⚙️')) + '</div><span>' + p.type + '</span></div>';
+			}
 		}
 
 		// Show Modal

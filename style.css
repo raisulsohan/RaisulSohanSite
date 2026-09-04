@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
-Version: 7.4.53
+Version: 7.4.54
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -3166,6 +3166,45 @@ a.rs-article__cat:hover {
 }
 
 /* Browser Mockup for Web Cards */
+.rs-portfolio-card__img-wrap {
+	width: 100%;
+	height: 100%;
+	position: relative;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--rs-surface);
+}
+
+.rs-portfolio-card__visual--web .rs-portfolio-card__img-wrap {
+	height: calc(100% - 28px);
+}
+
+.rs-portfolio-card__img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: top center;
+	display: block;
+	transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rs-portfolio-card:hover .rs-portfolio-card__img {
+	transform: scale(1.05);
+}
+
+.rs-portfolio-card__img-wrap.is-contain {
+	background: var(--rs-surface);
+	padding: 1.25rem;
+}
+
+.rs-portfolio-card__img-wrap.is-contain .rs-portfolio-card__img {
+	object-fit: contain;
+	max-height: 100%;
+	max-width: 100%;
+}
+
 .rs-portfolio-card__browser-bar {
 	width: 100%;
 	height: 28px;
@@ -3534,17 +3573,51 @@ a.rs-article__cat:hover {
 
 /* Visual Mockup inside Modal */
 .rs-case-study-visual {
-	height: 180px;
+	height: 220px;
 	border-radius: var(--rs-radius-lg);
 	overflow: hidden;
 	margin-bottom: 1.75rem;
-	background: var(--rs-muted);
+	background: var(--rs-surface);
 	border: 1px solid var(--rs-border-40);
 }
 
 .rs-case-study-visual__inner {
 	width: 100%;
 	height: 100%;
+}
+
+.rs-case-study-img-wrap {
+	width: 100%;
+	height: 100%;
+	position: relative;
+	overflow: hidden;
+	background: var(--rs-surface);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.rs-case-study-web-mockup .rs-case-study-img-wrap {
+	height: calc(100% - 28px);
+}
+
+.rs-case-study-img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: top center;
+	display: block;
+}
+
+.rs-case-study-img-wrap.is-contain {
+	background: var(--rs-surface);
+	padding: 1.5rem;
+}
+
+.rs-case-study-img-wrap.is-contain .rs-case-study-img {
+	object-fit: contain;
+	max-height: 100%;
+	max-width: 100%;
 }
 
 .rs-case-study-video-mockup {
@@ -3681,7 +3754,7 @@ a.rs-article__cat:hover {
 		padding: 1.5rem 1.15rem;
 	}
 	.rs-case-study-visual {
-		height: 140px;
+		height: 160px;
 	}
 	.rs-portfolio-card__footer {
 		flex-direction: column;
