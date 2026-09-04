@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
-Version: 7.4.61
+Version: 7.4.62
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -3696,6 +3696,22 @@ a.rs-article__cat:hover {
 	border-color: rgba(255, 255, 255, 0.3);
 }
 
+.rs-case-study-zoom-badge.is-clickable {
+	pointer-events: auto;
+	cursor: zoom-in;
+	background: rgba(15, 23, 42, 0.85);
+	border: 1px solid rgba(255, 255, 255, 0.25);
+	color: #ffffff;
+}
+
+.rs-case-study-zoom-badge.is-clickable:hover,
+.rs-case-study-zoom-badge.is-clickable:focus-visible {
+	opacity: 1;
+	background: rgba(15, 23, 42, 0.98);
+	transform: scale(1.06);
+	border-color: rgba(255, 255, 255, 0.5);
+}
+
 .rs-case-study-zoom-badge svg {
 	display: block;
 	flex-shrink: 0;
@@ -3789,21 +3805,56 @@ a.rs-article__cat:hover {
 	border-color: rgba(255, 255, 255, 0.5);
 }
 
+.rs-case-study-video-wrap {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	min-height: 220px;
+	overflow: hidden;
+}
+
+.rs-case-study-visual.is-full-view .rs-case-study-video-wrap {
+	aspect-ratio: 16 / 9;
+	height: auto;
+	max-height: 480px;
+}
+
 .rs-case-study-video-mockup {
 	width: 100%;
 	height: 100%;
+	min-height: 220px;
 	background: linear-gradient(135deg, rgba(225, 112, 85, 0.25) 0%, rgba(214, 48, 49, 0.35) 100%), var(--rs-muted);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: 0.5rem;
+	gap: 0.75rem;
+	text-decoration: none;
+	cursor: pointer;
+	transition: filter 0.2s ease;
+}
+
+.rs-case-study-video-mockup:hover {
+	filter: brightness(1.08);
+}
+
+.rs-case-study-video-mockup:hover .rs-portfolio-card__play-btn {
+	transform: scale(1.15);
+	background: var(--rs-primary, #0080ff);
+	color: #fff;
+	box-shadow: 0 8px 24px rgba(0, 128, 255, 0.45);
 }
 
 .rs-case-study-video-label {
 	font-size: 0.8rem;
 	font-weight: 600;
-	color: var(--rs-fg);
+	color: #ffffff;
+	background: rgba(0, 0, 0, 0.5);
+	padding: 0.25rem 0.85rem;
+	border-radius: 9999px;
+	backdrop-filter: blur(4px);
+	-webkit-backdrop-filter: blur(4px);
+	border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .rs-case-study-web-mockup {

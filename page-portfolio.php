@@ -162,6 +162,52 @@ $projects = array(
 
 	// Video & Animation
 	array(
+		'id'          => 'thrivedesk-explainer',
+		'category'    => 'video',
+		'type_bn'     => 'সাস প্রডাক্ট এক্সপ্লেইনার ও মোশন অ্যানিমেশন',
+		'type_en'     => 'SaaS Product Explainer & Motion Animation',
+		'badge_bn'    => 'সাস অ্যানিমেশন • ৩ মিনিট',
+		'badge_en'    => 'SaaS Explainer • 3 Mins',
+		'title_bn'    => 'ThriveDesk Overview — ৩ মিনিটের সাস মোশন অ্যানিমেশন ও প্রোডাক্ট ওয়াকথ্রু',
+		'title_en'    => 'ThriveDesk Overview — 3-Minute SaaS Motion Animation & Product Walkthrough',
+		'summary_bn'  => 'গ্রোয়িং বিজনেসের কাস্টমার সাপোর্ট সহজ করতে থ্রাইভডেস্কের সেন্ট্রালাইজড ইনবক্স, টিকেট ডেলিগেশন, এআই রেসপন্স ড্রাফটিং, অটোমেশন রুলস, লাইভ চ্যাট অ্যাসিস্ট্যান্ট ও নলেজবেস ফিচারগুলোর আকর্ষণীয় ২ডি মোশন গ্রাফিক্স ওয়াকথ্রু।',
+		'summary_en'  => 'Dynamic 2D SaaS motion explainer visualizing ThriveDesk\'s all-in-one customer support suite—shared inboxes, AI drafting, ticket delegation, automated workflows, live chat widgets, and self-service knowledge base in 3 minutes.',
+		'role_bn'     => 'মোশন ডিজাইনার ও এক্সপ্লেইনার অ্যানিমেটর',
+		'role_en'     => 'Motion Designer & Explainer Animator',
+		'context_bn'  => 'অফিসিয়াল SaaS ওভারভিউ ভিডিও • ৩ মিনিট • ১৬:৯',
+		'context_en'  => 'Official SaaS Overview Video • 3 Mins • 16:9',
+		'challenge_bn'=> "থ্রাইভডেস্কের মতো একটি পরিপূর্ণ মাল্টি-ফাংশনাল কাস্টমার সাপোর্ট স্যুট—যাতে রয়েছে সেন্ট্রালাইজড ইনবক্স (Gmail, Outlook, Zoho), টিকেট ডেলিগেশন, ট্যাগ ও কালার কোডিং, ক্যানড রিপ্লাই, এআই ড্রাফটিং, প্রাইভেট নোটস ও টিম @মেনশন, ডুপ্লিকেট টিকেট মার্জিং, অটোমেশন রুলস ও স্প্যাম ফিল্টারিং, লাইভ চ্যাট অ্যাসিস্ট্যান্ট, রিয়েল-টাইম ভিজিটর ট্র্যাকিং, নলেজবেস পোর্টাল এবং ওয়ার্ডপ্রেস, WooCommerce ও Shopify-এর গভীর ইন্টিগ্রেশন—এই বিশাল জটিল প্ল্যাটফর্মকে মাত্র ৩ মিনিটের ভেতর সাধারণ ব্যবসা পরিচালকদের কাছে আকর্ষণীয় ও সাবলীলভাবে ফুটিয়ে তোলা ছিল মূল চ্যালেঞ্জ।\n\nসাধারণ স্ক্রিন রেকর্ডিং দিয়ে দেখালে ভিডিওটি একঘেয়ে ও ধীরগতির হয়ে পড়ে। তাই সফটওয়্যারটির প্রতিটি ইউআই এলিমেন্টকে স্ক্রিন থেকে আলাদা করে স্কেলেবল ভেক্টর গ্রাফিক্সে রূপান্তর করা, স্ন্যাপি ট্রানজিশনের মাধ্যমে জটিল ওয়ার্কফ্লোকে সহজ ভিজ্যুয়াল মেটাফোরে উপস্থাপন করা এবং প্রফেশনাল ভয়েসওভারের রিদমের সাথে নিখুঁত সিঙ্ক বজায় রাখা ছিল প্রধান কারিগরি ও ক্রিয়েটিভ চ্যালেঞ্জ।",
+		'challenge_en'=> "ThriveDesk encompasses a comprehensive customer support ecosystem: unified email syncing (Gmail, Outlook, Zoho), team ticket delegation, color-coded tagging, canned replies, AI drafting, internal private notes, team @mentions, conversation history, ticket deduplication, automated routing & spam filtering, live website chat assistants, real-time visitor tracking, self-service knowledge bases, and deep e-commerce integrations (WordPress, WooCommerce, Shopify). Distilling this sprawling platform into a concise, engaging 3-minute visual walkthrough without overwhelming business owners was a profound communication challenge.\n\nTraditional desktop screencasts feel static, cluttered, and sluggish. The creative and technical challenge was deconstructing the product's UI into modular vector compositions, orchestrating fluid camera choreographies and snappy transition curves across 15+ feature states, and establishing rhythmic kinetic motion tightly locked to voiceover cadence.",
+		'solution_bn' => "১. ৩-অ্যাক্ট ভিজ্যুয়াল আর্কিটেকচার: ভিডিওটিকে তিনটি স্পষ্ট অধ্যায়ে বিন্যস্ত করা হয়েছে— (ক) ইনবক্স সেটআপ, টিম অনবোর্ডিং ও টিকেট ডেলিগেশন; (খ) অটোমেশন রুলস, এআই ড্রাফটিং, ক্যানড রিপ্লাই ও ইন্টারনাল কোলাবোরেশন; এবং (গ) লাইভ চ্যাট অ্যাসিস্ট্যান্ট, রিয়েল-টাইম ভিজিটর এনগেজমেন্ট, নলেজবেস ও ই-কমার্স ইন্টিগ্রেশন।\n\n২. মডুলার ভেক্টর ইউআই রিকনস্ট্রাকশন: প্রতিটি স্ক্রিন, বাটন, ড্রপডাউন এবং চ্যাট বাবলকে ইলাস্ট্রেটরে স্কেলেবল ভেক্টর লেয়ারে নিখুঁতভাবে তৈরি করা হয়েছে, যাতে আল্ট্রা-এইচডি ডিসপ্লেতেও প্রতিটি টেক্সট ও আইকন ক্রিস্টাল ক্লিয়ার থাকে।\n\n৩. স্ন্যাপি কিফ্রেম ও ভেলোসিটি কার্ভস: আফটার ইফেক্টসের গ্রাফ এডিটর ব্যবহার করে অর্গানিক ইলাস্টিক বাউন্স, স্মুথ ইজিং ও স্ন্যাপি ট্রানজিশন তৈরি করা হয়েছে, যা দর্শকদের দৃষ্টিকে স্বাভাবিকভাবে এক ফিচার থেকে অন্য ফিচারে প্রবাহিত করে।\n\n৪. ভিজ্যুয়াল মেটাফোর ও আইকনোগ্রাফি: ইমেল প্রোভাইডার কানেকশন, ডুপ্লিকেট মার্জিং এবং এআই রেসপন্স তৈরির ক্ষেত্রে জটিল টেকনিক্যাল ধারণাকে সহজ ও উপভোগ্য অ্যানিমেশনে রূপান্তর করা হয়েছে।\n\n৫. সাউন্ড ডিজাইন ও অডিও সিঙ্ক: প্রতিটি বাটন ক্লিক, পপ-আপ, কার্ড সোয়াইপ এবং ট্রানজিশনের জন্য নিখুঁত সাউন্ড এফেক্টস (foley, whooshes, UI pops) লেয়ারিং করা হয়েছে, যা ভয়েসওভারের গতি ও মেজাজের সাথে নিখুঁতভাবে সিঙ্ক হয়ে সর্বোচ্চ রিটেনশন নিশ্চিত করে।",
+		'solution_en' => "1. Three-Act Narrative Architecture: Segmented the 3-minute script into a structured narrative arc: (a) Shared Inbox foundation, team onboarding, and ticket delegation; (b) Workflow automation, canned responses, spam filtering, private notes, and AI drafting; (c) Live chat assistants, real-time visitor monitoring, self-service knowledge bases, and WordPress/e-commerce integrations.\n\n2. Modular Vector UI Reconstruction: Vectorized every screen, ticket row, dropdown modal, and widget icon in Adobe Illustrator, ensuring razor-sharp high-DPI rendering and clean layout hierarchy without visual clutter.\n\n3. Velocity Curves & Fluid Transitions: Rigged dynamic motion inside Adobe After Effects using custom speed graph curves, kinetic pops, and camera pans that guide viewer eye tracking effortlessly across dense interface workflows.\n\n4. Visual Metaphor Orchestration: Translated technical concepts—such as multi-provider email synchronization, internal notes/@mentions, ticket deduplication, and automated routing rules—into engaging kinetic sequences.\n\n5. Layered UI Sound Design: Engineered bespoke micro-audio cues (clicks, whooshes, notification chimes, and swooshes) synchronized with screen transformations, elevating brand polish and auditory immersion.",
+		'highlights_bn'=> array(
+			'৩ মিনিটে থ্রাইভডেস্কের সম্পূর্ণ কাস্টমার সাপোর্ট প্ল্যাটফর্মের আকর্ষণীয় উপস্থাপন',
+			'শেয়ার্ড ইনবক্স, টিকেট ডেলিগেশন ও টিম কোলাবোরেশনের স্ন্যাপি মোশন',
+			'এআই রেসপন্স ড্রাফটিং, ক্যানড রিপ্লাই ও অটোমেশন রুলসের ভিজ্যুয়াল ওয়াকথ্রু',
+			'লাইভ চ্যাট উইজেট, রিয়েল-টাইম ভিজিটর ট্র্যাকিং ও নলেজবেস অ্যানিমেশন',
+			'ওয়ার্ডপ্রেস, WooCommerce ও Shopify ই-কমার্স ইন্টিগ্রেশনের পরিষ্কার চিত্রায়ন',
+			'কাস্টম ভেক্টর ইউআই ডিজাইন ও আফটার ইফেক্টস গ্রাফ এডিটর ভেলোসিটি স্মুথিং',
+			'প্রফেশনাল সাউন্ড ডিজাইন ও ভয়েসওভারের সাথে নিখুঁত বিট-সিঙ্ক'
+		),
+		'highlights_en'=> array(
+			'Comprehensive 3-minute SaaS overview animating ThriveDesk’s complete support suite',
+			'Dynamic visualization of shared inboxes, ticket assignment, and team collaboration',
+			'Kinetic walkthrough of AI drafting, canned responses, and workflow automations',
+			'Animated presentation of live chat assistant widgets, visitor monitoring, and knowledge bases',
+			'Clear depiction of WordPress, WooCommerce, and Shopify native integrations',
+			'Full vector UI reconstruction with After Effects velocity curve smoothing',
+			'Precision UI sound design synchronized with motion transitions and voiceover cadence'
+		),
+		'tags'        => array( 'After Effects', 'Illustrator', 'SaaS Explainer', 'Motion Graphics', '2D Animation', 'Sound Design' ),
+		'accent'      => '#6c5ce7',
+		'icon'        => 'video',
+		'image'       => get_template_directory_uri() . '/assets/img/thrivedesk.png',
+		'action_type' => 'video',
+		'action_bn'   => 'ইউটিউবে ভিডিওটি দেখুন',
+		'action_en'   => 'Watch Video on YouTube',
+		'direct_url'  => 'https://youtu.be/ff0j6OYG4Ms',
+	),
+	array(
 		'id'          => 'docu-story',
 		'category'    => 'video',
 		'type_bn'     => 'ভিডিও এডিটিং',
@@ -1070,20 +1116,34 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 			if (p.category === 'web') {
 				visualEl.innerHTML = '<div class="rs-case-study-web-mockup"><div class="rs-portfolio-card__browser-bar"><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-card__url">' + displayDomain + '</span></div><div class="rs-case-study-img-wrap' + fitClass + zoomClass + '"' + zoomAttrs + '><img src="' + p.image + '" alt="' + p.title + '" class="rs-case-study-img">' + zoomHint + '</div></div>';
 			} else if (p.category === 'video') {
-				visualEl.innerHTML = '<div class="rs-case-study-video-mockup" style="background-image: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.45)), url(' + p.image + '); background-size: cover; background-position: center;"><div class="rs-portfolio-card__play-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div><span class="rs-case-study-video-label">' + (isEn ? 'HD Video Preview' : 'এইচডি ভিডিও প্রিভিউ') + '</span></div>';
+				var videoZoomBtn = isZoomable
+					? '<button type="button" class="rs-case-study-zoom-badge is-clickable" aria-label="' + (isEn ? 'Click to view full image' : 'সম্পূর্ণ ছবি দেখতে ক্লিক করুন') + '" title="' + (isEn ? 'Click to zoom artwork' : 'আর্টওয়ার্ক বড় করে দেখুন') + '">' +
+					  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>' +
+					  '<span>' + (isEn ? 'Click to zoom' : 'বড় করে দেখুন') + '</span>' +
+					  '</button>'
+					: '';
+				visualEl.innerHTML = '<div class="rs-case-study-video-wrap">' +
+					'<a href="' + p.direct_url + '" target="_blank" rel="noopener noreferrer" class="rs-case-study-video-mockup" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url(' + p.image + '); background-size: cover; background-position: center;" title="' + (isEn ? 'Watch on YouTube (Opens in new tab)' : 'ইউটিউবে দেখুন (নতুন ট্যাবে খুলবে)') + '">' +
+					'<div class="rs-portfolio-card__play-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div>' +
+					'<span class="rs-case-study-video-label">' + (isEn ? 'HD Video Preview • Click to Watch' : 'এইচডি ভিডিও প্রিভিউ • দেখতে ক্লিক করুন') + '</span>' +
+					'</a>' +
+					videoZoomBtn +
+					'</div>';
 			} else {
 				visualEl.innerHTML = '<div class="rs-case-study-img-wrap' + fitClass + zoomClass + '"' + zoomAttrs + '><img src="' + p.image + '" alt="' + p.title + '" class="rs-case-study-img">' + zoomHint + '</div>';
 			}
 
 			if (isZoomable) {
-				var zoomTrigger = visualEl.querySelector('.is-zoomable');
+				var zoomTrigger = visualEl.querySelector('.is-zoomable, .rs-case-study-zoom-badge.is-clickable');
 				if (zoomTrigger) {
 					zoomTrigger.addEventListener('click', function(e) {
 						e.stopPropagation();
+						e.preventDefault();
 						openLightbox(p.image, p.title);
 					});
 					zoomTrigger.addEventListener('keydown', function(e) {
 						if (e.key === 'Enter' || e.key === ' ') {
+							e.stopPropagation();
 							e.preventDefault();
 							openLightbox(p.image, p.title);
 						}
@@ -1092,7 +1152,12 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 			}
 		} else {
 			if (p.category === 'video') {
-				visualEl.innerHTML = '<div class="rs-case-study-video-mockup"><div class="rs-portfolio-card__play-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div><span class="rs-case-study-video-label">' + (isEn ? 'HD Video Preview' : 'এইচডি ভিডিও প্রিভিউ') + '</span></div>';
+				visualEl.innerHTML = '<div class="rs-case-study-video-wrap">' +
+					'<a href="' + p.direct_url + '" target="_blank" rel="noopener noreferrer" class="rs-case-study-video-mockup" title="' + (isEn ? 'Watch on YouTube (Opens in new tab)' : 'ইউটিউবে দেখুন (নতুন ট্যাবে খুলবে)') + '">' +
+					'<div class="rs-portfolio-card__play-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div>' +
+					'<span class="rs-case-study-video-label">' + (isEn ? 'HD Video Preview • Click to Watch' : 'এইচডি ভিডিও প্রিভিউ • দেখতে ক্লিক করুন') + '</span>' +
+					'</a>' +
+					'</div>';
 			} else if (p.category === 'web') {
 				visualEl.innerHTML = '<div class="rs-case-study-web-mockup"><div class="rs-portfolio-card__browser-bar"><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-card__url">' + displayDomain + '</span></div><div class="rs-case-study-web-body"><span>⚡ ' + (isEn ? 'Fast Responsive Zero-Plugin Web Platform' : 'দ্রুতগতির জিরো-প্লাগিন রেসপনসিভ ওয়েবসাইট') + '</span></div></div>';
 			} else {
