@@ -3257,8 +3257,25 @@
 		var installBtn = $( '#rs-install-btn' );
 		var installBar = $( '#rs-install-bar' );
 		var installBarBtn = $( '#rs-install-bar-btn' );
-		var installBarClose = $( '#rs-install-bar-close' );
 		var DISMISSED_KEY = 'rs-install-dismissed';
+		var SNOOZE_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
+
+		function isDismissed() {
+			var raw = store( DISMISSED_KEY );
+
+			if ( ! raw ) {
+				return false;
+			}
+
+			var time = parseInt( raw, 10 );
+
+			if ( ! time || isNaN( time ) ) {
+				store( DISMISSED_KEY, String( Date.now() ) );
+				return true;
+			}
+
+			return ( Date.now() - time ) < SNOOZE_MS;
+		}
 
 		var isStandalone = window.matchMedia( '(display-mode: standalone)' ).matches ||
 			window.navigator.standalone ||
@@ -3293,9 +3310,7 @@
 				installBtn.hidden = false;
 			}
 
-			var dismissed = store( DISMISSED_KEY );
-
-			if ( ! dismissed && installBar ) {
+			if ( ! isDismissed() && installBar ) {
 				installBar.hidden = false;
 				setTimeout( function () {
 					installBar.classList.add( 'is-visible' );
@@ -3345,7 +3360,7 @@
 		if ( installBarClose ) {
 			installBarClose.addEventListener( 'click', function ( e ) {
 				e.preventDefault();
-				store( DISMISSED_KEY, '1' );
+				store( DISMISSED_KEY, String( Date.now() ) );
 				if ( installBar ) {
 					installBar.classList.remove( 'is-visible' );
 					setTimeout( function () {
@@ -3356,7 +3371,7 @@
 		}
 
 		/* For iOS where beforeinstallprompt doesn't fire */
-		if ( isIos && ! store( DISMISSED_KEY ) ) {
+		if ( isIos && ! isDismissed() ) {
 			showPrompt();
 		}
 	}() );
