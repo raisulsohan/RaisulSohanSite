@@ -284,44 +284,52 @@ $projects = array(
 
 	// Extensions, Plugins & Scripts
 	array(
-		'id'          => 'chrome-ext',
+		'id'          => 'quiet-scroll',
 		'category'    => 'tools',
-		'type_bn'     => 'ক্রোম এক্সটেনশন',
-		'type_en'     => 'Chrome Extension',
-		'badge_bn'    => 'Manifest V3',
-		'badge_en'    => 'Manifest V3',
-		'title_bn'    => 'স্মার্ট ওয়ার্কফ্লো ও ট্যাব ম্যানেজার (Manifest V3)',
-		'title_en'    => 'Smart Workflow & Tab Manager (Manifest V3)',
-		'summary_bn'  => 'ব্রাউজিং প্রোডাক্টিভিটি বাড়াতে তৈরি আধুনিক Manifest V3 এক্সটেনশন। কিবোর্ড শর্টকাট, কুইক গ্রুপ ও সেশন মেমোরি সংরক্ষণ ফিচার যুক্ত।',
-		'summary_en'  => 'A high-performance Chrome extension built on Manifest V3 for organizing active workflows, quick tab grouping, and instant session recall.',
-		'role_bn'     => 'এক্সটেনশন ডেভেলপার',
-		'role_en'     => 'Extension Developer',
-		'context_bn'  => 'ব্রাউজার প্রোডাক্টিভিটি ইউটিলিটি',
-		'context_en'  => 'Browser Productivity Utility',
-		'challenge_bn'=> 'ক্রোমের নতুন Manifest V3 আর্কিটেকচারে ব্যাকগ্রাউন্ড সার্ভিস ওয়ার্কার টার্মিনেশনের চ্যালেঞ্জ মোকাবিলা করে রিয়েল-টাইম ট্যাব ট্র্যাকিং নিশ্চিত করা।',
-		'challenge_en'=> 'Working within Manifest V3 ephemeral service worker lifecycles while maintaining persistent session state and zero memory leaks.',
-		'solution_bn' => 'Chrome Storage API এবং ডিক্লারেটিভ ইভেন্ট লিসেনার ব্যবহার করা হয়েছে। ব্যাকগ্রাউন্ডে কম মেমোরি খরচ করে কিবোর্ড কমান্ডে ট্যাব রিনেম ও গ্রুপ করা যায়।',
-		'solution_en' => 'Implemented efficient event-driven service workers paired with IndexedDB/Chrome Storage, enabling lightning-fast keyboard-first workspace switching.',
+		'type_bn'     => 'ক্রোম ও এজ এক্সটেনশন',
+		'type_en'     => 'Chrome & Edge Extension',
+		'badge_bn'    => 'Manifest V3 • ওপেন সোর্স',
+		'badge_en'    => 'Manifest V3 • Open Source',
+		'title_bn'    => 'QuietScroll — স্মার্ট পার-সাইট মিডিয়া ভলিউম কন্ট্রোল',
+		'title_en'    => 'QuietScroll — Smart Per-Site Media Volume Control',
+		'summary_bn'  => 'যেকোনো ভিডিও বা অডিও প্লেয়ারে Alt + মাউস হুইল ঘুরিয়ে নিরবচ্ছিন্ন সাউন্ড নিয়ন্ত্রণ, অটোপ্লে থেকে রক্ষা করতে ভলিউম গার্ড এবং প্রতিটি সাইটের জন্য আলাদা ভলিউম মেমোরি মনে রাখার হালকা ক্রোম এক্সটেনশন।',
+		'summary_en'  => 'Lightweight Chromium extension for controlling any media volume using Alt + Mouse Wheel. Features per-site volume memory, MAIN-world Volume Guard, ultra-low presets, and instant Night Mode.',
+		'role_bn'     => 'একক এক্সটেনশন আর্কিটেক্ট ও ডেভেলপার',
+		'role_en'     => 'Solo Extension Architect & Developer',
+		'context_bn'  => 'ক্রোমিয়াম ব্রাউজার এক্সটেনশন • Manifest V3 • v1.7',
+		'context_en'  => 'Chromium Browser Extension • Manifest V3 • v1.7',
+		'challenge_bn'=> "ইউটিউব, ফেসবুক, টুইটার কিংবা বিভিন্ন নিউজ পোর্টালে ভিডিওর অডিও লেভেল একেক সাইটে একেক রকম থাকে। অনেক সাইট স্বয়ংক্রিয়ভাবে ভিডিও অটোপ্লে করে বা ইউজারের নিজস্ব সাউন্ড প্রেফারেন্স ওভাররাইড করে অতিরিক্ত উচ্চ শব্দে বাজতে শুরু করে। তাছাড়া গভীর রাতে হেডফোন দিয়ে শোনার সময় সাধারণ ব্রাউজার স্লাইডারের ১% ভলিউমও অনেক বেশি উচ্চকিত মনে হয়।\n\nকারিগরি দিক থেকে প্রধান চ্যালেঞ্জ ছিল: পেজের স্বাভাবিক স্ক্রলে কোনো প্রকার ব্যাঘাত না ঘটিয়ে কিংবা ফুলস্ক্রিন প্লেয়ার নষ্ট না করে যেকোনো HTML5 ভিডিও/অডিও প্লেয়ারের অডিও স্ট্রিম ইন্টারসেপ্ট করা, অটোপ্লে প্লেয়ারের জোরপূর্বক সাউন্ড পরিবর্তন প্রতিহত করা এবং কোনো ট্র্যাকিং ছাড়াই সম্পূর্ণ লোকাল স্টোরেজে ডোমেইন ভিত্তিক ভলিউম মেমোরি ধরে রাখা।",
+		'challenge_en'=> "Web video and audio players across platforms (YouTube, Twitter/X, news portals) suffer from wildly inconsistent mixing levels and aggressive autoplay volume resets. Furthermore, standard volume ladders lack the granular resolution needed for ultra-sensitive in-ear monitors (IEMs) during late-night listening.\n\nThe engineering challenge was intercepting mousewheel gestures strictly over media elements without disrupting normal vertical scrolling or breaking fullscreen APIs, neutralizing third-party player script overrides in the browser's MAIN world, and maintaining persistent per-origin state with zero telemetry under Manifest V3 restrictions.",
+		'solution_bn' => "১. Alt + মাউস হুইল জেসচার ইন্টারসেপশন: পেজের সাধারণ স্ক্রলে কোনো ব্যাঘাত না ঘটিয়ে শুধুমাত্র Alt কি চেপে মাউস হুইল ঘুরালে নিখুঁত ভলিউম পরিবর্তন হয় এবং স্ক্রিনে একটি আধুনিক অন-স্ক্রিন ওএসডি (HUD) ভেসে ওঠে।\n\n২. পার-সাইট স্বয়ংক্রিয় ভলিউম মেমোরি: প্রতিটি ওয়েবসাইটের জন্য আলাদা আলাদা ভলিউম লেভেল স্বয়ংক্রিয়ভাবে Chrome Storage API-তে সংরক্ষিত থাকে। পরবর্তীতে সেই সাইটে প্রবেশ করলে ভিডিও নিজে থেকেই কাঙ্ক্ষিত সাউন্ডে প্লে হয়।\n\n৩. আর্কিটেকচারাল ভলিউম গার্ড (MAIN-World Script): কিছু আগ্রাসী প্লেয়ার যাতে জোরপূর্বক ইউজারের ভলিউম রিসেট করতে না পারে, সেজন্য Chrome 111+ এর document_start MAIN-ওয়ার্ল্ড কনটেন্ট স্ক্রিপ্ট দিয়ে HTMLMediaElement.prototype.volume প্রোপার্টি ডিসক্রিপ্টর ইন্টারসেপ্ট করে কাঙ্ক্ষিত লেভেল অবিচল লক রাখা হয়।\n\n৪. আল্ট্রা-লো প্রিসেটস (০.১২৫% পর্যন্ত): সূক্ষ্ম ও শান্ত শোনার জন্য পপ-আপে ৬টি কুইক ওয়ান-ক্লিক প্রিসেট: ০.১২৫%, ০.১৮৭৫%, ০.২৫%, ০.৩৭৫%, ০.৫% এবং ১%।\n\n৫. গ্লোবাল ওয়ান-ক্লিক নাইট মোড: পপ-আপ থেকে নাইট মোড অন করলেই সমস্ত ওয়েবসাইটের ভলিউম এক নিমেষে নির্ধারিত শান্ত স্তরে নেমে আসে। অফ করলে প্রতিটি সাইট তার নিজস্ব আগের মেমোরি ফিরে পায়।\n\n৬. শতভাগ প্রাইভেট ও অফলাইন: এক্সটেনশনটি কোনো অ্যানালিটিক্স বা ট্র্যাকিং স্ক্রিপ্ট ব্যবহার করে না। সমস্ত ডাটা ইউজারের নিজস্ব ব্রাউজারে সম্পূর্ণ বিচ্ছিন্ন ও সুরক্ষিত থাকে।",
+		'solution_en' => "1. Alt + Mouse Wheel Gesture Interception: Transparently hooks wheel events exclusively when Alt is depressed, calculating proportional audio steps and projecting a sleek on-screen HUD without interfering with normal vertical page scroll.\n\n2. Persistent Per-Domain Volume Memory: Utilizes chrome.storage.local to map domain origins to custom volume preferences, automatically applying remembered levels on DOM navigation.\n\n3. Architectural Volume Guard (MAIN-World Script): Implemented a document_start script running in the browser's MAIN world to wrap HTMLMediaElement.prototype.volume property descriptors, neutralizing aggressive autoplay overrides by third-party web players.\n\n4. Ultra-Low Acoustic Presets: Engineered sub-linear stepping down to 0.125%, 0.1875%, 0.25%, and 0.5% tailored for high-sensitivity in-ear monitors (IEMs) and late-night listening.\n\n5. Global One-Click Night Mode: Instantly caps all active tabs and domain profiles to a preconfigured quiet ceiling without overwriting individual site memories.\n\n6. 100% Offline & Zero-Telemetry: Designed with strict Manifest V3 permissions (storage, activeTab), zero remote script dependencies, and absolute local data isolation.",
 		'highlights_bn'=> array(
-			'গুগল Manifest V3 স্ট্যান্ডার্ডের সাথে ১০০% সামঞ্জস্যপূর্ণ',
-			'র‌্যাম ব্যবহার কম রাখার জন্য স্লিপ-ট্যাব মেকানিজম',
-			'কাস্টম কিবোর্ড হটকিজের মাধ্যমে মাউস-লেস নেভিগেশন',
-			'এক ক্লিকে সেশন ব্যাকআপ ও জেসন এক্সপোর্ট/ইমপোর্ট'
+			'Alt + মাউস হুইল দিয়ে যেকোনো ওয়েব মিডিয়া প্লেয়ারের শব্দ নিখুঁতভাবে নিয়ন্ত্রণের সুবিধা',
+			'প্রতিটি ওয়েবসাইটের জন্য আলাদা ভলিউম স্বয়ংক্রিয়ভাবে মনে রাখার স্মার্ট মেমোরি সিস্টেম',
+			'ভলিউম গার্ড: অটোপ্লে ভিডিও সাইটগুলোর জোরপূর্বক সাউন্ড পরিবর্তন প্রতিহত করার আর্কিটেকচার',
+			'গভীর রাতে শোনার জন্য ০.১২৫% পর্যন্ত আল্ট্রা-লো ভলিউম প্রিসেট',
+			'এক ক্লিকে সমস্ত সাইট শান্ত করার ডেডিকেটেড নাইট মোড (Night Mode)',
+			'গুগল ক্রোম Manifest V3 স্ট্যান্ডার্ডের সাথে ১০০% সামঞ্জস্যপূর্ণ',
+			'১০০% অফলাইন ও প্রাইভেট — কোনো ট্র্যাকিং নেই, কোনো এক্সটার্নাল সার্ভার কল নেই'
 		),
 		'highlights_en'=> array(
-			'100% compliant with Google Chrome Manifest V3 specifications',
-			'Memory-saving tab suspension engine for low-RAM machines',
-			'Full keyboard shortcut palette for mouseless navigation',
-			'Instant one-click workspace snapshot export and import'
+			'Alt + Mouse Wheel gesture control over any HTML5 video or audio player',
+			'Intelligent per-site volume memory persisted across browser sessions',
+			'MAIN-world Volume Guard engine preventing aggressive autoplay resets',
+			'Precision ultra-low audio presets stepping down to 0.125% for late-night listening',
+			'Global One-Click Night Mode toggle with non-destructive volume restoration',
+			'Full compliance with Google Chrome Manifest V3 modern extension standards',
+			'100% private and offline: zero tracking, zero analytics, zero external network requests'
 		),
-		'tags'        => array( 'Chrome API', 'Manifest V3', 'JavaScript', 'Service Worker' ),
-		'accent'      => '#fdcb6e',
+		'tags'        => array( 'Chrome Extension', 'Manifest V3', 'JavaScript (ES6+)', 'Chrome Storage API', 'Audio Engineering' ),
+		'accent'      => '#6c5ce7',
 		'icon'        => 'extension',
-		'image'       => '',
+		'image'       => get_template_directory_uri() . '/assets/img/quietscroll.png',
+		'image_fit'   => 'contain',
 		'action_type' => 'code',
 		'action_bn'   => 'সোর্স কোড (GitHub)',
 		'action_en'   => 'View Source on GitHub',
-		'direct_url'  => 'https://github.com/raisulsohan',
+		'direct_url'  => 'https://github.com/raisulsohan/QuietScroll',
+		'github_url'  => 'https://github.com/raisulsohan/QuietScroll',
 	),
 	array(
 		'id'          => 'wp-optimizer',
@@ -507,7 +515,7 @@ $projects = array(
 								<span class="rs-portfolio-card__media-tag"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></span>
 							</div>
 						<?php else : ?>
-							<div class="rs-portfolio-card__img-wrap">
+							<div class="rs-portfolio-card__img-wrap <?php echo ( ! empty( $p['image_fit'] ) && 'contain' === $p['image_fit'] ) ? 'is-contain' : ''; ?>">
 								<img src="<?php echo esc_url( $p['image'] ); ?>" alt="<?php echo esc_attr( $rs_is_en ? $p['title_en'] : $p['title_bn'] ); ?>" class="rs-portfolio-card__img" loading="lazy">
 								<span class="rs-portfolio-card__media-tag"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></span>
 							</div>
@@ -902,7 +910,8 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 			} else if (p.category === 'video') {
 				visualEl.innerHTML = '<div class="rs-case-study-video-mockup" style="background-image: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.45)), url(' + p.image + '); background-size: cover; background-position: center;"><div class="rs-portfolio-card__play-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div><span class="rs-case-study-video-label">' + (document.documentElement.lang.indexOf('en') === 0 ? 'HD Video Preview' : 'এইচডি ভিডিও প্রিভিউ') + '</span></div>';
 			} else {
-				visualEl.innerHTML = '<div class="rs-case-study-img-wrap"><img src="' + p.image + '" alt="' + p.title + '" class="rs-case-study-img"></div>';
+				var fitClass = p.image_fit === 'contain' ? ' is-contain' : '';
+				visualEl.innerHTML = '<div class="rs-case-study-img-wrap' + fitClass + '"><img src="' + p.image + '" alt="' + p.title + '" class="rs-case-study-img"></div>';
 			}
 		} else {
 			if (p.category === 'video') {

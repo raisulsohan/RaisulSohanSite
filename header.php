@@ -27,12 +27,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 <header class="rs-header">
 	<div class="rs-wrap rs-header__inner">
 		<nav class="rs-header__nav">
-			<button class="rs-header__link" type="button" data-rs-open="about">
-				<?php echo esc_html( rs_about()['title'] ); ?>
-			</button>
 			<?php $rs_switcher = rs_lang_switcher_data(); ?>
 			<a class="rs-lang-switcher" href="<?php echo esc_url( $rs_switcher['url'] ); ?>" title="<?php echo esc_attr( $rs_switcher['title'] ); ?>" aria-label="<?php echo esc_attr( $rs_switcher['title'] ); ?>">
 				<span><?php echo esc_html( $rs_switcher['label'] ); ?></span>
+			</a>
+			<button class="rs-header__link" type="button" data-rs-open="about">
+				<?php echo esc_html( rs_about()['title'] ); ?>
+			</button>
+			<?php
+			$rs_portfolio_url = home_url( '/portfolio/' );
+			$rs_req_path      = isset( $_SERVER['REQUEST_URI'] ) ? trim( (string) parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' ) : '';
+			$rs_is_portfolio  = ( 'portfolio' === $rs_req_path || 'en/portfolio' === $rs_req_path || preg_match( '~(?:^|/)portfolio/?$~i', $rs_req_path ) );
+			?>
+			<a class="rs-header__link<?php echo $rs_is_portfolio ? ' is-active' : ''; ?>" href="<?php echo esc_url( $rs_portfolio_url ); ?>"<?php echo $rs_is_portfolio ? ' aria-current="page"' : ''; ?>>
+				<?php echo esc_html( rs_is_en() ? 'Portfolio' : 'পোর্টফোলিও' ); ?>
 			</a>
 		</nav>
 
