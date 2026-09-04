@@ -129,7 +129,7 @@ function rs_get_spine_height( $title ) {
 <main class="rs-wrap rs-main" id="rs-content">
 	<div class="rs-list-wrap" id="rs-book-wrap">
 
-		<div style="margin-bottom: 2rem; display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; align-items: center;">
+		<div style="margin-bottom: 2rem; display: flex; gap: 0.75rem; flex-wrap: nowrap; justify-content: center; align-items: stretch;">
 			<select id="rs-filter-genre" style="padding: 0.5rem; border: 1px solid var(--rs-border); border-radius: 4px; background: var(--rs-bg); color: var(--rs-fg); cursor: pointer; font-family: inherit;">
 				<option value=""><?php echo esc_html( rs_is_en() ? 'Genre' : 'বইয়ের ধরন' ); ?></option>
 				<?php foreach ( $genres as $g ) : ?>
@@ -147,7 +147,7 @@ function rs_get_spine_height( $title ) {
 			<div style="position: relative;">
 				<input type="text" id="rs-book-search" placeholder="<?php echo esc_attr( rs_is_en() ? 'Search books or authors...' : 'বই বা লেখক খুঁজুন...' ); ?>"
 				       autocomplete="off"
-				       style="padding: 0.5rem 0.5rem 0.5rem 2rem; border: 1px solid var(--rs-border); border-radius: 4px; background: var(--rs-bg); color: var(--rs-fg); font-family: inherit; width: 200px;"
+				       style="padding: 0.5rem 0.5rem 0.5rem 2rem; border: 1px solid var(--rs-border); border-radius: 4px; background: var(--rs-bg); color: var(--rs-fg); font-family: inherit; width: 200px; box-sizing: border-box; height: 100%;"
 				/>
 				<span style="position: absolute; left: 0.6rem; top: 50%; transform: translateY(-50%); opacity: 0.4; pointer-events: none; font-size: 0.85rem;">🔍</span>
 				<div id="rs-search-suggest" style="display:none; position:absolute; top:100%; left:0; right:0; max-height:200px; overflow-y:auto; background:var(--rs-surface); border:1px solid var(--rs-border); border-radius:4px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:10; margin-top:2px;"></div>
@@ -155,7 +155,7 @@ function rs_get_spine_height( $title ) {
 
 			<button id="rs-filter-reset" style="padding: 0.5rem 1rem; border: 1px solid var(--rs-border); border-radius: 4px; background: var(--rs-surface); color: var(--rs-fg); cursor: pointer; font-family: inherit; display: none;"><?php echo esc_html( rs_is_en() ? 'Reset' : 'রিসেট' ); ?></button>
 			
-			<button id="rs-view-toggle" title="<?php echo esc_attr( rs_is_en() ? 'Toggle view' : 'ভিউ পরিবর্তন করুন' ); ?>" style="padding: 0.5rem 0.75rem; border: 1px solid var(--rs-border); border-radius: 4px; background: var(--rs-bg); color: var(--rs-fg); cursor: pointer; font-family: inherit; font-size: 1.1rem; display: flex; align-items: center;">📚</button>
+			<button id="rs-view-toggle" title="<?php echo esc_attr( rs_is_en() ? 'Toggle view' : 'ভিউ পরিবর্তন করুন' ); ?>" style="padding: 0.5rem; border: 1px solid var(--rs-border); border-radius: 4px; background: var(--rs-bg); color: var(--rs-fg); cursor: pointer; font-family: inherit; font-size: 1rem; display: flex; align-items: center; justify-content: center; aspect-ratio: 1; box-sizing: border-box;">📚</button>
 		</div>
 
 		<style>
