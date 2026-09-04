@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '7.4.65' );
+define( 'RS_VERSION', '7.4.66' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -43,6 +43,7 @@ define( 'RS_URI', get_template_directory_uri() );
  * ====================================================================== */
 
 require_once get_template_directory() . '/inc/github-updater.php';
+require_once get_template_directory() . '/inc/portfolio-cpt.php';
 
 /* =========================================================================
  * 1. Theme setup
