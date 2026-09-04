@@ -33,6 +33,9 @@ $rs_about = rs_about();
    The whole palette is worked out from this one colour by app.js. */
 ?>
 <div class="rs-floats" role="group" aria-label="সাইটের নিয়ন্ত্রণ">
+	<button class="rs-floats__install" type="button" id="rs-install-btn" hidden aria-label="<?php esc_attr_e( 'অ্যাপ ইনস্টল করুন', 'raisul-sohan' ); ?>" title="<?php esc_attr_e( 'অ্যাপ ইনস্টল করুন', 'raisul-sohan' ); ?>">
+		<?php echo wp_kses( rs_icon( 'install', 15 ), rs_svg_tags() ); ?>
+	</button>
 	<button class="rs-floats__anim" type="button" id="rs-anim-toggle" aria-label="অ্যানিমেশন অন/অফ করুন" title="অ্যানিমেশন অন/অফ করুন">
 		<?php echo wp_kses( rs_icon( 'sparkles', 16 ), rs_svg_tags() ); ?>
 	</button>

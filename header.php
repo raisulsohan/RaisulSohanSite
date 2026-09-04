@@ -61,10 +61,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 				</a>
 			<?php endif; ?>
 
-			<button class="rs-icon" type="button" id="rs-install-btn" hidden title="<?php esc_attr_e( 'অ্যাপ ইনস্টল করুন', 'raisul-sohan' ); ?>" aria-label="<?php esc_attr_e( 'অ্যাপ ইনস্টল করুন', 'raisul-sohan' ); ?>">
-				<?php echo wp_kses( rs_icon( 'install' ), rs_svg_tags() ); ?>
-			</button>
-
 			<button class="rs-icon" type="button" data-rs-open="search" aria-label="সার্চ">
 				<?php echo wp_kses( rs_icon( 'search' ), rs_svg_tags() ); ?>
 			</button>

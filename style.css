@@ -3,7 +3,7 @@ Theme Name: Raisul Sohan
 Theme URI: https://github.com/raisulsohan/RaisulSohanSite
 Author: Raisul Sohan
 Description: A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
-Version: 7.3.2
+Version: 7.3.3
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -950,7 +950,8 @@ a.rs-pagination__step:focus-visible {
 	gap: 1rem;
 }
 
-.rs-floats__anim {
+.rs-floats__anim,
+.rs-floats__install {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -961,11 +962,17 @@ a.rs-pagination__step:focus-visible {
 	border: 1px solid var(--rs-border);
 	border-radius: 50%;
 	box-shadow: var(--rs-shadow-md);
+	cursor: pointer;
 	transition: color 0.15s ease, background 0.15s ease;
 }
 
-.rs-floats__anim:hover {
+.rs-floats__anim:hover,
+.rs-floats__install:hover {
 	color: var(--rs-fg);
+}
+
+.rs-floats__install[hidden] {
+	display: none !important;
 }
 
 .rs-floats__anim.is-active {
@@ -2378,7 +2385,8 @@ a.rs-article__cat:hover {
 		gap: 0.5rem;
 	}
 
-	.rs-floats__anim {
+	.rs-floats__anim,
+	.rs-floats__install {
 		width: 1.875rem;
 		height: 1.875rem;
 	}
