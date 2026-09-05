@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '7.4.70' );
+define( 'RS_VERSION', '7.4.71' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -818,6 +818,11 @@ function rs_summary( $post = null, $length = 200 ) {
 	   get the 200 character version. */
 	$text = get_post_meta( $post->ID, RS_SUMMARY_KEY, true );
 
+	// Self-healing: if on English site but the cached summary contains Bengali script (from multisite import/cloner), invalidate it!
+	if ( rs_is_en() && preg_match( '/[\x{0980}-\x{09FF}]/u', (string) $text ) ) {
+		$text = '';
+	}
+
 	if ( '' === $text ) {
 		/* Decoded on the excerpt branch for the same reason as the title:
 		   this ends up in the hover summary, which is set as text. The
@@ -833,6 +838,22 @@ function rs_summary( $post = null, $length = 200 ) {
 
 	return rs_shorten( $text, $length );
 }
+
+/**
+ * One-time cleanup: flush cached summaries on English subsite to purge stale imported Bengali summaries.
+ */
+function rs_flush_subsite_summaries() {
+	if ( ! rs_is_en() ) {
+		return;
+	}
+	$version_key = 'rs_summary_flush_ver';
+	if ( get_option( $version_key ) === RS_VERSION ) {
+		return;
+	}
+	delete_post_meta_by_key( RS_SUMMARY_KEY );
+	update_option( $version_key, RS_VERSION );
+}
+add_action( 'init', 'rs_flush_subsite_summaries' );
 
 /**
  * Forget the cached reading time and summary when a post changes.
