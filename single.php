@@ -63,7 +63,7 @@ get_header();
 				endif;
 				?>
 			</div>
-			<p class="rs-article__author"><?php the_author(); ?></p>
+			<p class="rs-article__author"><?php echo esc_html( rs_author_name() ); ?></p>
 
 			<div class="rs-article__body">
 				<?php the_content(); ?>

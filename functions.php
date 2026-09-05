@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '7.4.69' );
+define( 'RS_VERSION', '7.4.70' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -2292,6 +2292,82 @@ function rs_related_payload( $post = null ) {
 	return $items;
 }
 
+/**
+ * Bilingual author display name.
+ *
+ * In WordPress Multisite the user profile table is network-global, so the
+ * author display_name is the same across all subsites. On the Bengali site,
+ * the author name is rendered in Bengali ("রাইসুল সোহান"), while on the
+ * English subsite it remains in English ("Raisul Sohan").
+ *
+ * @param int|WP_Post|null $post_or_author Post ID, author ID, or null for current author.
+ * @return string
+ */
+function rs_author_name( $post_or_author = null ) {
+	$author_id = 0;
+	if ( $post_or_author instanceof WP_Post ) {
+		$author_id = (int) $post_or_author->post_author;
+	} elseif ( is_numeric( $post_or_author ) && (int) $post_or_author > 0 ) {
+		$author_id = (int) $post_or_author;
+	} else {
+		$author_id = (int) get_the_author_meta( 'ID' );
+		if ( ! $author_id ) {
+			$post = get_post();
+			if ( $post ) {
+				$author_id = (int) $post->post_author;
+			}
+		}
+	}
+
+	$display_name = $author_id ? get_the_author_meta( 'display_name', $author_id ) : '';
+
+	if ( ! rs_is_en() ) {
+		if ( empty( $display_name ) || 'Raisul Sohan' === $display_name || 'raisulsohan' === strtolower( $display_name ) ) {
+			return 'রাইসুল সোহান';
+		}
+	} else {
+		if ( empty( $display_name ) || 'রাইসুল সোহান' === $display_name ) {
+			return 'Raisul Sohan';
+		}
+	}
+
+	return $display_name ? $display_name : ( rs_is_en() ? 'Raisul Sohan' : 'রাইসুল সোহান' );
+}
+
+add_filter( 'the_author', function ( $display_name ) {
+	if ( ! rs_is_en() ) {
+		if ( empty( $display_name ) || 'Raisul Sohan' === $display_name || 'raisulsohan' === strtolower( $display_name ) ) {
+			return 'রাইসুল সোহান';
+		}
+	} else {
+		if ( 'রাইসুল সোহান' === $display_name ) {
+			return 'Raisul Sohan';
+		}
+	}
+	return $display_name;
+} );
+
+add_filter( 'get_the_author_display_name', function ( $display_name, $user_id ) {
+	if ( ! rs_is_en() ) {
+		if ( empty( $display_name ) || 'Raisul Sohan' === $display_name || 'raisulsohan' === strtolower( $display_name ) ) {
+			return 'রাইসুল সোহান';
+		}
+	} else {
+		if ( 'রাইসুল সোহান' === $display_name ) {
+			return 'Raisul Sohan';
+		}
+	}
+	return $display_name;
+}, 10, 2 );
+
+/**
+ * Remove WordPress Multisite 1MB upload limit for subsites,
+ * allowing them to use the full server PHP upload limit.
+ */
+add_filter( 'upload_size_limit', function ( $size, $u_bytes, $p_bytes ) {
+	return min( $u_bytes, $p_bytes );
+}, 99, 3 );
+
 /* =========================================================================
  * 8. The post list
  * ====================================================================== */
@@ -2955,7 +3031,7 @@ function rs_rest_post( $request ) {
 			'id'           => $item->ID,
 			'title'        => rs_plain_title( $item ),
 			'date'         => rs_bn_date( $item ),
-			'author'       => get_the_author_meta( 'display_name', $item->post_author ),
+			'author'       => rs_author_name( $item->post_author ),
 			'content'      => $content,
 			'link'         => get_permalink( $item ),
 			'category'     => rs_category( $item ),
@@ -3540,7 +3616,7 @@ function rs_seo_meta() {
 
 		printf( "<meta property=\"article:published_time\" content=\"%s\">\n", esc_attr( get_the_date( DATE_W3C, $id ) ) );
 		printf( "<meta property=\"article:modified_time\" content=\"%s\">\n", esc_attr( get_the_modified_date( DATE_W3C, $id ) ) );
-		printf( "<meta property=\"article:author\" content=\"%s\">\n", esc_attr( get_the_author_meta( 'display_name', $author ) ) );
+		printf( "<meta property=\"article:author\" content=\"%s\">\n", esc_attr( rs_author_name( $author ) ) );
 
 		$section = rs_category( $id );
 
@@ -3693,7 +3769,7 @@ function rs_schema() {
 			),
 			'author'           => array(
 				'@type' => 'Person',
-				'name'  => get_the_author_meta( 'display_name', $author ),
+				'name'  => rs_author_name( $author ),
 				'url'   => home_url( '/' ),
 			),
 			'publisher'        => array(
