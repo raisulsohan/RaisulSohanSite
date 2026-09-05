@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '7.4.68' );
+define( 'RS_VERSION', '7.4.69' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -2525,29 +2525,94 @@ function rs_render_count() {
 }
 
 /**
- * Featured post block
+ * The query behind the featured block, in both the shapes it is asked for:
+ * the one post the REST route returns, and the handful the page carries.
  */
-function rs_render_featured_post( $cat_id = 0, $exclude_id = 0 ) {
-	if ( is_search() ) {
-		return 0;
-	}
-
+function rs_featured_query_args( $cat_id = 0, $count = 1 ) {
 	$args = array(
 		'post_type'      => 'post',
 		'post_status'    => 'publish',
-		'posts_per_page' => 1,
+		'posts_per_page' => (int) $count,
 		'orderby'        => 'rand',
 		'no_found_rows'  => true,
 	);
 
 	if ( $cat_id ) {
-		$args['cat'] = $cat_id;
+		$args['cat'] = (int) $cat_id;
 	} elseif ( is_category() ) {
 		$term = get_queried_object();
 		if ( $term instanceof WP_Term ) {
 			$args['cat'] = $term->term_id;
 		}
 	}
+
+	return $args;
+}
+
+/**
+ * How many posts the featured block carries.
+ *
+ * A page cache hands every visitor the same HTML, so a server that picks
+ * the post picks it once and for everybody — which is the bug this
+ * replaces. Sending a handful and letting the browser choose costs a few
+ * hundred bytes and no request at all.
+ */
+function rs_featured_pool_size() {
+	return max( 1, min( 20, (int) apply_filters( 'rs_featured_pool_size', 8 ) ) );
+}
+
+/**
+ * The featured block: several candidates, one of them on show.
+ *
+ * All but the first arrive with `hidden`, so a browser without JavaScript
+ * — and every browser up to the moment the script below runs — has
+ * exactly one post to lay out, and there is no layout shift either way.
+ * The picker is inline and blocking on purpose: it moves the attribute
+ * while the parser is still here, before this region has been painted, so
+ * nobody sees one post replaced by another.
+ */
+function rs_render_featured_pool( $cat_id = 0 ) {
+	if ( is_search() ) {
+		return;
+	}
+
+	$q = new WP_Query( rs_featured_query_args( $cat_id, rs_featured_pool_size() ) );
+
+	if ( ! $q->have_posts() ) {
+		return;
+	}
+
+	$count = 0;
+	?>
+	<div class="rs-wrap" id="rs-featured-wrap">
+		<?php
+		while ( $q->have_posts() ) :
+			$q->the_post();
+			rs_featured_post_markup( get_post(), $count > 0 );
+			$count++;
+		endwhile;
+		wp_reset_postdata();
+		?>
+	</div>
+	<?php
+
+	if ( $count < 2 ) {
+		return;
+	}
+	?>
+	<script>(function(){try{var c=document.querySelectorAll('#rs-featured-wrap > .rs-featured__pick'),n=c.length;if(n<2){return;}var r=Math.floor(Math.random()*n);if(!r){return;}c[0].hidden=true;c[r].hidden=false;}catch(e){}})();</script>
+	<?php
+}
+
+/**
+ * Featured post block — the single post the REST route serves.
+ */
+function rs_render_featured_post( $cat_id = 0, $exclude_id = 0 ) {
+	if ( is_search() ) {
+		return 0;
+	}
+
+	$args = rs_featured_query_args( $cat_id, 1 );
 
 	if ( $exclude_id ) {
 		$args['post__not_in'] = array( (int) $exclude_id );
@@ -2568,6 +2633,20 @@ function rs_render_featured_post( $cat_id = 0, $exclude_id = 0 ) {
 	global $post;
 	$featured_id = (int) $post->ID;
 
+	rs_featured_post_markup( $post );
+
+	wp_reset_postdata();
+	return $featured_id;
+}
+
+/**
+ * One featured post, drawn as it appears on the page.
+ *
+ * $hidden is what rs_render_featured_pool() sets on every candidate but
+ * the first, so the block lays out as a single post until the picker
+ * chooses.
+ */
+function rs_featured_post_markup( $post, $hidden = false ) {
 	$length = (int) rs_option( 'rs_featured_summary_length' );
 	if ( ! $length ) $length = 250;
 	
@@ -2592,7 +2671,7 @@ function rs_render_featured_post( $cat_id = 0, $exclude_id = 0 ) {
 	$rest = mb_substr( $summary, mb_strlen( $dropcap, 'UTF-8' ), null, 'UTF-8' );
 
 	?>
-	<div>
+	<div class="rs-featured__pick"<?php echo $hidden ? ' hidden' : ''; ?>>
 		<div class="rs-featured">
 			<div class="rs-featured__label">
 				<span class="rs-featured__line"></span><?php echo esc_html( rs_is_en() ? 'Featured' : 'ফিচার্ড' ); ?>
@@ -2618,8 +2697,6 @@ function rs_render_featured_post( $cat_id = 0, $exclude_id = 0 ) {
 		</div>
 	</div>
 	<?php
-	wp_reset_postdata();
-	return $featured_id;
 }
 
 /**

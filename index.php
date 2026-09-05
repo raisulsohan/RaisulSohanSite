@@ -34,13 +34,15 @@ get_header();
 <?php rs_render_count(); ?>
 
 <?php
-/* The featured post placeholder — server-rendered so there is ZERO layout shift (CLS).
-   JavaScript dynamically refreshes with a fresh random post to bypass page caches. */
-if ( ! is_paged() ) : ?>
-<div class="rs-wrap" id="rs-featured-wrap">
-	<?php rs_render_featured_post(); ?>
-</div>
-<?php endif; ?>
+/* The featured post — server-rendered, so there is ZERO layout shift (CLS).
+   Several candidates go out with it and a blocking inline script picks one
+   before this region is painted, which is what keeps the post changing per
+   visit even when a page cache is serving the same HTML to everybody.
+   See rs_render_featured_pool(). */
+if ( ! is_paged() ) {
+	rs_render_featured_pool();
+}
+?>
 
 <?php
 /* Filled by app.js when this browser left a story unfinished. Empty in

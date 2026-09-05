@@ -2967,40 +2967,10 @@
 		}
 	}() );
 
-	/* ---------------------------------------------------------------
-	 * Fetch dynamic featured post (smoothly update to fresh random post)
-	 * ------------------------------------------------------------ */
-	( function () {
-		var wrap = $( '#rs-featured-wrap' );
-
-		if ( ! wrap ) {
-			return;
-		}
-
-		var currentLink = wrap.querySelector( '[data-rs-post]' );
-		var currentId = currentLink ? parseInt( currentLink.getAttribute( 'data-rs-post' ), 10 ) : 0;
-
-		var params = [];
-		if ( cfg.catId ) {
-			params.push( 'cat=' + encodeURIComponent( cfg.catId ) );
-		}
-		if ( currentId ) {
-			params.push( 'exclude=' + encodeURIComponent( currentId ) );
-		}
-		params.push( '_=' + Date.now() );
-
-		var url = rest + 'featured?' + params.join( '&' );
-
-		getJSON( url ).then( function ( data ) {
-			if ( ! data || ! data.html || ! data.html.trim() ) {
-				return;
-			}
-			if ( data.id && currentId && parseInt( data.id, 10 ) === currentId ) {
-				return;
-			}
-			wrap.innerHTML = data.html;
-		} ).catch( function () {} );
-	}() );
+	/* The featured post used to be fetched from here and swapped in, which
+	   worked but showed the reader one post being replaced by another. It
+	   is picked in the page now, before the block is ever painted — see
+	   rs_render_featured_pool() in functions.php. */
 
 	/* ---------------------------------------------------------------
 	 * Editing a post where it is read
