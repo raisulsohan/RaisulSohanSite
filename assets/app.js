@@ -2968,19 +2968,37 @@
 	}() );
 
 	/* ---------------------------------------------------------------
-	 * Fetch dynamic featured post (only if not already rendered by server)
+	 * Fetch dynamic featured post (smoothly update to fresh random post)
 	 * ------------------------------------------------------------ */
 	( function () {
 		var wrap = $( '#rs-featured-wrap' );
 
-		if ( ! wrap || wrap.firstElementChild ) {
+		if ( ! wrap ) {
 			return;
 		}
 
-		getJSON( rest + 'featured' + ( cfg.catId ? '?cat=' + cfg.catId : '' ) ).then( function ( data ) {
-			if ( data && data.html ) {
-				wrap.innerHTML = data.html;
+		var currentLink = wrap.querySelector( '[data-rs-post]' );
+		var currentId = currentLink ? parseInt( currentLink.getAttribute( 'data-rs-post' ), 10 ) : 0;
+
+		var params = [];
+		if ( cfg.catId ) {
+			params.push( 'cat=' + encodeURIComponent( cfg.catId ) );
+		}
+		if ( currentId ) {
+			params.push( 'exclude=' + encodeURIComponent( currentId ) );
+		}
+		params.push( '_=' + Date.now() );
+
+		var url = rest + 'featured?' + params.join( '&' );
+
+		getJSON( url ).then( function ( data ) {
+			if ( ! data || ! data.html || ! data.html.trim() ) {
+				return;
 			}
+			if ( data.id && currentId && parseInt( data.id, 10 ) === currentId ) {
+				return;
+			}
+			wrap.innerHTML = data.html;
 		} ).catch( function () {} );
 	}() );
 

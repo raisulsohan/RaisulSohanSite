@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '7.4.67' );
+define( 'RS_VERSION', '7.4.68' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -2527,9 +2527,9 @@ function rs_render_count() {
 /**
  * Featured post block
  */
-function rs_render_featured_post( $cat_id = 0 ) {
+function rs_render_featured_post( $cat_id = 0, $exclude_id = 0 ) {
 	if ( is_search() ) {
-		return;
+		return 0;
 	}
 
 	$args = array(
@@ -2549,14 +2549,24 @@ function rs_render_featured_post( $cat_id = 0 ) {
 		}
 	}
 
+	if ( $exclude_id ) {
+		$args['post__not_in'] = array( (int) $exclude_id );
+	}
+
 	$q = new WP_Query( $args );
 
+	if ( ! $q->have_posts() && $exclude_id ) {
+		unset( $args['post__not_in'] );
+		$q = new WP_Query( $args );
+	}
+
 	if ( ! $q->have_posts() ) {
-		return;
+		return 0;
 	}
 
 	$q->the_post();
 	global $post;
+	$featured_id = (int) $post->ID;
 
 	$length = (int) rs_option( 'rs_featured_summary_length' );
 	if ( ! $length ) $length = 250;
@@ -2609,6 +2619,7 @@ function rs_render_featured_post( $cat_id = 0 ) {
 	</div>
 	<?php
 	wp_reset_postdata();
+	return $featured_id;
 }
 
 /**
@@ -2766,7 +2777,10 @@ function rs_rest_routes() {
 			'callback'            => 'rs_rest_featured',
 			'permission_callback' => '__return_true',
 			'args'                => array(
-				'cat' => array(
+				'cat'     => array(
+					'sanitize_callback' => 'absint',
+				),
+				'exclude' => array(
 					'sanitize_callback' => 'absint',
 				),
 			),
@@ -2969,13 +2983,19 @@ function rs_rest_search( $request ) {
  */
 function rs_rest_featured( $request ) {
 	nocache_headers();
-	$cat_id = (int) $request->get_param( 'cat' );
+	$cat_id     = (int) $request->get_param( 'cat' );
+	$exclude_id = (int) $request->get_param( 'exclude' );
 	
 	ob_start();
-	rs_render_featured_post( $cat_id );
-	$html = ob_get_clean();
+	$post_id = rs_render_featured_post( $cat_id, $exclude_id );
+	$html    = ob_get_clean();
 	
-	return rest_ensure_response( array( 'html' => $html ) );
+	return rest_ensure_response(
+		array(
+			'id'   => $post_id,
+			'html' => $html,
+		)
+	);
 }
 
 function rs_rest_random( $request ) {

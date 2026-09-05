@@ -35,7 +35,7 @@ get_header();
 
 <?php
 /* The featured post placeholder — server-rendered so there is ZERO layout shift (CLS).
-   JavaScript will only inject if empty. */
+   JavaScript dynamically refreshes with a fresh random post to bypass page caches. */
 if ( ! is_paged() ) : ?>
 <div class="rs-wrap" id="rs-featured-wrap">
 	<?php rs_render_featured_post(); ?>
