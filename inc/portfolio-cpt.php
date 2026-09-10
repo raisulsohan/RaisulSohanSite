@@ -679,6 +679,10 @@ add_filter( 'manage_edit-rs_portfolio_sortable_columns', 'rs_portfolio_sortable_
  * @return array
  */
 function rs_get_portfolio_projects() {
+	if ( ! get_option( 'rs_portfolio_synced_lazyimage_v2_2' ) && function_exists( 'rs_sync_lazy_image_portfolio_v2' ) ) {
+		rs_sync_lazy_image_portfolio_v2();
+	}
+
 	$switched = false;
 	if ( is_multisite() && ! is_main_site() ) {
 		switch_to_blog( get_main_site_id() );
@@ -1108,44 +1112,54 @@ function rs_get_default_portfolio_projects() {
 		array(
 			'id'          => 'lazy-image-ae',
 			'category'    => 'tools',
-			'type_bn'     => 'আফটার ইফেক্টস এক্সটেনশন ও ব্রিজ',
-			'type_en'     => 'After Effects CEP & Chrome Bridge',
-			'badge_bn'    => 'Adobe CEP • AI ওয়ার্কফ্লো',
-			'badge_en'    => 'Adobe CEP • AI Motion Workflow',
-			'title_bn'    => 'Lazy-Image — আফটার ইফেক্টস নেটিভ AI ইমেজ জেনারেটর',
-			'title_en'    => 'Lazy-Image — Native AI Image Generation Inside Adobe After Effects',
-			'summary_bn'  => 'কোনো API ফি বা অতিরিক্ত খরচ ছাড়া ব্রাউজারের সক্রিয় ChatGPT সেশন ব্যবহার করে সরাসরি আফটার ইফেক্টস প্যানেলে এআই ছবি তৈরি, প্রজেক্ট ফোল্ডারে সেভ এবং স্বয়ংক্রিয়ভাবে অ্যাক্টিভ কম্পোজিশন টাইমলাইনে প্লেহেডে লেয়ার হিসেবে ইনসার্ট করার অ্যাডোবি CEP এক্সটেনশন।',
-			'summary_en'  => 'An Adobe After Effects CEP extension and Chrome companion bridge enabling zero-cost AI image generation directly inside After Effects via your active ChatGPT session—saving assets to your project directory and auto-placing them onto the active timeline at the playhead.',
+			'type_bn'     => 'অ্যাডোবি CEP এক্সটেনশন ও CDP ব্রাউজার অটোমেশন',
+			'type_en'     => 'Adobe CEP Extension & CDP Browser Automation',
+			'badge_bn'    => 'Adobe CEP • AE ও Premiere Pro',
+			'badge_en'    => 'Adobe CEP • AE & Premiere Pro',
+			'title_bn'    => 'Lazy-Image — আফটার ইফেক্টস ও প্রিমিয়ার প্রো নেটিভ AI ইমেজ জেনারেটর',
+			'title_en'    => 'Lazy-Image — Native AI Image Generation Inside Adobe After Effects & Premiere Pro',
+			'summary_bn'  => 'কোনো পেইড API সাবস্ক্রিপশন বা ব্রাউজার এক্সটেনশন ছাড়া Chrome DevTools Protocol (CDP)-এর মাধ্যমে ব্যাকগ্রাউন্ডে ইনভিজিবল ব্রাউজার রান করে সরাসরি অ্যাডোবি আফটার ইফেক্টস এবং প্রিমিয়ার প্রো টাইমলাইনে প্লেহেডে এআই ছবি তৈরি ও স্বয়ংক্রিয়ভাবে লেয়ার/ক্লিপ হিসেবে ইনসার্ট করার অ্যাডোবি CEP এক্সটেনশন।',
+			'summary_en'  => 'A native Adobe CEP extension for After Effects and Premiere Pro enabling zero-cost AI image generation directly onto active timelines via Chrome DevTools Protocol (CDP) browser automation—requiring no API keys, no browser extensions, and running an invisible on-demand browser session.',
 			'role_bn'     => 'একক সিস্টেম আর্কিটেক্ট ও ক্রিয়েটিভ টুলস ইঞ্জিনিয়ার',
 			'role_en'     => 'Solo System Architect & Creative Tools Engineer',
-			'context_bn'  => 'অ্যাডোবি আফটার ইফেক্টস প্লাগইন • CEP + ExtendScript + MV3',
-			'context_en'  => 'Adobe After Effects Extension • CEP + ExtendScript + MV3',
-			'challenge_bn'=> "মোশন ডিজাইনার ও ভিজ্যুয়াল আর্টিস্টদের কনসেপ্ট আর্ট, ব্যাকগ্রাউন্ড কিংবা টেক্সচার তৈরির জন্য প্রতিনিয়ত ব্রাউজারে মিডজার্নি বা চ্যাটজিপিটিতে প্রম্পট দিয়ে ছবি তৈরি করতে হয়, তা ডাউনলোড করে ফোল্ডার খুঁজে আফটার ইফেক্টসের প্রজেক্ট বিনে ইমপোর্ট করতে হয় এবং সেখান থেকে ড্র্যাগ করে কম্পোজিশন টাইমলাইনের সঠিক সময়ে বসাতে হয়। বারবার উইন্ডো পরিবর্তন এবং ম্যানুয়াল ফাইল হ্যান্ডলিং কাজের গতি মারাত্মকভাবে ধীর করে দেয়। তাছাড়া অফিসিয়াল API ব্যবহার করতে গেলে অতিরিক্ত সাবস্ক্রিপশন ও পেইড টোকেন খরচ হয়।\n\nকারিগরি দিক থেকে প্রধান চ্যালেঞ্জ ছিল তিনটি ভিন্ন রানটাইম আর্কিটেকচারের মধ্যে নিরবচ্ছিন্ন ডেটা ও কন্ট্রোল পাইপলাইন প্রতিষ্ঠা করা: আফটার ইফেক্টসের ভেতরের ক্রোমিয়াম-বেসড CEP প্যানেল (Node.js), ব্যবহারকারীর ক্রোম ব্রাউজারের Manifest V3 সার্ভিস ওয়ার্কার এবং অ্যাডোবি আফটার ইফেক্টসের অভ্যন্তরীণ ExtendScript (C++) ইঞ্জিন।",
-			'challenge_en'=> "Motion designers and visual effects artists routinely need conceptual backgrounds, storyboards, and texture assets during editing. The standard workflow demands juggling browser tabs, generating imagery via separate web interfaces, downloading files, locating them on disk, importing them into the After Effects project bin, and manually dragging them onto the timeline at the playhead. This repetitive context-switching cripples creative momentum, while official commercial APIs introduce recurring per-token billing.\n\nThe engineering challenge was bridging three isolated runtime environments: Adobe's internal CEP Chromium panel (with Node.js disk access), a Chromium Manifest V3 service worker executing in the user's personal browser with an active ChatGPT session, and the native Adobe ExtendScript C++ scripting engine driving the After Effects project timeline.",
-			'solution_bn' => "১. ট্রাই-লেয়ার মাইক্রো-সার্ভিস আর্কিটেকচার: আফটার ইফেক্টসের ভেতরের CEP প্যানেলে একটি সুরক্ষিত লোকাল লুপব্যাক HTTP সার্ভার (127.0.0.1:7890) রান করে। ক্রোম এক্সটেনশনের ব্যাকগ্রাউন্ড সার্ভিস ওয়ার্কার এই লোকাল সার্ভারের সাথে যোগাযোগ করে ব্রাউজারে সক্রিয় ChatGPT ট্যাবে প্রম্পট ও অ্যাসপেক্ট রেশিও পাঠায় এবং ডম অটোমেশনের মাধ্যমে উচ্চমানের ইমেজ স্ট্রিম সংগ্রহ করে।\n\n২. স্বয়ংক্রিয় টাইমলাইন ইনসার্শন (ExtendScript Automation): ছবি জেনারেট হওয়ামাত্রই ExtendScript ইঞ্জিনের মাধ্যমে আফটার ইফেক্টসে সক্রিয় ওপেন কম্পোজিশনের বর্তমান প্লেহেড পজিশনে (comp.time) লেয়ার হিসেবে স্বয়ংক্রিয়ভাবে প্লেস করা হয়—ব্যবহারকারীকে কোনো ম্যানুয়াল ড্র্যাগ-অ্যান্ড-ড্রপ করতে হয় না।\n\n৩. স্মার্ট প্রজেক্ট ফাইল অর্গানাইজেশন: এক্সটেনশনটি স্বয়ংক্রিয়ভাবে আফটার ইফেক্টসের সেভ করা .aep প্রজেক্ট ফোল্ডার শনাক্ত করে এবং তার ভেতরে একটি সুসজ্জিত AI_Generated সাবফোল্ডার তৈরি করে ছবিগুলো স্বয়ংক্রিয়ভাবে সংরক্ষণ করে (প্রজেক্ট সেভ না থাকলে নিরাপদে ডকুমেন্টস ফোল্ডারে ব্যাকআপ রাখে)।\n\n৪. অ্যাসপেক্ট রেশিও প্রিসেট ও মাল্টি-ল্যাঙ্গুয়েজ প্রম্পট: ওয়ান-ক্লিকে ১:১, ১৬:৯, ৯:১৬ এবং ৪:৫ ছাড়াও কাস্টম রেজোলিউশন সাপোর্ট। ইউনিকোড এনকোডিংয়ের ফলে বাংলা, ইংরেজি সহ যেকোনো ভাষায় প্রম্পট দেওয়া যায়।\n\n৫. নো-এপিআই কস্ট জিরো-বিলিং: কোনো পেইড API কি বা ক্রেডিট ছাড়াই ইউজারের নিজস্ব ক্রোম ব্রাউজারের ফ্রি কিংবা প্লাস চ্যাটজিপিটি লগইন সেশন কাজে লাগিয়ে নিখরচায় ছবি তৈরি করা যায়।\n\n৬. ওয়ান-ক্লিক অটো-ইনস্টলার: রেজিস্ট্রিতে PlayerDebugMode সক্রিয় করা এবং উইন্ডোজ সিম্বলিক লিঙ্কের মাধ্যমে আফটার ইফেক্টস এক্সটেনশন ডিরেক্টরিতে প্লাগইন লিংক করার জন্য একটি স্বয়ংক্রিয় .bat স্ক্রিপ্ট অন্তর্ভুক্ত রয়েছে।",
-			'solution_en' => "1. Tri-Layer Micro-Service Architecture: The CEP panel runs an internal Node.js loopback HTTP server on 127.0.0.1:7890. A companion Manifest V3 Chrome extension polls tasks, injects prompts and aspect ratios into an active chatgpt.com session via DOM automation, and streams the high-resolution image back as base64.\n\n2. Automatic Timeline Injection (ExtendScript): Once retrieved, the Node.js layer writes the asset to disk, invokes the After Effects ExtendScript bridge (host/index.jsx), imports the footage into the project bin, and automatically creates a new layer on the active composition timeline precisely at the current playhead position (comp.time).\n\n3. Intelligent Project File Discovery: Automatically resolves the file path of the currently open .aep project and organizes generated imagery neatly inside a dedicated <ProjectDir>/AI_Generated/ subfolder (with fallback to Documents/GImage_Generated/).\n\n4. Preset Aspect Ratios & Full Unicode Prompts: Instant one-click selection for 1:1, 16:9, 9:16, 4:5 ratios plus custom dimension inputs, fully supporting multi-language prompts (Bengali, English, etc.) without character corruption.\n\n5. Zero API Costs: Operates without API key subscriptions or per-generation fees by securely tapping into the user's authorized ChatGPT browser session in Chrome.\n\n6. 1-Click Automated Windows Installer: Includes an install.bat utility enabling Adobe CEP PlayerDebugMode in the Windows registry and symlinking the bundle into %APPDATA%\\Adobe\\CEP\\extensions\\ for effortless zero-configuration setup.",
+			'context_bn'  => 'অ্যাডোবি CEP প্লাগইন • Chrome DevTools Protocol (CDP) + ExtendScript + Node.js',
+			'context_en'  => 'Adobe CEP Extension • Chrome DevTools Protocol (CDP) + ExtendScript + Node.js',
+			'challenge_bn'=> "মোশন ডিজাইনার, ভিডিও এডিটর এবং ভিজ্যুয়াল আর্টিস্টদের দৈনন্দিন প্রোডাকশনে স্টোরিবোর্ড, ব্যাকগ্রাউন্ড টেক্সচার, কনসেপ্ট আর্ট কিংবা বি-রোল গ্রাফিক্সের জন্য ঘন ঘন এআই ইমেজ জেনারেট করতে হয়। প্রচলিত পদ্ধতিতে এডিটরকে আফটার ইফেক্টস বা প্রিমিয়ার প্রো ছেড়ে ব্রাউজারে মিডজার্নি বা চ্যাটজিপিটি ট্যাবে যেতে হয়, প্রম্পট লিখে অপেক্ষা করতে হয়, ইমেজ লোকাল ড্রাইভে ডাউনলোড করতে হয়, প্রজেক্ট বিনে ইমপোর্ট করে টাইমলাইনে প্লেহেড খুঁজে ম্যানুয়ালি ট্র্যাক বা লেয়ারে ড্র্যাগ-অ্যান্ড-ড্রপ করতে হয়। বারবার এই উইন্ডো স্যুইচিং কাজের রিদম ও ক্রিয়েটিভ ফ্লো মারাত্মকভাবে নষ্ট করে। তাছাড়া অফিসিয়াল ওপেনএআই বা মিডজার্নি API ব্যবহার করতে গেলে প্রতি ইমেজে অতিরিক্ত টোকেন বিলিং ও পেইড সাবস্ক্রিপশনের বোঝা তৈরি হয়।\n\nআর্কিটেকচারাল চ্যালেঞ্জসমূহ:\n১. ব্রাউজার এক্সটেনশন নির্ভরতা দূরীকরণ: ১.x সংস্করণে একটি লোকাল লুপব্যাক HTTP সার্ভার ও ক্রোম এক্সটেনশন ব্রিজ ব্যবহার করা হয়েছিল; যা ব্যবহারকারীর জন্য দুটি আলাদা উপাদান ইনস্টল ও কনফিগার করার ঝামেলা তৈরি করত। মূল লক্ষ্য ছিল কোনো ব্রাউজার এক্সটেনশন ছাড়াই ব্যবহারকারীর উইন্ডোজ ডিফল্ট ক্রোমিয়াম ব্রাউজারকে (Chrome, Edge, Brave, Vivaldi) সরাসরি অটোমেট করা।\n২. ডুয়াল হোস্ট টাইমলাইন অটোমেশন (After Effects ও Premiere Pro): আফটার ইফেক্টস এবং প্রিমিয়ার প্রোর ExtendScript ইঞ্জিন সম্পূর্ণ ভিন্ন। আফটার ইফেক্টসে সক্রিয় কম্পোজিশনের বর্তমান প্লেহেডে (comp.time) নতুন ইমেজ লেয়ার ইনসার্ট করা আর প্রিমিয়ার প্রোতে বিদ্যমান কোনো সিকোয়েন্স ক্লিপ ওভাররাইট না করে প্লেহেডের ঠিক উপরের প্রথম ফাঁকা ভিডিও ট্র্যাকে (বা প্রয়োজনে নতুন ট্র্যাক ক্রিয়েট করে) ক্লিপ প্লেস করার ডায়নামিক অ্যালগরিদম প্রতিষ্ঠা করা।\n৩. ফোকাসহীন ইনভিজিবল এক্সিকিউশন ও সেশন নিরাপত্তা: ব্যাকগ্রাউন্ডে ব্রাউজার অটোমেশন চলার সময় এডিটরের কীবোর্ড ফোকাস কোনো অবস্থাতেই নষ্ট না হওয়া (Zero Focus Stealing) এবং ব্যবহারকারীর মূল ব্রাউজারের বুকমার্ক, হিস্ট্রি ও পাসওয়ার্ড সম্পূর্ণ অক্ষত রেখে একটি সংরক্ষিত ডেডিকেটেড সেশন প্রোফাইলে (%APPDATA%\\LazyImage) ChatGPT পরিচালনা করা।",
+			'challenge_en'=> "Motion designers, video editors, and visual effects artists routinely need conceptual backgrounds, storyboards, textures, and b-roll graphic assets during post-production. The standard industry workflow forces creators into a frustrating loop: leaving the editor, juggling browser tabs in Midjourney or ChatGPT, waiting for renders, downloading files to disk, navigating local folders, importing footage into the project bin, and manually positioning clips onto the timeline. This repetitive context-switching cripples creative momentum. Furthermore, commercial generative APIs demand recurring per-token subscriptions and billing infrastructure that individual editors and small studios find prohibitive.\n\nTechnical & Architectural Challenges:\n1. Eliminating Browser Extension Dependencies: Version 1.x relied on a local loopback HTTP server and a companion Manifest V3 Chrome extension, introducing multi-step installation friction. The primary architectural objective was creating a standalone bridge capable of directly driving the user's native Windows default Chromium browser (Chrome, Edge, Brave, Vivaldi) without requiring any installed browser extensions.\n2. Dual Host Timeline Automation (After Effects & Premiere Pro): After Effects and Premiere Pro operate on fundamentally different ExtendScript object models. While AE requires instantiating footage items into active composition layers precisely at comp.time, Premiere Pro demands intelligent sequence-level track evaluation—placing clips onto the first unoccupied video track above existing footage at the playhead without overwriting any active timeline clips, and dynamically generating tracks when needed.\n3. Non-Intrusive Invisible Execution & Session Isolation: Running browser automation silently in the background without stealing keyboard focus from active timeline editing, while strictly isolating the ChatGPT session inside a dedicated profile (%APPDATA%\\LazyImage) to ensure the user's personal browser data, bookmarks, logins, and extensions remain untouched.",
+			'solution_bn' => "১. ইনভিজিবল সিডিপি ব্রাউজার ইঞ্জিন (Chrome DevTools Protocol): v2.0+ আর্কিটেকচারে কোনো ব্রাউজার এক্সটেনশন ছাড়াই সরাসরি Chrome DevTools Protocol (CDP) WebSocket-এর মাধ্যমে উইন্ডোজের ডিফল্ট ব্রাউজার (Chrome, Edge, Brave, Vivaldi) নিয়ন্ত্রণ করা হয়। প্যানেলে প্রম্পট দিলে একটি সম্পূর্ণ গোপন (Hidden Window) ব্রাউজার প্রসেস রান করে, প্রম্পট ইনপুট দিয়ে ইমেজ সংগ্রহ করে এবং ইমেজ ডাউনলোড হওয়ামাত্রই স্বয়ংক্রিয়ভাবে ব্রাউজার প্রসেস বন্ধ করে দেয়। ফলে কোনো ব্যাকগ্রাউন্ড মেমোরি নষ্ট হয় না।\n\n২. ওয়ান-টাইম সিকিউর লগইন ও আইসোলেটেড প্রোফাইল: ব্যবহারকারীর সাধারণ ব্রাউজিং সুরক্ষিত রাখতে %APPDATA%\\LazyImage ডিরেক্টরিতে একটি সম্পূর্ণ আইসোলেটেড প্রোফাইল তৈরি হয়। প্রথমবারের মতো 'Login to ChatGPT' বাটনে ক্লিক করলে একটি স্বাভাবিক ব্রাউজার উইন্ডো খোলে এবং লগইন সম্পন্ন হওয়ামাত্র উইন্ডোটি স্বয়ংক্রিয়ভাবে বন্ধ হয়ে যায়। একবার লগইন করলে তা আফটার ইফেক্টস ও প্রিমিয়ার প্রো উভয় অ্যাপেই কার্যকর থাকে।\n\n৩. ডুয়াল ExtendScript টাইমলাইন অটোমেশন:\n- After Effects: সক্রিয় কম্পোজিশনের প্লেহেড পজিশনে (comp.time) স্বয়ংক্রিয়ভাবে নতুন লেয়ার হিসেবে ইমেজ যুক্ত হয় এবং প্রজেক্ট উইন্ডোতে ChatGptImages ফোল্ডারে সুসজ্জিত থাকে।\n- Premiere Pro: সক্রিয় সিকোয়েন্সে প্লেহেডের নিচে থাকা ক্লিপগুলো স্ক্যান করে প্রথম খালি ভিডিও ট্র্যাক (Free Video Track) নির্বাচন করে অথবা স্বয়ংক্রিয়ভাবে নতুন ভিডিও ট্র্যাক তৈরি করে ইমেজ প্লেস করে; ফলে কোনো বিদ্যমান ক্লিপ ওভাররাইট হওয়ার ঝুঁকি থাকে না।\n\n৪. স্মার্ট প্রজেক্ট ফোল্ডার অর্গানাইজেশন: এক্সটেনশনটি স্বয়ংক্রিয়ভাবে ওপেন থাকা .aep বা .prproj ফাইলের পাথ শনাক্ত করে এবং প্রজেক্ট ডিরেক্টরির ভেতরেই chatgptimages সাবফোল্ডার তৈরি করে সব ইমেজ সেভ করে (অসংরক্ষিত প্রজেক্টের ক্ষেত্রে Documents/chatgptimages/-এ ব্যাকআপ রাখে)। ফোল্ডার থেকে ফাইল ডিলিট হলে প্যানেলে 'Image removed' অ্যালার্ট দেখায়।\n\n৫. রিয়েল-টাইম প্রোগ্রেস পার্সেন্টেজ ও ক্যানসেল সাপোর্ট: ইমেজ তৈরি হওয়ার সময় প্যানেলে এস্টিমেটেড প্রোগ্রেস পার্সেন্টেজ (%) প্রদর্শিত হয় এবং প্রয়োজন অনুযায়ী এক ক্লিকে রানিং প্রসেস বন্ধ করার জন্য ইনস্ট্যান্ট Cancel বাটন সংযুক্ত রয়েছে।\n\n৬. ওয়ান-ক্লিক কুইক অ্যাকশন ইউটিলিটি: জেনারেট হওয়া হাই-রেজোলিউশন ইমেজ তাৎক্ষণিকভাবে উইন্ডোজ ক্লিপবোর্ডে কপি করার জন্য 'Copy Image' বাটন এবং প্রজেক্টের ইমেজ ফোল্ডার সরাসরি উইন্ডোজ এক্সপ্লোরারে খোলার জন্য 'Open Folder' বাটন রয়েছে।\n\n৭. ইউনিভার্সাল ইউনিকোড ও অ্যাসপেক্ট রেশিও কন্ট্রোল: পূর্ণাঙ্গ UTF-8 ইউনিকোড সাপোর্টের মাধ্যমে বাংলা, ইংরেজি সহ যেকোনো ভাষায় বিস্তারিত প্রম্পট লেখা যায়। ১:১, ১৬:৯, ৯:১৬, ৪:৫ প্রিসেট ছাড়াও কাস্টম ওয়াইড/হাইট (W:H) রেজোলিউশন নিয়ন্ত্রণ করা যায়।\n\n৮. ওয়ান-ক্লিক অটোমেটেড উইন্ডোজ ইনস্টলার: install.bat স্ক্রিপ্টের মাধ্যমে উইন্ডোজ রেজিস্ট্রিতে অ্যাডোবি CEP PlayerDebugMode সক্রিয় করা এবং %APPDATA%\\Adobe\\CEP\\extensions\\ ডিরেক্টরিতে সিম্বলিক লিঙ্ক তৈরি করে সম্পূর্ণ জিরো-কনফিগারেশন ইনস্টলেশন নিশ্চিত করা হয়েছে।",
+			'solution_en' => "1. Invisible CDP Browser Engine (Chrome DevTools Protocol): Replaced legacy browser extensions with native Chrome DevTools Protocol (CDP) WebSocket communication. When a generation is triggered, an on-demand Chromium browser process (Chrome, Edge, Brave, or Vivaldi) launches in an invisible window, navigates to the active session, types the prompt and aspect ratio, captures the generated high-resolution asset stream via Base64, and cleanly shuts down the browser process. Zero background memory footprint when idle.\n\n2. Isolated User Profile & One-Time Authentication: Maintains a dedicated profile in %APPDATA%\\LazyImage (e.g., ChromeProfile or EdgeProfile), guaranteeing that the user's everyday browsing history, passwords, and extensions remain untouched. Users log in once through a normal browser popup that closes itself upon verification; the authenticated state is shared across both After Effects and Premiere Pro.\n\n3. Cross-Host Timeline Placement (ExtendScript):\n- After Effects: Reads active composition dimensions and playhead timestamp (comp.time), automatically creating a new visual layer and neatly organizing project bin footage inside a dedicated ChatGptImages folder.\n- Premiere Pro: Scans active sequence video tracks under the current playhead, evaluates track bounds to locate the first unoccupied video track above existing footage (or dynamically creates a new track), and drops the clip without destructive overwrites.\n\n4. Automated Project Directory Asset Management: Automatically resolves the parent directory of currently loaded .aep or .prproj projects, creating a local chatgptimages directory adjacent to project files. Monitors asset integrity and surfaces 'Image removed' notifications if an asset is deleted on disk.\n\n5. Estimated Progress Feedback & Cancellation: Features live progress percentage tracking during generation cycles and an instant Cancel button allowing editors to abort long-running prompts without freezing the host software.\n\n6. Native Quick Action Utilities: Built-in 'Copy Image' utility pipes the full-resolution graphic straight to the Windows OS clipboard via a lightweight native bridge, complemented by an 'Open Folder' shortcut that reveals the asset in Windows Explorer.\n\n7. Universal Unicode & Aspect Ratio Presets: Full UTF-8 multi-language support (Bengali, English, Arabic, Spanish, etc.) and instant aspect ratio toggles (1:1, 16:9, 9:16, 4:5) alongside custom width/height inputs.\n\n8. 1-Click Zero-Config Windows Installer: Streamlined install.bat utility configures Adobe CEP registry debug flags across CC 2019–2026 and establishes an instant symlink into %APPDATA%\\Adobe\\CEP\\extensions\\com.gimage.aftereffects.",
 			'highlights_bn'=> array(
-				'সরাসরি আফটার ইফেক্টস প্যানেল থেকে ওয়ান-ক্লিকে AI ইমেজ জেনারেট',
-				'স্বয়ংক্রিয়ভাবে কম্পোজিশন টাইমলাইনে প্লেহেড পজিশনে লেয়ার ইনসার্ট',
-				'কোনো পেইড API কি বা অতিরিক্ত খরচ নেই—বিদ্যমান চ্যাটজিপিটি ব্রাউজার সেশনে সক্রিয়',
-				'স্মার্ট .aep প্রজেক্ট ফোল্ডার ডিটেকশন ও ডেডিকেটেড AI_Generated ডিরেক্টরি',
-				'১:১, ১৬:৯, ৯:১৬, ৪:৫ অ্যাসপেক্ট রেশিও এবং কাস্টম রেজোলিউশন প্রিসেট',
-				'ইউনিকোড ফুল সাপোর্ট: বাংলা বা যেকোনো ভাষায় প্রম্পট দেওয়ার সুবিধা',
+				'আফটার ইফেক্টস এবং প্রিমিয়ার প্রো—উভয় সফটওয়্যারের জন্য একক ইউনিফাইড অ্যাডোবি CEP এক্সটেনশন',
+				'কোনো ব্রাউজার এক্সটেনশন ছাড়াই স্বয়ংক্রিয় Chrome DevTools Protocol (CDP) ইঞ্জিন',
+				'কোনো পেইড API কি বা সাবস্ক্রিপশন চার্জ নেই—বিদ্যমান ফ্রি বা প্লাস চ্যাটজিপিটি অ্যাকাউন্টে সক্রিয়',
+				'আফটার ইফেক্টসে প্লেহেড লেয়ার এবং প্রিমিয়ার প্রোতে নন-ডেস্ট্রাক্টিভ ফ্রি ভিডিও ট্র্যাকে স্বয়ংক্রিয় প্লেসমেন্ট',
+				'সম্পূর্ণ ইনভিজিবল ও অন-ডিমান্ড এক্সিকিউশন: জেনারেশন শেষে স্বয়ংক্রিয় ব্রাউজার ক্লোজ ও জিরো ফোকাস স্টিলিং',
+				'আইসোলেটেড প্রোফাইল (%APPDATA%\\LazyImage) ব্যবহারের ফলে ব্যক্তিগত ব্রাউজিং ও হিস্ট্রি সম্পূর্ণ অক্ষত',
+				'.aep ও .prproj প্রজেক্টের পাশে স্বয়ংক্রিয় chatgptimages ফোল্ডার এবং প্রজেক্ট প্যানেলে ChatGptImages বিন',
+				'রিয়েল-টাইম প্রোগ্রেস এস্টিমেশন (%) এবং যেকোনো সময় প্রসেস বন্ধ করার জন্য ইনস্ট্যান্ট ক্যানসেল বাটন',
+				'ওয়ান-ক্লিক "Copy Image" (ক্লিপবোর্ড) এবং "Open Folder" (উইন্ডোজ এক্সপ্লোরার) ইউটিলিটি',
+				'১:১, ১৬:৯, ৯:১৬, ৪:৫ অ্যাসপেক্ট রেশিও প্রিসেট এবং কাস্টম ডাইমেনশন সাপোর্ট',
+				'সম্পূর্ণ ইউনিকোড সাপোর্ট: বাংলা সহ যেকোনো ভাষায় বিস্তারিত প্রম্পটিংয়ের সুবিধা',
 				'উইন্ডোজের জন্য ওয়ান-ক্লিক অটো-ইনস্টলার স্ক্রিপ্ট (PlayerDebugMode ও সিমলিঙ্ক)'
 			),
 			'highlights_en'=> array(
-				'Native Adobe After Effects panel for prompt-based AI image generation',
-				'Instant auto-placement on active composition timeline at the current playhead',
-				'Zero API subscription or credit billing—connects to active browser ChatGPT session',
-				'Automated .aep project directory discovery with structured AI_Generated asset bins',
-				'One-click aspect ratio presets: 1:1, 16:9, 9:16, 4:5 and custom resolutions',
-				'Full Unicode prompt support: seamlessly accepts Bengali, English, and other languages',
-				'Streamlined 1-click Windows installer automating registry debug flags and symlinks'
+				'Unified Adobe CEP panel supporting both Adobe After Effects and Adobe Premiere Pro (CC 2019-2026)',
+				'Direct Chrome DevTools Protocol (CDP) WebSocket automation—eliminates browser extensions entirely',
+				'Zero API cost or token subscriptions—operates directly through active ChatGPT Free/Plus/Pro accounts',
+				'Intelligent timeline placement: AE playhead layer insertion and Premiere Pro non-destructive track placement',
+				'Invisible on-demand execution: hidden browser launches per task, exits immediately, and never steals focus',
+				'Isolated user profile in %APPDATA%\\LazyImage safeguarding personal browser logins, history, and bookmarks',
+				'Smart project file discovery: automated chatgptimages disk folders and structured ChatGptImages project bins',
+				'Live progress percentage feedback with instant task cancellation support',
+				'Native quick actions: one-click "Copy Image" to clipboard and "Open Folder" in Windows Explorer',
+				'One-click aspect ratio presets (1:1, 16:9, 9:16, 4:5) plus custom dimension controls',
+				'Full Unicode UTF-8 multi-language support (Bengali, English, and beyond)',
+				'1-Click automated Windows installer configuring registry debug keys and extensions symlink'
 			),
-			'tags'        => array( 'Adobe CEP', 'After Effects', 'ExtendScript', 'Chrome Extension', 'AI Automation', 'Node.js' ),
+			'tags'        => array( 'Adobe CEP', 'After Effects', 'Premiere Pro', 'CDP Automation', 'ExtendScript', 'AI Workflow', 'Node.js' ),
 			'accent'      => '#6c5ce7',
 			'icon'        => 'extension',
-			'image'       => get_template_directory_uri() . '/assets/img/lazyimage.png',
+			'image'       => get_template_directory_uri() . '/assets/img/lazyimage-v2.png',
 			'image_fit'   => 'cover',
 			'action_type' => 'code',
 			'action_bn'   => 'সোর্স কোড (GitHub)',
@@ -1237,3 +1251,82 @@ function rs_seed_initial_portfolio_projects() {
 	update_option( 'rs_portfolio_seeded_v1', 1 );
 }
 add_action( 'admin_init', 'rs_seed_initial_portfolio_projects' );
+
+/**
+ * 10. Sync Lazy-Image project to v2.2 specifications in the database
+ */
+function rs_sync_lazy_image_portfolio_v2() {
+	if ( get_option( 'rs_portfolio_synced_lazyimage_v2_2' ) ) {
+		return;
+	}
+
+	$switched = false;
+	if ( is_multisite() && ! is_main_site() ) {
+		switch_to_blog( get_main_site_id() );
+		$switched = true;
+	}
+
+	$posts = get_posts( array(
+		'post_type'      => 'rs_portfolio',
+		'name'           => 'lazy-image-ae',
+		'posts_per_page' => 1,
+		'post_status'    => 'any',
+	) );
+
+	if ( ! empty( $posts ) ) {
+		$post_id  = $posts[0]->ID;
+		$defaults = rs_get_default_portfolio_projects();
+		$item     = null;
+		foreach ( $defaults as $d ) {
+			if ( 'lazy-image-ae' === $d['id'] ) {
+				$item = $d;
+				break;
+			}
+		}
+
+		if ( $item ) {
+			wp_update_post( array(
+				'ID'         => $post_id,
+				'post_title' => $item['title_en'],
+			) );
+
+			update_post_meta( $post_id, '_rs_portfolio_category', $item['category'] );
+			update_post_meta( $post_id, '_rs_portfolio_type_bn', $item['type_bn'] );
+			update_post_meta( $post_id, '_rs_portfolio_type_en', $item['type_en'] );
+			update_post_meta( $post_id, '_rs_portfolio_badge_bn', $item['badge_bn'] );
+			update_post_meta( $post_id, '_rs_portfolio_badge_en', $item['badge_en'] );
+			update_post_meta( $post_id, '_rs_portfolio_title_bn', $item['title_bn'] );
+			update_post_meta( $post_id, '_rs_portfolio_title_en', $item['title_en'] );
+			update_post_meta( $post_id, '_rs_portfolio_summary_bn', $item['summary_bn'] );
+			update_post_meta( $post_id, '_rs_portfolio_summary_en', $item['summary_en'] );
+			update_post_meta( $post_id, '_rs_portfolio_role_bn', $item['role_bn'] );
+			update_post_meta( $post_id, '_rs_portfolio_role_en', $item['role_en'] );
+			update_post_meta( $post_id, '_rs_portfolio_context_bn', $item['context_bn'] );
+			update_post_meta( $post_id, '_rs_portfolio_context_en', $item['context_en'] );
+			update_post_meta( $post_id, '_rs_portfolio_challenge_bn', $item['challenge_bn'] );
+			update_post_meta( $post_id, '_rs_portfolio_challenge_en', $item['challenge_en'] );
+			update_post_meta( $post_id, '_rs_portfolio_solution_bn', $item['solution_bn'] );
+			update_post_meta( $post_id, '_rs_portfolio_solution_en', $item['solution_en'] );
+			update_post_meta( $post_id, '_rs_portfolio_highlights_bn', $item['highlights_bn'] );
+			update_post_meta( $post_id, '_rs_portfolio_highlights_en', $item['highlights_en'] );
+			update_post_meta( $post_id, '_rs_portfolio_tags', implode( ', ', $item['tags'] ) );
+			update_post_meta( $post_id, '_rs_portfolio_accent', $item['accent'] );
+			update_post_meta( $post_id, '_rs_portfolio_icon', $item['icon'] );
+			update_post_meta( $post_id, '_rs_portfolio_image', $item['image'] );
+			update_post_meta( $post_id, '_rs_portfolio_image_fit', $item['image_fit'] );
+			update_post_meta( $post_id, '_rs_portfolio_action_type', $item['action_type'] );
+			update_post_meta( $post_id, '_rs_portfolio_action_bn', $item['action_bn'] );
+			update_post_meta( $post_id, '_rs_portfolio_action_en', $item['action_en'] );
+			update_post_meta( $post_id, '_rs_portfolio_direct_url', $item['direct_url'] );
+			update_post_meta( $post_id, '_rs_portfolio_github_url', $item['github_url'] );
+		}
+	}
+
+	update_option( 'rs_portfolio_synced_lazyimage_v2_2', 1 );
+
+	if ( $switched ) {
+		restore_current_blog();
+	}
+}
+add_action( 'init', 'rs_sync_lazy_image_portfolio_v2' );
+
