@@ -615,6 +615,7 @@ add_action( 'save_post_rs_portfolio', 'rs_save_portfolio_meta' );
 function rs_portfolio_admin_columns( $columns ) {
 	$new_columns = array(
 		'cb'          => $columns['cb'],
+		'rs_drag'     => '',
 		'rs_thumb'    => 'Preview',
 		'title'       => 'Project Name',
 		'rs_category' => 'Category',
@@ -628,6 +629,10 @@ add_filter( 'manage_rs_portfolio_posts_columns', 'rs_portfolio_admin_columns' );
 
 function rs_portfolio_admin_custom_column( $column, $post_id ) {
 	switch ( $column ) {
+		case 'rs_drag':
+			echo '<span class="rs-drag-handle dashicons dashicons-menu" title="ড্র্যাগ করে সিরিয়াল পরিবর্তন করুন"></span>';
+			break;
+
 		case 'rs_thumb':
 			$img = get_post_meta( $post_id, '_rs_portfolio_image', true );
 			if ( $img ) {
@@ -695,11 +700,8 @@ add_action( 'pre_get_posts', 'rs_portfolio_default_admin_order' );
 /**
  * 6c. Drag-and-Drop Reorder UI for Portfolio Admin List
  *
- * Enqueues jQuery UI Sortable on the rs_portfolio list screen and
- * injects a lightweight inline script that:
- *   1. Makes table rows sortable via drag handle
- *   2. Fires an AJAX request on drop to persist the new order
- *   3. Shows a brief success/error toast
+ * Enqueues jQuery UI Sortable + outputs inline CSS and a footer script
+ * that makes rows draggable via the dedicated ≡ handle column.
  */
 function rs_portfolio_reorder_assets( $hook ) {
 	if ( 'edit.php' !== $hook ) {
@@ -717,22 +719,33 @@ function rs_portfolio_reorder_assets( $hook ) {
 
 	wp_enqueue_script( 'jquery-ui-sortable' );
 
+	/* --- Inline CSS --- */
 	$css = '
-		/* Drag handle on each row */
-		#the-list .rs-drag-handle {
+		/* Drag handle column */
+		.column-rs_drag { width: 28px; padding: 4px 0 !important; text-align: center; }
+		.rs-drag-handle {
 			cursor: grab; color: #8c8f94; font-size: 18px;
 			vertical-align: middle; user-select: none;
-			display: inline-block; width: 20px; text-align: center;
 		}
-		#the-list .rs-drag-handle:active { cursor: grabbing; }
-		#the-list tr.ui-sortable-helper {
-			background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.12);
-			display: table; /* keep column widths while dragging */
+		.rs-drag-handle:hover { color: #2271b1; }
+		.rs-drag-handle:active { cursor: grabbing; }
+
+		/* Row being dragged */
+		#the-list tr.rs-sortable-helper {
+			background: #fff !important;
+			box-shadow: 0 3px 12px rgba(0,0,0,.15);
+			z-index: 999;
 		}
-		#the-list tr.ui-sortable-placeholder {
+		/* Drop placeholder */
+		#the-list tr.rs-sortable-placeholder {
 			visibility: visible !important;
-			background: #f0f6fc; border: 2px dashed #3582c4;
+			background: #f0f6fc !important;
 		}
+		#the-list tr.rs-sortable-placeholder td {
+			border-top: 2px dashed #3582c4;
+			border-bottom: 2px dashed #3582c4;
+		}
+
 		/* Reorder banner */
 		.rs-reorder-banner {
 			background: #f0f6fc; border-left: 4px solid #2271b1;
@@ -741,7 +754,8 @@ function rs_portfolio_reorder_assets( $hook ) {
 			border-radius: 0 3px 3px 0;
 		}
 		.rs-reorder-banner .dashicons { color: #2271b1; }
-		/* Toast */
+
+		/* Toast notification */
 		.rs-reorder-toast {
 			position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
 			padding: 10px 22px; border-radius: 4px; font-size: 13px;
@@ -752,70 +766,105 @@ function rs_portfolio_reorder_assets( $hook ) {
 		.rs-reorder-toast--ok   { background: #00a32a; }
 		.rs-reorder-toast--fail { background: #d63638; }
 	';
-
-	$js = "
-		jQuery(function($){
-			/* Insert reorder instruction banner */
-			var banner = '<div class=\"rs-reorder-banner\">'
-				+ '<span class=\"dashicons dashicons-move\"></span>'
-				+ '<span>প্রজেক্ট সিরিয়াল পরিবর্তন করতে যেকোনো সারি ড্র্যাগ করে উপরে বা নিচে ছেড়ে দিন।</span>'
-				+ '</div>';
-			$('.wp-list-table').before(banner);
-
-			/* Prepend drag handle to the first cell of every body row */
-			$('#the-list tr').each(function(){
-				$(this).find('td:first').prepend('<span class=\"rs-drag-handle dashicons dashicons-menu\"></span> ');
-			});
-
-			/* Toast helper */
-			function toast(msg, ok) {
-				var t = $('<div class=\"rs-reorder-toast '+ (ok ? 'rs-reorder-toast--ok' : 'rs-reorder-toast--fail') +'\">' + msg + '</div>');
-				$('body').append(t);
-				setTimeout(function(){ t.addClass('is-visible'); }, 30);
-				setTimeout(function(){ t.removeClass('is-visible'); setTimeout(function(){ t.remove(); }, 400); }, 2400);
-			}
-
-			/* Make sortable */
-			$('#the-list').sortable({
-				items:  '> tr',
-				handle: '.rs-drag-handle',
-				axis:   'y',
-				cursor: 'grabbing',
-				placeholder: 'ui-sortable-placeholder',
-				opacity: 0.85,
-				update: function() {
-					var order = [];
-					$('#the-list tr').each(function(){
-						var id = $(this).attr('id');
-						if (id) order.push( id.replace('post-', '') );
-					});
-
-					$.post(ajaxurl, {
-						action:   'rs_portfolio_reorder',
-						_wpnonce: '" . wp_create_nonce( 'rs_portfolio_reorder' ) . "',
-						order:    order
-					}, function(r) {
-						if (r.success) {
-							toast('✓ সিরিয়াল সেভ হয়েছে!', true);
-							/* Update visible order numbers */
-							$('#the-list tr').each(function(i){
-								$(this).find('.column-menu_order').text(i + 1);
-							});
-						} else {
-							toast('✕ সেভ ব্যর্থ হয়েছে', false);
-						}
-					}).fail(function(){
-						toast('✕ সার্ভারে সমস্যা হয়েছে', false);
-					});
-				}
-			});
-		});
-	";
-
 	wp_add_inline_style( 'wp-admin', $css );
-	wp_add_inline_script( 'jquery-ui-sortable', $js );
+
+	/* Flag so the footer script knows to fire. */
+	add_action( 'admin_footer', 'rs_portfolio_reorder_footer_script' );
 }
 add_action( 'admin_enqueue_scripts', 'rs_portfolio_reorder_assets' );
+
+/**
+ * Print the sortable JS at the very bottom of the page so the DOM
+ * is guaranteed to exist. Using admin_footer instead of
+ * wp_add_inline_script avoids timing issues with table rendering.
+ */
+function rs_portfolio_reorder_footer_script() {
+	$nonce = wp_create_nonce( 'rs_portfolio_reorder' );
+	?>
+	<script>
+	jQuery(function($){
+		var $list = $('#the-list');
+		if ( ! $list.length ) return;
+
+		/* Instruction banner */
+		$('.wp-list-table').before(
+			'<div class="rs-reorder-banner">' +
+			'<span class="dashicons dashicons-move"></span>' +
+			'<span>প্রজেক্ট সিরিয়াল পরিবর্তন করতে ≡ আইকন ধরে টেনে উপরে বা নিচে ছেড়ে দিন।</span>' +
+			'</div>'
+		);
+
+		/* Toast helper */
+		function toast(msg, ok) {
+			var $t = $('<div class="rs-reorder-toast ' + (ok ? 'rs-reorder-toast--ok' : 'rs-reorder-toast--fail') + '">' + msg + '</div>');
+			$('body').append($t);
+			setTimeout(function(){ $t.addClass('is-visible'); }, 30);
+			setTimeout(function(){ $t.removeClass('is-visible'); setTimeout(function(){ $t.remove(); }, 400); }, 2400);
+		}
+
+		/* Disable text selection on the table so drag is not blocked */
+		$list.disableSelection();
+
+		/* Initialize sortable */
+		$list.sortable({
+			items:       '> tr',
+			handle:      '.rs-drag-handle',
+			axis:        'y',
+			tolerance:   'pointer',
+			cursor:      'grabbing',
+			distance:    3,
+			placeholder: 'rs-sortable-placeholder',
+
+			/* Preserve column widths while the row is detached from the table */
+			helper: function( e, tr ) {
+				var $origCells = tr.children();
+				var $helper    = tr.clone();
+				$helper.addClass('rs-sortable-helper');
+				$helper.children().each(function( i ) {
+					$(this).width( $origCells.eq( i ).outerWidth() );
+				});
+				return $helper;
+			},
+			/* Keep the original row's widths too (prevents column collapse) */
+			start: function( e, ui ) {
+				ui.item.children().each(function() {
+					$(this).width( $(this).width() );
+				});
+			},
+			/* Remove inline widths after sort */
+			stop: function( e, ui ) {
+				ui.item.children().css('width', '');
+			},
+
+			update: function() {
+				var order = [];
+				$list.children('tr').each(function(){
+					var id = $(this).attr('id');
+					if ( id ) order.push( id.replace('post-', '') );
+				});
+
+				$.post( ajaxurl, {
+					action:   'rs_portfolio_reorder',
+					_wpnonce: '<?php echo esc_js( $nonce ); ?>',
+					order:    order
+				}, function( r ) {
+					if ( r.success ) {
+						toast('✓ সিরিয়াল সেভ হয়েছে!', true);
+						$list.children('tr').each(function( i ){
+							$(this).find('.column-menu_order').text( i + 1 );
+						});
+					} else {
+						toast('✕ সেভ ব্যর্থ হয়েছে', false);
+					}
+				}).fail(function(){
+					toast('✕ সার্ভারে সমস্যা হয়েছে', false);
+				});
+			}
+		});
+	});
+	</script>
+	<?php
+}
 
 /**
  * 6d. AJAX Handler: Persist new project order after drag-and-drop.
