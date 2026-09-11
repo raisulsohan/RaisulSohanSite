@@ -670,6 +670,190 @@ function rs_portfolio_sortable_columns( $columns ) {
 add_filter( 'manage_edit-rs_portfolio_sortable_columns', 'rs_portfolio_sortable_columns' );
 
 /**
+ * 6b. Default admin list to menu_order ASC so drag-and-drop
+ *     always reflects the live front-end order.
+ */
+function rs_portfolio_default_admin_order( $query ) {
+	if ( ! is_admin() || ! $query->is_main_query() ) {
+		return;
+	}
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+	if ( ! $screen || 'edit-rs_portfolio' !== $screen->id ) {
+		return;
+	}
+
+	/* Respect explicit column-header clicks (orderby query var). */
+	if ( ! empty( $_GET['orderby'] ) ) {
+		return;
+	}
+
+	$query->set( 'orderby', 'menu_order' );
+	$query->set( 'order', 'ASC' );
+}
+add_action( 'pre_get_posts', 'rs_portfolio_default_admin_order' );
+
+/**
+ * 6c. Drag-and-Drop Reorder UI for Portfolio Admin List
+ *
+ * Enqueues jQuery UI Sortable on the rs_portfolio list screen and
+ * injects a lightweight inline script that:
+ *   1. Makes table rows sortable via drag handle
+ *   2. Fires an AJAX request on drop to persist the new order
+ *   3. Shows a brief success/error toast
+ */
+function rs_portfolio_reorder_assets( $hook ) {
+	if ( 'edit.php' !== $hook ) {
+		return;
+	}
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+	if ( ! $screen || 'edit-rs_portfolio' !== $screen->id ) {
+		return;
+	}
+
+	/* Only enable when sorted by menu_order (the default). */
+	if ( ! empty( $_GET['orderby'] ) && 'menu_order' !== $_GET['orderby'] ) {
+		return;
+	}
+
+	wp_enqueue_script( 'jquery-ui-sortable' );
+
+	$css = '
+		/* Drag handle on each row */
+		#the-list .rs-drag-handle {
+			cursor: grab; color: #8c8f94; font-size: 18px;
+			vertical-align: middle; user-select: none;
+			display: inline-block; width: 20px; text-align: center;
+		}
+		#the-list .rs-drag-handle:active { cursor: grabbing; }
+		#the-list tr.ui-sortable-helper {
+			background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.12);
+			display: table; /* keep column widths while dragging */
+		}
+		#the-list tr.ui-sortable-placeholder {
+			visibility: visible !important;
+			background: #f0f6fc; border: 2px dashed #3582c4;
+		}
+		/* Reorder banner */
+		.rs-reorder-banner {
+			background: #f0f6fc; border-left: 4px solid #2271b1;
+			padding: 8px 14px; margin: 10px 0 6px; font-size: 13px;
+			display: flex; align-items: center; gap: 8px;
+			border-radius: 0 3px 3px 0;
+		}
+		.rs-reorder-banner .dashicons { color: #2271b1; }
+		/* Toast */
+		.rs-reorder-toast {
+			position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+			padding: 10px 22px; border-radius: 4px; font-size: 13px;
+			z-index: 100001; color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.18);
+			opacity: 0; transition: opacity .3s;
+		}
+		.rs-reorder-toast.is-visible { opacity: 1; }
+		.rs-reorder-toast--ok   { background: #00a32a; }
+		.rs-reorder-toast--fail { background: #d63638; }
+	';
+
+	$js = "
+		jQuery(function($){
+			/* Insert reorder instruction banner */
+			var banner = '<div class=\"rs-reorder-banner\">'
+				+ '<span class=\"dashicons dashicons-move\"></span>'
+				+ '<span>প্রজেক্ট সিরিয়াল পরিবর্তন করতে যেকোনো সারি ড্র্যাগ করে উপরে বা নিচে ছেড়ে দিন।</span>'
+				+ '</div>';
+			$('.wp-list-table').before(banner);
+
+			/* Prepend drag handle to the first cell of every body row */
+			$('#the-list tr').each(function(){
+				$(this).find('td:first').prepend('<span class=\"rs-drag-handle dashicons dashicons-menu\"></span> ');
+			});
+
+			/* Toast helper */
+			function toast(msg, ok) {
+				var t = $('<div class=\"rs-reorder-toast '+ (ok ? 'rs-reorder-toast--ok' : 'rs-reorder-toast--fail') +'\">' + msg + '</div>');
+				$('body').append(t);
+				setTimeout(function(){ t.addClass('is-visible'); }, 30);
+				setTimeout(function(){ t.removeClass('is-visible'); setTimeout(function(){ t.remove(); }, 400); }, 2400);
+			}
+
+			/* Make sortable */
+			$('#the-list').sortable({
+				items:  '> tr',
+				handle: '.rs-drag-handle',
+				axis:   'y',
+				cursor: 'grabbing',
+				placeholder: 'ui-sortable-placeholder',
+				opacity: 0.85,
+				update: function() {
+					var order = [];
+					$('#the-list tr').each(function(){
+						var id = $(this).attr('id');
+						if (id) order.push( id.replace('post-', '') );
+					});
+
+					$.post(ajaxurl, {
+						action:   'rs_portfolio_reorder',
+						_wpnonce: '" . wp_create_nonce( 'rs_portfolio_reorder' ) . "',
+						order:    order
+					}, function(r) {
+						if (r.success) {
+							toast('✓ সিরিয়াল সেভ হয়েছে!', true);
+							/* Update visible order numbers */
+							$('#the-list tr').each(function(i){
+								$(this).find('.column-menu_order').text(i + 1);
+							});
+						} else {
+							toast('✕ সেভ ব্যর্থ হয়েছে', false);
+						}
+					}).fail(function(){
+						toast('✕ সার্ভারে সমস্যা হয়েছে', false);
+					});
+				}
+			});
+		});
+	";
+
+	wp_add_inline_style( 'wp-admin', $css );
+	wp_add_inline_script( 'jquery-ui-sortable', $js );
+}
+add_action( 'admin_enqueue_scripts', 'rs_portfolio_reorder_assets' );
+
+/**
+ * 6d. AJAX Handler: Persist new project order after drag-and-drop.
+ */
+function rs_portfolio_reorder_ajax() {
+	check_ajax_referer( 'rs_portfolio_reorder', '_wpnonce' );
+
+	if ( ! current_user_can( 'edit_posts' ) ) {
+		wp_send_json_error( 'Unauthorized' );
+	}
+
+	$order = isset( $_POST['order'] ) ? array_map( 'absint', $_POST['order'] ) : array();
+
+	if ( empty( $order ) ) {
+		wp_send_json_error( 'Empty order' );
+	}
+
+	global $wpdb;
+
+	foreach ( $order as $position => $post_id ) {
+		if ( ! $post_id ) {
+			continue;
+		}
+		$wpdb->update(
+			$wpdb->posts,
+			array( 'menu_order' => $position + 1 ),
+			array( 'ID' => $post_id, 'post_type' => 'rs_portfolio' ),
+			array( '%d' ),
+			array( '%d', '%s' )
+		);
+	}
+
+	clean_post_cache( 0 ); // Bust object cache for posts.
+	wp_send_json_success();
+}
+add_action( 'wp_ajax_rs_portfolio_reorder', 'rs_portfolio_reorder_ajax' );
+
+/**
  * 7. Query Portfolio Projects for Frontend Display
  *
  * Checks database for rs_portfolio posts. If multisite, switches to the main blog.
