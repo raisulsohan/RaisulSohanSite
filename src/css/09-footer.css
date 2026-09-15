@@ -1,0 +1,16 @@
+/* ==========================================================================
+   9. Footer
+   ========================================================================== */
+
+.rs-footer {
+	border-top: 1px solid var(--rs-border-40);
+	padding: 1.5rem 0;
+	text-align: center;
+}
+
+.rs-footer span {
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--rs-muted-fg);
+}

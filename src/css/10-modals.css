@@ -1,0 +1,232 @@
+/* ==========================================================================
+   10. Modals
+   ========================================================================== */
+
+.rs-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 50;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+	background: var(--rs-scrim);
+	-webkit-backdrop-filter: blur(4px);
+	backdrop-filter: blur(4px);
+}
+
+/*
+ * Open and close motion.
+ *
+ * Done entirely in CSS. The JS only toggles the hidden attribute, and
+ * display cannot normally be transitioned — allow-discrete plus
+ * @starting-style is what makes the change animatable, so openOverlay()
+ * and closeOverlay() stay untouched and the focus trap and history
+ * handling are not put at risk.
+ *
+ * Only opacity and transform move: both are composited, so this costs no
+ * layout or paint work. The backdrop blur deliberately stays fixed —
+ * animating a filter is the one thing here that would actually be slow.
+ *
+ * Browsers without @starting-style simply get the old instant behaviour.
+ */
+.rs-overlay {
+	opacity: 1;
+	transition:
+		opacity 200ms ease,
+		display 200ms allow-discrete;
+}
+
+.rs-overlay[hidden] {
+	display: none;
+	opacity: 0;
+}
+
+@starting-style {
+	.rs-overlay:not([hidden]) {
+		opacity: 0;
+	}
+}
+
+.rs-modal {
+	opacity: 1;
+	transform: scale(1) translateY(0);
+	/* Same easing as the hero reveal: quick off the mark, long slow settle. */
+	transition:
+		opacity 280ms cubic-bezier(0.16, 1, 0.3, 1),
+		transform 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/*
+ * --rs-from-x / --rs-from-y are written by app.js: the offset from the
+ * middle of the screen to the middle of whatever was clicked. The modal
+ * therefore grows out of that row and shrinks back into it. They default
+ * to zero, so the search and about dialogs simply scale in place.
+ */
+.rs-overlay[hidden] .rs-modal {
+	opacity: 0;
+	transform:
+		translate(var(--rs-from-x, 0px), var(--rs-from-y, 0px))
+		scale(0.86);
+	transition-duration: 190ms;
+	transition-timing-function: cubic-bezier(0.55, 0, 0.85, 0.35);
+}
+
+@starting-style {
+	.rs-overlay:not([hidden]) .rs-modal {
+		opacity: 0;
+		transform:
+			translate(var(--rs-from-x, 0px), var(--rs-from-y, 0px))
+			scale(0.86);
+	}
+}
+
+.rs-overlay--top {
+	align-items: flex-start;
+	padding-top: 6rem;
+}
+
+.rs-modal {
+	position: relative;
+	width: 100%;
+	background: var(--rs-bg);
+	border-radius: var(--rs-radius-xl);
+	box-shadow: var(--rs-shadow-2xl);
+	font-family: var(--rs-serif);
+}
+
+/*
+ * 44rem, not the 48rem of the page column: closer to the list so opening
+ * a post no longer narrows the page, but still short enough a line that
+ * the eye does not have to travel far to find the next one.
+ */
+.rs-modal--post {
+	max-width: 60rem;
+}
+
+/* Reading progress, pinned to the top edge of the modal. */
+.rs-modal__progress {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2px;
+	z-index: 3;
+	border-radius: var(--rs-radius-xl) var(--rs-radius-xl) 0 0;
+	overflow: hidden;
+	pointer-events: none;
+}
+
+.rs-modal__progress span {
+	display: block;
+	width: 0;
+	height: 100%;
+	background: var(--rs-hover);
+}
+
+.rs-time-left {
+	position: absolute;
+	top: 1rem;
+	left: 50%;
+	transform: translateX(-50%) translateY(-10px);
+	background: var(--rs-bg);
+	color: var(--rs-muted-fg);
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	padding: 0.25rem 0.75rem;
+	border-radius: 1rem;
+	box-shadow: var(--rs-shadow-sm);
+	z-index: 4;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.rs-time-left.is-visible {
+	opacity: 1;
+	transform: translateX(-50%) translateY(0);
+}
+
+/*
+ * The scroller sits inside the modal rather than being the modal, so
+ * .rs-modal__close — positioned against .rs-modal — stays put while the
+ * article scrolls under it. app.js resets scroll via postBody.parentNode,
+ * which is this element.
+ */
+.rs-modal__scroll {
+	max-height: 90vh;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	border-radius: inherit;
+}
+
+/* Widened along with the type: at 28rem the 19px lines were barely 20em,
+   short enough that justifying them would open ugly gaps between words. */
+.rs-modal--about {
+	max-width: 34rem;
+}
+
+/* Padding lives on the scroller, so a long bio scrolls instead of
+   overflowing the fixed overlay where it could not be reached. */
+.rs-about__inner {
+	padding: 2.5rem 2rem 2rem;
+}
+
+.rs-modal--search {
+	max-width: 36rem;
+	overflow: hidden;
+}
+
+.rs-modal__close {
+	position: absolute;
+	top: 0.75rem;
+	right: 0.75rem;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 50%;
+	/* Opaque enough to stay legible over the text passing beneath it. */
+	background: var(--rs-bg-blur);
+	-webkit-backdrop-filter: blur(8px);
+	backdrop-filter: blur(8px);
+	box-shadow: 0 0 0 1px var(--rs-border-50);
+	color: var(--rs-muted-fg);
+	transition: color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.rs-modal__close:hover {
+	color: var(--rs-fg);
+	box-shadow: 0 0 0 1px var(--rs-border);
+}
+
+/* Same control as .rs-top, but bound to the modal's own scroller. */
+.rs-modal__top {
+	position: absolute;
+	bottom: 1rem;
+	right: 1rem;
+	z-index: 2;
+	padding: 0.5rem;
+	background: var(--rs-solid-bg);
+	color: var(--rs-solid-fg);
+	border-radius: var(--rs-radius-lg);
+	box-shadow: var(--rs-shadow-md);
+	transition: opacity 0.2s ease, visibility 0.2s ease;
+	opacity: 0;
+	visibility: hidden;
+}
+
+.rs-modal__top.is-visible {
+	opacity: 1;
+	visibility: visible;
+}
+
+.rs-modal__top:hover {
+	opacity: 0.75;
+}
+
+.rs-modal__top svg {
+	display: block;
+}

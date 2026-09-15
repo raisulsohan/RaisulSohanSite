@@ -1,0 +1,27 @@
+/* ==========================================================================
+   8. Scroll to top
+   ========================================================================== */
+
+.rs-top {
+	position: fixed;
+	bottom: 2rem;
+	right: calc(50% - 24rem - 2rem);
+	z-index: 30;
+	padding: 0.5rem;
+	background: var(--rs-solid-bg);
+	color: var(--rs-solid-fg);
+	border-radius: var(--rs-radius-lg);
+	box-shadow: var(--rs-shadow-md);
+	transition: opacity 0.2s ease, visibility 0.2s ease;
+	opacity: 0;
+	visibility: hidden;
+}
+
+.rs-top.is-visible {
+	opacity: 1;
+	visibility: visible;
+}
+
+.rs-top:hover {
+	opacity: 0.75;
+}

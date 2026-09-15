@@ -44,12 +44,16 @@ This document defines the core architectural principles, performance standards, 
    - Core fonts (`noto-serif-bengali-*.woff2`) are preloaded in `header.php`.
    - Never inject elements asynchronously that push existing content down.
 
-2. **Asset Cache Busting:**
-   - On **every** change to CSS or JavaScript files (`style.css`, `assets/app.js`, etc.), you **must** bump `RS_VERSION` across:
+2. **Sources, build and cache busting:**
+   - CSS lives in `src/css/NN-*.css` and JavaScript in `src/js/NN-*.js`; PHP lives in `inc/NN-*.php`, loaded by `functions.php` in numeric order. `style.css` holds only the theme header. Never edit `assets/style.min.css` or `assets/app.min.js` by hand.
+   - The JS parts are joined into **one closure** in name order, exactly as the old single `app.js` was, so a variable defined in an earlier part is visible in later ones. Keep that in mind when adding a part.
+   - After **every** change under `src/`, run `npm run build` and commit the rebuilt `assets/*.min.*` with the sources (the theme updates itself from the repository). CI runs `npm run check` and fails if the build is stale.
+   - Then bump the version in all four places, which CI also checks:
      - `functions.php`: `define( 'RS_VERSION', 'X.Y.Z' );`
      - `style.css`: `Version: X.Y.Z`
+     - `package.json`: `"version": "X.Y.Z"`
      - `README.md`: `Version-X.Y.Z-0080ff.svg`
-   - `RS_VERSION` acts as the `?ver=` cache buster for script and style enqueues.
+   - `RS_VERSION` acts as the `?ver=` cache buster for script and style enqueues, and a change to it also rebuilds the rewrite rules once (`rs_flush_rewrite_on_update`).
 
 ---
 

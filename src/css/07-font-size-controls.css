@@ -1,0 +1,171 @@
+/* ==========================================================================
+   7. Font size controls
+   ========================================================================== */
+
+.rs-fontctl {
+	display: flex;
+	overflow: hidden;
+	border: 1px solid var(--rs-border-60);
+	border-radius: var(--rs-radius);
+	font-family: sans-serif;
+}
+
+.rs-fontctl button {
+	padding: 0.25rem 0.5rem;
+	font-weight: 700;
+	background: var(--rs-solid-bg);
+	color: var(--rs-solid-fg);
+	transition: opacity 0.15s ease;
+}
+
+.rs-fontctl button:hover:not(:disabled) {
+	opacity: 0.75;
+}
+
+.rs-fontctl button:disabled {
+	opacity: 0.3;
+	cursor: default;
+}
+
+.rs-fontctl button[data-step="0"] {
+	font-size: 11px;
+}
+
+.rs-fontctl button[data-step="1"] {
+	font-size: 13px;
+}
+
+.rs-fontctl button[data-step="2"] {
+	font-size: 15px;
+}
+
+.rs-fontctl__sep {
+	width: 1px;
+	background: var(--rs-fontctl-sep);
+}
+
+/* Floating variant, anchored 2rem to the left of the content column. */
+.rs-fontctl--float {
+	position: fixed;
+	top: 50%;
+	left: calc(50% - 24rem - 2rem);
+	transform: translateY(-50%);
+	z-index: 30;
+	flex-direction: column;
+	box-shadow: var(--rs-shadow-md);
+}
+
+.rs-fontctl--float button {
+	padding: 0.5rem 0.625rem;
+}
+
+.rs-fontctl--float .rs-fontctl__sep {
+	width: auto;
+	height: 1px;
+}
+
+/*
+ * The colour picker, sitting just above the floating size control. The
+ * offset is measured from that control's own height: it is centred on
+ * the viewport, so half of it reaches 3rem above the middle.
+ */
+.rs-floats {
+	position: fixed;
+	top: calc(50% - 3rem - 0.75rem);
+	left: calc(50% - 24rem - 2rem);
+	transform: translateY(-100%);
+	z-index: 30;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+}
+
+.rs-floats__anim,
+.rs-floats__install {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	color: var(--rs-muted-fg);
+	background: var(--rs-surface);
+	border: 1px solid var(--rs-border);
+	border-radius: 50%;
+	box-shadow: var(--rs-shadow-md);
+	cursor: pointer;
+	transition: color 0.15s ease, background 0.15s ease;
+}
+
+.rs-floats__anim:hover,
+.rs-floats__install:hover {
+	color: var(--rs-fg);
+}
+
+.rs-floats__install[hidden] {
+	display: none !important;
+}
+
+.rs-floats__anim.is-active {
+	color: var(--rs-fg);
+	background: var(--rs-accent);
+}
+
+.rs-tint {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.375rem;
+}
+
+/* The native colour input, made round. Everything a browser draws inside
+   it is stripped back so only the colour itself shows. */
+.rs-tint__input {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 1.75rem;
+	height: 1.75rem;
+	padding: 0;
+	background: none;
+	border: 1px solid var(--rs-border);
+	border-radius: 50%;
+	box-shadow: var(--rs-shadow-md);
+	cursor: pointer;
+	overflow: hidden;
+}
+
+.rs-tint__input::-webkit-color-swatch-wrapper {
+	padding: 0;
+}
+
+.rs-tint__input::-webkit-color-swatch {
+	border: 0;
+	border-radius: 50%;
+}
+
+.rs-tint__input::-moz-color-swatch {
+	border: 0;
+	border-radius: 50%;
+}
+
+/* Only there once there is something to undo. */
+.rs-tint__reset {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	color: var(--rs-muted-fg);
+	border-radius: 50%;
+	transition: color 0.15s ease, background 0.15s ease;
+}
+
+.rs-tint__reset:hover,
+.rs-tint__reset:focus-visible {
+	color: var(--rs-fg);
+	background: var(--rs-accent);
+}
+
+.rs-tint__reset[hidden] {
+	display: none;
+}

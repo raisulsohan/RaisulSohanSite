@@ -1,0 +1,155 @@
+/* ==========================================================================
+   1. Tokens
+   ========================================================================== */
+
+:root {
+	--rs-bg: #eaecf1;
+	--rs-fg: #1a1a1a;
+	/* Cool neighbours, so nothing reads warm against the grey page.
+	   --rs-muted-fg has to be this dark to clear 4.5:1 on #eaecf1, which
+	   is a good deal darker than the old paper background. */
+	--rs-muted: #dfe3ea;
+	--rs-muted-fg: #5f6672;
+	--rs-accent: #dde1e9;
+
+	--rs-border: rgba(0, 0, 0, 0.12);
+	--rs-border-30: rgba(0, 0, 0, 0.036);
+	--rs-border-40: rgba(0, 0, 0, 0.048);
+	--rs-border-50: rgba(0, 0, 0, 0.06);
+	--rs-border-60: rgba(0, 0, 0, 0.072);
+
+	/* Divider between list rows. Deliberately stronger than --rs-border-40,
+	   which disappeared entirely, and stronger than --rs-grid so the rules
+	   read as structure rather than as part of the background pattern. */
+	--rs-rule: rgba(0, 0, 0, 0.16);
+
+	/* Background grid. Faint enough to read as texture rather than ruling;
+	   --rs-rule stays several times stronger so the list dividers still
+	   read as structure. */
+	--rs-grid: rgba(0, 0, 0, 0.016);
+	--rs-grid-size: 64px;
+
+	/* Burnt rather than bright, because this colour lands on text. The
+	   #f3821d it started as measured 2.21:1 against the page, so hovering
+	   a title made it harder to read than leaving it alone — the opposite
+	   of what a hover state is for. This one is 4.98:1. */
+	--rs-hover: #a24c00;
+	--rs-mark: #fef08a;
+
+	/* --rs-bg at 85%, for the close button floating over scrolling text. */
+	--rs-bg-blur: rgba(234, 236, 241, 0.85);
+
+	/* Cool teal for the category tag: reads apart from both the dark
+	   title and the grey date without competing with --rs-hover. */
+	--rs-cat: #4a6d7c;
+
+	/* Long form text sits slightly softer than --rs-fg. */
+	--rs-body-fg: rgba(26, 26, 26, 0.85);
+	/* Raised panels that must read lighter than the page, e.g. toasts. */
+	--rs-surface: #ffffff;
+	/* Dimmer behind the modals. */
+	--rs-scrim: rgba(0, 0, 0, 0.45);
+	/* Divider inside the size control bar. */
+	--rs-fontctl-sep: rgba(234, 236, 241, 0.2);
+
+	/* Filled controls: the size bar and the two scroll to top buttons.
+	   Light mode simply inverts the page; dark mode uses the accent
+	   instead, because a white pill on a dark page glares. */
+	--rs-solid-bg: var(--rs-fg);
+	--rs-solid-fg: var(--rs-bg);
+
+	/* The hover summary floats above everything, so it inverts on light
+	   and becomes a raised panel on dark. */
+	--rs-tooltip-bg: var(--rs-fg);
+	--rs-tooltip-fg: var(--rs-bg);
+
+	/* Without these the browser draws its own scheme default, which is a
+	   neutral grey that sits badly against a tinted page. Inherited, so
+	   the modal's scroller picks it up too. */
+	--rs-scrollbar-thumb: #b9bfcc;
+	--rs-scrollbar-track: #e1e4eb;
+	scrollbar-color: var(--rs-scrollbar-thumb) var(--rs-scrollbar-track);
+
+	color-scheme: light;
+
+	--rs-serif: "Noto Serif Bengali", "SolaimanLipi", serif;
+	--rs-sans: "Noto Sans Bengali", sans-serif;
+
+	--rs-radius: 0.25rem;
+	--rs-radius-lg: 0.5rem;
+	--rs-radius-xl: 0.75rem;
+
+	--rs-wrap: 48rem;
+	--rs-gutter: 1.5rem;
+
+	/* Set by JS from the SIZES array in app.js. Keep this equal to that
+	   array's FONT_DEFAULT entry: it is what the page renders with before
+	   the script runs, so a mismatch shows as a jump on load. */
+	--rs-post-size: 19px;
+
+	--rs-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+	--rs-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+	--rs-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* English locale typography */
+body.rs-en {
+	--rs-serif: "Noto Serif Bengali", Georgia, Cambria, "Times New Roman", Times, serif;
+	--rs-sans: "Noto Sans Bengali", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/*
+ * Dark mode. Only the colour tokens change, so every rule below keeps
+ * working untouched. The attribute is written on <html> by an inline
+ * script in wp_head, before first paint, so the page never flashes light.
+ */
+:root[data-theme="dark"] {
+	--rs-bg: #141130;
+	--rs-fg: #f1f0f8;
+	--rs-muted: #201c48;
+	--rs-muted-fg: #8b87ac;
+	--rs-accent: #262157;
+
+	--rs-border: rgba(255, 255, 255, 0.18);
+	--rs-border-30: rgba(255, 255, 255, 0.06);
+	--rs-border-40: rgba(255, 255, 255, 0.08);
+	--rs-border-50: rgba(255, 255, 255, 0.1);
+	--rs-border-60: rgba(255, 255, 255, 0.13);
+
+	--rs-rule: rgba(255, 255, 255, 0.2);
+
+	--rs-grid: rgba(255, 255, 255, 0.015);
+
+	/* Violet stands in for the orange here: on indigo the orange reads as
+	   a stray warm note, and this matches the filled buttons below. */
+	--rs-hover: #9c8cff;
+	/* Violet tinted highlight, so the light --rs-fg on top stays readable. */
+	--rs-mark: #4a3aa0;
+
+	--rs-bg-blur: rgba(20, 17, 48, 0.85);
+	/* Periwinkle rather than the light mode teal, which turns muddy here. */
+	--rs-cat: #9bb4e8;
+
+	--rs-body-fg: rgba(241, 240, 248, 0.82);
+	--rs-surface: #201c48;
+	--rs-scrim: rgba(6, 4, 20, 0.7);
+	--rs-fontctl-sep: rgba(255, 255, 255, 0.28);
+
+	--rs-solid-bg: #6c5ce7;
+	--rs-solid-fg: #ffffff;
+
+	--rs-tooltip-bg: #272253;
+	--rs-tooltip-fg: #f1f0f8;
+
+	/* Indigo rather than the browser's grey, so the scrollbar channel
+	   reads as part of the page. */
+	--rs-scrollbar-thumb: #3d3777;
+	--rs-scrollbar-track: #1c1942;
+
+	color-scheme: dark;
+
+	/* Shadows read as almost nothing on a dark page unless deepened. */
+	--rs-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45), 0 2px 4px -2px rgba(0, 0, 0, 0.45);
+	--rs-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
+	--rs-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}

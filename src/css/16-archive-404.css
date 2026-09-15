@@ -1,0 +1,40 @@
+/* ==========================================================================
+   16. Archive / 404
+   ========================================================================== */
+
+.rs-notice {
+	max-width: 36rem;
+	margin: 5rem auto;
+	padding: 0 var(--rs-gutter);
+	text-align: center;
+}
+
+/* An h1 on the 404 page, which has no other heading; an h2 inside the
+   list, where the hero already holds the page's h1. */
+.rs-notice h1,
+.rs-notice h2 {
+	margin: 0 0 1rem;
+	font-family: var(--rs-serif);
+	font-size: 1.5rem;
+	font-weight: 700;
+}
+
+.rs-notice p {
+	margin: 0 0 2rem;
+	font-family: var(--rs-serif);
+	font-size: 0.9375rem;
+	color: var(--rs-muted-fg);
+}
+
+/* The suggestions under a missing page. Narrower than the reading column,
+   so they read as an aside rather than as the page's own content. */
+.rs-notice__more {
+	max-width: 32rem;
+	margin: 0 auto;
+	padding-bottom: 5rem;
+}
+
+.rs-notice__more .rs-related {
+	border-top: 0;
+	padding-top: 0;
+}

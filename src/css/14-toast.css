@@ -1,0 +1,66 @@
+/* ==========================================================================
+   14. Toast
+   ========================================================================== */
+
+.rs-toasts {
+	position: fixed;
+	bottom: 1.5rem;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 60;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+	pointer-events: none;
+}
+
+.rs-toast {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.625rem;
+	min-width: 15rem;
+	padding: 0.875rem 1rem;
+	background: var(--rs-surface);
+	border-radius: var(--rs-radius-lg);
+	box-shadow: var(--rs-shadow-lg);
+	font-family: var(--rs-sans);
+	animation: rs-toast-in 0.2s ease;
+}
+
+.rs-toast.is-out {
+	animation: rs-toast-out 0.2s ease forwards;
+}
+
+.rs-toast svg {
+	flex-shrink: 0;
+	margin-top: 1px;
+	color: var(--rs-fg);
+}
+
+.rs-toast__title {
+	font-size: 0.8125rem;
+	font-weight: 500;
+	color: var(--rs-fg);
+}
+
+.rs-toast__desc {
+	margin-top: 0.125rem;
+	font-size: 0.75rem;
+	color: var(--rs-muted-fg);
+	word-break: break-all;
+}
+
+@keyframes rs-toast-in {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+}
+
+@keyframes rs-toast-out {
+	to {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+}

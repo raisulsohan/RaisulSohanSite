@@ -1,0 +1,729 @@
+/* ==========================================================================
+   11. Article (shared by modal and single.php)
+   ========================================================================== */
+
+.rs-article {
+	padding: 3.5rem 2rem;
+}
+
+.rs-article__meta {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	margin-bottom: 1rem;
+}
+
+/* Date and edit link group left, the size controls stay right even
+   though the row now holds three children. */
+.rs-article__meta .rs-fontctl {
+	margin-left: auto;
+}
+
+.rs-article__read {
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--rs-muted-fg);
+	opacity: 0.75;
+	white-space: nowrap;
+}
+
+.rs-article__edit {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3125rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--rs-muted-fg);
+	transition: color 0.15s ease;
+}
+
+.rs-article__edit:hover {
+	color: var(--rs-hover);
+}
+
+.rs-article__edit svg {
+	display: block;
+}
+
+/* ==========================================================================
+   Editing in place
+   ========================================================================== */
+
+/*
+ * The editable regions are marked by a rule down their left rather than a
+ * box around them: the words must not move by a pixel when editing opens,
+ * or the first thing the author sees is the paragraph they were aiming at
+ * jumping somewhere else.
+ */
+.rs-article.is-editing .rs-article__title,
+.rs-article.is-editing .rs-article__body {
+	outline: none;
+	box-shadow: -0.75rem 0 0 -0.6875rem var(--rs-hover);
+}
+
+.rs-article.is-editing .rs-article__title:focus,
+.rs-article.is-editing .rs-article__body:focus {
+	box-shadow: -0.75rem 0 0 -0.5625rem var(--rs-hover);
+}
+
+/* Pictures are held out of the edit, so say so on the way past. */
+.rs-article.is-editing .rs-article__body img {
+	cursor: default;
+	opacity: 0.85;
+}
+
+.rs-edit {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem;
+	margin-top: 1.5rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--rs-border-40);
+}
+
+.rs-edit__btn {
+	padding: 0.375rem 1rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	border: 1px solid var(--rs-border-60);
+	border-radius: var(--rs-radius-lg);
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.rs-edit__btn:hover {
+	background: var(--rs-accent);
+}
+
+.rs-edit__btn--save {
+	background: var(--rs-solid-bg);
+	color: var(--rs-solid-fg);
+	border-color: var(--rs-solid-bg);
+}
+
+.rs-edit__btn--save:hover {
+	opacity: 0.85;
+	background: var(--rs-solid-bg);
+}
+
+.rs-edit__note {
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	color: var(--rs-muted-fg);
+}
+
+.rs-article__date {
+	margin: 0;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--rs-muted-fg);
+}
+
+/*
+ * The heading renders inline inside this block so the category can trail
+ * its last line. It stays a real h1/h2 in the DOM, and the tag stays
+ * outside it, so the heading text is still just the title.
+ */
+.rs-article__head {
+	margin: 0 0 0.75rem;
+}
+
+.rs-article__title {
+	display: inline;
+	margin: 0;
+	font-family: var(--rs-serif);
+	font-size: 1.5rem;
+	font-weight: 700;
+	line-height: 1.375;
+	color: var(--rs-fg);
+}
+
+/* An <a> in the modal and on single posts, a plain <em> in the list,
+   where it would otherwise be an anchor nested inside .rs-row__link. */
+.rs-article__cat {
+	margin-left: 0.75rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	font-style: italic;
+	line-height: 1rem;
+	color: var(--rs-cat);
+	white-space: nowrap;
+	text-decoration-color: transparent;
+	text-underline-offset: 0.25em;
+	transition: text-decoration-color 0.15s ease, color 0.15s ease;
+}
+
+a.rs-article__cat:hover {
+	color: var(--rs-hover);
+	text-decoration: underline;
+	text-decoration-color: currentColor;
+}
+
+.rs-article__author {
+	margin: 0 0 2rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--rs-muted-fg);
+}
+
+.rs-article__body {
+	font-family: var(--rs-serif);
+	font-size: var(--rs-post-size);
+	line-height: 1.625;
+	color: var(--rs-body-fg);
+}
+
+.rs-article__body > * {
+	margin: 0 0 1.25rem;
+}
+
+.rs-article__body > *:last-child {
+	margin-bottom: 0;
+}
+
+.rs-article__body h2,
+.rs-article__body h3,
+.rs-article__body h4 {
+	font-weight: 700;
+	color: var(--rs-fg);
+	line-height: 1.4;
+	margin-top: 2rem;
+}
+
+.rs-article__body h2 {
+	font-size: 1.25em;
+}
+
+.rs-article__body h3 {
+	font-size: 1.1em;
+}
+
+.rs-article__body a {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	text-decoration-color: var(--rs-border);
+}
+
+.rs-article__body a:hover {
+	color: var(--rs-hover);
+	text-decoration-color: currentColor;
+}
+
+/*
+ * Justified body text by default. Captions and .aligncenter carry a
+ * two class selector, so they keep winning over this one and stay centred.
+ * An inline text-align from the editor's own alignment buttons also wins,
+ * which is how a single paragraph opts out.
+ */
+.rs-article__body p {
+	text-align: justify;
+	/* Justification stretches the spaces between words, so a very long
+	   unbroken string would otherwise push past the column. */
+	overflow-wrap: break-word;
+}
+
+/* The accent on the one mark in a piece of prose that is already saying
+   "somebody else wrote this". */
+.rs-article__body blockquote {
+	padding-left: 1rem;
+	border-left: 2px solid var(--rs-hover);
+	color: var(--rs-muted-fg);
+	font-style: italic;
+}
+
+.rs-article__body ul,
+.rs-article__body ol {
+	padding-left: 1.5rem;
+}
+
+.rs-article__body li {
+	margin-bottom: 0.5rem;
+}
+
+.rs-article__body img,
+.rs-article__body figure {
+	border-radius: var(--rs-radius-lg);
+}
+
+.rs-article__body figcaption {
+	margin-top: 0.5rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	color: var(--rs-muted-fg);
+	text-align: center;
+}
+
+.rs-article__body hr {
+	border: 0;
+	border-top: 1px solid var(--rs-border-60);
+	margin: 2rem 0;
+}
+
+/* Core block classes. The default block CSS is dequeued, so the handful
+   that actually matter for a text blog are defined here.
+
+   The About modal gets them too: its content comes out of the same editor
+   as everything else, so an image aligned left there was landing inline
+   and dropping the paragraph to the foot of the picture. */
+
+.rs-article__body .alignleft,
+.rs-about__body .alignleft {
+	float: left;
+	margin: 0.25rem 1.5rem 1rem 0;
+}
+
+.rs-article__body .alignright,
+.rs-about__body .alignright {
+	float: right;
+	margin: 0.25rem 0 1rem 1.5rem;
+}
+
+.rs-article__body .aligncenter,
+.rs-about__body .aligncenter {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+}
+
+/* A float taller than the text beside it would otherwise hang out of the
+   bottom of the modal's scrolling area. */
+.rs-about__body::after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+.rs-article__body .alignwide,
+.rs-article__body .alignfull {
+	max-width: none;
+}
+
+.rs-article__body .wp-block-image,
+.rs-article__body .wp-caption {
+	margin-bottom: 1.5rem;
+}
+
+.rs-article__body .wp-caption-text {
+	margin-top: 0.5rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	color: var(--rs-muted-fg);
+	text-align: center;
+}
+
+.rs-article__body .wp-block-quote {
+	padding-left: 1rem;
+	border-left: 2px solid var(--rs-border);
+	color: var(--rs-muted-fg);
+}
+
+.rs-article__body::after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+/* Share row */
+
+.rs-share {
+	margin-top: 2.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--rs-border-40);
+}
+
+/*
+ * Other posts from the same category, under the share row. Deliberately
+ * quieter than the list on the front page: this is an offer at the end of
+ * a reading, not the page's main business.
+ */
+.rs-related {
+	margin-top: 2rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--rs-border-40);
+}
+
+.rs-related__label {
+	margin: 0 0 0.75rem;
+	font-family: var(--rs-sans);
+	font-size: 0.6875rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--rs-muted-fg);
+}
+
+.rs-related__list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.rs-related__list li + li {
+	border-top: 1px solid var(--rs-border-40);
+}
+
+.rs-related__list a {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 0.625rem 0;
+}
+
+.rs-related__title {
+	font-family: var(--rs-serif);
+	font-size: 0.9375rem;
+	line-height: 1.5;
+	color: var(--rs-fg);
+	transition: color 0.15s ease;
+}
+
+.rs-related__list a:hover .rs-related__title,
+.rs-related__list a:focus-visible .rs-related__title {
+	color: var(--rs-hover);
+}
+
+.rs-related__meta {
+	flex-shrink: 0;
+	white-space: nowrap;
+	font-family: var(--rs-sans);
+	font-size: 0.6875rem;
+	color: var(--rs-muted-fg);
+}
+
+.rs-share__label {
+	margin: 0 0 0.75rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--rs-muted-fg);
+}
+
+.rs-share__row {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+}
+
+/* Only where the browser can open a share sheet. app.js marks the page
+   when navigator.share is there; everywhere else this button would be a
+   second way to do what the one beside it already does. */
+.rs-share__btn[data-rs-share] {
+	display: none;
+}
+
+.rs-can-share .rs-share__btn[data-rs-share] {
+	display: inline-flex;
+}
+
+/* ==========================================================================
+   লেখার সূচি — every post on one page
+   ========================================================================== */
+
+.rs-index {
+	padding-block: 1rem 4rem;
+}
+
+.rs-index__head {
+	margin-bottom: 2.5rem;
+}
+
+.rs-index__title {
+	margin: 0 0 0.25rem;
+	font-family: var(--rs-serif);
+	font-size: 1.75rem;
+	font-weight: 500;
+	letter-spacing: -0.01em;
+	text-wrap: balance;
+}
+
+.rs-index__intro {
+	font-family: var(--rs-sans);
+	font-size: 0.8125rem;
+	color: var(--rs-muted-fg);
+}
+
+.rs-index__intro p {
+	margin: 0.25rem 0 0;
+}
+
+/* The year, with a rule running out from it to the edge of the column. */
+.rs-index__year {
+	display: flex;
+	align-items: baseline;
+	gap: 0.75rem;
+	margin: 3rem 0 0.25rem;
+}
+
+.rs-index__year::after {
+	content: "";
+	flex: 1;
+	height: 1px;
+	background: var(--rs-rule);
+}
+
+.rs-index__year-n {
+	margin: 0;
+	font-family: var(--rs-sans);
+	font-size: 1.5rem;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	font-variant-numeric: tabular-nums;
+}
+
+.rs-index__year-c {
+	font-family: var(--rs-sans);
+	font-size: 0.6875rem;
+	color: var(--rs-muted-fg);
+}
+
+.rs-index__month {
+	margin-top: 1.75rem;
+}
+
+.rs-index__month-n {
+	margin: 0 0 0.25rem;
+	font-family: var(--rs-sans);
+	font-size: 0.6875rem;
+	font-weight: 600;
+	letter-spacing: 0.09em;
+	text-transform: uppercase;
+	color: var(--rs-muted-fg);
+}
+
+.rs-index__rows {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.rs-index__row {
+	display: flex;
+	align-items: baseline;
+	gap: 0.85rem;
+	padding: 0.7rem 0;
+	border-bottom: 1px solid var(--rs-rule);
+}
+
+/* Fixed width and tabular figures so the days line up as a column rather
+   than shuffling with the width of each numeral. */
+.rs-index__day {
+	flex: 0 0 1.6rem;
+	text-align: right;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	color: var(--rs-muted-fg);
+	font-variant-numeric: tabular-nums;
+}
+
+/* min-width so a long Bengali title wraps inside the row instead of
+   pushing the reading time off the end of it. */
+.rs-index__link {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	align-items: baseline;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.rs-index__t {
+	font-family: var(--rs-serif);
+	font-size: 1.0625rem;
+	color: var(--rs-fg);
+	transition: color 0.15s ease;
+}
+
+.rs-index__link:hover .rs-index__t,
+.rs-index__link:focus-visible .rs-index__t {
+	color: var(--rs-hover);
+}
+
+.rs-index__c {
+	font-family: var(--rs-serif);
+	font-style: italic;
+	font-size: 0.75rem;
+	color: var(--rs-cat);
+	white-space: nowrap;
+}
+
+.rs-index__r {
+	flex: 0 0 auto;
+	font-family: var(--rs-sans);
+	font-size: 0.6875rem;
+	color: var(--rs-muted-fg);
+	white-space: nowrap;
+}
+
+/* Already opened, dimmed the same way and for the same reason as a row on
+   the front page. Forty seven titles is exactly the length at which
+   "which of these have I read" starts being worth answering. */
+.rs-index__row.is-read .rs-index__t,
+.rs-index__row.is-read .rs-index__c {
+	opacity: 0.55;
+}
+
+/* The row keeps its three columns on a phone rather than stacking them.
+   The title already wraps inside its own column — min-width: 0 above is
+   what allows that — so breaking the row apart only stranded the day on a
+   line of its own and made every entry three lines tall. Narrower gaps and
+   a slightly smaller title buy back the width instead. */
+@media (max-width: 640px) {
+	.rs-index__row {
+		gap: 0.6rem;
+	}
+
+	.rs-index__day {
+		flex-basis: 1.35rem;
+	}
+
+	.rs-index__t {
+		font-size: 1rem;
+	}
+
+	/* The category is the one thing here the reader can do without when
+	   the room runs out; the month heading above already groups these, and
+	   the title is what they came to read. */
+	.rs-index__c {
+		display: none;
+	}
+}
+
+/* ==========================================================================
+   পরে পড়ব — the reader's own shelf
+   ========================================================================== */
+
+/* Both save buttons do nothing until app.js has run, so neither appears
+   until it has marked the page. Same arrangement as the share button above,
+   and the same reason: a control that cannot work should not be offered. */
+.rs-row__save {
+	display: none;
+}
+
+/* Both class names on purpose. The .rs-share__btn rule further down this
+   file sets display too, and at equal weight the later rule would win —
+   so this one is given the heavier hand rather than a position to defend. */
+.rs-share__btn.rs-share__btn--save {
+	display: none;
+}
+
+.rs-can-save .rs-share__btn.rs-share__btn--save {
+	display: inline-flex;
+}
+
+.rs-can-save #rs-list .rs-row__save {
+	display: flex;
+}
+
+/* Scoped to the post list by id. The book shelf builds its spines out of
+   .rs-row too, and turning every one of those into a flex row would take
+   the shelf apart. */
+#rs-list .rs-row {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+#rs-list .rs-row__link {
+	/* min-width lets a long Bengali title wrap instead of pushing the
+	   button off the row: a flex item will not shrink below its content
+	   without being told it may. */
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+/* The same weight as the reading time and the date it sits beside, so it
+   reads as the third thing in that group rather than as an intruder. The
+   lighter border tokens were tried first and measured 1.2:1 against the
+   page — quiet to the point of being undiscoverable. */
+.rs-row__save {
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	margin-inline-start: 0.25rem;
+	color: var(--rs-muted-fg);
+	border-radius: 50%;
+	transition: color 0.15s ease, background 0.15s ease;
+}
+
+.rs-row__save:hover,
+.rs-row__save:focus-visible {
+	color: var(--rs-fg);
+	background: var(--rs-surface);
+}
+
+/* Saved is a filled mark rather than a different one, so tapping it reads
+   as the same shape being coloured in and not as the button changing. */
+.rs-row__save.is-saved,
+.rs-share__btn--save.is-saved {
+	color: var(--rs-cat);
+}
+
+.rs-row__save.is-saved svg,
+.rs-share__btn--save.is-saved svg {
+	fill: currentColor;
+}
+
+.rs-share__btn--save.is-saved {
+	border-color: var(--rs-cat);
+}
+
+/* The saved list reuses .rs-related wholesale — same heading, same rows —
+   and adds only the means of taking something back off the shelf. */
+.rs-later__item {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.rs-later__item a {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.rs-later__drop {
+	flex: 0 0 auto;
+	width: 1.5rem;
+	height: 1.5rem;
+	font-size: 1rem;
+	line-height: 1;
+	color: var(--rs-muted-fg);
+	border-radius: 50%;
+	transition: color 0.15s ease, background 0.15s ease;
+}
+
+.rs-later__drop:hover,
+.rs-later__drop:focus-visible {
+	color: var(--rs-fg);
+	background: var(--rs-surface);
+}
+
+.rs-share__btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	padding: 0.375rem 1rem;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	border: 1px solid var(--rs-border-60);
+	border-radius: var(--rs-radius-lg);
+	transition: background 0.15s ease;
+}
+
+.rs-share__btn:hover {
+	background: var(--rs-accent);
+}
+
+.rs-share__btn svg {
+	flex-shrink: 0;
+}

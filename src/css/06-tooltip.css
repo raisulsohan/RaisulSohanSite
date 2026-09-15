@@ -1,0 +1,31 @@
+/* ==========================================================================
+   6. Tooltip
+   ========================================================================== */
+
+.rs-tooltip {
+	position: fixed;
+	z-index: 50;
+	max-width: 220px;
+	padding: 0.5rem 0.75rem;
+	border-radius: var(--rs-radius-lg);
+	box-shadow: var(--rs-shadow-lg);
+	background: var(--rs-tooltip-bg);
+	color: var(--rs-tooltip-fg);
+	font-family: var(--rs-serif);
+	font-size: 0.75rem;
+	line-height: 1.625;
+	pointer-events: none;
+	opacity: 0;
+	visibility: hidden;
+}
+
+.rs-tooltip.is-visible {
+	opacity: 1;
+	visibility: visible;
+}
+
+@media (hover: none) {
+	.rs-tooltip {
+		display: none;
+	}
+}

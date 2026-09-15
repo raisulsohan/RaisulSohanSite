@@ -1,0 +1,101 @@
+/* ==========================================================================
+   2. Reset
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	font-size: 16px;
+	-webkit-text-size-adjust: 100%;
+	/*
+	 * Keep the scrollbar's strip of space reserved at all times. Opening a
+	 * modal sets overflow: hidden below, which removes the scrollbar; without
+	 * this the page would widen by its thickness and everything would jump
+	 * sideways. Also keeps the centred modal from shifting for the same
+	 * reason. Browsers without support fall back to the old jump.
+	 */
+	scrollbar-gutter: stable;
+}
+
+body {
+	margin: 0;
+	min-height: 100vh;
+	/*
+	 * Two hairline gradients tiled into a grid. Kept on the page itself,
+	 * so anything with its own fill — the header, modals, toasts — simply
+	 * covers it rather than having to opt out.
+	 */
+	background-color: var(--rs-bg);
+	background-image:
+		linear-gradient(to right, var(--rs-grid) 1px, transparent 1px),
+		linear-gradient(to bottom, var(--rs-grid) 1px, transparent 1px);
+	background-size: var(--rs-grid-size) var(--rs-grid-size);
+	color: var(--rs-fg);
+	font-family: var(--rs-serif);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+body.rs-locked {
+	overflow: hidden;
+}
+
+img {
+	max-width: 100%;
+	height: auto;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+button {
+	font-family: inherit;
+	border: 0;
+	background: none;
+	padding: 0;
+	color: inherit;
+	cursor: pointer;
+}
+
+:focus-visible {
+	outline: 2px solid var(--rs-hover);
+	outline-offset: 2px;
+	border-radius: 2px;
+}
+
+/*
+ * Selected text carries the accent too. On a site that is nothing but
+ * reading, dragging across a sentence is the commonest thing anyone does
+ * with it, and the browser's default blue belongs to no page in
+ * particular. The text keeps the page's own ink rather than turning
+ * white, which is what keeps a pale accent readable underneath it.
+ */
+::selection {
+	background: var(--rs-mark);
+	color: var(--rs-fg);
+}
+
+.rs-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.rs-wrap {
+	max-width: var(--rs-wrap);
+	margin: 0 auto;
+	padding-left: var(--rs-gutter);
+	padding-right: var(--rs-gutter);
+}

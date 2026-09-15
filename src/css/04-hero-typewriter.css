@@ -1,0 +1,225 @@
+/* ==========================================================================
+   4. Hero / typewriter
+   ========================================================================== */
+
+.rs-hero {
+	max-width: var(--rs-wrap);
+	margin: 0 auto;
+	padding: 3.5rem var(--rs-gutter) 2.5rem;
+	height: 140px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+
+/*
+ * With a banner instead of the heading, the fixed height goes and the
+ * picture takes the whole column. The gutter is the one the list rows
+ * below use, so the banner's edges line up with theirs rather than
+ * floating loose in the middle.
+ */
+.rs-hero--image {
+	height: auto;
+	padding-top: 2rem;
+	padding-bottom: 1.5rem;
+}
+
+/* The heading is a flex item, so without this it is only as wide as what
+   is inside it and the picture has nothing to fill. */
+.rs-hero--image .rs-hero__title {
+	width: 100%;
+}
+
+/*
+ * A banner of a fixed shape, whatever shape the file happens to be.
+ *
+ * cover fills the box and crops the rest, so the top of the page keeps
+ * the same proportions however tall or square the picture uploaded was.
+ * Which part survives the crop is object-position, set from the settings
+ * screen by dragging the picture around inside a box of this same ratio.
+ */
+.rs-hero__image {
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 1600 / 300;
+	object-fit: cover;
+}
+
+.rs-post-count {
+	margin-top:.9rem;
+	text-align: center;
+	font-family: var(--rs-sans);
+	font-size: 0.82rem;
+	font-weight: 400;
+	color: var(--rs-muted-fg);
+	letter-spacing: 0.02em;
+	position: relative;
+	z-index: 2;
+}
+
+.rs-post-count__number{
+	font-weight:600;
+	color:var(--rs-hover);
+}
+
+/* The count made into the way in to the index. The number was already in
+   the accent, so becoming a link carries the rest of the sentence up to
+   meet it rather than introducing a colour — the line gains a destination
+   without gaining a decoration. Only on the front page; see
+   rs_render_count(). */
+.rs-post-count__all {
+	color: var(--rs-hover);
+	transition: opacity 0.15s ease;
+}
+
+.rs-post-count__all:hover,
+.rs-post-count__all:focus-visible {
+	opacity: 0.75;
+}
+
+/* Sends the reader to a story chosen for them. Set apart by a rule rather
+   than a button, because it is an aside to the count, not a second thing
+   to decide about — but in the accent, because it is the one thing on
+   this line that does something. */
+.rs-post-count__any {
+	margin-left: 0.5rem;
+	padding-left: 0.75rem;
+	border-left: 1px solid var(--rs-border-60);
+	color: var(--rs-hover);
+	transition: opacity 0.15s ease;
+}
+
+.rs-post-count__any:hover,
+.rs-post-count__any:focus-visible {
+	opacity: 0.7;
+}
+
+/*
+ * The story this browser started and did not finish. Above the list and
+ * quieter than it: an offer, not a row.
+ */
+.rs-resume {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	max-width: var(--rs-wrap);
+	margin: 1.25rem auto 0;
+	padding: 0.625rem 0.875rem;
+	background: var(--rs-surface);
+	border: 1px solid var(--rs-rule);
+	box-shadow: 0 4px 12px var(--rs-border-40);
+	border-radius: var(--rs-radius-lg);
+}
+
+.rs-resume__link {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.125rem 0.625rem;
+	min-width: 0;
+	flex: 1;
+}
+
+.rs-resume__label {
+	flex-shrink: 0;
+	font-family: var(--rs-sans);
+	font-size: 0.6875rem;
+	letter-spacing: 0.04em;
+	color: var(--rs-muted-fg);
+}
+
+.rs-resume__title {
+	font-family: var(--rs-serif);
+	font-size: 0.9375rem;
+	line-height: 1.5;
+	color: var(--rs-fg);
+	transition: color 0.15s ease;
+}
+
+.rs-resume__link:hover .rs-resume__title,
+.rs-resume__link:focus-visible .rs-resume__title {
+	color: var(--rs-hover);
+}
+
+.rs-resume__close {
+	flex-shrink: 0;
+	width: 1.5rem;
+	height: 1.5rem;
+	font-size: 1.125rem;
+	line-height: 1;
+	color: var(--rs-muted-fg);
+	transition: color 0.15s ease;
+}
+
+.rs-resume__close:hover,
+.rs-resume__close:focus-visible {
+	color: var(--rs-fg);
+}
+
+/*
+ * How far through a post the reader is, on the post's own page. The
+ * modal has had one inside its own frame all along; this one rides above
+ * the sticky header, which is the only strip of the window that nothing
+ * else is using.
+ */
+.rs-progress {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2px;
+	z-index: 50;
+	pointer-events: none;
+}
+
+.rs-progress span {
+	display: block;
+	width: 0;
+	height: 100%;
+	background: var(--rs-hover);
+}
+
+.rs-hero__title {
+	margin: 0;
+	font-family: var(--rs-serif);
+	font-size: 2.25rem;
+	font-weight: 300;
+	line-height: 1.35;
+	/* No tracking: the tight -0.025em was there to hold 700 together, and
+	   negative spacing risks pulling যুক্তাক্ষর apart at light weights. */
+	letter-spacing: normal;
+	white-space: nowrap;
+	color: var(--rs-fg);
+}
+
+/*
+ * One word per span, staggered from JS via transition-delay.
+ * Words rise out of a blur on the way in and lift away on the way out,
+ * so a phrase change reads as a crossfade rather than a rewind.
+ */
+.rs-word {
+	display: inline-block;
+	opacity: 0;
+	filter: blur(12px);
+	transform: translate3d(0, 0.45em, 0) scale(0.94);
+	transition:
+		opacity 900ms cubic-bezier(0.16, 1, 0.3, 1),
+		filter 900ms cubic-bezier(0.16, 1, 0.3, 1),
+		transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rs-word.is-in {
+	opacity: 1;
+	filter: blur(0);
+	transform: translate3d(0, 0, 0) scale(1);
+}
+
+.rs-word.is-out {
+	opacity: 0;
+	filter: blur(9px);
+	transform: translate3d(0, -0.32em, 0) scale(1.03);
+	transition-duration: 520ms;
+	transition-timing-function: cubic-bezier(0.7, 0, 0.84, 0);
+}

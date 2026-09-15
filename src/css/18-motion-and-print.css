@@ -1,0 +1,263 @@
+/* ==========================================================================
+   18. Motion and print
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+
+	.rs-word {
+		opacity: 1;
+		filter: none;
+		transform: none;
+	}
+}
+
+/* Below ~520px the centred brand runs into the links on its left, so the
+   bar breaks into two rows: the name first, the controls under it. */
+@media (max-width: 520px) {
+	.rs-header__inner {
+		flex-wrap: wrap;
+		row-gap: 0.5rem;
+	}
+
+	.rs-header__brand {
+		position: static;
+		transform: none;
+		order: -1;
+		flex-basis: 100%;
+		text-align: center;
+	}
+
+	.rs-header__nav {
+		gap: 1rem;
+	}
+}
+
+.rs-footer__link {
+	color: inherit;
+	margin-inline-start: 0.75rem;
+	text-decoration: none;
+	border-bottom: 1px solid var(--rs-rule);
+}
+
+.rs-footer__link:hover,
+.rs-footer__link:focus-visible {
+	color: var(--rs-hover);
+}
+
+@media print {
+	.rs-header,
+	.rs-fontctl,
+	.rs-top,
+	.rs-share,
+	.rs-overlay,
+	.rs-toasts,
+	.rs-tooltip,
+	.rs-related,
+	.rs-resume,
+	.rs-progress,
+	.rs-floats,
+	.rs-tint,
+	.rs-edit,
+	.rs-row__save,
+	.rs-pagination {
+		display: none !important;
+	}
+
+	body {
+		background: #fff;
+		color: #000;
+		font-size: 12pt;
+		line-height: 1.7;
+	}
+
+	.rs-wrap,
+	.rs-single,
+	.rs-article {
+		max-width: none;
+		padding: 0;
+	}
+
+	.rs-article__body p {
+		orphans: 3;
+		widows: 3;
+	}
+
+	/* A printed link is worthless without its address. */
+	.rs-article__body a[href^="http"]::after {
+		content: " (" attr(href) ")";
+		font-size: 0.85em;
+	}
+
+	img {
+		max-width: 100%;
+		page-break-inside: avoid;
+	}
+
+	h1,
+	h2,
+	h3 {
+		page-break-after: avoid;
+	}
+}
+
+@media (max-width: 640px) {
+	.rs-article__body .alignleft,
+	.rs-about__body .alignleft,
+	.rs-article__body .alignright,
+	.rs-about__body .alignright {
+		float: none;
+		margin: 1.5rem auto;
+		display: block;
+		text-align: center;
+	}
+	
+	.rs-resume {
+		position: fixed;
+		bottom: 1rem;
+		left: 1rem;
+		right: 1rem;
+		width: auto;
+		max-width: none;
+		margin: 0;
+		padding: 1rem 1.25rem;
+		box-shadow: 0 8px 24px var(--rs-border);
+		z-index: 100;
+	}
+}
+
+/* ==========================================================================
+   Smooth entrance animations (toggle: Customizer → Enable smooth animations)
+   Only active when body carries .rs-animated, which PHP adds when the
+   Customizer toggle is on.
+   ========================================================================== */
+
+@keyframes rs-fade-up {
+	from { opacity: 0; transform: translateY(12px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Featured post — fades in from AJAX */
+.rs-animated .rs-featured {
+	animation: rs-fade-up 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* "আপনি পড়ছিলেন" resume banner */
+.rs-animated .rs-resume {
+	animation: rs-fade-up 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Post list rows — staggered via --i set by JS */
+.rs-animated .rs-row {
+	animation: rs-fade-up 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+	animation-delay: calc(var(--i, 0) * 30ms);
+}
+
+/* Pagination loading/unloading fade */
+.rs-animated .rs-list-wrap {
+	transition: opacity 200ms ease;
+}
+
+/* ==========================================================================
+   Featured Post
+   ========================================================================== */
+
+/* The candidates the inline picker chooses between: one is on show and
+   the rest carry `hidden`. Spelled out rather than left to the browser's
+   own [hidden] rule, which any later display declaration would beat. */
+.rs-featured__pick[hidden] {
+	display: none;
+}
+
+.rs-featured {
+	margin: 1.5rem 0;
+	padding: 1.5rem 0;
+}
+
+.rs-featured__label {
+	display: flex;
+	align-items: center;
+	font-family: var(--rs-sans);
+	font-size: 0.875rem;
+	color: var(--rs-hover);
+	margin-bottom: 1.5rem;
+}
+
+.rs-featured__line {
+	display: inline-block;
+	width: 40px;
+	height: 1px;
+	background-color: var(--rs-hover);
+	margin-right: 12px;
+}
+
+.rs-featured__title {
+	font-family: var(--rs-serif);
+	font-size: 2.5rem;
+	line-height: 1.2;
+	margin: 0 0 0.5rem 0;
+}
+
+.rs-featured__title a {
+	color: var(--rs-fg);
+	text-decoration: none;
+}
+
+.rs-featured__title a:hover {
+	color: var(--rs-hover);
+}
+
+.rs-featured__date {
+	font-family: var(--rs-sans);
+	font-size: 0.875rem;
+	color: var(--rs-muted-fg);
+	margin-bottom: 1.5rem;
+}
+
+.rs-featured__summary {
+	font-family: var(--rs-serif);
+	font-size: 1.125rem;
+	line-height: 1.8;
+	color: var(--rs-body-fg);
+	margin-bottom: 1.5rem;
+	text-align: justify;
+}
+
+.rs-featured__dropcap {
+	float: left;
+	font-size: 4rem;
+	line-height: 0.8;
+	padding-right: 0.5rem;
+	padding-top: 0.2rem;
+	color: var(--rs-hover);
+}
+
+.rs-featured__action {
+	display: flex;
+}
+
+.rs-featured__btn {
+	display: inline-flex;
+	align-items: center;
+	background-color: var(--rs-solid-bg);
+	color: var(--rs-solid-fg);
+	font-family: var(--rs-sans);
+	font-size: 0.875rem;
+	font-weight: 500;
+	padding: 0.75rem 1.5rem;
+	border-radius: 2rem;
+	text-decoration: none;
+	transition: opacity 0.2s;
+}
+
+.rs-featured__btn:hover {
+	opacity: 0.85;
+	color: var(--rs-solid-fg);
+}

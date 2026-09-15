@@ -1,0 +1,26 @@
+/* ==========================================================================
+   12. About modal
+   ========================================================================== */
+
+.rs-about__body {
+	font-family: var(--rs-serif);
+	/* Was a hardcoded 0.875rem, which left this the one piece of prose on
+	   the site that ignored both the reading size and the reader's A-/A+
+	   choice. */
+	font-size: var(--rs-post-size);
+	line-height: 1.625;
+	color: var(--rs-body-fg);
+}
+
+.rs-about__body p {
+	text-align: justify;
+	overflow-wrap: break-word;
+}
+
+.rs-about__body > * {
+	margin: 0 0 1rem;
+}
+
+.rs-about__body > *:last-child {
+	margin-bottom: 0;
+}
