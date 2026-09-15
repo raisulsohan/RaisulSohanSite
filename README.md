@@ -2,11 +2,50 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.4.76-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.5.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
+
+---
+
+## What's new in 7.5
+
+**7.5 is the largest release in the theme's history.** It closes the one bug that mattered most, hardens the site end to end, teaches search engines about both languages, cuts the front-end payload by nearly half, and rebuilds the codebase so the next ten releases are easier than the last one. Nothing needs configuring: update the theme and it takes care of itself.
+
+### 🔗 Every story reachable again
+- **Permalinks that always resolve.** The multisite `/blog` clean-up left WordPress with rewrite rules that no longer matched the theme's own links, and every story answered 404 to search engines while the reading modal quietly hid it. The rules are now rebuilt automatically on every theme update (`rs_flush_rewrite_on_update`), so this can never silently return.
+- **Old links keep working.** The date-based addresses that lived in the sitemap, the feed and years of shared links now 301 to the story's current URL instead of dying.
+- **The "random story" button, the 404 suggestions and the sitemap** all point at addresses that open.
+
+### 🛡️ Hardened by default
+- Security headers on every page: `Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`; the PHP version banner is gone.
+- The public users endpoint and the author archive no longer hand out the account name.
+- Comments, pingbacks and the empty comments feed are closed for good; the service worker never caches the dashboard, the login screen or previews.
+
+### 🌐 Speaks to search engines in two languages
+- `hreflang` pairs the Bengali site and `/en/` on the front page, categories, pages and every story that exists in both languages, with `x-default` on the Bengali original.
+- **Portfolio and Privacy are real pages** on both sites (created on first load), so they carry a canonical tag, share tags and a description like everything else.
+- **Wide share cards.** A new 1200×630 `rs-share` image size feeds Open Graph and X's `summary_large_image`; smaller pictures fall back to the compact card.
+
+### ⚡ Lighter and faster
+- **A real build.** Styles and scripts are minified from sources: the stylesheet shrank from 88 KB to 56 KB and the script from 99 KB to 44 KB before compression.
+- One font preload instead of two; the AJAX pagination fragment is now CDN-cacheable; the view counter survives a closed tab (`keepalive`); the offline caches are capped so they cannot grow forever.
+
+### ♿ Friendlier to every reader
+- Larger tap targets in the header, a two-row header on phones so the name and the links never collide, `inert` behind open modals so keyboard and screen-reader users cannot wander into the page beneath, a theme toggle that announces its state, and a status-bar colour that follows dark mode.
+- **A proper print stylesheet** for the readers who print the long essays, with link addresses spelled out.
+- **A privacy page**, in Bengali and English, that says exactly what stays in the browser and what the site counts.
+
+### 🔎 Search that understands Bengali spelling
+- য়/য, ড়/ড, ঢ়/ঢ, nukta and joiner variants all match one another, so a story is found however the reader (or the author) happened to type the word.
+
+### 🧱 A codebase built to last
+- `functions.php` is now a 70-line loader; the theme lives in fourteen focused files under `inc/`, the stylesheet in 22 files under `src/css/` and the JavaScript in 28 files under `src/js/`, joined by `npm run build` into the two files the site loads.
+- GitHub Actions checks every push: PHP syntax on 8.0 to 8.3, a fresh build, and matching version numbers. Tested up to WordPress 7.1.
+
+**Upgrading:** update from the dashboard as usual, then purge your CDN or page cache once so the new pages and headers reach everyone.
 
 ---
 

@@ -26,7 +26,6 @@ $rs_about = rs_about();
 	<div class="rs-wrap">
 		<span><?php echo esc_html( rs_footer_text() ); ?></span>
 		<a class="rs-footer__link" href="<?php echo esc_url( home_url( '/privacy/' ) ); ?>"><?php echo esc_html( rs_is_en() ? 'Privacy' : 'গোপনীয়তা' ); ?></a>
-		<a class="rs-footer__link" href="<?php echo esc_url( get_feed_link() ); ?>">RSS</a>
 	</div>
 </footer>
 
