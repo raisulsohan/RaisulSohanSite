@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  php-syntax:
+    name: PHP syntax (${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.0', '8.1', '8.2', '8.3']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - name: Lint every PHP file
+        run: find . -name '*.php' -not -path './node_modules/*' -print0 | xargs -0 -n1 -P4 php -l
+
+  built-assets:
+    name: Built assets match sources
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - name: Rebuild and compare with the committed files
+        run: npm run check
+
+  version-in-step:
+    name: RS_VERSION matches style.css and package.json
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          a=$(grep -oP "define\( 'RS_VERSION', '\K[^']+" functions.php)
+          b=$(grep -oP '^Version:\s*\K\S+' style.css)
+          c=$(grep -oP '"version":\s*"\K[^"]+' package.json)
+          echo "functions.php=$a style.css=$b package.json=$c"
+          test "$a" = "$b" && test "$a" = "$c"
