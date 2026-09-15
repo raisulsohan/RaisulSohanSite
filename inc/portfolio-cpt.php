@@ -975,7 +975,9 @@ function rs_get_portfolio_projects() {
 				'tags'         => $tags,
 				'accent'       => get_post_meta( $p->ID, '_rs_portfolio_accent', true ) ?: '#0984e3',
 				'icon'         => get_post_meta( $p->ID, '_rs_portfolio_icon', true ) ?: 'code',
-				'image'        => get_post_meta( $p->ID, '_rs_portfolio_image', true ) ?: '',
+				/* A theme asset seeded from the /en/ sub site was stored with that
+				   site's prefix in the path; point it back at this site's theme. */
+				'image'        => preg_replace( '#^https?://[^/]+(?:/[a-z]{2})?/wp-content/themes/[^/]+/#i', get_template_directory_uri() . '/', (string) get_post_meta( $p->ID, '_rs_portfolio_image', true ) ),
 				'image_fit'    => get_post_meta( $p->ID, '_rs_portfolio_image_fit', true ) ?: 'cover',
 				'action_type'  => get_post_meta( $p->ID, '_rs_portfolio_action_type', true ) ?: 'web',
 				'action_bn'    => get_post_meta( $p->ID, '_rs_portfolio_action_bn', true ) ?: 'বিস্তারিত দেখুন',

@@ -115,7 +115,9 @@ $projects = function_exists( 'rs_get_portfolio_projects' ) ? rs_get_portfolio_pr
 								<span class="rs-portfolio-card__url"><?php echo esc_html( $card_domain ); ?></span>
 							</div>
 							<div class="rs-portfolio-card__img-wrap <?php echo ( ! empty( $p['image_fit'] ) && 'contain' === $p['image_fit'] ) ? 'is-contain' : ''; ?>">
-								<img src="<?php echo esc_url( $p['image'] ); ?>" alt="<?php echo esc_attr( $rs_is_en ? $p['title_en'] : $p['title_bn'] ); ?>" class="rs-portfolio-card__img" loading="lazy">
+								<?php if ( ! empty( $p['image'] ) ) : ?>
+								<img src="<?php echo esc_url( $p['image'] ); ?>" alt="<?php echo esc_attr( $rs_is_en ? $p['title_en'] : $p['title_bn'] ); ?>" class="rs-portfolio-card__img" loading="lazy" decoding="async">
+								<?php endif; ?>
 							</div>
 						<?php elseif ( 'video' === $p['category'] ) : ?>
 							<div class="rs-portfolio-card__img-wrap" style="background-image: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.45)), url('<?php echo esc_url( $p['image'] ); ?>'); background-size: cover; background-position: center;">
@@ -126,7 +128,9 @@ $projects = function_exists( 'rs_get_portfolio_projects' ) ? rs_get_portfolio_pr
 							</div>
 						<?php else : ?>
 							<div class="rs-portfolio-card__img-wrap <?php echo ( ! empty( $p['image_fit'] ) && 'contain' === $p['image_fit'] ) ? 'is-contain' : ''; ?>">
-								<img src="<?php echo esc_url( $p['image'] ); ?>" alt="<?php echo esc_attr( $rs_is_en ? $p['title_en'] : $p['title_bn'] ); ?>" class="rs-portfolio-card__img" loading="lazy">
+								<?php if ( ! empty( $p['image'] ) ) : ?>
+								<img src="<?php echo esc_url( $p['image'] ); ?>" alt="<?php echo esc_attr( $rs_is_en ? $p['title_en'] : $p['title_bn'] ); ?>" class="rs-portfolio-card__img" loading="lazy" decoding="async">
+								<?php endif; ?>
 								<span class="rs-portfolio-card__media-tag"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></span>
 							</div>
 						<?php endif; ?>

@@ -53,6 +53,20 @@ self.addEventListener( 'activate', function ( event ) {
  * Fetch strategies
  * ---------------------------------------------------------------- */
 
+/* Keep a bucket from growing without end: drop the oldest entries once
+   it passes the limit. Cache keys come back in insertion order. */
+function trim( bucket, max ) {
+	caches.open( bucket ).then( function ( c ) {
+		c.keys().then( function ( keys ) {
+			if ( keys.length > max ) {
+				c.delete( keys[ 0 ] ).then( function () {
+					trim( bucket, max );
+				} );
+			}
+		} );
+	} );
+}
+
 function cacheFirst( request, bucket ) {
 	return caches.match( request ).then( function ( hit ) {
 		if ( hit ) {
@@ -79,7 +93,9 @@ function networkFirst( request, bucket ) {
 			var copy = res.clone();
 
 			caches.open( bucket ).then( function ( c ) {
-				c.put( request, copy );
+				c.put( request, copy ).then( function () {
+					trim( bucket, 80 );
+				} );
 			} );
 		}
 
@@ -91,6 +107,17 @@ function networkFirst( request, bucket ) {
 
 self.addEventListener( 'fetch', function ( event ) {
 	var url = new URL( event.request.url );
+
+	/* Only GETs on this origin, and never the dashboard, the login screen
+	   or a preview: those must always come fresh from the server. */
+	if (
+		'GET' !== event.request.method ||
+		url.origin !== self.location.origin ||
+		/\/wp-(admin|login|signup|activate|cron)/.test( url.pathname ) ||
+		/[?&](preview|customize_changeset_uuid)=/.test( url.search )
+	) {
+		return;
+	}
 
 	/* 1. Shell assets — cache first. */
 	if ( /\.(css|js|woff2?)(?:\?|$)/i.test( url.pathname ) ) {
@@ -112,7 +139,9 @@ self.addEventListener( 'fetch', function ( event ) {
 					var copy = res.clone();
 
 					caches.open( PAGES ).then( function ( c ) {
-						c.put( event.request, copy );
+						c.put( event.request, copy ).then( function () {
+							trim( PAGES, 40 );
+						} );
 					} );
 				}
 

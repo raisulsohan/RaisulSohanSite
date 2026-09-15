@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /* Bump this on every CSS or JS change: it is the cache buster in the
    ?ver= query string for style.css and app.js. */
-define( 'RS_VERSION', '7.4.74' );
+define( 'RS_VERSION', '7.4.75' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -305,35 +305,56 @@ add_action( 'template_redirect', function() {
 } );
 
 /**
- * Auto-clean database options on main site if /blog was saved by WordPress multisite.
+ * Rebuild the rewrite rules once per theme version.
+ *
+ * The option filter above changes the permalink structure at runtime, but
+ * the rules WordPress matches requests against live in the rewrite_rules
+ * option and are only rebuilt on a flush. Without this, links generated
+ * from the filtered structure can point at URLs no stored rule matches,
+ * and every post answers 404 while the dashboard looks perfectly healthy.
  */
-add_action( 'init', function() {
-	if ( ! is_multisite() || ! is_main_site() ) {
+function rs_flush_rewrite_on_update() {
+	if ( get_option( 'rs_rewrite_version' ) === RS_VERSION ) {
 		return;
 	}
 
-	$dirty = false;
-	$ps    = get_option( 'permalink_structure' );
-	if ( $ps && false !== strpos( $ps, '/blog' ) ) {
-		$cleaned = preg_replace( '|^/?blog|', '', $ps );
-		if ( empty( $cleaned ) || false !== strpos( $cleaned, '%year%' ) ) {
-			$cleaned = '/%postname%/';
-		}
-		update_option( 'permalink_structure', $cleaned );
-		$dirty = true;
+	flush_rewrite_rules( false );
+	update_option( 'rs_rewrite_version', RS_VERSION, false );
+}
+add_action( 'init', 'rs_flush_rewrite_on_update', 99 );
+
+/**
+ * Send the old date based post URLs to the post's current permalink.
+ *
+ * Those URLs sat in the sitemap, the feed and shared links for a long
+ * while. WordPress parses them as a page path rather than a post name,
+ * so it cannot guess the post on its own and serves a 404 instead.
+ */
+function rs_redirect_legacy_post_urls() {
+	if ( ! is_404() ) {
+		return;
 	}
 
-	$cb = get_option( 'category_base' );
-	if ( $cb && false !== strpos( $cb, 'blog' ) ) {
-		$cleaned_cb = preg_replace( '|^/?blog/?|', '', $cb );
-		update_option( 'category_base', $cleaned_cb );
-		$dirty = true;
+	$path = isset( $_SERVER['REQUEST_URI'] ) ? wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_PATH ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Only matched against a pattern below.
+
+	if ( ! $path || ! preg_match( '#/(\d{4})/(\d{1,2})/(\d{1,2})/([^/]+)/?$#', $path, $m ) ) {
+		return;
 	}
 
-	if ( $dirty ) {
-		flush_rewrite_rules( false );
+	$found = get_page_by_path( rawurldecode( $m[4] ), OBJECT, 'post' );
+
+	if ( ! $found || 'publish' !== $found->post_status ) {
+		return;
 	}
-}, 5 );
+
+	$target = get_permalink( $found );
+
+	if ( $target && untrailingslashit( (string) wp_parse_url( $target, PHP_URL_PATH ) ) !== untrailingslashit( $path ) ) {
+		wp_safe_redirect( $target, 301 );
+		exit;
+	}
+}
+add_action( 'template_redirect', 'rs_redirect_legacy_post_urls' );
 
 /* =========================================================================
  * 2. Assets
@@ -532,7 +553,8 @@ function rs_preload_font() {
 		);
 	}
 }
-add_action( 'wp_head', 'rs_preload_font', 2 );
+/* header.php already carries this preload ahead of wp_head(), where the
+   preload scanner sees it first; hooking it here too printed it twice. */
 
 /* =========================================================================
  * 3. Bengali numbers and dates
@@ -2894,7 +2916,14 @@ function rs_list_fragment() {
 		return;
 	}
 
-	nocache_headers();
+	/* Public HTML, so the CDN may hold it for a few minutes instead of
+	   sending every pagination click through PHP. A signed in editor
+	   gets edit links in the rows, so their copy is never stored. */
+	if ( is_user_logged_in() ) {
+		nocache_headers();
+	} else {
+		header( 'Cache-Control: public, max-age=0, s-maxage=600' );
+	}
 	header( 'Content-Type: text/html; charset=' . get_bloginfo( 'charset' ) );
 	/* A fragment has no header, no footer and no canonical tag. If a
 	   crawler ever finds one of these URLs, it should not keep it. */
@@ -4180,6 +4209,154 @@ function rs_trim_head() {
 	remove_action( 'wp_head', 'rsd_link' );
 }
 add_action( 'init', 'rs_trim_head' );
+
+/* The theme has no comment template, so the comment feed WordPress still
+   advertises would never hold anything. Close the doors it belongs to. */
+add_filter( 'feed_links_show_comments_feed', '__return_false' );
+add_filter( 'comments_open', '__return_false', 20 );
+add_filter( 'pings_open', '__return_false', 20 );
+
+/**
+ * Security headers for the front end.
+ *
+ * Every value is static, so a full page cache stores them with the page
+ * and hands them to every reader. HSTS is only sent over HTTPS, where a
+ * browser is allowed to remember it.
+ */
+function rs_security_headers() {
+	if ( is_admin() || headers_sent() ) {
+		return;
+	}
+
+	header_remove( 'X-Powered-By' );
+	header( 'X-Content-Type-Options: nosniff' );
+	header( 'X-Frame-Options: SAMEORIGIN' );
+	header( 'Referrer-Policy: strict-origin-when-cross-origin' );
+	header( 'Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()' );
+
+	if ( is_ssl() ) {
+		header( 'Strict-Transport-Security: max-age=31536000' );
+	}
+}
+add_action( 'send_headers', 'rs_security_headers' );
+
+/**
+ * Keep the author's account name out of public reach.
+ *
+ * The users endpoint and the author archive both hand out the login-like
+ * slug. This is a single author site with an About page, so neither is
+ * needed by anyone who is not signed in.
+ *
+ * @param array $endpoints Registered REST routes.
+ * @return array
+ */
+function rs_hide_users_endpoint( $endpoints ) {
+	if ( is_user_logged_in() ) {
+		return $endpoints;
+	}
+
+	foreach ( array( '/wp/v2/users', '/wp/v2/users/(?P<id>[\d]+)', '/wp/v2/users/me' ) as $route ) {
+		unset( $endpoints[ $route ] );
+	}
+
+	return $endpoints;
+}
+add_filter( 'rest_endpoints', 'rs_hide_users_endpoint' );
+
+/**
+ * The author archive repeats the front page under the account name.
+ */
+function rs_redirect_author_archive() {
+	if ( is_author() && ! is_user_logged_in() ) {
+		wp_safe_redirect( home_url( '/' ), 301 );
+		exit;
+	}
+}
+add_action( 'template_redirect', 'rs_redirect_author_archive' );
+
+/**
+ * Tell search engines where the same page lives in the other language.
+ *
+ * Posts and categories are paired by slug, which the two sites share;
+ * the front page and the portfolio are paired by path. A page with no
+ * twin says nothing, which is better than pointing at a 404.
+ */
+function rs_hreflang() {
+	if ( ! is_multisite() || is_404() || is_search() ) {
+		return;
+	}
+
+	if ( function_exists( 'rs_seo_plugin_active' ) && rs_seo_plugin_active() ) {
+		return;
+	}
+
+	$en_sites = get_sites( array( 'path' => '/en/', 'number' => 1 ) );
+
+	if ( empty( $en_sites ) ) {
+		return;
+	}
+
+	$en_id   = (int) $en_sites[0]->blog_id;
+	$main_id = (int) get_main_site_id();
+	$here    = (int) get_current_blog_id();
+	$other   = ( $here === $en_id ) ? $main_id : $en_id;
+	$pair    = array();
+	$req     = isset( $_SERVER['REQUEST_URI'] ) ? trim( (string) wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_PATH ), '/' ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Only compared against fixed paths.
+
+	if ( is_singular( 'post' ) ) {
+		$id            = get_queried_object_id();
+		$pair[ $here ] = get_permalink( $id );
+
+		switch_to_blog( $other );
+		$twin = get_page_by_path( get_post_field( 'post_name', $id ), OBJECT, 'post' );
+		if ( $twin && 'publish' === $twin->post_status ) {
+			$pair[ $other ] = get_permalink( $twin );
+		}
+		restore_current_blog();
+	} elseif ( is_front_page() || is_home() ) {
+		$pair[ $here ]  = get_home_url( $here, '/' );
+		$pair[ $other ] = get_home_url( $other, '/' );
+	} elseif ( is_category() ) {
+		$term          = get_queried_object();
+		$pair[ $here ] = get_category_link( $term );
+
+		switch_to_blog( $other );
+		$twin = get_category_by_slug( $term->slug );
+		if ( $twin ) {
+			$pair[ $other ] = get_category_link( $twin );
+		}
+		restore_current_blog();
+	} elseif ( preg_match( '~(?:^|/)portfolio$~i', $req ) ) {
+		$pair[ $here ]  = get_home_url( $here, '/portfolio/' );
+		$pair[ $other ] = get_home_url( $other, '/portfolio/' );
+	} elseif ( is_page() ) {
+		$id            = get_queried_object_id();
+		$pair[ $here ] = get_permalink( $id );
+
+		switch_to_blog( $other );
+		$twin = get_page_by_path( get_post_field( 'post_name', $id ), OBJECT, 'page' );
+		if ( $twin && 'publish' === $twin->post_status ) {
+			$pair[ $other ] = get_permalink( $twin );
+		}
+		restore_current_blog();
+	}
+
+	if ( count( $pair ) < 2 || empty( $pair[ $main_id ] ) ) {
+		return;
+	}
+
+	$langs = array(
+		$main_id => 'bn-BD',
+		$en_id   => 'en',
+	);
+
+	foreach ( $pair as $blog => $url ) {
+		printf( '<link rel="alternate" hreflang="%s" href="%s">' . "\n", esc_attr( $langs[ $blog ] ), esc_url( $url ) );
+	}
+
+	printf( '<link rel="alternate" hreflang="x-default" href="%s">' . "\n", esc_url( $pair[ $main_id ] ) );
+}
+add_action( 'wp_head', 'rs_hreflang', 3 );
 
 /**
  * Drop the default block library CSS. This theme styles everything itself.

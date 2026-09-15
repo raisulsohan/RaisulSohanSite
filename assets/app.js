@@ -200,6 +200,9 @@
 		window.fetch( rest + 'view/' + id + ( first ? '?first=1' : '' ), {
 			method: 'POST',
 			credentials: 'same-origin',
+			/* Lets the request finish even if the reader closes the tab
+			   straight after opening the piece. */
+			keepalive: true,
 		} )
 			.then( function ( res ) {
 				return res.ok ? res.json() : null;
@@ -595,6 +598,19 @@
 	var lastFocus = null;
 
 	function lockBody( locked ) {
+		/* The overlays sit after the footer, so everything before them can
+		   be taken out of the tab order and the accessibility tree while
+		   one is open; a screen reader then cannot wander behind it. */
+		var behind = document.querySelectorAll( '.rs-header, main, .rs-footer' );
+
+		for ( var i = 0; i < behind.length; i++ ) {
+			if ( locked ) {
+				behind[ i ].setAttribute( 'inert', '' );
+			} else {
+				behind[ i ].removeAttribute( 'inert' );
+			}
+		}
+
 		if ( locked ) {
 			document.body.classList.add( 'rs-locked' );
 		} else {
@@ -1952,6 +1968,22 @@
 	( function () {
 		var btn = $( '[data-rs-theme]' );
 
+		/* The browser chrome (Android status bar, PWA title bar) follows
+		   this tag, so it has to change along with the page colour. */
+		function syncThemeColor() {
+			var meta = document.querySelector( 'meta[name="theme-color"]' );
+			var bg   = window.getComputedStyle( document.documentElement ).getPropertyValue( '--rs-bg' ).trim();
+
+			if ( meta && bg ) {
+				meta.setAttribute( 'content', bg );
+			}
+		}
+
+		if ( btn ) {
+			btn.setAttribute( 'aria-pressed', 'dark' === document.documentElement.getAttribute( 'data-theme' ) ? 'true' : 'false' );
+		}
+		syncThemeColor();
+
 		var animBtn = $( '#rs-anim-toggle' );
 		if ( animBtn ) {
 			var savedAnim = window.localStorage.getItem( 'rs-anim' );
@@ -2000,6 +2032,8 @@
 
 			root.setAttribute( 'data-theme', next );
 			store( 'rs-theme', next );
+			btn.setAttribute( 'aria-pressed', 'dark' === next ? 'true' : 'false' );
+			syncThemeColor();
 
 			var input = $( '#rs-tint' );
 
