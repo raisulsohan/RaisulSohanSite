@@ -1046,7 +1046,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		   browser there, so it can be shared, and Back closes it. */
 		if (fromHistory !== true && window.history && window.history.pushState) {
 			var state = { rsProject: projectId };
-			var addr  = portfolioPath + encodeURIComponent(projectId) + '/' + window.location.search;
+			var addr  = portfolioPath + encodeURIComponent(projectId) + '/';
 
 			if (window.history.state && window.history.state.rsProject) {
 				window.history.replaceState(state, '', addr);

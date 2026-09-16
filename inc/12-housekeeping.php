@@ -192,10 +192,11 @@ function rs_hreflang() {
 
 	if ( is_singular( 'post' ) ) {
 		$id            = get_queried_object_id();
+		$slug          = get_post_field( 'post_name', $id ); /* read before switching sites */
 		$pair[ $here ] = get_permalink( $id );
 
 		switch_to_blog( $other );
-		$twin = get_page_by_path( get_post_field( 'post_name', $id ), OBJECT, 'post' );
+		$twin = get_page_by_path( $slug, OBJECT, 'post' );
 		if ( $twin && 'publish' === $twin->post_status ) {
 			$pair[ $other ] = get_permalink( $twin );
 		}
@@ -220,10 +221,11 @@ function rs_hreflang() {
 		$pair[ $other ] = get_home_url( $other, '/portfolio/' . $rs_sub );
 	} elseif ( is_page() ) {
 		$id            = get_queried_object_id();
+		$slug          = get_post_field( 'post_name', $id ); /* read before switching sites */
 		$pair[ $here ] = get_permalink( $id );
 
 		switch_to_blog( $other );
-		$twin = get_page_by_path( get_post_field( 'post_name', $id ), OBJECT, 'page' );
+		$twin = get_page_by_path( $slug, OBJECT, 'page' );
 		if ( $twin && 'publish' === $twin->post_status ) {
 			$pair[ $other ] = get_permalink( $twin );
 		}

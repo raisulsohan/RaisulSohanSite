@@ -1928,15 +1928,25 @@ function rs_refresh_github_stats() {
 			'User-Agent' => 'raisulsohan.com portfolio',
 		),
 	);
-	$old   = get_site_option( 'rs_github_stats', array() );
-	$repos = isset( $old['repos'] ) && is_array( $old['repos'] ) ? $old['repos'] : array();
+	$old    = get_site_option( 'rs_github_stats', array() );
+	$repos  = isset( $old['repos'] ) && is_array( $old['repos'] ) ? $old['repos'] : array();
+	$errors = array();
+	$fresh  = 0;
 
 	foreach ( array_keys( $slugs ) as $slug ) {
 		$response = wp_remote_get( 'https://api.github.com/repos/' . $slug, $args );
 
 		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
-			continue; /* keep whatever was known before */
+			$errors[] = $slug . ':' . ( is_wp_error( $response ) ? $response->get_error_code() : (int) wp_remote_retrieve_response_code( $response ) );
+
+			/* Rate limited or blocked: stop asking, keep what was known. */
+			if ( ! is_wp_error( $response ) && in_array( (int) wp_remote_retrieve_response_code( $response ), array( 403, 429 ), true ) ) {
+				break;
+			}
+			continue;
 		}
+
+		++$fresh;
 
 		$repo = json_decode( wp_remote_retrieve_body( $response ), true );
 		$data = array(
@@ -2009,9 +2019,12 @@ function rs_refresh_github_stats() {
 	update_site_option(
 		'rs_github_stats',
 		array(
-			'fetched' => time(),
+			/* A run that got nothing tries again in about an hour rather
+			   than waiting out the usual twelve. */
+			'fetched' => $fresh ? time() : time() - 11 * HOUR_IN_SECONDS,
 			'repos'   => $repos,
 			'latest'  => $latest,
+			'errors'  => array_slice( $errors, 0, 5 ),
 		)
 	);
 }
@@ -2201,6 +2214,20 @@ function rs_rest_projects() {
 
 	$response = rest_ensure_response( $out );
 	$response->header( 'Cache-Control', 'public, max-age=300, s-maxage=3600' );
+
+	/* A one-line health check for the GitHub numbers; nothing private. */
+	$gh = get_site_option( 'rs_github_stats', array() );
+	$response->header(
+		'X-RS-GitHub',
+		sprintf(
+			'fetched=%s; repos=%d; latest=%s; errors=%s; next=%s',
+			empty( $gh['fetched'] ) ? 'never' : gmdate( 'c', (int) $gh['fetched'] ),
+			isset( $gh['repos'] ) ? count( (array) $gh['repos'] ) : 0,
+			empty( $gh['latest']['repo'] ) ? 'none' : $gh['latest']['repo'],
+			empty( $gh['errors'] ) ? 'none' : implode( ',', (array) $gh['errors'] ),
+			wp_next_scheduled( 'rs_refresh_github_stats' ) ? gmdate( 'c', wp_next_scheduled( 'rs_refresh_github_stats' ) ) : 'none'
+		)
+	);
 
 	return $response;
 }
