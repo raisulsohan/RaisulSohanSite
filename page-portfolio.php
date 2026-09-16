@@ -514,16 +514,26 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		return ('' + n).replace(/\d/g, function(d) { return bnDigits[d]; });
 	}
 
-	/* 1. Category Filter & 4-Item Pagination Logic (2 on top, 2 on bottom) */
+	/* 1. Category filter and in-page pagination */
 	var buttons      = document.querySelectorAll('.rs-portfolio-filter__btn');
 	var cards        = Array.prototype.slice.call(document.querySelectorAll('.rs-portfolio-card'));
 	var empty        = document.getElementById('rs-portfolio-empty');
 	var paginationEl = document.getElementById('rs-portfolio-pagination');
 	var gridEl       = document.getElementById('rs-portfolio-grid');
 
-	var ITEMS_PER_PAGE = 1000; /* Every project on one page; the filter narrows it. */
-	var curFilter      = 'all';
-	var curPage        = 1;
+	/* A page holds six cards, three rows of two. The first page of a list
+	   that opens with the featured card, which takes a row to itself,
+	   holds seven, so no row is ever left with a single card. */
+	var PER_PAGE  = 6;
+	var curFilter = 'all';
+	var curPage   = 1;
+
+	var arrowPrev = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>';
+	var arrowNext = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+
+	if (gridEl) {
+		gridEl.setAttribute('tabindex', '-1');
+	}
 
 	function getMatchingCards() {
 		if (curFilter === 'all') {
@@ -534,9 +544,25 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		});
 	}
 
-	function renderPagination(totalCount) {
+	function paginate(list) {
+		var pages = [];
+		var i = 0;
+
+		while (i < list.length) {
+			var size = (0 === pages.length && list[i].classList.contains('is-featured')) ? PER_PAGE + 1 : PER_PAGE;
+			pages.push(list.slice(i, i + size));
+			i += size;
+		}
+
+		return pages;
+	}
+
+	function pageButton(page, label, content, extra) {
+		return '<button type="button" class="rs-pf-page' + (extra || '') + '" data-page="' + page + '" aria-label="' + label + '">' + content + '</button>';
+	}
+
+	function renderPagination(totalPages) {
 		if (!paginationEl) return;
-		var totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
 		if (totalPages <= 1) {
 			paginationEl.innerHTML = '';
@@ -547,66 +573,69 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		paginationEl.style.display = 'flex';
 		var html = '';
 
-		/* Prev arrow */
-		if (curPage > 1) {
-			html += '<a class="rs-pagination__num" href="#" data-page="' + (curPage - 1) + '" aria-label="' + (isEn ? 'Previous page' : 'আগের পাতা') + '">‹</a>';
-		} else {
-			html += '<span class="rs-pagination__num" style="opacity:.3;pointer-events:none;">‹</span>';
-		}
+		html += curPage > 1
+			? pageButton(curPage - 1, isEn ? 'Previous page' : 'আগের পাতা', arrowPrev, ' rs-pf-page--arrow')
+			: '<span class="rs-pf-page rs-pf-page--arrow is-disabled" aria-hidden="true">' + arrowPrev + '</span>';
 
-		/* Page numbers */
 		for (var p = 1; p <= totalPages; p++) {
 			if (p === curPage) {
-				html += '<span class="rs-pagination__num is-current" aria-current="page">' + bn(p) + '</span>';
+				html += '<span class="rs-pf-page is-current" aria-current="page">' + bn(p) + '</span>';
 			} else if (p === 1 || p === totalPages || Math.abs(p - curPage) <= 1) {
-				html += '<a class="rs-pagination__num" href="#" data-page="' + p + '">' + bn(p) + '</a>';
+				html += pageButton(p, (isEn ? 'Page ' : 'পাতা ') + bn(p), bn(p));
 			} else if (Math.abs(p - curPage) === 2) {
-				html += '<span class="rs-pagination__gap" aria-hidden="true">…</span>';
+				html += '<span class="rs-pf-page__gap" aria-hidden="true">…</span>';
 			}
 		}
 
-		/* Next arrow */
-		if (curPage < totalPages) {
-			html += '<a class="rs-pagination__num" href="#" data-page="' + (curPage + 1) + '" aria-label="' + (isEn ? 'Next page' : 'পরের পাতা') + '">›</a>';
-		} else {
-			html += '<span class="rs-pagination__num" style="opacity:.3;pointer-events:none;">›</span>';
-		}
+		html += curPage < totalPages
+			? pageButton(curPage + 1, isEn ? 'Next page' : 'পরের পাতা', arrowNext, ' rs-pf-page--arrow')
+			: '<span class="rs-pf-page rs-pf-page--arrow is-disabled" aria-hidden="true">' + arrowNext + '</span>';
+
+		html += '<span class="rs-pf-sr" aria-live="polite">' + (isEn ? 'Page ' + curPage + ' of ' + totalPages : 'মোট ' + bn(totalPages) + ' পাতার ' + bn(curPage) + ' নম্বর পাতা') + '</span>';
 
 		paginationEl.innerHTML = html;
 	}
 
-	function applyFilterAndPagination(shouldScroll) {
-		var matching = getMatchingCards();
-		var total = matching.length;
-		var totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+	/* mode: 'init' on load, 'filter' when a category is picked, 'page' when
+	   a page button is pressed. Only a page change scrolls and moves focus. */
+	function applyFilterAndPagination(mode) {
+		var matching   = getMatchingCards();
+		var pages      = paginate(matching);
+		var totalPages = Math.max(1, pages.length);
 
 		if (curPage > totalPages) {
 			curPage = 1;
 		}
 
 		if (empty) {
-			empty.style.display = total === 0 ? 'block' : 'none';
+			empty.style.display = matching.length === 0 ? 'block' : 'none';
 		}
 
-		var startIdx = (curPage - 1) * ITEMS_PER_PAGE;
-		var endIdx   = startIdx + ITEMS_PER_PAGE;
+		var visible = pages[curPage - 1] || [];
 
 		cards.forEach(function(card) {
-			var matchIdx = matching.indexOf(card);
-			if (matchIdx !== -1 && matchIdx >= startIdx && matchIdx < endIdx) {
-				card.style.display = '';
-			} else {
-				card.style.display = 'none';
-			}
+			card.classList.remove('is-entering');
+			card.style.display = visible.indexOf(card) !== -1 ? '' : 'none';
 		});
 
-		renderPagination(total);
+		if ('init' !== mode) {
+			visible.forEach(function(card, i) {
+				card.style.setProperty('--i', i);
+				void card.offsetWidth; /* restart the entrance */
+				card.classList.add('is-entering');
+			});
+		}
 
-		if (shouldScroll && gridEl) {
+		renderPagination(totalPages);
+
+		if ('page' === mode && gridEl) {
+			var head   = document.getElementById('rs-pf-work-section') || gridEl;
 			var header = document.querySelector('.rs-header');
 			var clear  = header ? header.offsetHeight : 0;
-			var topPos = gridEl.getBoundingClientRect().top + window.pageYOffset - clear - 24;
+			var topPos = head.getBoundingClientRect().top + window.pageYOffset - clear - 16;
+
 			window.scrollTo({ top: Math.max(0, topPos), behavior: 'smooth' });
+			gridEl.focus({ preventScroll: true });
 		}
 	}
 
@@ -625,7 +654,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 
 				curFilter = filter;
 				curPage = 1;
-				applyFilterAndPagination(false);
+				applyFilterAndPagination('filter');
 			});
 		});
 	}
@@ -639,13 +668,13 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 			var targetPage = parseInt(link.getAttribute('data-page'), 10);
 			if (targetPage && targetPage !== curPage) {
 				curPage = targetPage;
-				applyFilterAndPagination(true);
+				applyFilterAndPagination('page');
 			}
 		});
 	}
 
 	// Initial render on page load
-	applyFilterAndPagination(false);
+	applyFilterAndPagination('init');
 
 	/* 2. Case Study Pop-up Modal Logic */
 	var rawData = document.getElementById('rs-portfolio-data');

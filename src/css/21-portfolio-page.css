@@ -1402,3 +1402,93 @@ body.rs-stage {
 	color: #fff;
 	border-bottom-color: #ea77ff;
 }
+
+/* --------------------------------------------------------------------------
+   Pagination (in place, no reload)
+   -------------------------------------------------------------------------- */
+
+.rs-portfolio-pagination {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	margin-top: 2.25rem;
+}
+
+.rs-pf-page {
+	display: inline-grid;
+	place-items: center;
+	min-width: 44px;
+	height: 44px;
+	padding: 0 0.8rem;
+	border-radius: 999px;
+	border: 1px solid var(--pf-line);
+	background: rgba(255, 255, 255, 0.03);
+	color: var(--pf-text2);
+	font: 600 0.95rem/1 var(--rs-sans);
+	font-variant-numeric: tabular-nums;
+	cursor: pointer;
+	transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.rs-pf-page--arrow {
+	padding: 0;
+}
+
+.rs-pf-page svg {
+	width: 18px;
+	height: 18px;
+}
+
+button.rs-pf-page:hover {
+	color: var(--pf-text);
+	border-color: var(--pf-brand2);
+	background: rgba(143, 116, 255, 0.12);
+	transform: translateY(-1px);
+}
+
+.rs-pf-page.is-current {
+	color: #fff;
+	border-color: transparent;
+	background: linear-gradient(135deg, var(--pf-brand), var(--pf-pink));
+	box-shadow: 0 10px 26px -12px rgba(108, 76, 255, 0.9);
+	cursor: default;
+}
+
+.rs-pf-page.is-disabled {
+	opacity: 0.3;
+	cursor: default;
+}
+
+.rs-pf-page__gap {
+	padding: 0 0.15rem;
+	color: var(--pf-dim);
+}
+
+.rs-pf-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+}
+
+.rs-pf-grid:focus {
+	outline: none;
+}
+
+/* Cards arriving on a new page or filter rise into place one after another.
+   Backwards fill only, so the hover lift is free once they have landed. */
+.rs-pf-card.is-entering {
+	animation: rs-pf-card-in 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+	animation-delay: calc(var(--i, 0) * 60ms);
+}
+
+@keyframes rs-pf-card-in {
+	from {
+		opacity: 0.001;
+		transform: translateY(18px);
+	}
+}
