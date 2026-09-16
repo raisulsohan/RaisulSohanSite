@@ -12,9 +12,9 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 
 ## What's new in 7.7
 
-**The hero is now a toy.** On  the speed graph and the timeline respond to the pointer, for mouse and touch alike:
+**The hero is now a toy.** On `/portfolio/` the speed graph and the timeline respond to the pointer, for mouse and touch alike:
 
-- **Drag the speed graph's handles** to reshape the ease. The influence percentages, a live  value and a ball travelling with the new easing all follow as you pull; double-click to restore the classic ease.
+- **Drag the speed graph's handles** to reshape the ease. The influence percentages, a live `cubic-bezier()` value and a ball travelling with the new easing all follow as you pull; double-click to restore the classic ease.
 - **Drag keyframes along the timeline** and their layer bar stretches with them. **Grab the playhead** (or click the ruler) to scrub, with a timecode that counts real frames; keyframes flash as the playhead crosses them, and playback resumes a moment after you let go.
 - **A first-visit nudge:** the graph handle pulls itself out and back once, pulsing rings mark the handles, and labels invite a drag ("ধরে টানুন তো!", "আমাকে ধরুন"). The first touch retires them for good.
 - Pauses while off screen, and honours reduced-motion settings.
