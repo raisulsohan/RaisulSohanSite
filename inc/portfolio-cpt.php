@@ -1403,6 +1403,63 @@ function rs_get_default_portfolio_projects() {
 			'github_url'  => 'https://github.com/raisulsohan/LazyImageGeneration',
 			'order'       => 80,
 		),
+		array(
+			'id'          => 'lazylord',
+			'category'    => 'tools',
+			'type_bn'     => 'অ্যাডোবি CEP প্যানেল ও Figma প্লাগইন',
+			'type_en'     => 'Adobe CEP Panel & Figma Plugin',
+			'badge_bn'    => 'ফ্রি ও ওপেন সোর্স • Overlord-এর বিকল্প',
+			'badge_en'    => 'Free & Open Source • Overlord Alternative',
+			'title_bn'    => 'LazyLord — Figma, Photoshop, Illustrator ও After Effects-এর মধ্যে আসল আর্টওয়ার্ক আদান-প্রদান',
+			'title_en'    => 'LazyLord — Move Real Artwork Between Figma, Photoshop, Illustrator & After Effects',
+			'summary_bn'  => 'Figma, Photoshop, Illustrator আর After Effects, যেকোনো অ্যাপ থেকে যেকোনো অ্যাপে ভেক্টর পাথ, এডিটযোগ্য লাইভ টেক্সট আর ছবি পাঠানোর ফ্রি, ওপেন সোর্স টুল। পেইড Overlord-এর পূর্ণ বিকল্প: কিছু সিলেক্ট করে Send চাপলেই অন্য অ্যাপে সেটা চ্যাপ্টা স্ক্রিনশট হয়ে নয়, আসল লেয়ার হয়ে তৈরি হয়। সব কাজ হয় ব্যবহারকারীর নিজের কম্পিউটারেই।',
+			'summary_en'  => 'A free, open-source replacement for Overlord that moves vector paths, live editable text and images between Figma, Photoshop, Illustrator and After Effects, in every direction. Select something, press Send, and it is rebuilt natively in the other app as real layers rather than a flattened screenshot, entirely on your own machine.',
+			'role_bn'     => 'একক ডেভেলপার, সিস্টেম আর্কিটেক্ট ও ডিজাইনার',
+			'role_en'     => 'Solo Developer, System Architect & Designer',
+			'context_bn'  => 'Adobe CEP + ExtendScript • Figma Plugin API • TypeScript • লোকাল WebSocket ব্রিজ',
+			'context_en'  => 'Adobe CEP + ExtendScript • Figma Plugin API • TypeScript • Local WebSocket Bridge',
+			'challenge_bn'=> "ডিজাইন আর মোশনের কাজে একটা অ্যাপ থেকে আরেকটায় আর্টওয়ার্ক নেওয়া মানেই পুরোনো চক্র: SVG এক্সপোর্ট, আবার ইমপোর্ট, গ্রেডিয়েন্ট চ্যাপ্টা হয়ে যাওয়া, ছবি হয়ে আসা টেক্সট আবার টাইপ করা, আর ডিজাইন বদলালেই পুরোটা আবার। এই কাজের জনপ্রিয় টুল Overlord পেইড, অথচ ফ্রিল্যান্সার আর ছোট স্টুডিওর কাছে সেটাই সবচেয়ে বড় বাধা।\n\nআর্কিটেকচারাল চ্যালেঞ্জ:\n১. চারটি ভিন্ন জগৎ: Figma-র Plugin API, আর Photoshop, Illustrator ও After Effects-এর তিনটি সম্পূর্ণ আলাদা ExtendScript অবজেক্ট মডেল। প্রতিটি অ্যাপ অন্য তিনটিতে পাঠাবে ও তিনটি থেকে নেবে, মোট বারোটি পথ; প্রতিটি পথের জন্য আলাদা কনভার্টার লিখলে তা রক্ষণাবেক্ষণের অযোগ্য হয়ে পড়ে।\n২. আসল আর্টওয়ার্ক: বেজিয়ে পাথ পাথ হিসেবেই, টেক্সট এডিটযোগ্য টেক্সট হিসেবেই, লেয়ারের কাঠামো ও অবস্থান ঠিক রেখে পৌঁছাতে হবে।\n৩. আপডেট মানে ধ্বংস নয়: ডিজাইন বদলে আবার পাঠালে আগে বানানো জিনিসটাই হালনাগাদ হবে, কিন্তু ব্যবহারকারী হাতে যা বদলেছেন তা নীরবে মুছে দেওয়া চলবে না।\n৪. গোপনীয়তা ও সহজ ইনস্টল: কোনো ক্লাউড, অ্যাকাউন্ট বা আপলোড নয়; অফলাইনেও চলবে। আর ব্যবহারকারীকে Node.js, এক্সটেনশন ম্যানেজার বা আলাদা সার্ভার চালাতে বলা যাবে না, অথচ Figma কোনো ইনস্টলারকে প্লাগইন যোগ করতে দেয় না।",
+			'challenge_en'=> "Moving artwork between design and motion apps usually means the same loop: export an SVG, re-import it, watch gradients flatten, retype text that arrived as a picture, and repeat it all whenever the design changes. Overlord, the popular tool for this job, is paid, which is exactly the barrier for freelancers and small studios.\n\nArchitectural challenges:\n1. Four different worlds: Figma's Plugin API plus three entirely separate ExtendScript object models in Photoshop, Illustrator and After Effects. Every app has to send to and receive from the other three, twelve routes in all, and a converter per route would be unmaintainable.\n2. Real artwork: Bézier paths must stay paths, text must stay editable text, and layer structure and position must survive the trip.\n3. Updating without destroying: sending a changed design again should update what was built before, without silently overwriting edits the user made by hand.\n4. Privacy and zero-friction install: no cloud, no account, no uploads, working offline, and no Node.js, extension manager or separate server for the user to run, even though Figma lets no installer add a plugin.",
+			'solution_bn' => "১. একটি সাধারণ মধ্যবর্তী ভাষা (IR): TypeScript-এ লেখা core প্যাকেজ আর্টওয়ার্ককে অ্যাপ-নিরপেক্ষ একটি বর্ণনায় রূপ দেয় (জ্যামিতি, SVG পাথ, প্রোটোকল)। প্রতিটি অ্যাপের একটি reader সেই বর্ণনা বানায় আর একটি writer তা থেকে নেটিভ লেয়ার তৈরি করে। বারোটি কনভার্টারের জায়গায় চারটি reader আর চারটি writer মিলেই বারোটি পথ।\n\n২. নিজের কম্পিউটারেই ব্রিজ: প্রথম যে LazyLord প্যানেল খোলা হয়, সেটাই নীরবে ws://localhost:7878-এ একটি রিলে চালায়; বাকি প্যানেল আর Figma প্লাগইন সেখানে যুক্ত হয়। কোনো আলাদা প্রোগ্রাম বা কনসোল উইন্ডো নেই, কিছুই কম্পিউটারের বাইরে যায় না।\n\n৩. জায়গায় থেকে আপডেট ও এডিট শনাক্তকরণ: আবার পাঠালে আগে তৈরি লেয়ারটি তার অবস্থান ও গ্রুপিং ঠিক রেখে বদলে যায়। কেউ হাতে সেই লেয়ার বদলে থাকলে ওভাররাইটের আগে জিজ্ঞেস করে।\n\n৪. লাইভ মোড: এক অ্যাপে কাজ করার সময় অন্য অ্যাপ সঙ্গে সঙ্গে হালনাগাদ হতে থাকে।\n\n৫. সৎ রিপোর্ট: কোনো অ্যাপ যা পুনর্গঠন করতে পারে না (যেমন After Effects-এ inner shadow নেই), তা নীরবে বাদ না দিয়ে ট্রান্সফারের সঙ্গে তালিকা করে দেখায়।\n\n৬. Figma-র বাড়তি সুবিধা: ১x থেকে ৪x ইমেজ স্কেল, জটিল লেয়ারকে ছবি হিসেবে পাঠানোর অপশন (যা ফাইলেই মনে থাকে), আর একটি ফ্রেমের ভেতরের জিনিস পাঠালে ফ্রেমের মাপে নতুন ডকুমেন্ট বা কম্পোজিশন তৈরি।\n\n৭. ঝামেলাহীন ইনস্টল: উইন্ডোজে .bat আর macOS-এ .command ইনস্টলার; Node.js বা এক্সটেনশন ম্যানেজার লাগে না। Figma-র জন্য আলাদা একটি স্ক্রিপ্ট প্লাগইনটা স্থায়ী জায়গায় কপি করে প্রয়োজনীয় পাথ ক্লিপবোর্ডে রেখে দেয়, বাকি থাকে মাত্র তিনটি ক্লিক।\n\n৮. ফ্রি চিরকাল: MIT লাইসেন্সে ওপেন সোর্স, উইন্ডোজ ও macOS দুটোতেই, Adobe 2021 বা নতুন সংস্করণে।",
+			'solution_en' => "1. One shared intermediate representation: a TypeScript core package turns artwork into an app-neutral description (geometry, SVG paths, a message protocol). Each app has a reader that produces that description and a writer that rebuilds native layers from it, so four readers and four writers cover all twelve routes instead of twelve converters.\n\n2. A bridge on your own machine: the first LazyLord panel you open quietly runs a relay on ws://localhost:7878, and the other panels and the Figma plugin connect to it. There is no separate program or console window, and nothing leaves the computer.\n\n3. Update in place with edit detection: sending again replaces what was built before, keeping its position and grouping. If a layer was changed by hand, LazyLord asks before overwriting it.\n\n4. Live mode: keep one app updating as you work in another.\n\n5. Honest reporting: anything an app cannot rebuild, such as inner shadows in After Effects, is listed on the transfer instead of being silently dropped.\n\n6. Figma extras: image scale from 1x to 4x, an option to send complex layers as images that is remembered in the file, and a new document or composition at the frame's size when everything sent sits inside one frame.\n\n7. Friction-free install: a .bat installer on Windows and a .command on macOS, with no Node.js or extension manager. A helper script copies the Figma plugin somewhere permanent and puts its path on the clipboard, leaving three clicks.\n\n8. Free forever: open source under the MIT licence, for Windows and macOS, with Adobe apps from 2021 onwards.",
+			'highlights_bn'=> array(
+				'Figma, Photoshop, Illustrator ও After Effects, চারটি অ্যাপের যেকোনোটি থেকে যেকোনোটিতে, মোট বারোটি পথ',
+				'বেজিয়ে পাথ, এডিটযোগ্য লাইভ টেক্সট আর ছবি নেটিভ লেয়ার হিসেবে পৌঁছায়, স্ক্রিনশট হয়ে নয়',
+				'আবার পাঠালে আগের লেয়ার জায়গায় থেকেই হালনাগাদ হয়',
+				'হাতে করা এডিট শনাক্ত করে ওভাররাইটের আগে জিজ্ঞেস করে',
+				'লাইভ মোড: এক অ্যাপে কাজ, অন্য অ্যাপ সঙ্গে সঙ্গে হালনাগাদ',
+				'যা পুনর্গঠন করা যায় না তার স্পষ্ট তালিকা, নীরবে বাদ দেওয়া নয়',
+				'TypeScript-এ অ্যাপ-নিরপেক্ষ মধ্যবর্তী বর্ণনা: চারটি reader ও চারটি writer',
+				'সম্পূর্ণ লোকাল: ws://localhost:7878 ব্রিজ, কোনো ক্লাউড, অ্যাকাউন্ট বা আপলোড নেই',
+				'Figma থেকে ১x–৪x ইমেজ স্কেল ও লেয়ারকে ছবি হিসেবে পাঠানোর অপশন',
+				'উইন্ডোজ ও macOS-এ এক-ক্লিক ইনস্টলার, Node.js লাগে না',
+				'MIT লাইসেন্সে ফ্রি ও ওপেন সোর্স, Overlord-এর পূর্ণ বিকল্প'
+			),
+			'highlights_en'=> array(
+				'Any of Figma, Photoshop, Illustrator and After Effects to any other: twelve routes',
+				'Bézier paths, live editable text and images arrive as native layers, not screenshots',
+				'Send again to update what was built before, right where it sits',
+				'Detects hand edits and asks before overwriting them',
+				'Live mode keeps one app updating as you work in another',
+				'Lists anything an app cannot rebuild instead of silently dropping it',
+				'App-neutral intermediate representation in TypeScript: four readers, four writers',
+				'Fully local: a ws://localhost:7878 bridge with no cloud, account or uploads',
+				'Figma image scale from 1x to 4x and an option to send layers as images',
+				'One-click installers for Windows and macOS, no Node.js required',
+				'Free and open source under MIT, a complete Overlord alternative'
+			),
+			'tags'        => array( 'Adobe CEP', 'ExtendScript', 'Figma Plugin', 'TypeScript', 'Photoshop', 'Illustrator', 'After Effects', 'WebSocket' ),
+			'accent'      => '#6c4cff',
+			'icon'        => 'extension',
+			'image'       => get_template_directory_uri() . '/assets/img/lazylord.svg',
+			'image_fit'   => 'cover',
+			'action_type' => 'code',
+			'action_bn'   => 'ফ্রি ডাউনলোড',
+			'action_en'   => 'Download Free',
+			'direct_url'  => 'https://github.com/raisulsohan/LazyLord/releases/latest',
+			'github_url'  => 'https://github.com/raisulsohan/LazyLord',
+			'order'       => 5,
+		),
 	);
 }
 
@@ -1491,14 +1548,19 @@ add_action( 'admin_init', 'rs_seed_initial_portfolio_projects' );
  * 10. Sync Lazy-Image project to v2.2 specifications in the database
  */
 function rs_sync_lazy_image_portfolio_v2() {
-	if ( get_option( 'rs_portfolio_synced_lazyimage_v2_2' ) ) {
-		return;
-	}
-
+	/* The flag is written on the main site, so it has to be read there too;
+	   read on /en/ first, it was never found and the sync ran every request. */
 	$switched = false;
 	if ( is_multisite() && ! is_main_site() ) {
 		switch_to_blog( get_main_site_id() );
 		$switched = true;
+	}
+
+	if ( get_option( 'rs_portfolio_synced_lazyimage_v2_2' ) ) {
+		if ( $switched ) {
+			restore_current_blog();
+		}
+		return;
 	}
 
 	$posts = get_posts( array(
@@ -1564,4 +1626,70 @@ function rs_sync_lazy_image_portfolio_v2() {
 	}
 }
 add_action( 'init', 'rs_sync_lazy_image_portfolio_v2' );
+
+/**
+ * 11. Add the LazyLord project to an existing portfolio, once.
+ *
+ * The initial seed only runs on an empty portfolio, so a project added to
+ * the defaults later has to be inserted on its own. It goes to the top of
+ * the list, ahead of whatever order the projects were dragged into, and
+ * is never re-added once it exists (even if it is later trashed).
+ */
+function rs_sync_lazylord_portfolio() {
+	$switched = false;
+	if ( is_multisite() && ! is_main_site() ) {
+		switch_to_blog( get_main_site_id() );
+		$switched = true;
+	}
+
+	if ( ! get_option( 'rs_portfolio_added_lazylord' ) && get_option( 'rs_portfolio_seeded_v1' ) ) {
+		$exists = get_posts( array(
+			'post_type'      => 'rs_portfolio',
+			'name'           => 'lazylord',
+			'posts_per_page' => 1,
+			'post_status'    => 'any',
+			'fields'         => 'ids',
+		) );
+
+		$item = null;
+		foreach ( rs_get_default_portfolio_projects() as $d ) {
+			if ( 'lazylord' === $d['id'] ) {
+				$item = $d;
+				break;
+			}
+		}
+
+		if ( empty( $exists ) && $item ) {
+			$first = get_posts( array(
+				'post_type'      => 'rs_portfolio',
+				'posts_per_page' => 1,
+				'post_status'    => 'any',
+				'orderby'        => 'menu_order',
+				'order'          => 'ASC',
+			) );
+
+			$post_id = wp_insert_post( array(
+				'post_type'   => 'rs_portfolio',
+				'post_status' => 'publish',
+				'post_name'   => 'lazylord',
+				'post_title'  => $item['title_en'],
+				'menu_order'  => $first ? (int) $first[0]->menu_order - 1 : 0,
+			) );
+
+			if ( $post_id && ! is_wp_error( $post_id ) ) {
+				foreach ( array( 'category', 'type_bn', 'type_en', 'badge_bn', 'badge_en', 'title_bn', 'title_en', 'summary_bn', 'summary_en', 'role_bn', 'role_en', 'context_bn', 'context_en', 'challenge_bn', 'challenge_en', 'solution_bn', 'solution_en', 'highlights_bn', 'highlights_en', 'accent', 'icon', 'image', 'image_fit', 'action_type', 'action_bn', 'action_en', 'direct_url', 'github_url' ) as $field ) {
+					update_post_meta( $post_id, '_rs_portfolio_' . $field, $item[ $field ] );
+				}
+				update_post_meta( $post_id, '_rs_portfolio_tags', implode( ', ', $item['tags'] ) );
+			}
+		}
+
+		update_option( 'rs_portfolio_added_lazylord', 1 );
+	}
+
+	if ( $switched ) {
+		restore_current_blog();
+	}
+}
+add_action( 'init', 'rs_sync_lazylord_portfolio', 20 );
 
