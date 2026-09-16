@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.6.4-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.6.5-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -17,7 +17,7 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 - **A motion designer's hero:** an animated After Effects-style speed graph, a timeline whose playhead scrubs across keyframes for motion design, automation and open source, and live counts of projects worked out from the portfolio itself.
 - **A toolbox strip** with Ae, Pr, Ps, Ai and Figma beside the code stack.
 - **Image-first project cards** in each project's own colour, with a glow that follows the pointer. The first project in the admin order becomes the full-width featured card; drag another to the top to feature it.
-- **In-place pagination** that never reloads: four projects to a page, the featured card counting as one; category filters with live counts; cards rise in as a page changes.
+- **In-place pagination** that never reloads: the featured card on its own row with four projects under it, four to each page after; category filters with live counts; cards rise in as a page changes.
 - **The case study pop-up** joins the same dark stage, and emoji icons give way to keyframe-diamond markers.
 - Respects reduced-motion settings and works from 375 px phones up.
 

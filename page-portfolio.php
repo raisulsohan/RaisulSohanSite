@@ -523,7 +523,8 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	var paginationEl = document.getElementById('rs-portfolio-pagination');
 	var gridEl       = document.getElementById('rs-portfolio-grid');
 
-	/* Four projects to a page, the featured card counting as one. */
+	/* Four cards to a page, two rows of two. The featured card sits above
+	   them on its own full row and is not one of the four. */
 	var PER_PAGE  = 4;
 	var curFilter = 'all';
 	var curPage   = 1;
@@ -549,8 +550,9 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		var i = 0;
 
 		while (i < list.length) {
-			pages.push(list.slice(i, i + PER_PAGE));
-			i += PER_PAGE;
+			var size = (0 === pages.length && list[i].classList.contains('is-featured')) ? PER_PAGE + 1 : PER_PAGE;
+			pages.push(list.slice(i, i + size));
+			i += size;
 		}
 
 		return pages;
