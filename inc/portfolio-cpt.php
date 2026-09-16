@@ -2243,3 +2243,53 @@ function rs_portfolio_keep_project_address( $redirect ) {
 	return get_query_var( 'rs_project' ) ? false : $redirect;
 }
 add_filter( 'redirect_canonical', 'rs_portfolio_keep_project_address' );
+
+/**
+ * 14. GitHub numbers in the dashboard: their state, and a refresh button.
+ *
+ * The site is served from a full page cache, so WordPress's own cron runs
+ * rarely. The Portfolio screen shows when the numbers were last fetched,
+ * what went wrong if anything did, and fetches them on request.
+ */
+function rs_github_admin_notice() {
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+	if ( ! $screen || 'edit-rs_portfolio' !== $screen->id || ! current_user_can( 'edit_posts' ) ) {
+		return;
+	}
+
+	$gh      = get_site_option( 'rs_github_stats', array() );
+	$fetched = empty( $gh['fetched'] ) ? 'কখনো না' : human_time_diff( (int) $gh['fetched'], time() ) . ' আগে';
+	$repos   = isset( $gh['repos'] ) ? count( (array) $gh['repos'] ) : 0;
+	$errors  = empty( $gh['errors'] ) ? 'কোনো ত্রুটি নেই' : 'ত্রুটি: ' . implode( ', ', (array) $gh['errors'] );
+	$latest  = empty( $gh['latest']['repo'] ) ? 'নেই' : $gh['latest']['repo'];
+	$url     = wp_nonce_url( admin_url( 'admin-post.php?action=rs_refresh_github' ), 'rs_refresh_github' );
+	$done    = isset( $_GET['rs_github'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display only.
+
+	printf(
+		'<div class="notice %1$s"><p><strong>GitHub:</strong> শেষ আনা হয়েছে %2$s · %3$d টি repo · সর্বশেষ কমিট: %4$s · %5$s &nbsp; <a class="button button-small" href="%6$s">এখনই আনুন</a></p></div>',
+		esc_attr( $done ? ( $repos ? 'notice-success' : 'notice-warning' ) : 'notice-info' ),
+		esc_html( $fetched ),
+		(int) $repos,
+		esc_html( $latest ),
+		esc_html( $errors ),
+		esc_url( $url )
+	);
+}
+add_action( 'admin_notices', 'rs_github_admin_notice' );
+
+/**
+ * admin-post: fetch the GitHub numbers now.
+ */
+function rs_github_refresh_now() {
+	if ( ! current_user_can( 'edit_posts' ) ) {
+		wp_die( esc_html__( 'You are not allowed to do this.', 'raisul-sohan' ) );
+	}
+
+	check_admin_referer( 'rs_refresh_github' );
+	rs_refresh_github_stats();
+
+	wp_safe_redirect( admin_url( 'edit.php?post_type=rs_portfolio&rs_github=done' ) );
+	exit;
+}
+add_action( 'admin_post_rs_refresh_github', 'rs_github_refresh_now' );
