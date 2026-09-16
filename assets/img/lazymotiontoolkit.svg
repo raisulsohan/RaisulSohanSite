@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1920" y2="1080" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#17131d"/>
+      <stop offset="1" stop-color="#0c0a10"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="900" y1="90" x2="1020" y2="210" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffc857"/>
+      <stop offset="1" stop-color="#f08a24"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <g fill="#3a3148">
+    <circle cx="920" cy="110" r="11"/><circle cx="960" cy="110" r="11"/><circle cx="1000" cy="110" r="11"/>
+    <circle cx="920" cy="150" r="11"/><circle cx="1000" cy="150" r="11"/>
+    <circle cx="920" cy="190" r="11"/><circle cx="960" cy="190" r="11"/><circle cx="1000" cy="190" r="11"/>
+  </g>
+  <circle cx="960" cy="150" r="16" fill="url(#amber)"/>
+  <text x="960" y="342" text-anchor="middle" fill="#ffffff" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="88" font-weight="700" letter-spacing="-2">LazyMotionToolkit</text>
+  <text x="960" y="404" text-anchor="middle" fill="#9a93b5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="36">Nine motion tools in one After Effects panel</text>
+  <g stroke="#2c2640" stroke-width="2" fill="#15121e">
+    <rect x="306" y="480" width="420" height="96" rx="16"/><rect x="750" y="480" width="420" height="96" rx="16"/><rect x="1194" y="480" width="420" height="96" rx="16"/>
+    <rect x="306" y="600" width="420" height="96" rx="16"/><rect x="750" y="600" width="420" height="96" rx="16" stroke="#f08a24"/><rect x="1194" y="600" width="420" height="96" rx="16"/>
+    <rect x="306" y="720" width="420" height="96" rx="16"/><rect x="750" y="720" width="420" height="96" rx="16"/><rect x="1194" y="720" width="420" height="96" rx="16"/>
+  </g>
+  <g fill="#f5a524">
+    <circle cx="350" cy="528" r="8"/><circle cx="794" cy="528" r="8"/><circle cx="1238" cy="528" r="8"/>
+    <circle cx="350" cy="648" r="8"/><circle cx="794" cy="648" r="8"/><circle cx="1238" cy="648" r="8"/>
+    <circle cx="350" cy="768" r="8"/><circle cx="794" cy="768" r="8"/><circle cx="1238" cy="768" r="8"/>
+  </g>
+  <g fill="#e9e6f2" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="34">
+    <text x="374" y="540">Smart Precomp</text><text x="818" y="540">Auto Text Box</text><text x="1262" y="540">Head to Line</text>
+    <text x="374" y="660">Fade Animator</text><text x="818" y="660">9-Point Anchor</text><text x="1262" y="660">Grid Designer</text>
+    <text x="374" y="780">QuickSwatch</text><text x="818" y="780">LazyStrike FX</text><text x="1262" y="780">LazyPreview</text>
+  </g>
+  <text x="960" y="940" text-anchor="middle" fill="#6f6885" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="28">Free and open source · After Effects 2020 and newer</text>
+</svg>

@@ -1517,6 +1517,63 @@ function rs_get_default_portfolio_projects() {
 			'github_url'  => 'https://github.com/raisulsohan/LazyKick',
 			'order'       => 4,
 		),
+		array(
+			'id'          => 'lazymotiontoolkit',
+			'category'    => 'tools',
+			'type_bn'     => 'After Effects ScriptUI ডক প্যানেল',
+			'type_en'     => 'After Effects ScriptUI Dockable Panel',
+			'badge_bn'    => 'ফ্রি ও ওপেন সোর্স • After Effects',
+			'badge_en'    => 'Free & Open Source • After Effects',
+			'title_bn'    => 'LazyMotionToolkit — After Effects-এর জন্য নয়টি মোশন টুলের এক প্যানেল',
+			'title_en'    => 'LazyMotionToolkit — Nine Motion Design Tools in One After Effects Panel',
+			'summary_bn'  => 'After Effects-এর জন্য একটি ডক করা যায় এমন প্যানেল, যেখানে মোশন ডিজাইনের নয়টি রোজকার কাজ এক জায়গায়: অ্যানিমেশন না হারিয়ে স্মার্ট প্রিকম্প, না-চ্যাপ্টা হওয়া অটো টেক্সট বক্স, সাতটি ইজিংয়ের ফেড, অ্যানিমেটেড তীর, 9-পয়েন্ট অ্যাঙ্কর প্যাড, গ্রিড, কালার সোয়াচ, বজ্রপাতের ইফেক্ট আর ব্যাকগ্রাউন্ডে প্রিভিউ রেন্ডার। কোনো প্লাগইন ছাড়া, ফ্রি ও ওপেন সোর্স।',
+			'summary_en'  => 'One dockable After Effects panel that gathers nine everyday motion design jobs: smart precomposing that keeps every animation, auto text boxes that never distort, fades with seven easing curves, animated arrows, a 9-point anchor pad, grids, colour swatches, lightning effects and background preview renders. No plugins, free and open source.',
+			'role_bn'     => 'একক ডেভেলপার ও মোশন টুলস ইঞ্জিনিয়ার',
+			'role_en'     => 'Solo Developer & Motion Tools Engineer',
+			'context_bn'  => 'After Effects ScriptUI • ExtendScript (ES3) • aerender',
+			'context_en'  => 'After Effects ScriptUI • ExtendScript (ES3) • aerender',
+			'challenge_bn'=> "মোশন ডিজাইনের দিনে অনেক ছোট কাজ বারবার হাতে করতে হয়: লেয়ার আলাদা প্রিকম্পে নেওয়া, টেক্সটের পেছনে বক্স বানিয়ে টেক্সটের সাথে মাপ মেলানো, ফেড ইন-আউটের কিফ্রেম বসানো, অ্যাঙ্কর পয়েন্ট ঠিক করা, গ্রিড টানা, রং বসানো, আর ভারী কম্প মসৃণভাবে দেখতে প্রিভিউ রেন্ডার। এগুলোর জন্য হয় আলাদা আলাদা স্ক্রিপ্ট, নয় পেইড প্লাগইন, আর প্রায়ই সেগুলো নীরবে কিছু ভেঙে দেয়।\n\nপ্রযুক্তিগত চ্যালেঞ্জ:\n১. কিছু না ভেঙে কাজ করা: প্রিকম্প করতে গিয়ে কিফ্রেম, ইফেক্ট, মাস্ক, টাইম রিম্যাপ বা প্যারেন্টিং হারানো চলবে না; অ্যাঙ্কর পয়েন্ট সরালে লেয়ার পর্দায় এক পিক্সেলও নড়বে না, অ্যানিমেটেড বা আলাদা X/Y পজিশনেও।\n২. বিকৃতি ছাড়া বক্স: প্রচলিত বক্স-মেকার লেয়ারের scale বদলায়, ফলে কোণের গোলাকার ভাব চ্যাপ্টা হয়ে যায়; টাইপরাইটার অ্যানিমেশনের সাথে বক্সকেও অক্ষর ধরে বাড়তে হবে।\n৩. ভারী কম্পের প্রিভিউ: aerender দিয়ে ব্যাকগ্রাউন্ডে রেন্ডার চালানো, শুধু নিজের রেন্ডারটাই বাতিল করা, রেন্ডার আসলেই শেষ হয়েছে তা নিশ্চিত জানা, আর বাংলার মতো অ-ইংরেজি অক্ষরের প্রজেক্ট ফোল্ডারেও কাজ করা।\n৪. ES3-এর সীমায় নির্ভরযোগ্যতা: পুরোনো ExtendScript ইঞ্জিনে লেখা কোডকে যেকোনো ভাষার After Effects-এ চালানো, আর কোনো লেয়ার প্রক্রিয়া করা না গেলে নীরবে ব্যর্থ না হয়ে কারণ জানানো।",
+			'challenge_en'=> "A motion design day is full of small jobs done by hand again and again: moving layers into their own precomps, building a box behind text and keeping it sized to the text, keyframing fades, fixing anchor points, drawing grids, applying colours, and rendering previews to watch heavy comps smoothly. The usual answer is a pile of separate scripts or paid plugins, which often break something quietly.\n\nTechnical challenges:\n1. Changing nothing by accident: precomposing must not lose keyframes, effects, masks, time remapping or parenting, and moving an anchor point must not shift the layer by a pixel, even with animated or separated X/Y position.\n2. Boxes without distortion: typical box makers scale the layer, which squashes rounded corners, and the box has to grow letter by letter with a typewriter animation.\n3. Previews of heavy comps: running aerender in the background, cancelling only that render, knowing for certain when it has finished, and working from project folders with non-English letters such as Bengali.\n4. Reliability within ES3: old ExtendScript code that works in After Effects in any language, and that explains why a layer could not be processed instead of failing silently.",
+			'solution_bn' => "১. স্মার্ট প্রিকম্প: Precomp (1:1) প্রতিটি লেয়ারকে আলাদা প্রিকম্পে নেয়। ফুটেজ, সলিড আর কম্পের সব অ্যাট্রিবিউট বাইরে থাকে, তাই কিফ্রেম, ইফেক্ট, মাস্ক, টাইম রিম্যাপ ও প্যারেন্ট অক্ষত; মাস্ক থাকলে সব কিফ্রেম, বেজিয়ে হ্যান্ডেল, ফেদার ও এক্সপ্যানশন হিসাব করে প্রিকম্প ঠিক ততটুকু ক্রপ হয়, আর কোনো ফ্রেমে কিছু নড়ে না। Group Precomp সব লেয়ার এক প্রিকম্পে নেয়, 3D লেয়ার থাকলে ক্যামেরা ঠিক রাখতে Collapse Transformations চালু করে।\n\n২. পিক্সেল-নিখুঁত অটো টেক্সট বক্স: লেয়ার scale নয়, শেপের আয়তক্ষেত্রের জ্যামিতিই বদলায়, তাই কোণ সবসময় নিখুঁত গোল। Text Animator আর Range Selector পড়ে টাইপরাইটারের সাথে বক্স অক্ষর ধরে বাড়ে, টেক্সটের opacity অনুসরণ করে, আর Padding, Roundness, Opacity, Color-এর নিজস্ব কন্ট্রোল থাকে।\n\n৩. Head to Line: যেকোনো পেন-পাথে এক ক্লিকে আট ধরনের মাথা (ত্রিভুজ, বৃত্ত, তারা ইত্যাদি) বসে, বাঁক ধরে নিজে ঘোরে; দুই মাথা, গোল কোণ, আর Trim Paths-এর সাথে আঁকা হওয়ার অ্যানিমেশন।\n\n৪. Fade Animator Pro: Linear থেকে Bounce ও Elastic পর্যন্ত সাতটি গাণিতিক ইজিং, ফ্রেমে সময় ও গতি নিয়ন্ত্রণ, লেয়ারের নিজের opacity মেনে চলা। আবার দিলে আগেরটা বদলায়, আর Clear শুধু টুলকিটের যোগ করা জিনিসই সরায়, ব্যবহারকারীর নিজের expression কখনো মোছে না।\n\n৫. 9-পয়েন্ট অ্যাঙ্কর প্যাড ও Center in Comp: প্রতিটি পজিশন কিফ্রেম আর আলাদা X/Y পজিশন হিসাব করে অ্যাঙ্কর সরায়, যাতে লেয়ার লাফ না দেয়; যা নিরাপদে করা যায় না তা কারণসহ বাদ দেয়।\n\n৬. Grid Designer ও QuickSwatch: প্রিসেট বা নিজের মাপে শেপ টাইল, আউটলাইন বা গাইড নাল দিয়ে গ্রিড (৪০০ ঘরের সীমাসহ); আর শেপ, টেক্সট ও সলিডে এক ক্লিকে ফিল বা স্ট্রোক দেওয়া রং-প্যালেট, যা রিস্টার্টের পরেও মনে থাকে।\n\n৭. LazyStrike FX: বজ্র, ফ্ল্যাশ আর আকাশের ঝলক, সময় ধরে বা অডিওর উচ্চ শব্দ ধরে। ইফেক্ট সেটিং match name দিয়ে খোঁজে, তাই যেকোনো ভাষার After Effects-এ চলে; পুরোটা এক undo ধাপ।\n\n৮. LazyPreview Render: work area ব্যাকগ্রাউন্ডে aerender দিয়ে H.264-এ রেন্ডার হয়, কাজ চলতে থাকে, শেষে কম্পের ওপরে solo করা প্রিভিউ লেয়ার হিসেবে বসে। Cancel শুধু এই রেন্ডারই থামায়, aerender সত্যি বন্ধ হলে তবেই শেষ ধরে, আর বাংলা নামের ফোল্ডারেও Windows short path দিয়ে কাজ করে।\n\n৯. যাচাই ও ইনস্টল: অফলাইন টেস্ট আর After Effects-এর ভেতরে চলা smoke test দিয়ে প্রতিটি পরিবর্তন যাচাই করা হয়েছে (AE 2026-এ)। উইন্ডোজ ও macOS-এর ইনস্টলার কম্পিউটারে থাকা সব After Effects-এ প্যানেলটা বসিয়ে দেয়; MIT লাইসেন্সে ফ্রি।",
+			'solution_en' => "1. Smart precomposing: Precomp (1:1) puts each layer in its own precomp. Footage, solids and comps keep every attribute outside, so keyframes, effects, masks, time remapping and parents are untouched; with masks, the precomp is cropped to exactly what they can ever show across all keyframes, Bézier handles, feather and expansion, and nothing moves at any frame. Group Precomp combines layers and turns on Collapse Transformations for 3D layers so they keep the scene camera.\n\n2. Pixel-perfect auto text box: it resizes the shape rectangle itself rather than the layer's scale, so corners stay perfectly round. It reads Text Animators and Range Selectors to grow letter by letter with a typewriter animation, follows the text's opacity, and adds its own Padding, Roundness, Opacity and Color controls.\n\n3. Head to Line: one click puts one of eight head styles on any pen path, rotating along every curve, with double-sided heads, rounded corners and Trim Paths draw-on animation.\n\n4. Fade Animator Pro: seven mathematical easings from Linear to Bounce and Elastic, duration in frames and a speed multiplier, respecting the layer's own opacity. Re-applying replaces the fade, and Clear removes only what the toolkit added, never an expression of your own.\n\n5. 9-point anchor pad and Center in Comp: moves the anchor while compensating every Position keyframe and separated X/Y position so the layer never jumps, and skips with a reason whatever cannot be done safely.\n\n6. Grid Designer and QuickSwatch: grids as shape tiles, outlines or guide nulls from presets or custom sizes, with a 400-cell guard; and a colour palette that fills or strokes shapes, text and solids in one click and is remembered across restarts.\n\n7. LazyStrike FX: lightning bolts, flashes and sky flashes, by timing or driven by audio peaks. Effect settings are found by match name, so it works in any After Effects language, and everything is one undo step.\n\n8. LazyPreview Render: renders the work area to H.264 with aerender in the background while you keep working, then drops it on top of the comp as a solo'd preview layer. Cancel stops only this render, completion is detected when aerender actually exits, and project folders with Bengali or other non-English names work through Windows short paths.\n\n9. Verified and easy to install: every change is checked by offline tests and a smoke test that runs inside After Effects (2026). Installers for Windows and macOS put the panel into every After Effects they find; free under the MIT licence.",
+			'highlights_bn'=> array(
+				'নয়টি মোশন টুল একটি ডক করা যায় এমন After Effects প্যানেলে',
+				'কিফ্রেম, ইফেক্ট, মাস্ক ও প্যারেন্ট অক্ষত রেখে স্মার্ট প্রিকম্প, মাস্কের মাপে নিখুঁত ক্রপ',
+				'লেয়ার scale ছাড়া অটো টেক্সট বক্স: কোণ সবসময় গোল, টাইপরাইটারের সাথে বাড়ে',
+				'যেকোনো পাথে আট ধরনের অ্যানিমেটেড তীরের মাথা, বাঁক ধরে নিজে ঘোরে',
+				'সাতটি গাণিতিক ইজিংয়ের ফেড, লেয়ারের নিজের opacity মেনে',
+				'লেয়ার না নড়িয়ে 9-পয়েন্ট অ্যাঙ্কর প্যাড, অ্যানিমেটেড পজিশনেও',
+				'প্রিসেটসহ গ্রিড ডিজাইনার আর রিস্টার্টেও মনে থাকা কালার প্যালেট',
+				'সময় বা অডিও ধরে বজ্রপাত ও ফ্ল্যাশ ইফেক্ট, যেকোনো ভাষার After Effects-এ',
+				'ব্যাকগ্রাউন্ডে aerender প্রিভিউ রেন্ডার, বাংলা নামের ফোল্ডারেও',
+				'কোনো লেয়ার বাদ পড়লে কারণসহ জানায়, নীরবে ব্যর্থ হয় না',
+				'অফলাইন ও After Effects-এর ভেতরের টেস্টে যাচাই করা; উইন্ডোজ ও macOS ইনস্টলার, MIT লাইসেন্স'
+			),
+			'highlights_en'=> array(
+				'Nine motion design tools in one dockable After Effects panel',
+				'Smart precomposing that keeps keyframes, effects, masks and parents, with exact mask cropping',
+				'Auto text boxes that never scale the layer: round corners, growing with the typewriter',
+				'Animated arrow heads in eight styles on any path, turning with every curve',
+				'Fades with seven mathematical easings that respect the layer\'s own opacity',
+				'A 9-point anchor pad that never moves the layer, even with animated position',
+				'Grid designer with presets and a colour palette remembered across restarts',
+				'Lightning and flash effects by timing or audio, in any After Effects language',
+				'Background aerender preview renders, even from Bengali-named folders',
+				'Explains every skipped layer instead of failing silently',
+				'Verified by offline and in-app tests; Windows and macOS installers, MIT licence'
+			),
+			'tags'        => array( 'After Effects', 'ExtendScript', 'ScriptUI', 'Motion Graphics', 'aerender', 'Automation' ),
+			'accent'      => '#f5a524',
+			'icon'        => 'extension',
+			'image'       => get_template_directory_uri() . '/assets/img/lazymotiontoolkit.svg',
+			'image_fit'   => 'cover',
+			'action_type' => 'code',
+			'action_bn'   => 'ফ্রি ডাউনলোড',
+			'action_en'   => 'Download Free',
+			'direct_url'  => 'https://github.com/raisulsohan/LazyMotionToolkit/releases/latest',
+			'github_url'  => 'https://github.com/raisulsohan/LazyMotionToolkit',
+			'order'       => 3,
+		),
 	);
 }
 
@@ -1702,7 +1759,7 @@ function rs_sync_new_portfolio_projects() {
 	}
 
 	if ( get_option( 'rs_portfolio_seeded_v1' ) ) {
-		foreach ( array( 'lazylord', 'lazykick' ) as $slug ) {
+		foreach ( array( 'lazylord', 'lazykick', 'lazymotiontoolkit' ) as $slug ) {
 			rs_add_portfolio_project_once( $slug );
 		}
 	}
