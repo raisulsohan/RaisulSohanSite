@@ -1,0 +1,158 @@
+/* ==========================================================================
+   24. Command palette (Ctrl+K)
+   ========================================================================== */
+
+.rs-cmdk {
+	position: fixed;
+	inset: 0;
+	z-index: 120;
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	padding: min(14vh, 7rem) 16px 16px;
+	background: var(--rs-scrim, rgba(6, 4, 20, 0.6));
+	-webkit-backdrop-filter: blur(4px);
+	backdrop-filter: blur(4px);
+}
+
+.rs-cmdk[hidden] {
+	display: none;
+}
+
+.rs-cmdk__panel {
+	display: flex;
+	flex-direction: column;
+	width: min(640px, 100%);
+	max-height: min(70vh, 560px);
+	overflow: hidden;
+	border-radius: 16px;
+	border: 1px solid var(--rs-border-60, rgba(0, 0, 0, 0.12));
+	background: var(--rs-bg);
+	box-shadow: var(--rs-shadow-2xl, 0 25px 50px -12px rgba(0, 0, 0, 0.45));
+	animation: rs-cmdk-in 0.18s ease-out;
+}
+
+@keyframes rs-cmdk-in {
+	from {
+		opacity: 0;
+		transform: translateY(-8px) scale(0.98);
+	}
+}
+
+.rs-cmdk__field {
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+	padding: 0.85rem 1rem;
+	border-bottom: 1px solid var(--rs-border-40, rgba(0, 0, 0, 0.08));
+	color: var(--rs-muted-fg);
+}
+
+.rs-cmdk__field svg {
+	flex: none;
+	width: 18px;
+	height: 18px;
+}
+
+.rs-cmdk__input {
+	flex: 1;
+	min-width: 0;
+	padding: 0.3rem 0;
+	border: 0;
+	outline: 0;
+	background: transparent;
+	font: 500 1.02rem/1.4 var(--rs-sans);
+	color: var(--rs-fg);
+}
+
+.rs-cmdk__input::placeholder {
+	color: var(--rs-muted-fg);
+}
+
+.rs-cmdk kbd {
+	display: inline-block;
+	min-width: 1.6em;
+	padding: 0.05rem 0.4rem;
+	border-radius: 5px;
+	border: 1px solid var(--rs-border-60, rgba(0, 0, 0, 0.15));
+	border-bottom-width: 2px;
+	font: 600 0.68rem/1.5 ui-monospace, "Cascadia Code", Consolas, monospace;
+	text-align: center;
+	color: var(--rs-muted-fg);
+}
+
+.rs-cmdk__list {
+	flex: 1;
+	margin: 0;
+	padding: 0.4rem;
+	overflow-y: auto;
+	list-style: none;
+	overscroll-behavior: contain;
+}
+
+.rs-cmdk__group {
+	padding: 0.7rem 0.7rem 0.3rem;
+	font-size: 0.7rem;
+	font-weight: 600;
+	color: var(--rs-muted-fg);
+}
+
+.rs-cmdk__item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 0.6rem 0.75rem;
+	border-radius: 10px;
+	font-size: 0.95rem;
+	color: var(--rs-fg);
+	cursor: pointer;
+}
+
+.rs-cmdk__item.is-active {
+	background: var(--rs-muted);
+	box-shadow: inset 3px 0 0 var(--rs-hover);
+}
+
+.rs-cmdk__label {
+	min-width: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.rs-cmdk__hint {
+	flex: none;
+	max-width: 45%;
+	overflow: hidden;
+	font-size: 0.76rem;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	color: var(--rs-muted-fg);
+}
+
+.rs-cmdk__empty {
+	padding: 1.5rem 0.75rem;
+	text-align: center;
+	color: var(--rs-muted-fg);
+}
+
+.rs-cmdk__foot {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem 1.2rem;
+	padding: 0.6rem 1rem;
+	border-top: 1px solid var(--rs-border-40, rgba(0, 0, 0, 0.08));
+	font-size: 0.74rem;
+	color: var(--rs-muted-fg);
+}
+
+.rs-cmdk-open {
+	overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.rs-cmdk__panel {
+		animation: none;
+	}
+}

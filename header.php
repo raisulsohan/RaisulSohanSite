@@ -37,7 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php
 			$rs_portfolio_url = home_url( '/portfolio/' );
 			$rs_req_path      = isset( $_SERVER['REQUEST_URI'] ) ? trim( (string) parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' ) : '';
-			$rs_is_portfolio  = ( 'portfolio' === $rs_req_path || 'en/portfolio' === $rs_req_path || preg_match( '~(?:^|/)portfolio/?$~i', $rs_req_path ) );
+			$rs_is_portfolio  = ( 'portfolio' === $rs_req_path || 'en/portfolio' === $rs_req_path || preg_match( '~(?:^|/)portfolio(?:/[^/]+)?/?$~i', $rs_req_path ) );
 			?>
 			<a class="rs-header__link<?php echo $rs_is_portfolio ? ' is-active' : ''; ?>" href="<?php echo esc_url( $rs_portfolio_url ); ?>"<?php echo $rs_is_portfolio ? ' aria-current="page"' : ''; ?>>
 				<?php echo esc_html( rs_is_en() ? 'Portfolio' : 'পোর্টফোলিও' ); ?>

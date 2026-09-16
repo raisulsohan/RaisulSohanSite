@@ -88,6 +88,23 @@ function rs_content_image_id( $post ) {
 function rs_share_image() {
 	$id = 0;
 
+	/* A project page shares its own artwork, when that is a picture
+	   social networks can show (they skip SVG) and its size is known. */
+	$project = function_exists( 'rs_current_project' ) ? rs_current_project() : null;
+
+	if ( $project && preg_match( '~\.(png|jpe?g|webp)$~i', (string) $project['image'] ) ) {
+		$path = str_replace( get_template_directory_uri(), get_template_directory(), $project['image'] );
+		$size = ( $path !== $project['image'] && is_readable( $path ) ) ? getimagesize( $path ) : false;
+
+		if ( $size ) {
+			return array(
+				'url'    => $project['image'],
+				'width'  => (int) $size[0],
+				'height' => (int) $size[1],
+			);
+		}
+	}
+
 	if ( is_singular() ) {
 		$post = get_post( get_queried_object_id() );
 
@@ -153,6 +170,20 @@ function rs_share_image() {
  */
 function rs_seo_context() {
 	$paged = max( 1, (int) get_query_var( 'paged' ) );
+
+	/* A project's own address describes the project, not the portfolio. */
+	$project = function_exists( 'rs_current_project' ) ? rs_current_project() : null;
+
+	if ( $project ) {
+		$name = rs_project_name( $project );
+
+		return array(
+			'title'       => $name[1] ? $name[0] . ': ' . $name[1] : $name[0],
+			'description' => rs_shorten( rs_is_en() ? $project['summary_en'] : $project['summary_bn'], 160 ),
+			'url'         => rs_project_url( $project['id'] ),
+			'type'        => 'article',
+		);
+	}
 
 	if ( is_singular() ) {
 		return array(

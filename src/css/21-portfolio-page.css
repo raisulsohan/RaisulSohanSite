@@ -2119,3 +2119,317 @@ button.rs-pf-page:hover {
 		transform: translate(var(--dx), 108vh) rotate(var(--r));
 	}
 }
+
+/* --------------------------------------------------------------------------
+   Project addresses, shared curves, "now building"
+   -------------------------------------------------------------------------- */
+
+/* Card titles and the case study button are real links now. */
+.rs-pf-card__title a {
+	color: var(--pf-text);
+	text-decoration: none;
+}
+
+.rs-pf-card__title a:hover {
+	color: #fff;
+}
+
+.rs-pf-card__cta {
+	text-decoration: none;
+}
+
+/* The word that dances to the ease. */
+.rs-pf__graph-track i {
+	width: auto;
+	height: 22px;
+	margin-top: -11px;
+	padding: 0 0.55rem;
+	left: calc(var(--p, 0) * (100% - 3.2rem));
+	border-radius: 999px;
+	font: 600 0.66rem/22px ui-monospace, "Cascadia Code", Consolas, monospace;
+	font-style: normal;
+	letter-spacing: 0.04em;
+	color: #fff;
+}
+
+.rs-pf__graph-shared {
+	margin-left: 0.4rem;
+	padding: 0.12rem 0.45rem;
+	border-radius: 999px;
+	background: var(--pf-key);
+	font-style: normal;
+	color: #0c0a13;
+}
+
+.rs-pf__graph.is-shared {
+	box-shadow: 0 0 0 1px rgba(255, 209, 102, 0.55), 0 40px 90px -40px rgba(255, 209, 102, 0.45);
+}
+
+/* Now building */
+.rs-pf-now {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.3rem 0.6rem;
+	max-width: 100%;
+	margin-top: 1.5rem;
+	padding: 0.5rem 0.9rem;
+	border-radius: 14px;
+	border: 1px solid var(--pf-line);
+	background: rgba(16, 13, 25, 0.6);
+	font-size: 0.84rem;
+	color: var(--pf-text2);
+	text-decoration: none;
+	transition: border-color 0.2s ease;
+}
+
+.rs-pf-now:hover {
+	border-color: var(--pf-green);
+	color: var(--pf-text2);
+}
+
+.rs-pf-now__dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--pf-green);
+	animation: rs-pf-live 1.8s ease-out infinite;
+}
+
+@keyframes rs-pf-live {
+	from {
+		box-shadow: 0 0 0 0 rgba(61, 220, 151, 0.6);
+	}
+
+	to {
+		box-shadow: 0 0 0 8px rgba(61, 220, 151, 0);
+	}
+}
+
+.rs-pf-now__label {
+	font-size: 0.74rem;
+	font-weight: 600;
+	color: var(--pf-green);
+}
+
+.rs-pf-now strong {
+	color: var(--pf-text);
+}
+
+.rs-pf-now time {
+	font: 0.74rem/1.4 ui-monospace, "Cascadia Code", Consolas, monospace;
+	color: var(--pf-muted);
+}
+
+.rs-pf-now__msg {
+	max-width: 34ch;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	color: var(--pf-muted);
+}
+
+.rs-pf-now__msg::before {
+	content: "“";
+}
+
+.rs-pf-now__msg::after {
+	content: "”";
+}
+
+/* A project at its own address */
+.rs-pf--project {
+	padding-top: clamp(1.5rem, 4vw, 3rem);
+}
+
+.rs-pf-project {
+	--a: #6c4cff;
+	max-width: 880px;
+}
+
+.rs-pf-project__crumbs a {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	min-height: 40px;
+	font-size: 0.9rem;
+	color: var(--pf-muted);
+	text-decoration: none;
+}
+
+.rs-pf-project__crumbs a:hover {
+	color: var(--pf-text);
+}
+
+.rs-pf-project__crumbs svg {
+	width: 16px;
+	height: 16px;
+}
+
+.rs-pf-project__head {
+	margin-top: 1.5rem;
+}
+
+.rs-pf-project__title {
+	font-size: clamp(2.3rem, 6vw, 3.7rem);
+}
+
+.rs-pf-project__tagline {
+	margin: 0.8rem 0 0;
+	font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+	line-height: 1.65;
+	color: var(--pf-text2);
+	text-wrap: balance;
+}
+
+.rs-pf-project__meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem 1rem;
+	margin: 1rem 0 0;
+	font-size: 0.88rem;
+	color: var(--pf-muted);
+}
+
+.rs-pf-project__head .rs-pf-card__stats {
+	margin-top: 1rem;
+}
+
+.rs-pf-project__media {
+	overflow: hidden;
+	margin: 2.25rem 0 0;
+	border-radius: 22px;
+	border: 1px solid var(--pf-line);
+	background: radial-gradient(120% 120% at 0% 0%, #2a2150, var(--pf-bg0));
+	background: radial-gradient(120% 120% at 0% 0%, color-mix(in srgb, var(--a) 35%, var(--pf-bg1)), var(--pf-bg0));
+	box-shadow: 0 40px 90px -45px rgba(108, 76, 255, 0.6);
+	box-shadow: 0 40px 90px -45px color-mix(in srgb, var(--a) 70%, transparent);
+}
+
+.rs-pf-project__media img {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+.rs-pf-project__media.is-contain {
+	padding: 6% 10%;
+	background: #eef0f6;
+}
+
+.rs-pf-project__media.is-contain img {
+	max-height: 420px;
+	object-fit: contain;
+}
+
+.rs-pf-project__body {
+	margin-top: 2.5rem;
+}
+
+.rs-pf-project__lead {
+	margin: 0;
+	font-size: clamp(1.1rem, 2.2vw, 1.25rem);
+	line-height: 1.9;
+	color: var(--pf-text);
+}
+
+.rs-pf-project__section {
+	margin-top: 2.75rem;
+}
+
+.rs-pf-project__section .rs-ba,
+.rs-pf-project__section .rs-pf-card__tags {
+	margin-top: 1rem;
+}
+
+.rs-pf-project__text {
+	margin-top: 1rem;
+	font-size: 1.02rem;
+	line-height: 1.95;
+	color: var(--pf-text2);
+}
+
+.rs-pf-project__text p {
+	margin: 0 0 1rem;
+}
+
+.rs-pf-project__list {
+	display: grid;
+	gap: 0.6rem;
+	margin: 1rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.rs-pf-project__list li {
+	position: relative;
+	padding-left: 1.4rem;
+	line-height: 1.8;
+	color: var(--pf-text2);
+}
+
+.rs-pf-project__list li::before {
+	content: "";
+	position: absolute;
+	top: 0.72em;
+	left: 0.15rem;
+	width: 7px;
+	height: 7px;
+	border-radius: 1px;
+	transform: rotate(45deg);
+	background: var(--pf-brand3);
+	background: color-mix(in srgb, var(--a) 65%, #fff);
+}
+
+.rs-pf-project__pager {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1rem;
+	margin-top: 3.5rem;
+	padding-top: 2rem;
+	border-top: 1px solid var(--pf-line-soft);
+}
+
+.rs-pf-project__step {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	padding: 1rem 1.2rem;
+	border-radius: 16px;
+	border: 1px solid var(--pf-line);
+	background: rgba(16, 13, 25, 0.6);
+	color: var(--pf-text);
+	text-decoration: none;
+	transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.rs-pf-project__step:hover {
+	border-color: var(--pf-brand2);
+	color: var(--pf-text);
+	transform: translateY(-2px);
+}
+
+.rs-pf-project__step span {
+	font-size: 0.78rem;
+	color: var(--pf-muted);
+}
+
+.rs-pf-project__step strong {
+	font-size: 1.05rem;
+}
+
+.rs-pf-project__step.is-next {
+	grid-column: 2;
+	text-align: right;
+}
+
+@media (max-width: 560px) {
+	.rs-pf-project__pager {
+		grid-template-columns: 1fr;
+	}
+
+	.rs-pf-project__step.is-next {
+		grid-column: auto;
+		text-align: left;
+	}
+}

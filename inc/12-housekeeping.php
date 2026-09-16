@@ -213,9 +213,11 @@ function rs_hreflang() {
 			$pair[ $other ] = get_category_link( $twin );
 		}
 		restore_current_blog();
-	} elseif ( preg_match( '~(?:^|/)portfolio$~i', $req ) ) {
-		$pair[ $here ]  = get_home_url( $here, '/portfolio/' );
-		$pair[ $other ] = get_home_url( $other, '/portfolio/' );
+	} elseif ( preg_match( '~(?:^|/)portfolio(?:/([^/]+))?$~i', $req, $rs_pm ) ) {
+		/* Projects live on the main site and show on both, under one slug. */
+		$rs_sub         = ! empty( $rs_pm[1] ) ? $rs_pm[1] . '/' : '';
+		$pair[ $here ]  = get_home_url( $here, '/portfolio/' . $rs_sub );
+		$pair[ $other ] = get_home_url( $other, '/portfolio/' . $rs_sub );
 	} elseif ( is_page() ) {
 		$id            = get_queried_object_id();
 		$pair[ $here ] = get_permalink( $id );

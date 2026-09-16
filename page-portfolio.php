@@ -31,6 +31,9 @@ $rs_is_en = rs_is_en();
 
 /* ---- Portfolio Projects & Case Studies Data (Dynamic Dashboard CPT & Fallback) ---- */
 $projects = function_exists( 'rs_get_portfolio_projects' ) ? rs_get_portfolio_projects() : array();
+
+/* A project's own address (/portfolio/<slug>/) renders its case study. */
+$rs_project = function_exists( 'rs_current_project' ) ? rs_current_project() : null;
 ?>
 
 <?php
@@ -63,6 +66,176 @@ $rs_arrow_right = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>';
 ?>
 
+<?php if ( $rs_project ) : ?>
+<?php
+$pp       = $rs_project;
+$pp_name  = rs_project_name( $pp );
+$pp_acc   = sanitize_hex_color( $pp['accent'] );
+$pp_acc   = $pp_acc ? $pp_acc : '#6c4cff';
+$pp_list  = array_values( $projects );
+$pp_index = 0;
+foreach ( $pp_list as $pp_i => $pp_item ) {
+	if ( $pp_item['id'] === $pp['id'] ) {
+		$pp_index = $pp_i;
+	}
+}
+$pp_prev = $pp_index > 0 ? $pp_list[ $pp_index - 1 ] : null;
+$pp_next = $pp_index < count( $pp_list ) - 1 ? $pp_list[ $pp_index + 1 ] : null;
+$pp_gh   = ! empty( $pp['github_url'] ) && function_exists( 'rs_github_stats' ) ? rs_github_stats( $pp['github_url'] ) : null;
+$pp_ld   = array(
+	'@context'    => 'https://schema.org',
+	'@type'       => 'video' === $pp['category'] ? 'VideoObject' : ( 'web' === $pp['category'] ? 'WebSite' : 'SoftwareApplication' ),
+	'name'        => $pp_name[0],
+	'description' => $rs_is_en ? $pp['summary_en'] : $pp['summary_bn'],
+	'url'         => rs_project_url( $pp['id'] ),
+	'creator'     => array(
+		'@type' => 'Person',
+		'name'  => rs_brand(),
+		'url'   => home_url( '/' ),
+	),
+	'keywords'    => implode( ', ', $pp['tags'] ),
+);
+if ( ! empty( $pp['image'] ) ) {
+	$pp_ld[ 'video' === $pp['category'] ? 'thumbnailUrl' : 'image' ] = $pp['image'];
+}
+if ( ! empty( $pp['github_url'] ) ) {
+	$pp_ld['sameAs'] = $pp['github_url'];
+}
+if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
+	$pp_ld['applicationCategory'] = 'DesignApplication';
+	$pp_ld['offers']              = array(
+		'@type'         => 'Offer',
+		'price'         => '0',
+		'priceCurrency' => 'USD',
+	);
+}
+?>
+<main class="rs-pf rs-pf--project" id="rs-content">
+	<div class="rs-pf__glow rs-pf__glow--a" aria-hidden="true"></div>
+	<div class="rs-pf__glow rs-pf__glow--b" aria-hidden="true"></div>
+
+	<article class="rs-pf__wrap rs-pf-project" style="--a: <?php echo esc_attr( $pp_acc ); ?>">
+		<nav class="rs-pf-project__crumbs" aria-label="<?php echo esc_attr( $rs_is_en ? 'Breadcrumb' : 'অবস্থান' ); ?>">
+			<a href="<?php echo esc_url( home_url( '/portfolio/' ) ); ?>">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+				<?php echo esc_html( $rs_is_en ? 'All work' : 'সব কাজ' ); ?>
+			</a>
+		</nav>
+
+		<header class="rs-pf-project__head">
+			<p class="rs-pf__eyebrow"><?php echo esc_html( $rs_is_en ? $pp['type_en'] : $pp['type_bn'] ); ?></p>
+			<h1 class="rs-pf__title rs-pf-project__title"><?php echo esc_html( $pp_name[0] ); ?></h1>
+			<?php if ( $pp_name[1] ) : ?>
+				<p class="rs-pf-project__tagline"><?php echo esc_html( $pp_name[1] ); ?></p>
+			<?php endif; ?>
+			<p class="rs-pf-project__meta">
+				<span><?php echo esc_html( $rs_is_en ? $pp['role_en'] : $pp['role_bn'] ); ?></span>
+				<span><?php echo esc_html( $rs_is_en ? $pp['context_en'] : $pp['context_bn'] ); ?></span>
+			</p>
+			<?php if ( $pp_gh ) : ?>
+				<ul class="rs-pf-card__stats">
+					<li><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.2l2.7 5.5 6 .9-4.35 4.25 1 6L12 17l-5.35 2.85 1-6L3.3 9.6l6-.9z"/></svg><span class="rs-pf-sr"><?php echo esc_html( $rs_is_en ? 'GitHub stars:' : 'GitHub স্টার:' ); ?></span> <?php echo esc_html( $rs_num( number_format_i18n( $pp_gh['stars'] ) ) ); ?></li>
+					<?php if ( $pp_gh['downloads'] ) : ?>
+						<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="rs-pf-sr"><?php echo esc_html( $rs_is_en ? 'Downloads:' : 'ডাউনলোড:' ); ?></span> <?php echo esc_html( $rs_num( number_format_i18n( $pp_gh['downloads'] ) ) ); ?></li>
+					<?php endif; ?>
+					<?php if ( $pp_gh['version'] ) : ?>
+						<li class="rs-pf-card__ver"><?php echo esc_html( $pp_gh['version'] ); ?></li>
+					<?php endif; ?>
+				</ul>
+			<?php endif; ?>
+			<div class="rs-pf__actions">
+				<?php if ( ! empty( $pp['direct_url'] ) ) : ?>
+					<a class="rs-pf-btn rs-pf-btn--primary" href="<?php echo esc_url( $pp['direct_url'] ); ?>" target="_blank" rel="noopener noreferrer">
+						<?php echo esc_html( $rs_is_en ? $pp['action_en'] : $pp['action_bn'] ); ?>
+						<?php echo $rs_arrow_out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
+					</a>
+				<?php endif; ?>
+				<?php if ( ! empty( $pp['github_url'] ) && $pp['github_url'] !== $pp['direct_url'] ) : ?>
+					<a class="rs-pf-btn rs-pf-btn--ghost" href="<?php echo esc_url( $pp['github_url'] ); ?>" target="_blank" rel="noopener noreferrer">GitHub</a>
+				<?php endif; ?>
+			</div>
+		</header>
+
+		<?php if ( ! empty( $pp['image'] ) ) : ?>
+			<figure class="rs-pf-project__media<?php echo ( 'contain' === $pp['image_fit'] ) ? ' is-contain' : ''; ?>">
+				<img src="<?php echo esc_url( $pp['image'] ); ?>" alt="<?php echo esc_attr( $pp_name[0] ); ?>" decoding="async">
+			</figure>
+		<?php endif; ?>
+
+		<div class="rs-pf-project__body">
+			<p class="rs-pf-project__lead"><?php echo esc_html( $rs_is_en ? $pp['summary_en'] : $pp['summary_bn'] ); ?></p>
+
+			<?php if ( ! empty( $pp['before'] ) && ! empty( $pp['after'] ) ) : ?>
+				<section class="rs-pf-project__section">
+					<h2 class="rs-pf-h"><?php echo esc_html( $rs_is_en ? 'Before & after' : 'আগে ও পরে' ); ?></h2>
+					<div class="rs-ba" style="--ba: 50%">
+						<img class="rs-ba__img" src="<?php echo esc_url( $pp['after'] ); ?>" alt="<?php echo esc_attr( $rs_is_en ? 'After' : 'পরে' ); ?>">
+						<img class="rs-ba__img rs-ba__img--before" src="<?php echo esc_url( $pp['before'] ); ?>" alt="<?php echo esc_attr( $rs_is_en ? 'Before' : 'আগে' ); ?>">
+						<span class="rs-ba__line" aria-hidden="true"><span></span></span>
+						<span class="rs-ba__tag rs-ba__tag--before" aria-hidden="true"><?php echo esc_html( $rs_is_en ? 'Before' : 'আগে' ); ?></span>
+						<span class="rs-ba__tag rs-ba__tag--after" aria-hidden="true"><?php echo esc_html( $rs_is_en ? 'After' : 'পরে' ); ?></span>
+						<input class="rs-ba__range" type="range" min="0" max="100" value="50" data-rs-ba-range aria-label="<?php echo esc_attr( $rs_is_en ? 'Compare before and after' : 'আগে ও পরে তুলনা করুন' ); ?>">
+					</div>
+				</section>
+			<?php endif; ?>
+
+			<?php
+			$pp_sections = array(
+				array( $rs_is_en ? 'The challenge' : 'চ্যালেঞ্জ ও প্রেক্ষাপট', $rs_is_en ? $pp['challenge_en'] : $pp['challenge_bn'] ),
+				array( $rs_is_en ? 'The solution' : 'সমাধান ও কর্মপ্রক্রিয়া', $rs_is_en ? $pp['solution_en'] : $pp['solution_bn'] ),
+			);
+			?>
+			<?php foreach ( $pp_sections as $pp_section ) : ?>
+				<?php if ( trim( $pp_section[1] ) ) : ?>
+					<section class="rs-pf-project__section">
+						<h2 class="rs-pf-h"><?php echo esc_html( $pp_section[0] ); ?></h2>
+						<div class="rs-pf-project__text"><?php echo wp_kses_post( wpautop( esc_html( $pp_section[1] ) ) ); ?></div>
+					</section>
+				<?php endif; ?>
+			<?php endforeach; ?>
+
+			<?php $pp_hl = $rs_is_en ? $pp['highlights_en'] : $pp['highlights_bn']; ?>
+			<?php if ( $pp_hl ) : ?>
+				<section class="rs-pf-project__section">
+					<h2 class="rs-pf-h"><?php echo esc_html( $rs_is_en ? 'Highlights' : 'মূল দিকগুলো' ); ?></h2>
+					<ul class="rs-pf-project__list">
+						<?php foreach ( $pp_hl as $pp_line ) : ?>
+							<li><?php echo esc_html( $pp_line ); ?></li>
+						<?php endforeach; ?>
+					</ul>
+				</section>
+			<?php endif; ?>
+
+			<?php if ( $pp['tags'] ) : ?>
+				<section class="rs-pf-project__section">
+					<h2 class="rs-pf-h"><?php echo esc_html( $rs_is_en ? 'Built with' : 'ব্যবহৃত টুলস' ); ?></h2>
+					<ul class="rs-pf-card__tags">
+						<?php foreach ( $pp['tags'] as $tag ) : ?>
+							<li class="rs-pf-tag"><?php echo esc_html( $tag ); ?></li>
+						<?php endforeach; ?>
+					</ul>
+				</section>
+			<?php endif; ?>
+		</div>
+
+		<nav class="rs-pf-project__pager" aria-label="<?php echo esc_attr( $rs_is_en ? 'More projects' : 'আরও কাজ' ); ?>">
+			<?php foreach ( array( array( $pp_prev, $rs_is_en ? 'Previous' : 'আগের কাজ', 'is-prev' ), array( $pp_next, $rs_is_en ? 'Next' : 'পরের কাজ', 'is-next' ) ) as $pp_link ) : ?>
+				<?php if ( $pp_link[0] ) : ?>
+					<?php $pp_link_name = rs_project_name( $pp_link[0] ); ?>
+					<a class="rs-pf-project__step <?php echo esc_attr( $pp_link[2] ); ?>" href="<?php echo esc_url( rs_project_url( $pp_link[0]['id'] ) ); ?>">
+						<span><?php echo esc_html( $pp_link[1] ); ?></span>
+						<strong><?php echo esc_html( $pp_link_name[0] ); ?></strong>
+					</a>
+				<?php else : ?>
+					<span></span>
+				<?php endif; ?>
+			<?php endforeach; ?>
+		</nav>
+	</article>
+
+	<script type="application/ld+json"><?php echo wp_json_encode( $pp_ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ); ?></script>
+</main>
+<?php else : ?>
 <main class="rs-pf" id="rs-content">
 	<div class="rs-pf__glow rs-pf__glow--a" aria-hidden="true"></div>
 	<div class="rs-pf__glow rs-pf__glow--b" aria-hidden="true"></div>
@@ -125,6 +298,22 @@ $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 					</div>
 				<?php endif; ?>
 			</dl>
+
+			<?php $rs_latest = function_exists( 'rs_github_latest_commit' ) ? rs_github_latest_commit() : null; ?>
+			<?php if ( $rs_latest ) : ?>
+				<a class="rs-pf-now rs-pf-rise rs-pf-rise--3" href="<?php echo esc_url( $rs_latest['url'] ); ?>" target="_blank" rel="noopener noreferrer">
+					<span class="rs-pf-now__dot" aria-hidden="true"></span>
+					<span class="rs-pf-now__label"><?php echo esc_html( $rs_is_en ? 'Now building' : 'এখন বানাচ্ছি' ); ?></span>
+					<strong><?php echo esc_html( $rs_latest['repo'] ); ?></strong>
+					<?php if ( $rs_latest['date'] && strtotime( $rs_latest['date'] ) ) : ?>
+						<?php $rs_latest_ago = human_time_diff( strtotime( $rs_latest['date'] ), time() ); ?>
+						<time datetime="<?php echo esc_attr( $rs_latest['date'] ); ?>"><?php echo esc_html( $rs_is_en ? $rs_latest_ago . ' ago' : rs_bn_digits( $rs_latest_ago ) . ' আগে' ); ?></time>
+					<?php endif; ?>
+					<?php if ( $rs_latest['message'] ) : ?>
+						<span class="rs-pf-now__msg"><?php echo esc_html( mb_substr( $rs_latest['message'], 0, 80 ) ); ?></span>
+					<?php endif; ?>
+				</a>
+			<?php endif; ?>
 		</div>
 
 		<?php
@@ -133,7 +322,7 @@ $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 		$rs_hand = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12"/><path d="M11 11.5v-2a1.5 1.5 0 0 1 3 0V12"/><path d="M14 10.5a1.5 1.5 0 0 1 3 0V12"/><path d="M17 11.5a1.5 1.5 0 0 1 3 0V16a6 6 0 0 1-6 6h-2a6 6 0 0 1-5-2.7L4.3 15a1.5 1.5 0 0 1 2.4-1.8L8 15"/></svg>';
 		?>
 		<div class="rs-pf__graph rs-pf-rise rs-pf-rise--2" aria-hidden="true" data-rs-graph>
-			<div class="rs-pf__graph-bar"><span>Speed Graph</span><span data-rs-graph-readout>Influence 43% · 43%</span></div>
+			<div class="rs-pf__graph-bar"><span>Speed Graph <em class="rs-pf__graph-shared" data-rs-graph-shared hidden><?php echo esc_html( $rs_is_en ? 'shared curve' : 'শেয়ার করা কার্ভ' ); ?></em></span><span data-rs-graph-readout>Influence 43% · 43%</span></div>
 			<div class="rs-pf__graph-plot">
 				<svg viewBox="0 0 360 230" fill="none">
 					<defs>
@@ -178,7 +367,8 @@ $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 			<div class="rs-pf__graph-foot">
 				<code data-rs-graph-code>cubic-bezier(0.43, 0.00, 0.57, 1.00)</code>
 				<button type="button" tabindex="-1" class="rs-pf__graph-copy" data-rs-graph-copy data-done="<?php echo esc_attr( $rs_is_en ? 'Copied' : 'কপি হয়েছে' ); ?>"><?php echo esc_html( $rs_is_en ? 'Copy' : 'কপি' ); ?></button>
-				<span class="rs-pf__graph-track"><i data-rs-graph-ball></i></span>
+				<button type="button" tabindex="-1" class="rs-pf__graph-copy" data-rs-graph-share data-done="<?php echo esc_attr( $rs_is_en ? 'Link copied' : 'লিংক কপি হয়েছে' ); ?>"><?php echo esc_html( $rs_is_en ? 'Share' : 'শেয়ার' ); ?></button>
+				<span class="rs-pf__graph-track"><i data-rs-graph-ball>ease</i></span>
 			</div>
 			<span class="rs-pf-hint" data-rs-hint="graph"><?php echo $rs_hand; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?><?php echo esc_html( $rs_is_en ? 'Go on, drag me' : 'ধরে টানুন তো!' ); ?></span>
 		</div>
@@ -291,6 +481,7 @@ $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 				$pf_domain  = ! empty( $p['direct_url'] ) ? preg_replace( '#^https?://(?:www\.)?([^/]+).*$#', '$1', $p['direct_url'] ) : '';
 				$pf_label   = ( $rs_is_en ? 'Case study: ' : 'কেস স্টাডি: ' ) . $pf_name;
 				$pf_gh      = isset( $rs_gh[ $p['id'] ] ) ? $rs_gh[ $p['id'] ] : null;
+				$pf_url     = function_exists( 'rs_project_url' ) ? rs_project_url( $p['id'] ) : '#';
 				$pf_yt      = ( 'video' === $p['category'] && preg_match( '~(?:youtu\.be/|youtube\.com/(?:watch\?v=|shorts/|embed/))([A-Za-z0-9_-]{11})~', (string) $p['direct_url'], $pf_ytm ) ) ? $pf_ytm[1] : '';
 				?>
 				<article class="rs-portfolio-card rs-pf-card rs-pf-card--<?php echo esc_attr( $p['category'] ); ?><?php echo $pf_feature ? ' is-featured' : ''; ?>" data-category="<?php echo esc_attr( $p['category'] ); ?>" data-project-id="<?php echo esc_attr( $p['id'] ); ?>" id="project-<?php echo esc_attr( $p['id'] ); ?>" style="--a: <?php echo esc_attr( $pf_accent ); ?>">
@@ -326,7 +517,7 @@ $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 						<p class="rs-pf-card__type"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></p>
 
 						<h3 class="rs-pf-card__title">
-							<button type="button" class="rs-open-case-study" data-project-id="<?php echo esc_attr( $p['id'] ); ?>"><?php echo esc_html( $pf_name ); ?></button>
+							<a class="rs-open-case-study" href="<?php echo esc_url( $pf_url ); ?>" data-project-id="<?php echo esc_attr( $p['id'] ); ?>"><?php echo esc_html( $pf_name ); ?></a>
 						</h3>
 
 						<?php if ( $pf_tagline ) : ?>
@@ -369,10 +560,10 @@ $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 						<?php endif; ?>
 
 						<div class="rs-pf-card__foot">
-							<button type="button" class="rs-pf-card__cta rs-open-case-study" data-project-id="<?php echo esc_attr( $p['id'] ); ?>" aria-label="<?php echo esc_attr( $pf_label ); ?>">
+							<a class="rs-pf-card__cta rs-open-case-study" href="<?php echo esc_url( $pf_url ); ?>" data-project-id="<?php echo esc_attr( $p['id'] ); ?>" aria-label="<?php echo esc_attr( $pf_label ); ?>">
 								<?php echo esc_html( $rs_is_en ? 'Case study' : 'কেস স্টাডি' ); ?>
 								<?php echo $rs_arrow_right; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
-							</button>
+							</a>
 							<?php if ( ! empty( $p['direct_url'] ) ) : ?>
 								<a class="rs-pf-card__link" href="<?php echo esc_url( $p['direct_url'] ); ?>" target="_blank" rel="noopener noreferrer">
 									<?php echo esc_html( $rs_is_en ? $p['action_en'] : $p['action_bn'] ); ?>
@@ -432,6 +623,7 @@ $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 		</div>
 	</section>
 </main>
+<?php endif; ?>
 
 <!-- =========================================================================
      Case Study Pop-up Modal (Native .rs-overlay Architecture)
@@ -591,6 +783,7 @@ foreach ( $projects as $p ) {
 		'action_label'=> $rs_is_en ? $p['action_en'] : $p['action_bn'],
 		'direct_url'  => $p['direct_url'],
 		'github_url'  => ! empty( $p['github_url'] ) ? $p['github_url'] : '',
+		'url'         => function_exists( 'rs_project_url' ) ? rs_project_url( $p['id'] ) : '',
 		'before'      => ! empty( $p['before'] ) ? esc_url_raw( $p['before'] ) : '',
 		'after'       => ! empty( $p['after'] ) ? esc_url_raw( $p['after'] ) : '',
 	);
@@ -772,6 +965,19 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	applyFilterAndPagination('init');
 
 	/* 2. Case Study Pop-up Modal Logic */
+	var portfolioPath  = window.location.pathname.replace(/portfolio\/[^\/]+\/?$/, 'portfolio/');
+	var portfolioTitle = document.title;
+
+	window.addEventListener('popstate', function(e) {
+		var id = e.state && e.state.rsProject;
+
+		if (id && projectsMap[id]) {
+			openCaseStudy(id, true);
+		} else {
+			closeCaseStudy(true);
+		}
+	});
+
 	var rawData = document.getElementById('rs-portfolio-data');
 	if (!rawData) return;
 
@@ -832,9 +1038,23 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		if (lightboxImg) lightboxImg.src = '';
 	}
 
-	function openCaseStudy(projectId) {
+	function openCaseStudy(projectId, fromHistory) {
 		var p = projectsMap[projectId];
 		if (!p || !overlay) return;
+
+		/* The case study has its own address; opening it here moves the
+		   browser there, so it can be shared, and Back closes it. */
+		if (fromHistory !== true && window.history && window.history.pushState) {
+			var state = { rsProject: projectId };
+			var addr  = portfolioPath + encodeURIComponent(projectId) + '/' + window.location.search;
+
+			if (window.history.state && window.history.state.rsProject) {
+				window.history.replaceState(state, '', addr);
+			} else {
+				window.history.pushState(state, '', addr);
+			}
+		}
+		document.title = p.title.split(/\s+[—–]\s+/)[0] + ' — ' + portfolioTitle;
 
 		var isEn = document.documentElement.lang.indexOf('en') === 0;
 
@@ -974,9 +1194,17 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		if (topBtn) topBtn.classList.remove('is-visible');
 	}
 
-	function closeCaseStudy() {
+	function closeCaseStudy(fromHistory) {
 		closeLightbox();
 		if (!overlay || overlay.hidden) return;
+
+		/* Opened by a push: step back, and popstate finishes the close. */
+		if (fromHistory !== true && window.history && window.history.state && window.history.state.rsProject) {
+			window.history.back();
+			return;
+		}
+
+		document.title = portfolioTitle;
 		overlay.hidden = true;
 		document.body.style.overflow = '';
 		if (topBtn) topBtn.classList.remove('is-visible');
@@ -999,6 +1227,10 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	// Attach click handlers to triggers
 	document.querySelectorAll('.rs-open-case-study').forEach(function(trigger) {
 		trigger.addEventListener('click', function(e) {
+			/* A new-tab click goes to the project's own page. */
+			if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || (e.button && e.button !== 0)) {
+				return;
+			}
 			e.preventDefault();
 			var pid = this.getAttribute('data-project-id');
 			if (pid) {
@@ -1102,6 +1334,32 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	} catch (e) {}
 
 	var hints = Array.prototype.slice.call(stage.querySelectorAll('[data-rs-hint]'));
+	var fromLink = false;
+
+	/* Copy to the clipboard, with the old way as a fallback. */
+	function copyText(text, onDone) {
+		function legacy() {
+			var ta = document.createElement('textarea');
+			ta.value = text;
+			ta.setAttribute('readonly', '');
+			ta.style.position = 'fixed';
+			ta.style.opacity = '0';
+			document.body.appendChild(ta);
+			ta.select();
+			try {
+				if (document.execCommand('copy')) {
+					onDone();
+				}
+			} catch (err) {}
+			document.body.removeChild(ta);
+		}
+
+		if (navigator.clipboard && navigator.clipboard.writeText) {
+			navigator.clipboard.writeText(text).then(onDone, legacy);
+		} else {
+			legacy();
+		}
+	}
 
 	function capture(el, e) {
 		try {
@@ -1412,6 +1670,53 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 				}
 
 				legacyCopy();
+			});
+		}
+
+		/* A curve someone shared arrives in the address: ?ease=x1,y1,x2,y2 */
+		var sharedEase = (window.location.search.match(/[?&]ease=([^&#]+)/) || [])[1];
+
+		if (sharedEase) {
+			var nums = decodeURIComponent(sharedEase).split(',').map(parseFloat);
+
+			if (4 === nums.length && nums.every(function (n) { return isFinite(n); })) {
+				G.p = [[clamp(nums[0], 0, 1), clamp(nums[1], -0.25, 1.25)], [clamp(nums[2], 0, 1), clamp(nums[3], -0.25, 1.25)]];
+				fromLink = true;
+				markPreset(null);
+				graph.classList.add('is-shared');
+
+				var sharedTag = graph.querySelector('[data-rs-graph-shared]');
+				if (sharedTag) {
+					sharedTag.hidden = false;
+				}
+			}
+		}
+
+		/* Share the curve as a link. */
+		var shareBtn = graph.querySelector('[data-rs-graph-share]');
+
+		if (shareBtn) {
+			var shareLabel = shareBtn.textContent;
+
+			shareBtn.addEventListener('click', function () {
+				var v = [G.p[0][0], G.p[0][1], G.p[1][0], G.p[1][1]].map(fixed).join(',');
+				var url = window.location.origin + window.location.pathname.replace(/portfolio\/[^\/]+\/?$/, 'portfolio/') + '?ease=' + v;
+
+				markPlayed();
+
+				if (navigator.share && window.matchMedia && window.matchMedia('(hover: none)').matches) {
+					navigator.share({ title: document.title, text: 'cubic-bezier(' + v.split(',').join(', ') + ')', url: url }).catch(function () {});
+					return;
+				}
+
+				copyText(url, function () {
+					shareBtn.textContent = shareBtn.getAttribute('data-done') + ' ✓';
+					shareBtn.classList.add('is-done');
+					window.setTimeout(function () {
+						shareBtn.textContent = shareLabel;
+						shareBtn.classList.remove('is-done');
+					}, 1800);
+				});
 			});
 		}
 
@@ -1919,7 +2224,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 				T.hint.classList.add('is-on');
 			}
 
-			if (G && !reduce) {
+			if (G && !reduce && !fromLink) {
 				demo();
 			}
 		}, 1900);

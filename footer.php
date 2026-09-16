@@ -25,6 +25,7 @@ $rs_about = rs_about();
 <footer class="rs-footer">
 	<div class="rs-wrap">
 		<span><?php echo esc_html( rs_footer_text() ); ?></span>
+		<a class="rs-footer__link" href="<?php echo esc_url( home_url( '/timeline/' ) ); ?>"><?php echo esc_html( rs_is_en() ? 'Story timeline' : 'লেখার টাইমলাইন' ); ?></a>
 		<a class="rs-footer__link" href="<?php echo esc_url( home_url( '/privacy/' ) ); ?>"><?php echo esc_html( rs_is_en() ? 'Privacy' : 'গোপনীয়তা' ); ?></a>
 	</div>
 </footer>

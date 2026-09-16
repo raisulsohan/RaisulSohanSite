@@ -1875,6 +1875,17 @@ function rs_github_stats( $url ) {
 		return null;
 	}
 
+	$all = rs_github_stats_store();
+
+	return isset( $all['repos'][ $slug ] ) ? $all['repos'][ $slug ] : null;
+}
+
+/**
+ * The stored GitHub numbers, asking for a refresh when they are stale.
+ *
+ * @return array
+ */
+function rs_github_stats_store() {
 	$all = get_site_option( 'rs_github_stats', array() );
 
 	if ( empty( $all['fetched'] ) || ( time() - (int) $all['fetched'] ) > 12 * HOUR_IN_SECONDS ) {
@@ -1883,7 +1894,18 @@ function rs_github_stats( $url ) {
 		}
 	}
 
-	return isset( $all['repos'][ $slug ] ) ? $all['repos'][ $slug ] : null;
+	return is_array( $all ) ? $all : array();
+}
+
+/**
+ * The most recent commit across the author's repositories, or null.
+ *
+ * @return array|null { repo, message, date, url }
+ */
+function rs_github_latest_commit() {
+	$all = rs_github_stats_store();
+
+	return ! empty( $all['latest']['repo'] ) ? $all['latest'] : null;
 }
 
 /**
@@ -1948,12 +1970,249 @@ function rs_refresh_github_stats() {
 		$repos[ $slug ] = $data;
 	}
 
+	/* What is being built right now: the last commit on the repository
+	   the author pushed to most recently. */
+	$latest = isset( $old['latest'] ) ? $old['latest'] : null;
+	$owner  = '';
+
+	foreach ( array_keys( $slugs ) as $slug ) {
+		$owner = strtok( $slug, '/' );
+		break;
+	}
+
+	if ( $owner ) {
+		$response = wp_remote_get( 'https://api.github.com/users/' . rawurlencode( $owner ) . '/repos?type=owner&sort=pushed&per_page=1', $args );
+
+		if ( ! is_wp_error( $response ) && 200 === (int) wp_remote_retrieve_response_code( $response ) ) {
+			$list = json_decode( wp_remote_retrieve_body( $response ), true );
+
+			if ( ! empty( $list[0]['full_name'] ) ) {
+				$response = wp_remote_get( 'https://api.github.com/repos/' . $list[0]['full_name'] . '/commits?per_page=1', $args );
+
+				if ( ! is_wp_error( $response ) && 200 === (int) wp_remote_retrieve_response_code( $response ) ) {
+					$commits = json_decode( wp_remote_retrieve_body( $response ), true );
+
+					if ( ! empty( $commits[0]['sha'] ) ) {
+						$message = isset( $commits[0]['commit']['message'] ) ? (string) $commits[0]['commit']['message'] : '';
+						$latest  = array(
+							'repo'    => sanitize_text_field( isset( $list[0]['name'] ) ? $list[0]['name'] : '' ),
+							'message' => sanitize_text_field( strtok( $message, "\n" ) ),
+							'date'    => sanitize_text_field( isset( $commits[0]['commit']['author']['date'] ) ? $commits[0]['commit']['author']['date'] : '' ),
+							'url'     => esc_url_raw( isset( $commits[0]['html_url'] ) ? $commits[0]['html_url'] : '' ),
+						);
+					}
+				}
+			}
+		}
+	}
+
 	update_site_option(
 		'rs_github_stats',
 		array(
 			'fetched' => time(),
 			'repos'   => $repos,
+			'latest'  => $latest,
 		)
 	);
 }
 add_action( 'rs_refresh_github_stats', 'rs_refresh_github_stats' );
+
+/**
+ * 13. A real address for every project: /portfolio/<slug>/.
+ *
+ * On the portfolio page the case study still opens in the pop-up, and the
+ * address changes with it. Opened directly (a shared link, a search result)
+ * the same address renders the case study as a page of its own.
+ */
+function rs_portfolio_rewrites() {
+	add_rewrite_rule( '^portfolio/([^/]+)/?$', 'index.php?pagename=portfolio&rs_project=$matches[1]', 'top' );
+}
+add_action( 'init', 'rs_portfolio_rewrites' );
+
+/**
+ * @param string[] $vars Public query vars.
+ * @return string[]
+ */
+function rs_portfolio_query_vars( $vars ) {
+	$vars[] = 'rs_project';
+	return $vars;
+}
+add_filter( 'query_vars', 'rs_portfolio_query_vars' );
+
+/**
+ * The project address for a slug, on the current site.
+ *
+ * @param string $slug Project slug.
+ * @return string
+ */
+function rs_project_url( $slug ) {
+	return home_url( '/portfolio/' . rawurlencode( $slug ) . '/' );
+}
+
+/**
+ * The project this request is about, or null.
+ *
+ * @return array|null
+ */
+function rs_current_project() {
+	static $found = null;
+
+	if ( null !== $found ) {
+		return $found ? $found : null;
+	}
+
+	$found = false;
+	$slug  = sanitize_title( (string) get_query_var( 'rs_project' ) );
+
+	if ( $slug && did_action( 'wp' ) ) {
+		foreach ( rs_get_portfolio_projects() as $project ) {
+			if ( $project['id'] === $slug ) {
+				$found = $project;
+				break;
+			}
+		}
+	}
+
+	return $found ? $found : null;
+}
+
+/**
+ * A project's display name: its title up to the dash.
+ *
+ * @param array $project Project.
+ * @return string[] { name, tagline }
+ */
+function rs_project_name( $project ) {
+	$title = rs_is_en() ? $project['title_en'] : $project['title_bn'];
+	$parts = preg_split( '/\s+[—–]\s+/u', $title, 2 );
+
+	return array( $parts[0], isset( $parts[1] ) ? $parts[1] : '' );
+}
+
+/**
+ * An address under /portfolio/ that names no project is a 404.
+ */
+function rs_portfolio_project_404() {
+	if ( get_query_var( 'rs_project' ) && ! rs_current_project() ) {
+		global $wp_query;
+		$wp_query->set_404();
+		status_header( 404 );
+		nocache_headers();
+	}
+}
+add_action( 'template_redirect', 'rs_portfolio_project_404', 1 );
+
+/**
+ * @param string $url Canonical URL.
+ * @return string
+ */
+function rs_portfolio_canonical( $url ) {
+	$project = rs_current_project();
+	return $project ? rs_project_url( $project['id'] ) : $url;
+}
+add_filter( 'get_canonical_url', 'rs_portfolio_canonical' );
+
+/**
+ * @param string $title Document title.
+ * @return string
+ */
+function rs_portfolio_document_title( $title ) {
+	$project = rs_current_project();
+
+	if ( ! $project ) {
+		return $title;
+	}
+
+	$name = rs_project_name( $project );
+
+	return $name[0] . ' — ' . ( rs_is_en() ? 'Portfolio' : 'পোর্টফোলিও' ) . ' — ' . rs_brand();
+}
+add_filter( 'pre_get_document_title', 'rs_portfolio_document_title', 20 );
+
+/**
+ * Every project in the sitemap.
+ */
+function rs_portfolio_sitemap_provider() {
+	if ( ! class_exists( 'WP_Sitemaps_Provider' ) || ( function_exists( 'rs_seo_plugin_active' ) && rs_seo_plugin_active() ) ) {
+		return;
+	}
+
+	if ( ! class_exists( 'RS_Portfolio_Sitemap' ) ) {
+		/**
+		 * Lists /portfolio/<slug>/ addresses.
+		 */
+		class RS_Portfolio_Sitemap extends WP_Sitemaps_Provider {
+			public function __construct() {
+				$this->name        = 'portfolio';
+				$this->object_type = 'portfolio';
+			}
+
+			public function get_url_list( $page_num, $object_subtype = '' ) {
+				$urls = array();
+
+				foreach ( rs_get_portfolio_projects() as $project ) {
+					$urls[] = array( 'loc' => rs_project_url( $project['id'] ) );
+				}
+
+				return $urls;
+			}
+
+			public function get_max_num_pages( $object_subtype = '' ) {
+				return 1;
+			}
+		}
+	}
+
+	wp_register_sitemap_provider( 'portfolio', new RS_Portfolio_Sitemap() );
+}
+add_action( 'init', 'rs_portfolio_sitemap_provider' );
+
+/**
+ * REST: the project list, for the command palette.
+ */
+function rs_rest_projects_route() {
+	register_rest_route(
+		'rs/v1',
+		'/projects',
+		array(
+			'methods'             => WP_REST_Server::READABLE,
+			'callback'            => 'rs_rest_projects',
+			'permission_callback' => '__return_true',
+		)
+	);
+}
+add_action( 'rest_api_init', 'rs_rest_projects_route' );
+
+/**
+ * @return WP_REST_Response
+ */
+function rs_rest_projects() {
+	$out = array();
+
+	foreach ( rs_get_portfolio_projects() as $project ) {
+		$name  = rs_project_name( $project );
+		$out[] = array(
+			'id'   => $project['id'],
+			'name' => $name[0],
+			'type' => rs_is_en() ? $project['type_en'] : $project['type_bn'],
+			'url'  => rs_project_url( $project['id'] ),
+		);
+	}
+
+	$response = rest_ensure_response( $out );
+	$response->header( 'Cache-Control', 'public, max-age=300, s-maxage=3600' );
+
+	return $response;
+}
+
+/**
+ * Core's canonical redirect would send /portfolio/<slug>/ back to the
+ * portfolio page it is routed through; a project address stays put.
+ *
+ * @param string|false $redirect Target.
+ * @return string|false
+ */
+function rs_portfolio_keep_project_address( $redirect ) {
+	return get_query_var( 'rs_project' ) ? false : $redirect;
+}
+add_filter( 'redirect_canonical', 'rs_portfolio_keep_project_address' );

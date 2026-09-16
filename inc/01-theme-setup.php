@@ -189,21 +189,23 @@ function rs_is_en() {
  */
 function rs_lang_switcher_data() {
 	$req          = isset( $_SERVER['REQUEST_URI'] ) ? trim( (string) parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' ) : '';
-	$is_portfolio = ( 'portfolio' === $req || 'en/portfolio' === $req || preg_match( '~(?:^|/)portfolio/?$~i', $req ) );
+	$is_portfolio = (bool) preg_match( '~(?:^|/)portfolio(?:/([^/]+))?/?$~i', $req, $rs_pm );
+	/* A project page switches to the same project in the other language. */
+	$portfolio    = '/portfolio/' . ( ! empty( $rs_pm[1] ) ? $rs_pm[1] . '/' : '' );
 
 	if ( rs_is_en() ) {
 		$main_id = function_exists( 'get_main_site_id' ) ? get_main_site_id() : 1;
-		$path    = $is_portfolio ? '/portfolio/' : '/';
+		$path    = $is_portfolio ? $portfolio : '/';
 		$url     = is_multisite() ? get_home_url( $main_id, $path ) : home_url( $path );
 		$label   = 'BN';
 		$title   = 'বাংলায় পড়ুন';
 	} else {
-		$path = $is_portfolio ? '/en/portfolio/' : '/en/';
+		$path = $is_portfolio ? '/en' . $portfolio : '/en/';
 		$url  = home_url( $path );
 		if ( is_multisite() ) {
 			$sites = get_sites( array( 'path' => '/en/', 'number' => 1 ) );
 			if ( ! empty( $sites ) ) {
-				$url = get_home_url( $sites[0]->blog_id, $is_portfolio ? '/portfolio/' : '/' );
+				$url = get_home_url( $sites[0]->blog_id, $is_portfolio ? $portfolio : '/' );
 			}
 		}
 		$label = 'EN';
@@ -313,6 +315,13 @@ function rs_ensure_pages() {
 				? 'Video editing, motion design, web development and browser extensions by Raisul Sohan.'
 				: 'রাইসুল সোহানের ভিডিও এডিটিং, মোশন ডিজাইন, ওয়েব ডেভেলপমেন্ট ও ব্রাউজার এক্সটেনশনের কাজ।',
 			'template' => 'page-portfolio.php',
+		),
+		'timeline'  => array(
+			'title'    => $en ? 'Story timeline' : 'লেখার টাইমলাইন',
+			'content'  => $en
+				? 'Every story laid out on a timeline: each category a layer, each story a clip.'
+				: 'সব লেখা একটা টাইমলাইনে সাজানো: প্রতিটি বিভাগ একটা লেয়ার, প্রতিটি লেখা একটা ক্লিপ।',
+			'template' => 'page-timeline.php',
 		),
 		'privacy'   => array(
 			'title'    => $en ? 'Privacy' : 'গোপনীয়তা',
