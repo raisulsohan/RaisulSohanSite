@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1920" y2="1080" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#16121f"/>
+      <stop offset="1" stop-color="#0c0a12"/>
+    </linearGradient>
+    <linearGradient id="bolt" x1="900" y1="150" x2="1020" y2="350" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#9999ff"/>
+      <stop offset="1" stop-color="#ea77ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <path d="M985 150 L895 272 H955 L930 360 L1025 230 H965 Z" fill="url(#bolt)"/>
+  <text x="960" y="478" text-anchor="middle" fill="#ffffff" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="96" font-weight="700" letter-spacing="-2">LazyKick</text>
+  <text x="960" y="540" text-anchor="middle" fill="#9a93b5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="36">One panel for After Effects &amp; Premiere Pro</text>
+  <g stroke="#2c2640" stroke-width="2" fill="#15121e">
+    <rect x="210" y="630" width="460" height="250" rx="20"/>
+    <rect x="730" y="630" width="460" height="250" rx="20"/>
+    <rect x="1250" y="630" width="460" height="250" rx="20"/>
+  </g>
+  <g stroke="#9999ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="262" y="672" width="52" height="64" rx="8"/>
+    <path d="M276 668 H300"/>
+    <path d="M334 704 H390 M372 688 L390 704 L372 720"/>
+  </g>
+  <g stroke="#c088ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="782" y="676" width="30" height="30" rx="6"/>
+    <path d="M789 691 L796 698 L806 684"/>
+    <path d="M832 684 H900 M832 700 H880 M782 726 H900"/>
+  </g>
+  <g stroke="#ea77ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M1302 690 V732 H1386 V698 H1344 L1334 688 H1302 Z"/>
+    <path d="M1412 710 H1446 M1432 696 L1446 710 L1432 724"/>
+  </g>
+  <g font-family="Inter, 'Segoe UI', system-ui, sans-serif">
+    <text x="262" y="806" fill="#ffffff" font-size="40" font-weight="600">QuickPaste</text>
+    <text x="262" y="850" fill="#8b86a3" font-size="28">Clipboard to timeline</text>
+    <text x="782" y="806" fill="#ffffff" font-size="40" font-weight="600">Notes &amp; Tasks</text>
+    <text x="782" y="850" fill="#8b86a3" font-size="28">[00:01:24:12] stamps</text>
+    <text x="1302" y="806" fill="#ffffff" font-size="40" font-weight="600">Watch Bins</text>
+    <text x="1302" y="850" fill="#8b86a3" font-size="28">Folders import themselves</text>
+  </g>
+  <text x="960" y="960" text-anchor="middle" fill="#6f6885" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="28">Free and open source · Windows &amp; macOS</text>
+</svg>

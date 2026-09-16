@@ -1460,6 +1460,63 @@ function rs_get_default_portfolio_projects() {
 			'github_url'  => 'https://github.com/raisulsohan/LazyLord',
 			'order'       => 5,
 		),
+		array(
+			'id'          => 'lazykick',
+			'category'    => 'tools',
+			'type_bn'     => 'অ্যাডোবি CEP ওয়ার্কফ্লো প্যানেল',
+			'type_en'     => 'Adobe CEP Workflow Panel',
+			'badge_bn'    => 'ফ্রি ও ওপেন সোর্স • AE ও Premiere Pro',
+			'badge_en'    => 'Free & Open Source • AE & Premiere Pro',
+			'title_bn'    => 'LazyKick — After Effects ও Premiere Pro-র জন্য ক্লিপবোর্ড থেকে টাইমলাইন, প্রজেক্ট নোট ও স্বয়ংক্রিয় ইমপোর্ট',
+			'title_en'    => 'LazyKick — Clipboard to Timeline, Project Notes & Auto-Import for After Effects and Premiere Pro',
+			'summary_bn'  => 'After Effects আর Premiere Pro-র জন্য একটি ডক করা যায় এমন প্যানেল, যা এডিটিংয়ের তিনটি রোজকার ঝামেলা একসাথে মেটায়: ক্লিপবোর্ডের ছবি এক ক্লিকে প্রজেক্টের পাশে সেভ হয়ে প্লেহেডে টাইমলাইনে বসে যায়, প্রতিটি প্রজেক্টের নিজস্ব নোট থাকে টাইমকোড স্ট্যাম্পসহ, আর নির্দিষ্ট ফোল্ডারে নতুন মিডিয়া এলে তা নিজে থেকেই বিনে ইমপোর্ট হয়। ফ্রি ও ওপেন সোর্স।',
+			'summary_en'  => 'A dockable panel for After Effects and Premiere Pro that folds three everyday editing chores into one place: a clipboard image is saved next to the project and placed on the timeline at the playhead in one click, every project keeps its own notes with timecode stamps, and watched folders import new media into bins by themselves. Free and open source.',
+			'role_bn'     => 'একক ডেভেলপার ও ক্রিয়েটিভ টুলস ইঞ্জিনিয়ার',
+			'role_en'     => 'Solo Developer & Creative Tools Engineer',
+			'context_bn'  => 'Adobe CEP ৯–১২ + ExtendScript • Node.js • সাইন করা ZXP',
+			'context_en'  => 'Adobe CEP 9–12 + ExtendScript • Node.js • Signed ZXP',
+			'challenge_bn'=> "ভিডিও এডিটিংয়ের দিনে তিনটি ছোট কাজ বারবার ফিরে আসে এবং প্রতিবার মনোযোগ ভাঙে। একটা স্ক্রিনশট বা রেফারেন্স ছবি টাইমলাইনে আনতে হলে সেটা ফাইল হিসেবে সেভ করা, ইমপোর্ট করা, খুঁজে টেনে আনা লাগে। ক্লায়েন্টের ফিডব্যাক আর কাজের তালিকা থাকে অন্য কোনো অ্যাপে, যেখানে টাইমকোড নেই। আর ডাউনলোড বা ক্লায়েন্ট ফোল্ডারে নতুন ফুটেজ এলে প্রতিবার হাতে ইমপোর্ট করে ঠিক বিনে রাখতে হয়।\n\nপ্রযুক্তিগত চ্যালেঞ্জ:\n১. টাইমলাইন অক্ষত রাখা: Premiere Pro-তে ছবি বসাতে গিয়ে পরের ক্লিপ ডানে সরে যাওয়া বা কোনো ক্লিপ ঢাকা পড়া চলবে না।\n২. অসমাপ্ত ও দ্বৈত ইমপোর্ট: কপি হতে থাকা ফাইল অর্ধেক অবস্থায় ইমপোর্ট হওয়া, একই ফাইল দুবার আসা, বা ব্যর্থ ফাইল চিরকালের জন্য 'ইমপোর্ট হয়েছে' ধরে নেওয়া ঠেকাতে হবে।\n৩. প্রজেক্ট চেনা: নোট আর ওয়াচ বিনকে সঠিক প্রজেক্টের সাথে বাঁধতে হবে, এমনকি সেভ না হওয়া After Effects প্রজেক্টেও, আর প্রজেক্ট বদলানোর মাঝখানে ভুল প্রজেক্টে লেখা বা ইমপোর্ট যাওয়া চলবে না।\n৪. পুরোনো CEP-এর সীমা ও ঝামেলাহীন ইনস্টল: CEP 9-এর Chromium 61 আর Node 8-এর মধ্যেই কোড রাখা, আর ব্যবহারকারীকে debug mode বা এক্সটেনশন ম্যানেজার ছাড়াই ইনস্টল করানো।",
+			'challenge_en'=> "Three small tasks keep returning through an editing day, and each one breaks concentration. Getting a screenshot or reference image onto the timeline means saving a file, importing it, then finding and dragging it in. Client feedback and to-do lists live in another app with no timecodes. And whenever new footage lands in a downloads or client folder, it has to be imported by hand and filed into the right bin.\n\nTechnical challenges:\n1. Leaving the edit untouched: placing an image in Premiere Pro must never push later clips to the right or cover an existing clip.\n2. Half-copied and duplicate imports: files still being copied must not be imported half-written, the same file must not arrive twice, and a file that failed once must not be remembered as imported forever.\n3. Knowing the project: notes and watch bins must stay tied to the right project, including unsaved After Effects projects, and nothing may be written or imported into the wrong project while the user switches between them.\n4. Old CEP limits and a painless install: the panel code has to run inside CEP 9's Chromium 61 and Node 8, and install without debug mode or an extension manager.",
+			'solution_bn' => "১. QuickPaste, ক্লিপবোর্ড থেকে টাইমলাইন: স্ক্রিনশট, যেকোনো অ্যাপ থেকে কপি করা ছবি, এমনকি Explorer বা Finder-এ কপি করা ইমেজ ফাইল এক ক্লিকে (বা Ctrl/Cmd+V) প্রজেক্ট ফোল্ডারে সেভ হয়; PNG-র স্বচ্ছতা অক্ষত থাকে। MD5 ইনডেক্স একই ছবি চিনে ফেলে, তাই কিছুই দুবার ইমপোর্ট হয় না, আর কোনো ফাইল ওভাররাইটও হয় না।\n- After Effects: সক্রিয় কম্পোজিশনে বর্তমান সময় থেকে লেয়ার যোগ হয়, ডিফল্টভাবে guide layer হিসেবে (কাজের সময় দেখা যায়, রেন্ডারে আসে না), বড় ছবি ঐচ্ছিকভাবে কম্পের মাপে ছোট হয়; পুরোটা এক undo ধাপ।\n- Premiere Pro: প্লেহেডে ছবির পুরো সময়জুড়ে ফাঁকা থাকা সবচেয়ে নিচের আনলক ভিডিও ট্র্যাকে শুধু ফাঁকা জায়গায় ওভাররাইট করে বসে। কোনো ক্লিপ সরে না, ঢাকা পড়ে না; জায়গা না থাকলে ছবি বিনে থেকে যায় এবং প্যানেল কারণ জানায়।\n- শেষ ১২টি পেস্টের গ্যালারি রিস্টার্টের পরেও থাকে।\n\n২. Notes & Tasks: প্রতিটি প্রজেক্টের নোট স্বয়ংক্রিয়ভাবে সেভ হয় এবং After Effects ও Premiere Pro দুই জায়গায় একই থাকে। সেভ না হওয়া প্রজেক্টের নোট সেভ করার সময় প্রজেক্টের সাথে চলে যায়। একাধিক ট্যাব, সব প্রজেক্টে শেয়ার করা গ্লোবাল স্ক্র্যাচপ্যাড, চেকলিস্ট, আর অ্যাপ যেভাবে সময় দেখায় সেভাবেই [00:01:24:12] টাইমকোড স্ট্যাম্প। ওয়েব থেকে পেস্ট করলে ফরম্যাটিং বাদ যায়; এক্সপোর্ট কখনো আগের ফাইল মুছে দেয় না।\n\n৩. Watch Bins: Downloads, SFX বা ক্লায়েন্ট আপলোডের মতো ফোল্ডারকে প্রজেক্টের (নেস্টেড) বিনের সাথে যুক্ত করা যায়, ভিডিও/অডিও/ইমেজ ফিল্টার আর সাবফোল্ডারসহ। Auto-Sync প্রতি ৬ সেকেন্ডে দেখে, কিন্তু কোনো ফাইল দুবার স্ক্যানের মাঝে আকার না বদলানো পর্যন্ত ইমপোর্ট করে না। প্রতিটি ফাইল একবারই আসে; ব্যর্থ ফাইল 'skipped' হিসেবে দেখায় এবং পরে আবার চেষ্টা হয়। সিঙ্ক একটার পর একটা চলে, আর যে প্রজেক্টের জন্য স্ক্যান হয়েছে তার বাইরে কিছু ইমপোর্ট হয় না।\n\n৪. নিরাপত্তা: ফোল্ডার বা ফাইলের নাম কখনো HTML হিসেবে পড়া হয় না, আর Explorer/Finder shell ছাড়াই খোলে, তাই অদ্ভুত নামের ফাইল কিছু চালাতে পারে না।\n\n৫. ঝামেলাহীন ইনস্টল: সাইন ও টাইমস্ট্যাম্প করা .zxp আর উইন্ডোজ ও macOS-এর এক-ক্লিক ইনস্টলার; PlayerDebugMode বা এক্সটেনশন ম্যানেজার লাগে না, আপডেটে নোট ও বিন হারায় না।\n\n৬. ব্যাপক সামঞ্জস্য: CEP 9 থেকে 12, After Effects CC 2019+ ও Premiere Pro 2020+, উইন্ডোজ ও macOS; ExtendScript চেকার আর host ও panel-এর স্বয়ংক্রিয় টেস্টসহ, MIT লাইসেন্সে।",
+			'solution_en' => "1. QuickPaste, clipboard to timeline: screenshots, images copied from any app, and even image files copied in Explorer or Finder are saved into the project folder in one click (or Ctrl/Cmd+V), with PNG transparency kept. An MD5 index recognises pictures already pasted, so nothing is imported twice, and no file is ever overwritten.\n- After Effects: adds a layer to the active composition at the current time, as a guide layer by default (visible while working, never rendered), optionally shrunk to fit the comp, all in one undo step.\n- Premiere Pro: places the still with an overwrite into empty space only, on the lowest unlocked video track that is free at the playhead for the still's whole duration. No clip moves or gets covered; if there is no room, the image stays in the bin and the panel says why.\n- A gallery of the last 12 pastes survives restarts.\n\n2. Notes & Tasks: notes save automatically per project and are the same in After Effects and Premiere Pro. Notes taken in an unsaved project move with it when it is saved. Multiple tabs, a global scratchpad shared by every project, checklists, and [00:01:24:12] timecode stamps formatted the way the app displays time. Pasting from the web strips formatting, and exports never overwrite an earlier file.\n\n3. Watch Bins: link folders such as Downloads, SFX or client uploads to nested project bins, with video, audio and image filters and optional subfolders. Auto-Sync checks every 6 seconds but only imports a file once its size has held still between two scans. Every file arrives once; failures are shown as skipped and retried later. Sync jobs run one at a time, and nothing is imported into a project other than the one that was scanned.\n\n4. Safety: folder and file names are never parsed as HTML, and Explorer or Finder is launched without a shell, so an oddly named file cannot run anything.\n\n5. Painless install: a signed, timestamped .zxp with one-click installers for Windows and macOS, needing neither PlayerDebugMode nor an extension manager, and updates keep notes and bins.\n\n6. Broad compatibility: CEP 9 through 12, After Effects CC 2019+ and Premiere Pro 2020+, on Windows and macOS, with an ExtendScript checker and automated host and panel tests, under the MIT licence.",
+			'highlights_bn'=> array(
+				'After Effects ও Premiere Pro, দুই অ্যাপেই একটি ডক করা যায় এমন প্যানেল',
+				'ক্লিপবোর্ডের ছবি এক ক্লিকে প্রজেক্টের পাশে সেভ হয়ে প্লেহেডে টাইমলাইনে',
+				'Premiere Pro-তে শুধু ফাঁকা জায়গায় বসে, কোনো ক্লিপ সরে না বা ঢাকা পড়ে না',
+				'After Effects-এ guide layer, কম্পের মাপে ঐচ্ছিক ছোট করা, এক undo ধাপ',
+				'PNG স্বচ্ছতা অক্ষত, আর MD5 দিয়ে একই ছবি দুবার ইমপোর্ট ঠেকানো',
+				'প্রতি প্রজেক্টে নোট, ট্যাব, চেকলিস্ট আর টাইমকোড স্ট্যাম্প; সব প্রজেক্টের জন্য গ্লোবাল স্ক্র্যাচপ্যাড',
+				'ফোল্ডার থেকে বিনে স্বয়ংক্রিয় ইমপোর্ট, প্রতিটি ফাইল একবারই',
+				'কপি শেষ না হওয়া পর্যন্ত অপেক্ষা; ব্যর্থ ফাইল দেখায় ও আবার চেষ্টা করে',
+				'প্রজেক্ট বদলানোর সময়ও ভুল প্রজেক্টে কিছু যায় না',
+				'সাইন করা ZXP ও এক-ক্লিক ইনস্টলার, debug mode লাগে না',
+				'CEP 9–12, উইন্ডোজ ও macOS; MIT লাইসেন্সে ফ্রি ও ওপেন সোর্স'
+			),
+			'highlights_en'=> array(
+				'One dockable panel for both After Effects and Premiere Pro',
+				'A clipboard image saved beside the project and placed at the playhead in one click',
+				'Premiere Pro placement into empty space only: no clip moves or gets covered',
+				'After Effects guide layers, optional shrink-to-fit and a single undo step',
+				'PNG transparency kept and duplicate pastes caught with an MD5 index',
+				'Per-project notes with tabs, checklists and timecode stamps, plus a global scratchpad',
+				'Watched folders import into bins automatically, each file exactly once',
+				'Waits for copies to finish; skipped files are shown and retried',
+				'Never imports or writes into the wrong project while switching',
+				'Signed ZXP with one-click installers, no debug mode needed',
+				'CEP 9–12 on Windows and macOS; free and open source under MIT'
+			),
+			'tags'        => array( 'Adobe CEP', 'ExtendScript', 'After Effects', 'Premiere Pro', 'Node.js', 'Productivity' ),
+			'accent'      => '#9999ff',
+			'icon'        => 'extension',
+			'image'       => get_template_directory_uri() . '/assets/img/lazykick.svg',
+			'image_fit'   => 'cover',
+			'action_type' => 'code',
+			'action_bn'   => 'ফ্রি ডাউনলোড',
+			'action_en'   => 'Download Free',
+			'direct_url'  => 'https://github.com/raisulsohan/LazyKick/releases/latest',
+			'github_url'  => 'https://github.com/raisulsohan/LazyKick',
+			'order'       => 4,
+		),
 	);
 }
 
@@ -1628,68 +1685,87 @@ function rs_sync_lazy_image_portfolio_v2() {
 add_action( 'init', 'rs_sync_lazy_image_portfolio_v2' );
 
 /**
- * 11. Add the LazyLord project to an existing portfolio, once.
+ * 11. Add projects that joined the defaults after the portfolio was seeded.
  *
  * The initial seed only runs on an empty portfolio, so a project added to
- * the defaults later has to be inserted on its own. It goes to the top of
- * the list, ahead of whatever order the projects were dragged into, and
- * is never re-added once it exists (even if it is later trashed).
+ * the defaults later has to be inserted on its own. Each goes to the top of
+ * the list, ahead of whatever order the projects were dragged into, and is
+ * never re-added once its flag is set (even if it is later trashed). To add
+ * another project: put it in rs_get_default_portfolio_projects() and its id
+ * at the end of the list below.
  */
-function rs_sync_lazylord_portfolio() {
+function rs_sync_new_portfolio_projects() {
 	$switched = false;
 	if ( is_multisite() && ! is_main_site() ) {
 		switch_to_blog( get_main_site_id() );
 		$switched = true;
 	}
 
-	if ( ! get_option( 'rs_portfolio_added_lazylord' ) && get_option( 'rs_portfolio_seeded_v1' ) ) {
-		$exists = get_posts( array(
-			'post_type'      => 'rs_portfolio',
-			'name'           => 'lazylord',
-			'posts_per_page' => 1,
-			'post_status'    => 'any',
-			'fields'         => 'ids',
-		) );
-
-		$item = null;
-		foreach ( rs_get_default_portfolio_projects() as $d ) {
-			if ( 'lazylord' === $d['id'] ) {
-				$item = $d;
-				break;
-			}
+	if ( get_option( 'rs_portfolio_seeded_v1' ) ) {
+		foreach ( array( 'lazylord', 'lazykick' ) as $slug ) {
+			rs_add_portfolio_project_once( $slug );
 		}
-
-		if ( empty( $exists ) && $item ) {
-			$first = get_posts( array(
-				'post_type'      => 'rs_portfolio',
-				'posts_per_page' => 1,
-				'post_status'    => 'any',
-				'orderby'        => 'menu_order',
-				'order'          => 'ASC',
-			) );
-
-			$post_id = wp_insert_post( array(
-				'post_type'   => 'rs_portfolio',
-				'post_status' => 'publish',
-				'post_name'   => 'lazylord',
-				'post_title'  => $item['title_en'],
-				'menu_order'  => $first ? (int) $first[0]->menu_order - 1 : 0,
-			) );
-
-			if ( $post_id && ! is_wp_error( $post_id ) ) {
-				foreach ( array( 'category', 'type_bn', 'type_en', 'badge_bn', 'badge_en', 'title_bn', 'title_en', 'summary_bn', 'summary_en', 'role_bn', 'role_en', 'context_bn', 'context_en', 'challenge_bn', 'challenge_en', 'solution_bn', 'solution_en', 'highlights_bn', 'highlights_en', 'accent', 'icon', 'image', 'image_fit', 'action_type', 'action_bn', 'action_en', 'direct_url', 'github_url' ) as $field ) {
-					update_post_meta( $post_id, '_rs_portfolio_' . $field, $item[ $field ] );
-				}
-				update_post_meta( $post_id, '_rs_portfolio_tags', implode( ', ', $item['tags'] ) );
-			}
-		}
-
-		update_option( 'rs_portfolio_added_lazylord', 1 );
 	}
 
 	if ( $switched ) {
 		restore_current_blog();
 	}
 }
-add_action( 'init', 'rs_sync_lazylord_portfolio', 20 );
+add_action( 'init', 'rs_sync_new_portfolio_projects', 20 );
+
+/**
+ * Insert one default project, by id, if it has never been added.
+ *
+ * @param string $slug Project id in rs_get_default_portfolio_projects().
+ */
+function rs_add_portfolio_project_once( $slug ) {
+	$flag = 'rs_portfolio_added_' . $slug;
+
+	if ( get_option( $flag ) ) {
+		return;
+	}
+
+	$exists = get_posts( array(
+		'post_type'      => 'rs_portfolio',
+		'name'           => $slug,
+		'posts_per_page' => 1,
+		'post_status'    => 'any',
+		'fields'         => 'ids',
+	) );
+
+	$item = null;
+	foreach ( rs_get_default_portfolio_projects() as $d ) {
+		if ( $slug === $d['id'] ) {
+			$item = $d;
+			break;
+		}
+	}
+
+	if ( empty( $exists ) && $item ) {
+		$first = get_posts( array(
+			'post_type'      => 'rs_portfolio',
+			'posts_per_page' => 1,
+			'post_status'    => 'any',
+			'orderby'        => 'menu_order',
+			'order'          => 'ASC',
+		) );
+
+		$post_id = wp_insert_post( array(
+			'post_type'   => 'rs_portfolio',
+			'post_status' => 'publish',
+			'post_name'   => $slug,
+			'post_title'  => $item['title_en'],
+			'menu_order'  => $first ? (int) $first[0]->menu_order - 1 : 0,
+		) );
+
+		if ( $post_id && ! is_wp_error( $post_id ) ) {
+			foreach ( array( 'category', 'type_bn', 'type_en', 'badge_bn', 'badge_en', 'title_bn', 'title_en', 'summary_bn', 'summary_en', 'role_bn', 'role_en', 'context_bn', 'context_en', 'challenge_bn', 'challenge_en', 'solution_bn', 'solution_en', 'highlights_bn', 'highlights_en', 'accent', 'icon', 'image', 'image_fit', 'action_type', 'action_bn', 'action_en', 'direct_url', 'github_url' ) as $field ) {
+				update_post_meta( $post_id, '_rs_portfolio_' . $field, $item[ $field ] );
+			}
+			update_post_meta( $post_id, '_rs_portfolio_tags', implode( ', ', $item['tags'] ) );
+		}
+	}
+
+	update_option( $flag, 1 );
+}
 
