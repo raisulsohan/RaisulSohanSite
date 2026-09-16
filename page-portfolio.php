@@ -329,10 +329,12 @@ $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 			<div class="rs-pf__actions">
 				<?php $rs_email = rs_option( 'rs_email' ); ?>
 				<?php if ( $rs_email ) : ?>
-					<a class="rs-pf-btn rs-pf-btn--primary" href="<?php echo esc_url( 'mailto:' . $rs_email ); ?>">
+					<?php /* Copies the address, the same way the mail icon in the header does:
+					   a mailto: link only helps readers with a mail app set up. */ ?>
+					<button type="button" class="rs-pf-btn rs-pf-btn--primary" data-rs-copy="<?php echo esc_attr( $rs_email ); ?>" data-rs-copy-kind="mail" title="<?php echo esc_attr( $rs_email ); ?>" aria-label="<?php echo esc_attr( ( $rs_is_en ? 'Copy email address: ' : 'ইমেইল ঠিকানা কপি করুন: ' ) . $rs_email ); ?>">
 						<?php echo wp_kses( rs_icon( 'mail', 17 ), rs_svg_tags() ); ?>
 						<?php echo esc_html( $rs_is_en ? 'Send an email' : 'ইমেইল পাঠান' ); ?>
-					</a>
+					</button>
 				<?php endif; ?>
 				<?php if ( rs_option( 'rs_linkedin' ) ) : ?>
 					<a class="rs-pf-btn rs-pf-btn--ghost" href="<?php echo esc_url( rs_option( 'rs_linkedin' ) ); ?>" target="_blank" rel="noopener noreferrer">
