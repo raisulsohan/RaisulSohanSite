@@ -1928,6 +1928,14 @@ function rs_refresh_github_stats() {
 			'User-Agent' => 'raisulsohan.com portfolio',
 		),
 	);
+
+	/* Without a token GitHub allows 60 requests an hour per IP address, and
+	   on shared hosting other sites use that up. A token has its own 5,000. */
+	$token = rs_github_token();
+
+	if ( $token ) {
+		$args['headers']['Authorization'] = 'Bearer ' . $token;
+	}
 	$old    = get_site_option( 'rs_github_stats', array() );
 	$repos  = isset( $old['repos'] ) && is_array( $old['repos'] ) ? $old['repos'] : array();
 	$errors = array();
@@ -1937,7 +1945,9 @@ function rs_refresh_github_stats() {
 		$response = wp_remote_get( 'https://api.github.com/repos/' . $slug, $args );
 
 		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
-			$errors[] = $slug . ':' . ( is_wp_error( $response ) ? $response->get_error_code() : (int) wp_remote_retrieve_response_code( $response ) );
+			$code     = is_wp_error( $response ) ? $response->get_error_code() : (int) wp_remote_retrieve_response_code( $response );
+			$limited  = ! is_wp_error( $response ) && '0' === (string) wp_remote_retrieve_header( $response, 'x-ratelimit-remaining' );
+			$errors[] = $slug . ':' . $code . ( $limited ? ' (rate limit' . ( $token ? '' : ', no token' ) . ')' : '' ) . ( 401 === $code ? ' (token rejected)' : '' );
 
 			/* Rate limited or blocked: stop asking, keep what was known. */
 			if ( ! is_wp_error( $response ) && in_array( (int) wp_remote_retrieve_response_code( $response ), array( 403, 429 ), true ) ) {
@@ -2267,7 +2277,7 @@ function rs_github_admin_notice() {
 	$done    = isset( $_GET['rs_github'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display only.
 
 	printf(
-		'<div class="notice %1$s"><p><strong>GitHub:</strong> শেষ আনা হয়েছে %2$s · %3$d টি repo · সর্বশেষ কমিট: %4$s · %5$s &nbsp; <a class="button button-small" href="%6$s">এখনই আনুন</a></p></div>',
+		'<div class="notice %1$s"><p><strong>GitHub:</strong> শেষ আনা হয়েছে %2$s · %3$d টি repo · সর্বশেষ কমিট: %4$s · %5$s &nbsp; <a class="button button-small" href="%6$s">এখনই আনুন</a></p>',
 		esc_attr( $done ? ( $repos ? 'notice-success' : 'notice-warning' ) : 'notice-info' ),
 		esc_html( $fetched ),
 		(int) $repos,
@@ -2275,7 +2285,67 @@ function rs_github_admin_notice() {
 		esc_html( $errors ),
 		esc_url( $url )
 	);
+
+	if ( defined( 'RS_GITHUB_TOKEN' ) && RS_GITHUB_TOKEN ) {
+		echo '<p>GitHub টোকেন: wp-config.php থেকে নেওয়া হচ্ছে।</p>';
+	} elseif ( current_user_can( 'manage_options' ) ) {
+		$saved = (bool) get_site_option( 'rs_github_token', '' );
+		?>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin: 0 0 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+			<input type="hidden" name="action" value="rs_save_github_token">
+			<?php wp_nonce_field( 'rs_save_github_token' ); ?>
+			<label for="rs_github_token"><?php echo esc_html( $saved ? 'GitHub টোকেন সেভ করা আছে। বদলাতে নতুনটা দিন:' : 'GitHub টোকেন (ঐচ্ছিক, রেট লিমিট এড়াতে):' ); ?></label>
+			<input type="password" name="rs_github_token" id="rs_github_token" autocomplete="off" spellcheck="false" style="min-width: 320px;" placeholder="github_pat_…">
+			<button type="submit" class="button button-primary button-small">সেভ করে এখনই আনুন</button>
+			<?php if ( $saved ) : ?>
+				<button type="submit" name="rs_github_token_clear" value="1" class="button button-link-delete button-small">টোকেন মুছুন</button>
+			<?php endif; ?>
+		</form>
+		<?php
+	}
+
+	echo '</div>';
 }
+
+/**
+ * The GitHub token: a wp-config.php constant first, then the saved one.
+ *
+ * @return string
+ */
+function rs_github_token() {
+	if ( defined( 'RS_GITHUB_TOKEN' ) && RS_GITHUB_TOKEN ) {
+		return (string) RS_GITHUB_TOKEN;
+	}
+
+	return (string) get_site_option( 'rs_github_token', '' );
+}
+
+/**
+ * admin-post: save or clear the token, then fetch.
+ */
+function rs_github_save_token() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_die( esc_html__( 'You are not allowed to do this.', 'raisul-sohan' ) );
+	}
+
+	check_admin_referer( 'rs_save_github_token' );
+
+	if ( ! empty( $_POST['rs_github_token_clear'] ) ) {
+		delete_site_option( 'rs_github_token' );
+	} else {
+		$token = isset( $_POST['rs_github_token'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['rs_github_token'] ) ) ) : '';
+
+		if ( '' !== $token ) {
+			update_site_option( 'rs_github_token', $token );
+		}
+	}
+
+	rs_refresh_github_stats();
+
+	wp_safe_redirect( admin_url( 'edit.php?post_type=rs_portfolio&rs_github=done' ) );
+	exit;
+}
+add_action( 'admin_post_rs_save_github_token', 'rs_github_save_token' );
 add_action( 'admin_notices', 'rs_github_admin_notice' );
 
 /**

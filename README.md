@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.9.2-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.9.3-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -17,6 +17,7 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 - **Shareable eases:** `?ease=x1,y1,x2,y2` loads a curve into the speed graph (marked "shared curve"), a Share button copies that link (or opens the phone's share sheet), and a little "ease" word dances along the track with the curve.
 - **Ctrl+K / Cmd+K command palette** on every page: stories by title, portfolio projects and site actions (home, portfolio, timeline, a random story, about, search, dark mode, email, language), all from the keyboard.
 - **Now building:** the portfolio hero shows the latest commit from the author's most recently pushed repository, refreshed with the GitHub numbers.
+- **GitHub token (7.9.3):** on shared hosting, GitHub's 60-requests-an-hour allowance per IP address is often spent by other sites, and the numbers come back 403. A read-only token can be saved from the notice on the Portfolio screen (or set as `RS_GITHUB_TOKEN` in `wp-config.php`), and the notice now says when a failure is the rate limit.
 
 ## What's new in 7.8
 
