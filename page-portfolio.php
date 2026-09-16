@@ -18,246 +18,328 @@ if ( ! defined( 'ABSPATH' ) ) {
 get_header();
 
 $rs_is_en = rs_is_en();
-$rs_hero  = rs_hero_image();
 
 /* ---- Portfolio Projects & Case Studies Data (Dynamic Dashboard CPT & Fallback) ---- */
 $projects = function_exists( 'rs_get_portfolio_projects' ) ? rs_get_portfolio_projects() : array();
 ?>
 
-<div class="rs-hero<?php echo $rs_hero ? ' rs-hero--image' : ''; ?>">
-	<h1 class="rs-hero__title">
-		<?php if ( $rs_hero ) : ?>
-			<?php echo rs_render_hero_image_html( $rs_is_en ? 'Portfolio' : 'পোর্টফোলিও' ); ?>
-		<?php else : ?>
-			<span><?php echo esc_html( $rs_is_en ? 'Portfolio' : 'পোর্টফোলিও' ); ?></span>
-		<?php endif; ?>
-	</h1>
-</div>
+<?php
+/* Numbers for the hero, worked out from the projects themselves. */
+$rs_count_cat  = array( 'web' => 0, 'video' => 0, 'tools' => 0 );
+$rs_count_open = 0;
+foreach ( $projects as $p ) {
+	if ( isset( $rs_count_cat[ $p['category'] ] ) ) {
+		$rs_count_cat[ $p['category'] ]++;
+	}
+	if ( ! empty( $p['github_url'] ) ) {
+		$rs_count_open++;
+	}
+}
+$rs_num = function ( $n ) use ( $rs_is_en ) {
+	return $rs_is_en ? (string) $n : rs_bn_digits( $n );
+};
+$rs_cats = array(
+	'web'   => array( $rs_is_en ? 'Web' : 'ওয়েব', '#31a8ff' ),
+	'video' => array( $rs_is_en ? 'Video & motion' : 'ভিডিও ও মোশন', '#ea77ff' ),
+	'tools' => array( $rs_is_en ? 'Tools & extensions' : 'টুলস ও এক্সটেনশন', '#b9a8ff' ),
+);
+$rs_arrow_right = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+$rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>';
+?>
 
-<main class="rs-wrap rs-portfolio-page" id="rs-content">
+<main class="rs-pf" id="rs-content">
+	<div class="rs-pf__glow rs-pf__glow--a" aria-hidden="true"></div>
+	<div class="rs-pf__glow rs-pf__glow--b" aria-hidden="true"></div>
 
-	<!-- Introduction & Core Bio -->
-	<header class="rs-portfolio-hero">
-		<div class="rs-portfolio-hero__badge">
-			<?php echo esc_html( $rs_is_en ? 'Multidisciplinary Creative & Engineer' : 'ভিজ্যুয়াল ক্রিয়েটর ও সফটওয়্যার ডেভেলপার' ); ?>
+	<header class="rs-pf__hero rs-pf__wrap">
+		<div class="rs-pf__intro">
+			<p class="rs-pf__eyebrow rs-pf-rise"><?php echo esc_html( $rs_is_en ? 'Portfolio' : 'পোর্টফোলিও' ); ?></p>
+
+			<ul class="rs-pf__chips rs-pf-rise">
+				<li class="rs-pf-chip" style="--c: #b9a8ff"><?php echo esc_html( $rs_is_en ? 'Creative developer' : 'ক্রিয়েটিভ ডেভেলপার' ); ?></li>
+				<li class="rs-pf-chip" style="--c: #ea77ff"><?php echo esc_html( $rs_is_en ? 'Motion tools maker' : 'মোশন টুলস নির্মাতা' ); ?></li>
+				<li class="rs-pf-chip" style="--c: #31a8ff"><?php echo esc_html( $rs_is_en ? 'Automation geek' : 'অটোমেশন' ); ?></li>
+			</ul>
+
+			<h1 class="rs-pf__title rs-pf-rise rs-pf-rise--2">
+				<?php if ( $rs_is_en ) : ?>
+					Stories told in <em>frames</em>, problems solved in <em>code</em>
+				<?php else : ?>
+					গল্প বলি <em>ফ্রেমে</em>, সমস্যা মেটাই <em>কোডে</em>
+				<?php endif; ?>
+			</h1>
+
+			<p class="rs-pf__bio rs-pf-rise rs-pf-rise--2">
+				<?php if ( $rs_is_en ) : ?>
+					I tell stories through video editing and motion animation, and I build free, open-source tools for motion designers, video editors and creators. Every cut and every line of code chases the same thing: work that is fast, clean and friction-free.
+				<?php else : ?>
+					ভিডিও এডিটিং আর মোশন অ্যানিমেশনে গল্প বলি, আর মোশন ডিজাইনার, ভিডিও এডিটর ও ক্রিয়েটরদের জন্য ফ্রি, ওপেন সোর্স টুল বানাই। প্রতিটি কাটে আর প্রতিটি লাইন কোডে একটাই লক্ষ্য: কাজ হোক দ্রুত, পরিষ্কার আর ঝামেলাহীন।
+				<?php endif; ?>
+			</p>
+
+			<div class="rs-pf__actions rs-pf-rise rs-pf-rise--3">
+				<a class="rs-pf-btn rs-pf-btn--primary" href="#rs-pf-work-section">
+					<?php echo esc_html( $rs_is_en ? 'See the work' : 'কাজগুলো দেখুন' ); ?>
+					<?php echo $rs_arrow_right; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
+				</a>
+				<a class="rs-pf-btn rs-pf-btn--ghost" href="#rs-pf-contact"><?php echo esc_html( $rs_is_en ? 'Get in touch' : 'যোগাযোগ' ); ?></a>
+			</div>
+
+			<dl class="rs-pf__stats rs-pf-rise rs-pf-rise--3">
+				<div>
+					<dt><?php echo esc_html( $rs_is_en ? 'Projects' : 'প্রজেক্ট' ); ?></dt>
+					<dd><?php echo esc_html( $rs_num( count( $projects ) ) ); ?></dd>
+				</div>
+				<?php if ( $rs_count_open ) : ?>
+					<div>
+						<dt><?php echo esc_html( $rs_is_en ? 'Open source' : 'ওপেন সোর্স' ); ?></dt>
+						<dd><?php echo esc_html( $rs_num( $rs_count_open ) ); ?></dd>
+					</div>
+				<?php endif; ?>
+				<?php if ( $rs_count_cat['video'] ) : ?>
+					<div>
+						<dt><?php echo esc_html( $rs_is_en ? 'Video & motion' : 'ভিডিও ও মোশন' ); ?></dt>
+						<dd><?php echo esc_html( $rs_num( $rs_count_cat['video'] ) ); ?></dd>
+					</div>
+				<?php endif; ?>
+			</dl>
 		</div>
-		<h2 class="rs-portfolio-hero__headline">
-			<?php if ( $rs_is_en ) : ?>
-				Visual Storytelling Meets <span class="rs-portfolio-gradient">Clean Code</span>
-			<?php else : ?>
-				ভিজ্যুয়াল স্টোরিটেলিং ও <span class="rs-portfolio-gradient">ক্লিন কোডের সমন্বয়</span>
-			<?php endif; ?>
-		</h2>
-		<p class="rs-portfolio-hero__bio">
-			<?php if ( $rs_is_en ) : ?>
-				I craft engaging visual narratives through video editing and 2D motion animation, while engineering lightweight, responsive websites and productivity tools (browser extensions, WordPress plugins, and automation scripts). Passionate about seamless storytelling, clean code, and zero-bloat digital experiences.
-			<?php else : ?>
-				আমি ভিডিও এডিটিং ও ২ডি মোশন অ্যানিমেশনের মাধ্যমে ভিজ্যুয়াল গল্প বলি, আবার একই সাথে আধুনিক ওয়েব প্রযুক্তি, ব্রাউজার এক্সটেনশন ও অটোমেশন স্ক্রিপ্ট তৈরি করে ডিজিটাল সমস্যার সমাধান করি। প্রতিটি কাট ও প্রতিটি লাইন কোডে পারফেকশন, স্পিড এবং মিনিমালিজম বজায় রাখাই আমার লক্ষ্য।
-			<?php endif; ?>
-		</p>
 
-		<!-- Skill Highlights Strip -->
-		<div class="rs-portfolio-skills">
-			<div class="rs-portfolio-skill-pill">
-				<span class="rs-portfolio-skill-pill__icon">💻</span>
-				<strong><?php echo esc_html( $rs_is_en ? 'Web Development' : 'ওয়েব ডেভেলপমেন্ট' ); ?></strong>
-				<span class="rs-portfolio-skill-pill__sub">WordPress • PHP • Vanilla JS • CSS3</span>
-			</div>
-			<div class="rs-portfolio-skill-pill">
-				<span class="rs-portfolio-skill-pill__icon">🎬</span>
-				<strong><?php echo esc_html( $rs_is_en ? 'Video & Animation' : 'ভিডিও ও মোশন' ); ?></strong>
-				<span class="rs-portfolio-skill-pill__sub">Premiere Pro • After Effects • DaVinci</span>
-			</div>
-			<div class="rs-portfolio-skill-pill">
-				<span class="rs-portfolio-skill-pill__icon">⚡</span>
-				<strong><?php echo esc_html( $rs_is_en ? 'Extensions & Tools' : 'এক্সটেনশন ও টুলস' ); ?></strong>
-				<span class="rs-portfolio-skill-pill__sub">Chrome MV3 • Plugins • Python Scripts</span>
-			</div>
+		<div class="rs-pf__graph rs-pf-rise rs-pf-rise--2" aria-hidden="true">
+			<div class="rs-pf__graph-bar"><span>Speed Graph</span><span>Ease In · Ease Out</span></div>
+			<svg viewBox="0 0 360 230" fill="none">
+				<defs>
+					<linearGradient id="rs-pf-curve-g" x1="40" y1="0" x2="320" y2="0" gradientUnits="userSpaceOnUse">
+						<stop stop-color="#8f74ff"/>
+						<stop offset="1" stop-color="#ea77ff"/>
+					</linearGradient>
+				</defs>
+				<g stroke="#221d34">
+					<path d="M20 40H340M20 90H340M20 140H340M20 190H340"/>
+					<path d="M40 20V210M96 20V210M152 20V210M208 20V210M264 20V210M320 20V210"/>
+				</g>
+				<g stroke="#625c7e" stroke-dasharray="4 5">
+					<path d="M40 190H160"/>
+					<path d="M320 40H200"/>
+				</g>
+				<path class="rs-pf-curve" d="M40 190C160 190 200 40 320 40" stroke="url(#rs-pf-curve-g)" stroke-width="3.5" stroke-linecap="round"/>
+				<g fill="#16122a" stroke="#b9a8ff" stroke-width="2">
+					<circle cx="160" cy="190" r="5.5"/>
+					<circle cx="200" cy="40" r="5.5"/>
+				</g>
+				<g fill="#ffd166">
+					<rect x="33" y="183" width="14" height="14" rx="2" transform="rotate(45 40 190)"/>
+					<rect x="313" y="33" width="14" height="14" rx="2" transform="rotate(45 320 40)"/>
+				</g>
+				<circle class="rs-pf-motion" r="6" fill="#fff">
+					<animateMotion dur="3.2s" repeatCount="indefinite" path="M40 190C160 190 200 40 320 40"/>
+				</circle>
+				<text x="44" y="222" fill="#625c7e" font-family="ui-monospace, Consolas, monospace" font-size="10">0f</text>
+				<text x="300" y="222" fill="#625c7e" font-family="ui-monospace, Consolas, monospace" font-size="10">24f</text>
+			</svg>
 		</div>
 	</header>
 
-	<!-- Filter Controls -->
-	<section class="rs-portfolio-filter-section" aria-label="<?php echo esc_attr( $rs_is_en ? 'Project Filter' : 'প্রজেক্ট ফিল্টার' ); ?>">
-		<div class="rs-portfolio-filter" role="tablist">
-			<button type="button" class="rs-portfolio-filter__btn is-active" data-filter="all" role="tab" aria-selected="true">
-				<?php echo esc_html( $rs_is_en ? 'All Work' : 'সব কাজ' ); ?>
-				<span class="rs-portfolio-filter__count"><?php echo count( $projects ); ?></span>
-			</button>
-			<button type="button" class="rs-portfolio-filter__btn" data-filter="web" role="tab" aria-selected="false">
-				💻 <?php echo esc_html( $rs_is_en ? 'Web Development' : 'ওয়েব ডেভেলপমেন্ট' ); ?>
-			</button>
-			<button type="button" class="rs-portfolio-filter__btn" data-filter="video" role="tab" aria-selected="false">
-				🎬 <?php echo esc_html( $rs_is_en ? 'Video & Animation' : 'ভিডিও ও অ্যানিমেশন' ); ?>
-			</button>
-			<button type="button" class="rs-portfolio-filter__btn" data-filter="tools" role="tab" aria-selected="false">
-				⚡ <?php echo esc_html( $rs_is_en ? 'Extensions & Scripts' : 'এক্সটেনশন ও স্ক্রিপ্ট' ); ?>
-			</button>
+	<section class="rs-pf__wrap rs-pf__timeline rs-pf-rise rs-pf-rise--3" aria-hidden="true">
+		<div class="rs-pf-tl">
+			<div class="rs-pf-tl__head">
+				<span class="rs-pf-tl__tc">00:00:04:12</span>
+				<ol class="rs-pf-tl__ruler"><li>0s</li><li>1s</li><li>2s</li><li>3s</li><li>4s</li><li>5s</li><li>6s</li></ol>
+			</div>
+			<div class="rs-pf-tl__row" style="--c: #ea77ff">
+				<span class="rs-pf-tl__name"><?php echo esc_html( $rs_is_en ? 'Motion design' : 'মোশন ডিজাইন' ); ?></span>
+				<span class="rs-pf-tl__track"><i class="rs-pf-tl__bar" style="--x: 3%; --w: 60%"></i><b style="--x: 3%"></b><b style="--x: 28%"></b><b style="--x: 63%"></b></span>
+			</div>
+			<div class="rs-pf-tl__row" style="--c: #31a8ff">
+				<span class="rs-pf-tl__name"><?php echo esc_html( $rs_is_en ? 'Automation' : 'অটোমেশন' ); ?></span>
+				<span class="rs-pf-tl__track"><i class="rs-pf-tl__bar" style="--x: 22%; --w: 72%"></i><b style="--x: 22%"></b><b style="--x: 47%"></b><b style="--x: 94%"></b></span>
+			</div>
+			<div class="rs-pf-tl__row" style="--c: #3ddc97">
+				<span class="rs-pf-tl__name"><?php echo esc_html( $rs_is_en ? 'Open source' : 'ওপেন সোর্স' ); ?></span>
+				<span class="rs-pf-tl__track"><i class="rs-pf-tl__bar" style="--x: 10%; --w: 86%"></i><b style="--x: 10%"></b><b style="--x: 54%"></b><b style="--x: 79%"></b><b style="--x: 96%"></b></span>
+			</div>
+			<span class="rs-pf-tl__scrub"><span class="rs-pf-tl__playhead"></span></span>
 		</div>
 	</section>
 
-	<!-- Projects Grid -->
-	<section class="rs-portfolio-grid" id="rs-portfolio-grid">
-		<?php foreach ( $projects as $p ) : ?>
-			<?php
-			$card_domain = ! empty( $p['direct_url'] ) ? preg_replace( '#^https?://([^/]+).*$#', '$1', $p['direct_url'] ) : 'demo';
-			?>
-			<article class="rs-portfolio-card" data-category="<?php echo esc_attr( $p['category'] ); ?>" data-project-id="<?php echo esc_attr( $p['id'] ); ?>" id="project-<?php echo esc_attr( $p['id'] ); ?>">
-				
-				<!-- Card Visual Mockup / Real Screenshot -->
-				<div class="rs-portfolio-card__visual rs-portfolio-card__visual--<?php echo esc_attr( $p['category'] ); ?> rs-open-case-study" data-project-id="<?php echo esc_attr( $p['id'] ); ?>" title="<?php echo esc_attr( $rs_is_en ? 'Open Case Study' : 'কেস স্টাডি দেখুন' ); ?>" role="button" tabindex="0">
-					
-					<?php if ( ! empty( $p['image'] ) ) : ?>
-						<?php if ( 'web' === $p['category'] ) : ?>
-							<div class="rs-portfolio-card__browser-bar">
-								<span class="rs-portfolio-dot"></span>
-								<span class="rs-portfolio-dot"></span>
-								<span class="rs-portfolio-dot"></span>
-								<span class="rs-portfolio-card__url"><?php echo esc_html( $card_domain ); ?></span>
-							</div>
-							<div class="rs-portfolio-card__img-wrap <?php echo ( ! empty( $p['image_fit'] ) && 'contain' === $p['image_fit'] ) ? 'is-contain' : ''; ?>">
-								<?php if ( ! empty( $p['image'] ) ) : ?>
-								<img src="<?php echo esc_url( $p['image'] ); ?>" alt="<?php echo esc_attr( $rs_is_en ? $p['title_en'] : $p['title_bn'] ); ?>" class="rs-portfolio-card__img" loading="lazy" decoding="async">
-								<?php endif; ?>
-							</div>
-						<?php elseif ( 'video' === $p['category'] ) : ?>
-							<div class="rs-portfolio-card__img-wrap" style="background-image: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.45)), url('<?php echo esc_url( $p['image'] ); ?>'); background-size: cover; background-position: center;">
-								<div class="rs-portfolio-card__play-btn">
-									<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
-								</div>
-								<span class="rs-portfolio-card__media-tag"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></span>
-							</div>
-						<?php else : ?>
-							<div class="rs-portfolio-card__img-wrap <?php echo ( ! empty( $p['image_fit'] ) && 'contain' === $p['image_fit'] ) ? 'is-contain' : ''; ?>">
-								<?php if ( ! empty( $p['image'] ) ) : ?>
-								<img src="<?php echo esc_url( $p['image'] ); ?>" alt="<?php echo esc_attr( $rs_is_en ? $p['title_en'] : $p['title_bn'] ); ?>" class="rs-portfolio-card__img" loading="lazy" decoding="async">
-								<?php endif; ?>
-								<span class="rs-portfolio-card__media-tag"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></span>
-							</div>
-						<?php endif; ?>
-					<?php else : ?>
-						<!-- Fallback CSS Mockup -->
-						<?php if ( 'video' === $p['category'] ) : ?>
-							<div class="rs-portfolio-card__media-placeholder">
-								<div class="rs-portfolio-card__play-btn">
-									<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
-								</div>
-								<span class="rs-portfolio-card__media-tag"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></span>
-							</div>
-						<?php elseif ( 'web' === $p['category'] ) : ?>
-							<div class="rs-portfolio-card__browser-bar">
-								<span class="rs-portfolio-dot"></span>
-								<span class="rs-portfolio-dot"></span>
-								<span class="rs-portfolio-dot"></span>
-								<span class="rs-portfolio-card__url"><?php echo esc_html( $card_domain ); ?></span>
-							</div>
-							<div class="rs-portfolio-card__web-preview">
-								<div class="rs-portfolio-card__wire-block"></div>
-								<div class="rs-portfolio-card__wire-line"></div>
-								<div class="rs-portfolio-card__wire-line short"></div>
-							</div>
-						<?php else : ?>
-							<div class="rs-portfolio-card__tool-banner">
-								<div class="rs-portfolio-card__tool-icon">
-									<?php if ( 'extension' === $p['icon'] ) : ?>
-										🧩
-									<?php elseif ( 'terminal' === $p['icon'] ) : ?>
-										⌨️
-									<?php else : ?>
-										⚙️
-									<?php endif; ?>
-								</div>
-								<span class="rs-portfolio-card__media-tag"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></span>
-							</div>
-						<?php endif; ?>
-					<?php endif; ?>
+	<section class="rs-pf__wrap rs-pf__section" aria-labelledby="rs-pf-toolbox">
+		<h2 class="rs-pf-h" id="rs-pf-toolbox"><?php echo esc_html( $rs_is_en ? 'Toolbox' : 'টুলবক্স' ); ?></h2>
+		<div class="rs-pf-toolbox">
+			<div class="rs-pf-toolbox__group">
+				<p class="rs-pf-toolbox__label"><?php echo esc_html( $rs_is_en ? 'Design & motion' : 'ডিজাইন ও মোশন' ); ?></p>
+				<ul class="rs-pf-tiles">
+					<li class="rs-pf-tile" style="--bg: #00005b; --fg: #9999ff"><b>Ae</b>After Effects</li>
+					<li class="rs-pf-tile" style="--bg: #1e0633; --fg: #ea77ff"><b>Pr</b>Premiere Pro</li>
+					<li class="rs-pf-tile" style="--bg: #001e36; --fg: #31a8ff"><b>Ps</b>Photoshop</li>
+					<li class="rs-pf-tile" style="--bg: #330000; --fg: #ff9a00"><b>Ai</b>Illustrator</li>
+					<li class="rs-pf-tile" style="--fg: #a259ff; --bd: #2c2642">
+						<b><svg viewBox="0 0 2 3" aria-hidden="true"><path d="M.5 0H1V1H.5A.5.5 0 0 1 .5 0Z" fill="#f24e1e"/><path d="M1 0H1.5A.5.5 0 0 1 1.5 1H1Z" fill="#ff7262"/><path d="M.5 1H1V2H.5A.5.5 0 0 1 .5 1Z" fill="#a259ff"/><circle cx="1.5" cy="1.5" r=".5" fill="#1abcfe"/><path d="M1 2V2.5A.5.5 0 1 1 .5 2Z" fill="#0acf83"/></svg></b>Figma
+					</li>
+				</ul>
+			</div>
+			<div class="rs-pf-toolbox__group">
+				<p class="rs-pf-toolbox__label"><?php echo esc_html( $rs_is_en ? 'Code & automation' : 'কোড ও অটোমেশন' ); ?></p>
+				<ul class="rs-pf-tiles">
+					<li class="rs-pf-tile" style="--fg: #f7df1e; --bd: #2c2642"><b>JS</b>JavaScript</li>
+					<li class="rs-pf-tile" style="--fg: #6cc24a; --bd: #2c2642"><b>N</b>Node.js</li>
+					<li class="rs-pf-tile" style="--fg: #4fa3ff; --bd: #2c2642"><b>{ }</b>CEP</li>
+					<li class="rs-pf-tile" style="--fg: #b3b7f2; --bd: #2c2642"><b>php</b>PHP</li>
+					<li class="rs-pf-tile" style="--fg: #4fa9da; --bd: #2c2642"><b>W</b>WordPress</li>
+					<li class="rs-pf-tile" style="--fg: #f05032; --bd: #2c2642"><b>git</b>Git</li>
+				</ul>
+			</div>
+		</div>
+	</section>
 
-					<div class="rs-portfolio-card__visual-hover">
-						<span>📋 <?php echo esc_html( $rs_is_en ? 'Read Case Study' : 'কেস স্টাডি পড়ুন' ); ?></span>
-					</div>
-				</div>
+	<section class="rs-pf__wrap rs-pf__section" id="rs-pf-work-section" aria-labelledby="rs-pf-work">
+		<div class="rs-pf__work-head">
+			<h2 class="rs-pf-h" id="rs-pf-work"><?php echo esc_html( $rs_is_en ? 'Selected work' : 'নির্বাচিত কাজ' ); ?></h2>
 
-				<!-- Card Content -->
-				<div class="rs-portfolio-card__content">
-					<div class="rs-portfolio-card__meta">
-						<span class="rs-portfolio-card__badge"><?php echo esc_html( $rs_is_en ? $p['badge_en'] : $p['badge_bn'] ); ?></span>
-						<span class="rs-portfolio-card__type"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></span>
-					</div>
-
-					<h3 class="rs-portfolio-card__title rs-open-case-study" data-project-id="<?php echo esc_attr( $p['id'] ); ?>" role="button" tabindex="0">
-						<?php echo esc_html( $rs_is_en ? $p['title_en'] : $p['title_bn'] ); ?>
-					</h3>
-
-					<p class="rs-portfolio-card__desc">
-						<?php echo esc_html( $rs_is_en ? $p['summary_en'] : $p['summary_bn'] ); ?>
-					</p>
-
-					<!-- Tags -->
-					<div class="rs-portfolio-card__tags">
-						<?php foreach ( $p['tags'] as $tag ) : ?>
-							<span class="rs-portfolio-tag"><?php echo esc_html( $tag ); ?></span>
-						<?php endforeach; ?>
-					</div>
-
-					<!-- Dual Action Footer: Case Study Trigger + Direct Outbound Preview -->
-					<div class="rs-portfolio-card__footer">
-						<button type="button" class="rs-portfolio-btn rs-portfolio-btn--details rs-open-case-study" data-project-id="<?php echo esc_attr( $p['id'] ); ?>" aria-label="<?php echo esc_attr( ( $rs_is_en ? 'Case study for ' : 'কেস স্টাডি: ' ) . ( $rs_is_en ? $p['title_en'] : $p['title_bn'] ) ); ?>">
-							<span>📋 <?php echo esc_html( $rs_is_en ? 'Case Study' : 'কেস স্টাডি' ); ?></span>
+			<div class="rs-portfolio-filter rs-pf-filter" role="tablist" aria-label="<?php echo esc_attr( $rs_is_en ? 'Filter projects' : 'প্রজেক্ট ফিল্টার' ); ?>">
+				<button type="button" class="rs-portfolio-filter__btn is-active" data-filter="all" role="tab" aria-selected="true">
+					<?php echo esc_html( $rs_is_en ? 'All' : 'সব' ); ?>
+					<span class="rs-pf-filter__n"><?php echo esc_html( $rs_num( count( $projects ) ) ); ?></span>
+				</button>
+				<?php foreach ( $rs_cats as $rs_cat_key => $rs_cat ) : ?>
+					<?php if ( $rs_count_cat[ $rs_cat_key ] ) : ?>
+						<button type="button" class="rs-portfolio-filter__btn" data-filter="<?php echo esc_attr( $rs_cat_key ); ?>" role="tab" aria-selected="false" style="--c: <?php echo esc_attr( $rs_cat[1] ); ?>">
+							<?php echo esc_html( $rs_cat[0] ); ?>
+							<span class="rs-pf-filter__n"><?php echo esc_html( $rs_num( $rs_count_cat[ $rs_cat_key ] ) ); ?></span>
 						</button>
+					<?php endif; ?>
+				<?php endforeach; ?>
+			</div>
+		</div>
 
-						<a href="<?php echo esc_url( $p['direct_url'] ); ?>" class="rs-portfolio-btn rs-portfolio-btn--direct" target="_blank" rel="noopener noreferrer" title="<?php echo esc_attr( $rs_is_en ? 'Open original project destination' : 'মূল প্রজেক্টের ঠিকানায় যান' ); ?>">
-							<span><?php echo esc_html( $rs_is_en ? $p['action_en'] : $p['action_bn'] ); ?></span>
-							<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-								<line x1="7" y1="17" x2="17" y2="7"></line>
-								<polyline points="7 7 17 7 17 17"></polyline>
-							</svg>
-						</a>
+		<div class="rs-portfolio-grid rs-pf-grid" id="rs-portfolio-grid">
+			<?php foreach ( $projects as $rs_i => $p ) : ?>
+				<?php
+				$pf_title   = $rs_is_en ? $p['title_en'] : $p['title_bn'];
+				$pf_parts   = preg_split( '/\s+[—–]\s+/u', $pf_title, 2 );
+				$pf_name    = $pf_parts[0];
+				$pf_tagline = isset( $pf_parts[1] ) ? $pf_parts[1] : '';
+				$pf_accent  = sanitize_hex_color( $p['accent'] );
+				$pf_accent  = $pf_accent ? $pf_accent : '#6c4cff';
+				$pf_cat     = isset( $rs_cats[ $p['category'] ] ) ? $rs_cats[ $p['category'] ][0] : '';
+				$pf_feature = ( 0 === $rs_i );
+				$pf_tags    = array_slice( $p['tags'], 0, $pf_feature ? 6 : 4 );
+				$pf_more    = count( $p['tags'] ) - count( $pf_tags );
+				$pf_domain  = ! empty( $p['direct_url'] ) ? preg_replace( '#^https?://(?:www\.)?([^/]+).*$#', '$1', $p['direct_url'] ) : '';
+				$pf_label   = ( $rs_is_en ? 'Case study: ' : 'কেস স্টাডি: ' ) . $pf_name;
+				?>
+				<article class="rs-portfolio-card rs-pf-card rs-pf-card--<?php echo esc_attr( $p['category'] ); ?><?php echo $pf_feature ? ' is-featured' : ''; ?>" data-category="<?php echo esc_attr( $p['category'] ); ?>" data-project-id="<?php echo esc_attr( $p['id'] ); ?>" id="project-<?php echo esc_attr( $p['id'] ); ?>" style="--a: <?php echo esc_attr( $pf_accent ); ?>">
+
+					<div class="rs-pf-card__media rs-open-case-study" data-project-id="<?php echo esc_attr( $p['id'] ); ?>" role="button" tabindex="0" aria-label="<?php echo esc_attr( $pf_label ); ?>">
+						<?php if ( 'web' === $p['category'] ) : ?>
+							<span class="rs-pf-card__bar" aria-hidden="true"><i></i><i></i><i></i><span><?php echo esc_html( $pf_domain ); ?></span></span>
+						<?php endif; ?>
+
+						<?php if ( ! empty( $p['image'] ) ) : ?>
+							<img class="rs-pf-card__img<?php echo ( 'contain' === $p['image_fit'] ) ? ' is-contain' : ''; ?>" src="<?php echo esc_url( $p['image'] ); ?>" alt="" loading="<?php echo $pf_feature ? 'eager' : 'lazy'; ?>" decoding="async">
+						<?php else : ?>
+							<span class="rs-pf-card__mono" aria-hidden="true"><?php echo esc_html( mb_substr( $pf_name, 0, 1 ) ); ?></span>
+						<?php endif; ?>
+
+						<?php if ( 'video' === $p['category'] ) : ?>
+							<span class="rs-pf-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l12-7.5z"/></svg></span>
+						<?php endif; ?>
+
+						<?php if ( $pf_cat ) : ?>
+							<span class="rs-pf-card__cat"><?php echo esc_html( $pf_cat ); ?></span>
+						<?php endif; ?>
 					</div>
-				</div>
 
-			</article>
-		<?php endforeach; ?>
+					<div class="rs-pf-card__body">
+						<?php if ( $pf_feature ) : ?>
+							<span class="rs-pf-card__flag"><?php echo esc_html( $rs_is_en ? 'Featured project' : 'ফিচার্ড প্রজেক্ট' ); ?></span>
+						<?php endif; ?>
+
+						<p class="rs-pf-card__type"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></p>
+
+						<h3 class="rs-pf-card__title">
+							<button type="button" class="rs-open-case-study" data-project-id="<?php echo esc_attr( $p['id'] ); ?>"><?php echo esc_html( $pf_name ); ?></button>
+						</h3>
+
+						<?php if ( $pf_tagline ) : ?>
+							<p class="rs-pf-card__tagline"><?php echo esc_html( $pf_tagline ); ?></p>
+						<?php endif; ?>
+
+						<?php if ( $pf_feature ) : ?>
+							<p class="rs-pf-card__summary"><?php echo esc_html( $rs_is_en ? $p['summary_en'] : $p['summary_bn'] ); ?></p>
+						<?php endif; ?>
+
+						<?php if ( $pf_tags ) : ?>
+							<ul class="rs-pf-card__tags">
+								<?php foreach ( $pf_tags as $tag ) : ?>
+									<li class="rs-pf-tag"><?php echo esc_html( $tag ); ?></li>
+								<?php endforeach; ?>
+								<?php if ( $pf_more > 0 ) : ?>
+									<li class="rs-pf-tag">+<?php echo esc_html( $rs_num( $pf_more ) ); ?></li>
+								<?php endif; ?>
+							</ul>
+						<?php endif; ?>
+
+						<div class="rs-pf-card__foot">
+							<button type="button" class="rs-pf-card__cta rs-open-case-study" data-project-id="<?php echo esc_attr( $p['id'] ); ?>" aria-label="<?php echo esc_attr( $pf_label ); ?>">
+								<?php echo esc_html( $rs_is_en ? 'Case study' : 'কেস স্টাডি' ); ?>
+								<?php echo $rs_arrow_right; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
+							</button>
+							<?php if ( ! empty( $p['direct_url'] ) ) : ?>
+								<a class="rs-pf-card__link" href="<?php echo esc_url( $p['direct_url'] ); ?>" target="_blank" rel="noopener noreferrer">
+									<?php echo esc_html( $rs_is_en ? $p['action_en'] : $p['action_bn'] ); ?>
+									<?php echo $rs_arrow_out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
+								</a>
+							<?php endif; ?>
+						</div>
+					</div>
+				</article>
+			<?php endforeach; ?>
+		</div>
+
+		<nav class="rs-portfolio-pagination" id="rs-portfolio-pagination" aria-label="<?php echo esc_attr( $rs_is_en ? 'Portfolio pages' : 'পোর্টফোলিওর পাতা' ); ?>" style="display: none;"></nav>
+
+		<div class="rs-portfolio-empty rs-pf-empty" id="rs-portfolio-empty" style="display: none;">
+			<p><?php echo esc_html( $rs_is_en ? 'No projects in this category yet.' : 'এই বিভাগে এখনো কোনো প্রজেক্ট নেই।' ); ?></p>
+		</div>
 	</section>
 
-	<!-- Dynamic Pagination Controls (4 items per page) -->
-	<nav class="rs-pagination rs-portfolio-pagination" id="rs-portfolio-pagination" aria-label="<?php echo esc_attr( $rs_is_en ? 'Portfolio Pagination' : 'পোর্টফোলিও পেজিনেশন' ); ?>" style="display: none;"></nav>
-
-	<!-- Empty state if no projects match filter -->
-	<div class="rs-portfolio-empty" id="rs-portfolio-empty" style="display: none;">
-		<p><?php echo esc_html( $rs_is_en ? 'No projects found in this category.' : 'এই ক্যাটাগরিতে কোনো প্রজেক্ট পাওয়া যায়নি।' ); ?></p>
-	</div>
-
-	<!-- Contact / Collaboration Section -->
-	<footer class="rs-portfolio-cta">
-		<h3 class="rs-portfolio-cta__title">
-			<?php echo esc_html( $rs_is_en ? 'Have an interesting project in mind?' : 'কোনো নতুন কাজের পরিকল্পনা আছে?' ); ?>
-		</h3>
-		<p class="rs-portfolio-cta__desc">
-			<?php if ( $rs_is_en ) : ?>
-				Whether you need cinematic video editing, animated graphics, a custom website, or custom automation tools — feel free to connect!
-			<?php else : ?>
-				সিনেমাটিক ভিডিও এডিটিং, মোশন অ্যানিমেশন, দ্রুতগতির কাস্টম ওয়েবসাইট বা স্পেশাল কোনো এক্সটেনশন/স্ক্রিপ্ট বানাতে চাইলে যোগাযোগ করতে পারেন।
-			<?php endif; ?>
-		</p>
-		<div class="rs-portfolio-cta__actions">
-			<?php $rs_email = rs_option( 'rs_email' ); ?>
-			<?php if ( $rs_email ) : ?>
-				<a href="mailto:<?php echo esc_attr( $rs_email ); ?>" class="rs-portfolio-btn rs-portfolio-btn--primary">
-					✉️ <?php echo esc_html( $rs_is_en ? 'Send an Email' : 'ইমেইল পাঠান' ); ?>
-				</a>
-			<?php endif; ?>
-			<?php if ( rs_option( 'rs_linkedin' ) ) : ?>
-				<a href="<?php echo esc_url( rs_option( 'rs_linkedin' ) ); ?>" target="_blank" rel="noopener noreferrer" class="rs-portfolio-btn rs-portfolio-btn--secondary">
-					💼 LinkedIn
-				</a>
-			<?php endif; ?>
-			<?php if ( rs_option( 'rs_facebook' ) ) : ?>
-				<a href="<?php echo esc_url( rs_option( 'rs_facebook' ) ); ?>" target="_blank" rel="noopener noreferrer" class="rs-portfolio-btn rs-portfolio-btn--secondary">
-					📘 Facebook
-				</a>
-			<?php endif; ?>
+	<section class="rs-pf__wrap rs-pf__section" id="rs-pf-contact" aria-labelledby="rs-pf-contact-title">
+		<div class="rs-pf-cta">
+			<p class="rs-pf__eyebrow"><?php echo esc_html( $rs_is_en ? "Let's talk" : 'যোগাযোগ' ); ?></p>
+			<h2 class="rs-pf-cta__title" id="rs-pf-contact-title">
+				<?php echo esc_html( $rs_is_en ? "Have an idea in mind? Let's make it real." : 'মাথায় কোনো কাজের আইডিয়া ঘুরছে? চলুন বানিয়ে ফেলি।' ); ?>
+			</h2>
+			<p class="rs-pf-cta__text">
+				<?php if ( $rs_is_en ) : ?>
+					Cinematic video editing, motion animation, a fast custom website, or a tool that automates the boring part of your workflow: send a message and let's talk.
+				<?php else : ?>
+					সিনেমাটিক ভিডিও এডিটিং, মোশন অ্যানিমেশন, দ্রুতগতির কাস্টম ওয়েবসাইট, কিংবা কাজের একঘেয়ে অংশটা স্বয়ংক্রিয় করার কোনো টুল: একটা মেসেজ দিন, কথা হবে।
+				<?php endif; ?>
+			</p>
+			<div class="rs-pf__actions">
+				<?php $rs_email = rs_option( 'rs_email' ); ?>
+				<?php if ( $rs_email ) : ?>
+					<a class="rs-pf-btn rs-pf-btn--primary" href="<?php echo esc_url( 'mailto:' . $rs_email ); ?>">
+						<?php echo wp_kses( rs_icon( 'mail', 17 ), rs_svg_tags() ); ?>
+						<?php echo esc_html( $rs_is_en ? 'Send an email' : 'ইমেইল পাঠান' ); ?>
+					</a>
+				<?php endif; ?>
+				<?php if ( rs_option( 'rs_linkedin' ) ) : ?>
+					<a class="rs-pf-btn rs-pf-btn--ghost" href="<?php echo esc_url( rs_option( 'rs_linkedin' ) ); ?>" target="_blank" rel="noopener noreferrer">
+						<?php echo wp_kses( rs_icon( 'linkedin', 17 ), rs_svg_tags() ); ?>
+						LinkedIn
+					</a>
+				<?php endif; ?>
+				<?php if ( rs_option( 'rs_facebook' ) ) : ?>
+					<a class="rs-pf-btn rs-pf-btn--ghost" href="<?php echo esc_url( rs_option( 'rs_facebook' ) ); ?>" target="_blank" rel="noopener noreferrer">
+						<?php echo wp_kses( rs_icon( 'facebook', 17 ), rs_svg_tags() ); ?>
+						Facebook
+					</a>
+				<?php endif; ?>
+				<a class="rs-pf-btn rs-pf-btn--ghost" href="https://github.com/raisulsohan" target="_blank" rel="noopener noreferrer">GitHub</a>
+			</div>
 		</div>
-	</footer>
-
+	</section>
 </main>
 
 <!-- =========================================================================
@@ -302,7 +384,7 @@ $projects = function_exists( 'rs_get_portfolio_projects' ) ? rs_get_portfolio_pr
 					<!-- The Challenge -->
 					<div class="rs-case-study-section rs-case-study-box rs-case-study-box--challenge">
 						<h4 class="rs-case-study-heading">
-							🎯 <?php echo esc_html( $rs_is_en ? 'The Challenge & Context' : 'চ্যালেঞ্জ ও প্রেক্ষাপট' ); ?>
+							<?php echo esc_html( $rs_is_en ? 'The Challenge & Context' : 'চ্যালেঞ্জ ও প্রেক্ষাপট' ); ?>
 						</h4>
 						<div class="rs-case-study-text" id="rs-modal-challenge"></div>
 					</div>
@@ -310,7 +392,7 @@ $projects = function_exists( 'rs_get_portfolio_projects' ) ? rs_get_portfolio_pr
 					<!-- The Solution & Process -->
 					<div class="rs-case-study-section rs-case-study-box rs-case-study-box--solution">
 						<h4 class="rs-case-study-heading">
-							💡 <?php echo esc_html( $rs_is_en ? 'The Solution & Creative Process' : 'সমাধান ও কর্মপ্রক্রিয়া' ); ?>
+							<?php echo esc_html( $rs_is_en ? 'The Solution & Creative Process' : 'সমাধান ও কর্মপ্রক্রিয়া' ); ?>
 						</h4>
 						<div class="rs-case-study-text" id="rs-modal-solution"></div>
 					</div>
@@ -318,7 +400,7 @@ $projects = function_exists( 'rs_get_portfolio_projects' ) ? rs_get_portfolio_pr
 					<!-- Key Highlights -->
 					<div class="rs-case-study-section">
 						<h4 class="rs-case-study-heading">
-							⭐ <?php echo esc_html( $rs_is_en ? 'Key Highlights & Results' : 'মূল ফলাফল ও বিশেষ অর্জন' ); ?>
+							<?php echo esc_html( $rs_is_en ? 'Key Highlights & Results' : 'মূল ফলাফল ও বিশেষ অর্জন' ); ?>
 						</h4>
 						<ul class="rs-case-study-list" id="rs-modal-highlights"></ul>
 					</div>
@@ -326,7 +408,7 @@ $projects = function_exists( 'rs_get_portfolio_projects' ) ? rs_get_portfolio_pr
 					<!-- Tools & Technologies -->
 					<div class="rs-case-study-section">
 						<h4 class="rs-case-study-heading">
-							🛠 <?php echo esc_html( $rs_is_en ? 'Tools & Technologies Used' : 'ব্যবহৃত সফটওয়্যার ও টুলস' ); ?>
+							<?php echo esc_html( $rs_is_en ? 'Tools & Technologies Used' : 'ব্যবহৃত সফটওয়্যার ও টুলস' ); ?>
 						</h4>
 						<div class="rs-portfolio-card__tags" id="rs-modal-tags"></div>
 					</div>
@@ -429,7 +511,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	var paginationEl = document.getElementById('rs-portfolio-pagination');
 	var gridEl       = document.getElementById('rs-portfolio-grid');
 
-	var ITEMS_PER_PAGE = 4;
+	var ITEMS_PER_PAGE = 1000; /* Every project on one page; the filter narrows it. */
 	var curFilter      = 'all';
 	var curPage        = 1;
 
@@ -827,6 +909,22 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 
 })();
 </script>
+<script>
+/* A light that follows the pointer across each project card. */
+(function () {
+	if ( ! window.matchMedia || ! window.matchMedia( '(hover: hover)' ).matches ) {
+		return;
+	}
+	document.querySelectorAll( '.rs-pf-card' ).forEach( function ( card ) {
+		card.addEventListener( 'pointermove', function ( e ) {
+			var r = card.getBoundingClientRect();
+			card.style.setProperty( '--mx', ( e.clientX - r.left ) + 'px' );
+			card.style.setProperty( '--my', ( e.clientY - r.top ) + 'px' );
+		}, { passive: true } );
+	} );
+}());
+</script>
+
 
 <?php
 get_footer();
