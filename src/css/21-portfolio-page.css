@@ -329,11 +329,14 @@
 	box-shadow: 0 0 10px var(--pf-green);
 }
 
+.rs-pf__graph-plot {
+	padding: 0.5rem 0.75rem 0.25rem;
+}
+
 .rs-pf__graph svg {
 	display: block;
 	width: 100%;
 	height: auto;
-	padding: 0.5rem 0.75rem 0.75rem;
 }
 
 .rs-pf-curve {
@@ -464,7 +467,8 @@
 	margin-left: -1px;
 	background: var(--pf-pink);
 	box-shadow: 0 0 12px var(--pf-pink);
-	animation: rs-pf-scrub 9s linear infinite;
+	pointer-events: auto;
+	cursor: ew-resize;
 }
 
 .rs-pf-tl__playhead::before {
@@ -477,16 +481,6 @@
 	margin-left: -6px;
 	background: var(--pf-pink);
 	clip-path: polygon(0 0, 100% 0, 100% 55%, 50% 100%, 0 55%);
-}
-
-@keyframes rs-pf-scrub {
-	from {
-		left: 0%;
-	}
-
-	to {
-		left: 100%;
-	}
 }
 
 /* Spacing letters apart breaks Bengali conjuncts, so the tracked-out
@@ -1490,5 +1484,200 @@ button.rs-pf-page:hover {
 	from {
 		opacity: 0.001;
 		transform: translateY(18px);
+	}
+}
+
+/* --------------------------------------------------------------------------
+   Toys: a draggable speed graph and timeline
+   -------------------------------------------------------------------------- */
+
+.rs-pf__graph-foot {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.6rem 0.9rem;
+	padding: 0 1.1rem 1rem;
+}
+
+.rs-pf__graph-foot code {
+	padding: 0.35rem 0.55rem;
+	border-radius: 8px;
+	border: 1px solid var(--pf-line-soft);
+	background: rgba(255, 255, 255, 0.04);
+	font: 0.72rem/1 ui-monospace, "Cascadia Code", Consolas, monospace;
+	font-variant-numeric: tabular-nums;
+	color: var(--pf-brand3);
+}
+
+/* A ball that travels with the easing, so a dragged handle is felt. */
+.rs-pf__graph-track {
+	position: relative;
+	flex: 1;
+	min-width: 6rem;
+	height: 6px;
+	border-radius: 6px;
+	background: var(--pf-line-soft);
+}
+
+.rs-pf__graph-track i {
+	position: absolute;
+	top: 50%;
+	left: calc(var(--p, 0) * (100% - 14px));
+	width: 14px;
+	height: 14px;
+	margin-top: -7px;
+	border-radius: 50%;
+	background: linear-gradient(135deg, var(--pf-brand2), var(--pf-pink));
+	box-shadow: 0 0 14px rgba(234, 119, 255, 0.8);
+}
+
+.rs-pf-g-handle {
+	cursor: grab;
+	touch-action: none;
+}
+
+.rs-pf-g-handle.is-dragging {
+	cursor: grabbing;
+}
+
+.rs-pf-g-hit {
+	fill: transparent;
+}
+
+.rs-pf-g-knob {
+	fill: #16122a;
+	stroke: #b9a8ff;
+	stroke-width: 2;
+	transition: fill 0.2s ease;
+}
+
+.rs-pf-g-handle:hover .rs-pf-g-knob,
+.rs-pf-g-handle.is-dragging .rs-pf-g-knob {
+	fill: #b9a8ff;
+}
+
+.rs-pf-g-ring {
+	fill: none;
+	stroke: #ea77ff;
+	stroke-width: 1.5;
+	opacity: 0;
+	transform-box: fill-box;
+	transform-origin: center;
+}
+
+.rs-pf-toy-hint .rs-pf-g-ring {
+	animation: rs-pf-ring 1.8s ease-out infinite;
+}
+
+.rs-pf-toy-hint .rs-pf-g-handle[data-h="2"] .rs-pf-g-ring {
+	animation-delay: 0.9s;
+}
+
+@keyframes rs-pf-ring {
+	from {
+		opacity: 0.9;
+		transform: scale(0.6);
+	}
+
+	to {
+		opacity: 0;
+		transform: scale(1.9);
+	}
+}
+
+.rs-pf-tl {
+	touch-action: pan-y;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+.rs-pf-tl__head {
+	cursor: ew-resize;
+}
+
+.rs-pf-tl.is-scrubbing,
+.rs-pf-tl.is-scrubbing * {
+	cursor: ew-resize;
+}
+
+.rs-pf-tl__track b {
+	cursor: grab;
+	touch-action: none;
+}
+
+/* A bigger target than the diamond itself. */
+.rs-pf-tl__track b::before {
+	content: "";
+	position: absolute;
+	inset: -10px;
+}
+
+.rs-pf-tl__track b.is-dragging {
+	cursor: grabbing;
+	background: #fff;
+}
+
+.rs-pf-tl__track b.is-hit {
+	animation: rs-pf-pop 0.4s ease-out;
+}
+
+@keyframes rs-pf-pop {
+	40% {
+		transform: rotate(45deg) scale(1.9);
+		background: #fff;
+	}
+}
+
+.rs-pf-tl__playhead::after {
+	content: "";
+	position: absolute;
+	top: -8px;
+	right: -10px;
+	bottom: 0;
+	left: -10px;
+}
+
+/* The nudge */
+.rs-pf-hint {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 3;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.36rem 0.75rem 0.36rem 0.55rem;
+	border-radius: 999px;
+	background: linear-gradient(135deg, var(--pf-brand), var(--pf-pink));
+	box-shadow: 0 10px 26px -10px rgba(234, 119, 255, 0.85);
+	font: 600 0.78rem/1.2 var(--rs-sans);
+	white-space: nowrap;
+	color: #fff;
+	pointer-events: none;
+	opacity: 0;
+	transform: translate(var(--hx, 0), var(--hy, 0)) scale(0.85);
+	transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+/* This one rides the playhead, so its position must not ease. */
+.rs-pf-hint--tl {
+	transition: opacity 0.35s ease;
+}
+
+.rs-pf-hint svg {
+	width: 15px;
+	height: 15px;
+	flex: none;
+}
+
+.rs-pf-hint.is-on {
+	opacity: 1;
+	transform: translate(var(--hx, 0), var(--hy, 0)) scale(1);
+	animation: rs-pf-bob 1.6s ease-in-out infinite;
+}
+
+@keyframes rs-pf-bob {
+	50% {
+		translate: 0 -4px;
 	}
 }

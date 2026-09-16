@@ -115,45 +115,57 @@ $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 			</dl>
 		</div>
 
-		<div class="rs-pf__graph rs-pf-rise rs-pf-rise--2" aria-hidden="true">
-			<div class="rs-pf__graph-bar"><span>Speed Graph</span><span>Ease In · Ease Out</span></div>
-			<svg viewBox="0 0 360 230" fill="none">
-				<defs>
-					<linearGradient id="rs-pf-curve-g" x1="40" y1="0" x2="320" y2="0" gradientUnits="userSpaceOnUse">
-						<stop stop-color="#8f74ff"/>
-						<stop offset="1" stop-color="#ea77ff"/>
-					</linearGradient>
-				</defs>
-				<g stroke="#221d34">
-					<path d="M20 40H340M20 90H340M20 140H340M20 190H340"/>
-					<path d="M40 20V210M96 20V210M152 20V210M208 20V210M264 20V210M320 20V210"/>
-				</g>
-				<g stroke="#625c7e" stroke-dasharray="4 5">
-					<path d="M40 190H160"/>
-					<path d="M320 40H200"/>
-				</g>
-				<path class="rs-pf-curve" d="M40 190C160 190 200 40 320 40" stroke="url(#rs-pf-curve-g)" stroke-width="3.5" stroke-linecap="round"/>
-				<g fill="#16122a" stroke="#b9a8ff" stroke-width="2">
-					<circle cx="160" cy="190" r="5.5"/>
-					<circle cx="200" cy="40" r="5.5"/>
-				</g>
-				<g fill="#ffd166">
-					<rect x="33" y="183" width="14" height="14" rx="2" transform="rotate(45 40 190)"/>
-					<rect x="313" y="33" width="14" height="14" rx="2" transform="rotate(45 320 40)"/>
-				</g>
-				<circle class="rs-pf-motion" r="6" fill="#fff">
-					<animateMotion dur="3.2s" repeatCount="indefinite" path="M40 190C160 190 200 40 320 40"/>
-				</circle>
-				<text x="44" y="222" fill="#625c7e" font-family="ui-monospace, Consolas, monospace" font-size="10">0f</text>
-				<text x="300" y="222" fill="#625c7e" font-family="ui-monospace, Consolas, monospace" font-size="10">24f</text>
-			</svg>
+		<?php
+		$rs_hand = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12"/><path d="M11 11.5v-2a1.5 1.5 0 0 1 3 0V12"/><path d="M14 10.5a1.5 1.5 0 0 1 3 0V12"/><path d="M17 11.5a1.5 1.5 0 0 1 3 0V16a6 6 0 0 1-6 6h-2a6 6 0 0 1-5-2.7L4.3 15a1.5 1.5 0 0 1 2.4-1.8L8 15"/></svg>';
+		?>
+		<div class="rs-pf__graph rs-pf-rise rs-pf-rise--2" aria-hidden="true" data-rs-graph>
+			<div class="rs-pf__graph-bar"><span>Speed Graph</span><span data-rs-graph-readout>Influence 43% · 43%</span></div>
+			<div class="rs-pf__graph-plot">
+				<svg viewBox="0 0 360 230" fill="none">
+					<defs>
+						<linearGradient id="rs-pf-curve-g" x1="40" y1="0" x2="320" y2="0" gradientUnits="userSpaceOnUse">
+							<stop stop-color="#8f74ff"/>
+							<stop offset="1" stop-color="#ea77ff"/>
+						</linearGradient>
+					</defs>
+					<g stroke="#221d34">
+						<path d="M20 40H340M20 90H340M20 140H340M20 190H340"/>
+						<path d="M40 20V210M96 20V210M152 20V210M208 20V210M264 20V210M320 20V210"/>
+					</g>
+					<line data-arm="1" x1="40" y1="190" x2="160" y2="190" stroke="#625c7e" stroke-dasharray="4 5"/>
+					<line data-arm="2" x1="320" y1="40" x2="200" y2="40" stroke="#625c7e" stroke-dasharray="4 5"/>
+					<path class="rs-pf-curve" data-rs-curve d="M40 190C160 190 200 40 320 40" stroke="url(#rs-pf-curve-g)" stroke-width="3.5" stroke-linecap="round"/>
+					<g fill="#ffd166">
+						<rect x="33" y="183" width="14" height="14" rx="2" transform="rotate(45 40 190)"/>
+						<rect x="313" y="33" width="14" height="14" rx="2" transform="rotate(45 320 40)"/>
+					</g>
+					<circle class="rs-pf-motion" data-rs-dot cx="40" cy="190" r="6" fill="#fff"/>
+					<g class="rs-pf-g-handle" data-h="1" transform="translate(160 190)">
+						<circle class="rs-pf-g-ring" r="11"/>
+						<circle class="rs-pf-g-knob" r="5.5"/>
+						<circle class="rs-pf-g-hit" r="18"/>
+					</g>
+					<g class="rs-pf-g-handle" data-h="2" transform="translate(200 40)">
+						<circle class="rs-pf-g-ring" r="11"/>
+						<circle class="rs-pf-g-knob" r="5.5"/>
+						<circle class="rs-pf-g-hit" r="18"/>
+					</g>
+					<text x="44" y="224" fill="#625c7e" font-family="ui-monospace, Consolas, monospace" font-size="10">0f</text>
+					<text x="300" y="224" fill="#625c7e" font-family="ui-monospace, Consolas, monospace" font-size="10">24f</text>
+				</svg>
+			</div>
+			<div class="rs-pf__graph-foot">
+				<code data-rs-graph-code>cubic-bezier(0.43, 0.00, 0.57, 1.00)</code>
+				<span class="rs-pf__graph-track"><i data-rs-graph-ball></i></span>
+			</div>
+			<span class="rs-pf-hint" data-rs-hint="graph"><?php echo $rs_hand; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?><?php echo esc_html( $rs_is_en ? 'Go on, drag me' : 'ধরে টানুন তো!' ); ?></span>
 		</div>
 	</header>
 
 	<section class="rs-pf__wrap rs-pf__timeline rs-pf-rise rs-pf-rise--3" aria-hidden="true">
-		<div class="rs-pf-tl">
+		<div class="rs-pf-tl" data-rs-tl>
 			<div class="rs-pf-tl__head">
-				<span class="rs-pf-tl__tc">00:00:04:12</span>
+				<span class="rs-pf-tl__tc" data-rs-tc>00:00:02:07</span>
 				<ol class="rs-pf-tl__ruler"><li>0s</li><li>1s</li><li>2s</li><li>3s</li><li>4s</li><li>5s</li><li>6s</li></ol>
 			</div>
 			<div class="rs-pf-tl__row" style="--c: #ea77ff">
@@ -169,6 +181,7 @@ $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 				<span class="rs-pf-tl__track"><i class="rs-pf-tl__bar" style="--x: 10%; --w: 86%"></i><b style="--x: 10%"></b><b style="--x: 54%"></b><b style="--x: 79%"></b><b style="--x: 96%"></b></span>
 			</div>
 			<span class="rs-pf-tl__scrub"><span class="rs-pf-tl__playhead"></span></span>
+			<span class="rs-pf-hint rs-pf-hint--tl" data-rs-hint="tl"><?php echo $rs_hand; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?><?php echo esc_html( $rs_is_en ? 'Grab me' : 'আমাকে ধরুন' ); ?></span>
 		</div>
 	</section>
 
@@ -962,6 +975,506 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 			card.style.setProperty( '--my', ( e.clientY - r.top ) + 'px' );
 		}, { passive: true } );
 	} );
+}());
+</script>
+<script>
+/*
+ * Toys on the portfolio stage, for the fun of it: the speed graph's handles
+ * can be dragged, and so can the timeline's keyframes and its playhead.
+ * A first visit gets a nudge to try them; once they have been touched the
+ * nudge is never shown again.
+ */
+(function () {
+	'use strict';
+
+	var stage = document.querySelector('.rs-pf');
+	if (!stage || !window.requestAnimationFrame || !window.PointerEvent) {
+		return;
+	}
+
+	var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+	var FLAG   = 'rs-pf-toy';
+	var played = false;
+
+	try {
+		played = '1' === window.localStorage.getItem(FLAG);
+	} catch (e) {}
+
+	var hints = Array.prototype.slice.call(stage.querySelectorAll('[data-rs-hint]'));
+
+	function capture(el, e) {
+		try {
+			el.setPointerCapture(e.pointerId);
+		} catch (err) {}
+	}
+
+	function clamp(n, lo, hi) {
+		return Math.max(lo, Math.min(hi, n));
+	}
+
+	function markPlayed() {
+		hints.forEach(function (h) {
+			h.classList.remove('is-on');
+		});
+		stage.classList.remove('rs-pf-toy-hint');
+		wakeTimeline();
+
+		if (played) {
+			return;
+		}
+		played = true;
+
+		try {
+			window.localStorage.setItem(FLAG, '1');
+		} catch (e) {}
+	}
+
+	/* The playhead waits beside its label during the nudge, then runs. */
+	function wakeTimeline() {
+		if (T && !T.drag && !reduce) {
+			T.playing = true;
+		}
+	}
+
+	/* Keeps a hint inside its panel, offset from whatever it points at. */
+	function placeHint(hint, anchor, panel, dx, dy) {
+		var a = anchor.getBoundingClientRect();
+		var box = panel.getBoundingClientRect();
+		var x = clamp(a.left - box.left + dx, 8, box.width - hint.offsetWidth - 8);
+		var y = clamp(a.top - box.top + dy, 6, box.height - hint.offsetHeight - 6);
+
+		hint.style.setProperty('--hx', Math.round(x) + 'px');
+		hint.style.setProperty('--hy', Math.round(y) + 'px');
+	}
+
+	/* ------------------------------------------------------------------
+	 * Speed graph
+	 * ---------------------------------------------------------------- */
+
+	var X0 = 40, W = 280, Y0 = 190, H = 150;
+	var DEFAULT = [[120 / 280, 0], [160 / 280, 1]];
+	var graph = stage.querySelector('[data-rs-graph]');
+	var G = null;
+
+	if (graph) {
+		G = {
+			svg: graph.querySelector('svg'),
+			curve: graph.querySelector('[data-rs-curve]'),
+			dot: graph.querySelector('[data-rs-dot]'),
+			arms: [graph.querySelector('[data-arm="1"]'), graph.querySelector('[data-arm="2"]')],
+			handles: [graph.querySelector('[data-h="1"]'), graph.querySelector('[data-h="2"]')],
+			readout: graph.querySelector('[data-rs-graph-readout]'),
+			code: graph.querySelector('[data-rs-graph-code]'),
+			ball: graph.querySelector('[data-rs-graph-ball]'),
+			hint: graph.querySelector('[data-rs-hint="graph"]'),
+			p: [DEFAULT[0].slice(), DEFAULT[1].slice()],
+			visible: true,
+			active: -1,
+			demo: 0
+		};
+	}
+
+	function sx(u) {
+		return X0 + W * u;
+	}
+
+	function sy(v) {
+		return Y0 - H * v;
+	}
+
+	function bez(a, b, t) {
+		var m = 1 - t;
+		return 3 * m * m * t * a + 3 * m * t * t * b + t * t * t;
+	}
+
+	/* The curve parameter at which the graph reaches a given time. */
+	function solveT(u) {
+		var lo = 0, hi = 1, t = u;
+
+		for (var i = 0; i < 22; i++) {
+			t = (lo + hi) / 2;
+			if (bez(G.p[0][0], G.p[1][0], t) < u) {
+				lo = t;
+			} else {
+				hi = t;
+			}
+		}
+
+		return t;
+	}
+
+	function fixed(n) {
+		return (Math.round(n * 100) / 100).toFixed(2);
+	}
+
+	function drawGraph() {
+		var a = G.p[0], b = G.p[1];
+		var h1x = sx(a[0]).toFixed(1), h1y = sy(a[1]).toFixed(1);
+		var h2x = sx(b[0]).toFixed(1), h2y = sy(b[1]).toFixed(1);
+
+		G.curve.setAttribute('d', 'M40 190C' + h1x + ' ' + h1y + ' ' + h2x + ' ' + h2y + ' 320 40');
+		G.arms[0].setAttribute('x2', h1x);
+		G.arms[0].setAttribute('y2', h1y);
+		G.arms[1].setAttribute('x2', h2x);
+		G.arms[1].setAttribute('y2', h2y);
+		G.handles[0].setAttribute('transform', 'translate(' + h1x + ' ' + h1y + ')');
+		G.handles[1].setAttribute('transform', 'translate(' + h2x + ' ' + h2y + ')');
+
+		if (G.readout) {
+			G.readout.textContent = 'Influence ' + Math.round(a[0] * 100) + '% · ' + Math.round((1 - b[0]) * 100) + '%';
+		}
+
+		if (G.code) {
+			G.code.textContent = 'cubic-bezier(' + fixed(a[0]) + ', ' + fixed(a[1]) + ', ' + fixed(b[0]) + ', ' + fixed(b[1]) + ')';
+		}
+	}
+
+	function placeMotion(u) {
+		var t = solveT(u);
+		var v = bez(G.p[0][1], G.p[1][1], t);
+
+		if (G.dot) {
+			G.dot.setAttribute('cx', sx(u).toFixed(1));
+			G.dot.setAttribute('cy', sy(v).toFixed(1));
+		}
+
+		if (G.ball) {
+			G.ball.style.setProperty('--p', clamp(v, -0.15, 1.15).toFixed(4));
+		}
+	}
+
+	function stopDemo() {
+		if (G && G.demo) {
+			window.cancelAnimationFrame(G.demo);
+			G.demo = 0;
+		}
+	}
+
+	/* The nudge: the lower handle pulls itself out and back once. */
+	function demo() {
+		var from = G.p[0][0], started = 0;
+
+		function step(ts) {
+			if (!started) {
+				started = ts;
+			}
+
+			var k = Math.min(1, (ts - started) / 1700);
+
+			G.p[0][0] = from + (0.84 - from) * (0.5 - 0.5 * Math.cos(k * Math.PI * 2));
+			drawGraph();
+			G.demo = k < 1 ? window.requestAnimationFrame(step) : 0;
+		}
+
+		G.demo = window.requestAnimationFrame(step);
+	}
+
+	if (G) {
+		if (reduce) {
+			G.curve.style.strokeDasharray = 'none';
+		} else {
+			G.curve.addEventListener('animationend', function () {
+				G.curve.style.strokeDasharray = 'none';
+			});
+		}
+
+		G.handles.forEach(function (handle, i) {
+			handle.addEventListener('pointerdown', function (e) {
+				e.preventDefault();
+				capture(handle, e);
+				G.active = i;
+				handle.classList.add('is-dragging');
+				G.curve.style.strokeDasharray = 'none';
+				stopDemo();
+				markPlayed();
+			});
+
+			handle.addEventListener('pointermove', function (e) {
+				if (G.active !== i) {
+					return;
+				}
+
+				var m = G.svg.getScreenCTM();
+				if (!m) {
+					return;
+				}
+
+				var pt = G.svg.createSVGPoint();
+				pt.x = e.clientX;
+				pt.y = e.clientY;
+				pt = pt.matrixTransform(m.inverse());
+
+				G.p[i] = [clamp((pt.x - X0) / W, 0, 1), clamp((Y0 - pt.y) / H, -0.12, 1.12)];
+				drawGraph();
+			});
+
+			function release() {
+				G.active = -1;
+				handle.classList.remove('is-dragging');
+			}
+
+			handle.addEventListener('pointerup', release);
+			handle.addEventListener('pointercancel', release);
+		});
+
+		/* Double click puts the classic ease back. */
+		G.svg.addEventListener('dblclick', function () {
+			stopDemo();
+			G.p = [DEFAULT[0].slice(), DEFAULT[1].slice()];
+			drawGraph();
+		});
+
+		drawGraph();
+		placeMotion(reduce ? 0.5 : 0);
+	}
+
+	/* ------------------------------------------------------------------
+	 * Timeline
+	 * ---------------------------------------------------------------- */
+
+	var SPAN = 6, FPS = 24;
+	var tl = stage.querySelector('[data-rs-tl]');
+	var T = null;
+
+	if (tl) {
+		T = {
+			scrub: tl.querySelector('.rs-pf-tl__scrub'),
+			head: tl.querySelector('.rs-pf-tl__playhead'),
+			tc: tl.querySelector('[data-rs-tc]'),
+			hint: tl.querySelector('[data-rs-hint="tl"]'),
+			keys: Array.prototype.slice.call(tl.querySelectorAll('.rs-pf-tl__track b')),
+			t: 0.38,
+			playing: !reduce && played,
+			resume: 0,
+			last: 0,
+			visible: true,
+			drag: null
+		};
+
+		T.keys.forEach(function (key) {
+			key.rsX = (parseFloat(key.style.getPropertyValue('--x')) || 0) / 100;
+		});
+	}
+
+	function pad(n) {
+		return (n < 10 ? '0' : '') + n;
+	}
+
+	function drawPlayhead() {
+		var frames = Math.round(T.t * SPAN * FPS);
+
+		T.head.style.left = (T.t * 100).toFixed(3) + '%';
+
+		if (T.tc) {
+			T.tc.textContent = '00:00:' + pad(Math.floor(frames / FPS)) + ':' + pad(frames % FPS);
+		}
+	}
+
+	function drawRow(track) {
+		var xs = Array.prototype.map.call(track.querySelectorAll('b'), function (key) {
+			return key.rsX;
+		});
+		var min = Math.min.apply(null, xs), max = Math.max.apply(null, xs);
+		var bar = track.querySelector('.rs-pf-tl__bar');
+
+		bar.style.setProperty('--x', (min * 100).toFixed(2) + '%');
+		bar.style.setProperty('--w', ((max - min) * 100).toFixed(2) + '%');
+	}
+
+	/* A keyframe the playhead runs over flashes, as in a real timeline. */
+	function flashCrossed(prev, cur) {
+		if (Math.abs(cur - prev) > 0.5) {
+			return;
+		}
+
+		var lo = Math.min(prev, cur), hi = Math.max(prev, cur);
+
+		T.keys.forEach(function (key) {
+			if (key.rsX > lo && key.rsX <= hi && !key.classList.contains('is-dragging')) {
+				key.classList.remove('is-hit');
+				void key.offsetWidth;
+				key.classList.add('is-hit');
+			}
+		});
+	}
+
+	function pct(e, el) {
+		var r = el.getBoundingClientRect();
+		return clamp((e.clientX - r.left) / r.width, 0, 1);
+	}
+
+	function placeTlHint() {
+		placeHint(T.hint, T.head, tl, 10, -2);
+	}
+
+	if (T) {
+		tl.addEventListener('pointerdown', function (e) {
+			var key = e.target.closest ? e.target.closest('.rs-pf-tl__track b') : null;
+
+			if (key) {
+				e.preventDefault();
+				T.drag = { key: key, track: key.parentNode };
+				key.classList.add('is-dragging');
+			} else {
+				if (e.clientX < T.scrub.getBoundingClientRect().left - 12) {
+					return;
+				}
+
+				var prev = T.t;
+
+				T.drag = { scrub: true };
+				T.playing = false;
+				window.clearTimeout(T.resume);
+				tl.classList.add('is-scrubbing');
+				T.t = pct(e, T.scrub);
+				flashCrossed(prev, T.t);
+				drawPlayhead();
+			}
+
+			markPlayed();
+			capture(tl, e);
+		});
+
+		tl.addEventListener('pointermove', function (e) {
+			if (!T.drag) {
+				return;
+			}
+
+			if (T.drag.key) {
+				T.drag.key.rsX = pct(e, T.drag.track);
+				T.drag.key.style.setProperty('--x', (T.drag.key.rsX * 100).toFixed(2) + '%');
+				drawRow(T.drag.track);
+			} else {
+				var prev = T.t;
+
+				T.t = pct(e, T.scrub);
+				flashCrossed(prev, T.t);
+				drawPlayhead();
+			}
+		});
+
+		function release() {
+			if (!T.drag) {
+				return;
+			}
+
+			if (T.drag.key) {
+				T.drag.key.classList.remove('is-dragging');
+			} else {
+				tl.classList.remove('is-scrubbing');
+
+				if (!reduce) {
+					T.resume = window.setTimeout(function () {
+						T.playing = true;
+					}, 2500);
+				}
+			}
+
+			T.drag = null;
+		}
+
+		tl.addEventListener('pointerup', release);
+		tl.addEventListener('pointercancel', release);
+
+		drawPlayhead();
+	}
+
+	/* ------------------------------------------------------------------
+	 * One clock for both, idle while they are off screen
+	 * ---------------------------------------------------------------- */
+
+	if ('IntersectionObserver' in window) {
+		var watch = new window.IntersectionObserver(function (entries) {
+			entries.forEach(function (entry) {
+				if (G && entry.target === graph) {
+					G.visible = entry.isIntersecting;
+				}
+				if (T && entry.target === tl) {
+					T.visible = entry.isIntersecting;
+				}
+			});
+		});
+
+		if (graph) {
+			watch.observe(graph);
+		}
+		if (tl) {
+			watch.observe(tl);
+		}
+	}
+
+	var LOOP = 2400, MOVE = 1700, clockStart = 0;
+
+	function tick(ts) {
+		if (G && G.visible && !reduce) {
+			if (!clockStart) {
+				clockStart = ts;
+			}
+			placeMotion(Math.min(1, ((ts - clockStart) % LOOP) / MOVE));
+		}
+
+		if (T) {
+			var dt = T.last ? Math.min(64, ts - T.last) : 16;
+
+			T.last = ts;
+
+			if (T.visible && T.playing && !T.drag) {
+				var prev = T.t;
+
+				T.t += dt / (SPAN * 1000);
+				if (T.t > 1) {
+					T.t = 0;
+				}
+				flashCrossed(prev, T.t);
+				drawPlayhead();
+			}
+
+			if (T.hint && T.hint.classList.contains('is-on')) {
+				placeTlHint();
+			}
+		}
+
+		window.requestAnimationFrame(tick);
+	}
+
+	window.requestAnimationFrame(tick);
+
+	/* ------------------------------------------------------------------
+	 * The first-visit nudge
+	 * ---------------------------------------------------------------- */
+
+	if (!played) {
+		stage.classList.add('rs-pf-toy-hint');
+
+		window.setTimeout(function () {
+			if (played) {
+				return;
+			}
+
+			if (G && G.hint) {
+				placeHint(G.hint, G.handles[0].querySelector('.rs-pf-g-knob'), graph, 16, -46);
+				G.hint.classList.add('is-on');
+			}
+
+			if (T && T.hint) {
+				placeTlHint();
+				T.hint.classList.add('is-on');
+			}
+
+			if (G && !reduce) {
+				demo();
+			}
+		}, 1900);
+
+		/* The labels step back after a while; the pulsing rings stay until
+		   something is touched. */
+		window.setTimeout(function () {
+			hints.forEach(function (h) {
+				h.classList.remove('is-on');
+			});
+			wakeTimeline();
+		}, 15000);
+	}
 }());
 </script>
 
