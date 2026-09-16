@@ -1265,3 +1265,140 @@
 	background: var(--rs-border);
 	transform: translateY(-1px);
 }
+
+/* --------------------------------------------------------------------------
+   The page around the stage: header, footer and floating controls
+   -------------------------------------------------------------------------- */
+
+/*
+ * page-portfolio.php adds .rs-stage to <body>. The site tokens are pointed at
+ * the stage colours on the root and on <body> (the body copy wins over a
+ * colour the reader picked, which lives inline on the root), so the header,
+ * the category bar, the footer, toasts and the other pop-ups all turn with it.
+ */
+:root:has(body.rs-stage),
+body.rs-stage {
+	--rs-bg: #0c0a13;
+	--rs-fg: #f5f3fb;
+	--rs-muted: #1b1728;
+	--rs-muted-fg: #a9a2c3;
+	--rs-accent: #262157;
+	--rs-border: rgba(255, 255, 255, 0.16);
+	--rs-border-30: rgba(255, 255, 255, 0.06);
+	--rs-border-40: rgba(255, 255, 255, 0.08);
+	--rs-border-50: rgba(255, 255, 255, 0.09);
+	--rs-border-60: rgba(255, 255, 255, 0.13);
+	--rs-rule: rgba(255, 255, 255, 0.18);
+	--rs-grid: transparent;
+	--rs-hover: #b9a8ff;
+	--rs-mark: #4a3aa0;
+	--rs-bg-blur: rgba(12, 10, 19, 0.8);
+	--rs-cat: #b9a8ff;
+	--rs-body-fg: rgba(245, 243, 251, 0.82);
+	--rs-surface: #100d19;
+	--rs-scrim: rgba(6, 4, 20, 0.72);
+	--rs-solid-bg: #6c4cff;
+	--rs-solid-fg: #fff;
+	--rs-tooltip-bg: #272253;
+	--rs-tooltip-fg: #f1f0f8;
+	--rs-scrollbar-thumb: #3d3777;
+	--rs-scrollbar-track: #0c0a13;
+	color-scheme: dark;
+}
+
+/* Glass over the stage, so the glows show through as the page scrolls. */
+.rs-stage .rs-header {
+	border-bottom-color: #221d34;
+	background: rgba(12, 10, 19, 0.78);
+	-webkit-backdrop-filter: saturate(140%) blur(14px);
+	backdrop-filter: saturate(140%) blur(14px);
+}
+
+.rs-stage .rs-header__brand {
+	color: #fff;
+}
+
+.rs-stage .rs-header__link[aria-current="page"] {
+	color: #ea77ff;
+	background: linear-gradient(90deg, #b9a8ff, #ea77ff);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
+/* The floating controls belong to reading: animation, text size and a page
+   colour mean nothing on a stage that is always dark. The light/dark switch
+   goes for the same reason. */
+.rs-stage .rs-floats,
+.rs-stage .rs-fontctl--float,
+.rs-stage .rs-theme {
+	display: none !important;
+}
+
+/* Pinned to the window's corner, not to the reading column this page does
+   not have. */
+.rs-stage .rs-top {
+	right: clamp(16px, 2.5vw, 32px);
+	bottom: clamp(16px, 2.5vw, 28px);
+	display: grid;
+	place-items: center;
+	width: 46px;
+	height: 46px;
+	padding: 0;
+	border: 1px solid #2c2642;
+	border-radius: 50%;
+	color: #fff;
+	background: rgba(22, 18, 42, 0.86);
+	-webkit-backdrop-filter: blur(10px);
+	backdrop-filter: blur(10px);
+	box-shadow: 0 14px 34px -14px rgba(108, 76, 255, 0.8);
+}
+
+.rs-stage .rs-top:hover {
+	opacity: 1;
+	border-color: transparent;
+	background: linear-gradient(135deg, #6c4cff, #ea77ff);
+}
+
+.rs-stage .rs-footer {
+	padding-block: 1.75rem 2rem;
+	border-top: 1px solid #221d34;
+	background: #0c0a13;
+}
+
+.rs-stage .rs-footer .rs-wrap {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem 1.25rem;
+}
+
+.rs-stage .rs-footer span {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.6rem;
+	color: #8c85a6;
+}
+
+.rs-stage .rs-footer span::before {
+	content: "";
+	width: 0.45rem;
+	height: 0.45rem;
+	border-radius: 1px;
+	transform: rotate(45deg);
+	background: linear-gradient(135deg, #8f74ff, #ea77ff);
+}
+
+.rs-stage .rs-footer__link {
+	margin: 0;
+	font-size: 0.75rem;
+	color: #c4bdd8;
+	border-bottom-color: rgba(185, 168, 255, 0.35);
+}
+
+.rs-stage .rs-footer__link:hover,
+.rs-stage .rs-footer__link:focus-visible {
+	color: #fff;
+	border-bottom-color: #ea77ff;
+}

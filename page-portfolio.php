@@ -15,6 +15,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/* The portfolio is a dark stage in both site themes. This class lets the
+   header, the footer and the floating controls follow it. */
+add_filter(
+	'body_class',
+	function ( $classes ) {
+		$classes[] = 'rs-stage';
+		return $classes;
+	}
+);
+
 get_header();
 
 $rs_is_en = rs_is_en();
