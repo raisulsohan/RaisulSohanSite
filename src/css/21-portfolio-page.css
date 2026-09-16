@@ -358,7 +358,7 @@
 }
 
 .rs-pf-tl {
-	--name: 8rem;
+	--name: 10.5rem;
 	position: relative;
 	overflow: hidden;
 	padding: 0.9rem 1.1rem 1rem;
@@ -411,11 +411,18 @@
 	color: var(--pf-text2);
 }
 
-.rs-pf-tl__name::before {
+.rs-pf-tl__label {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.rs-pf-tl__label::before {
 	content: "";
-	flex: none;
+	display: inline-block;
 	width: 8px;
 	height: 8px;
+	margin-right: 0.5rem;
 	border-radius: 2px;
 	background: var(--c);
 }
@@ -493,7 +500,7 @@
 
 @media (max-width: 600px) {
 	.rs-pf-tl {
-		--name: 7rem;
+		--name: 8.75rem;
 		padding-inline: 0.8rem;
 	}
 
@@ -1679,5 +1686,436 @@ button.rs-pf-page:hover {
 @keyframes rs-pf-bob {
 	50% {
 		translate: 0 -4px;
+	}
+}
+
+/* --------------------------------------------------------------------------
+   More toys: ease presets, layer switches, transport, render queue
+   -------------------------------------------------------------------------- */
+
+.rs-pf__graph-presets {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	padding: 0 1.1rem 0.75rem;
+}
+
+.rs-pf__graph-presets button,
+.rs-pf__graph-copy {
+	min-height: 30px;
+	padding: 0.25rem 0.65rem;
+	border-radius: 999px;
+	border: 1px solid var(--pf-line);
+	background: rgba(255, 255, 255, 0.03);
+	font: 600 0.7rem/1 ui-monospace, "Cascadia Code", Consolas, monospace;
+	color: var(--pf-text2);
+	cursor: pointer;
+	transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.rs-pf__graph-presets button:hover,
+.rs-pf__graph-copy:hover {
+	color: #fff;
+	border-color: var(--pf-brand2);
+}
+
+.rs-pf__graph-presets button.is-active {
+	color: #fff;
+	border-color: transparent;
+	background: linear-gradient(135deg, rgba(108, 76, 255, 0.9), rgba(234, 119, 255, 0.75));
+}
+
+.rs-pf__graph-copy.is-done {
+	color: #0c0a13;
+	border-color: transparent;
+	background: var(--pf-green);
+}
+
+.rs-pf-tl__name {
+	gap: 0.3rem;
+}
+
+.rs-pf-tl__switch {
+	display: grid;
+	place-items: center;
+	flex: none;
+	width: 20px;
+	height: 20px;
+	padding: 0;
+	border: 0;
+	border-radius: 5px;
+	background: transparent;
+	color: var(--pf-dim);
+	cursor: pointer;
+	transition: color 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+}
+
+.rs-pf-tl__switch svg {
+	width: 13px;
+	height: 13px;
+}
+
+.rs-pf-tl__switch:hover {
+	color: var(--pf-text);
+	background: rgba(255, 255, 255, 0.06);
+}
+
+.rs-pf-tl__label {
+	margin-left: 0.25rem;
+}
+
+/* Eye off: the layer fades out of the comp. */
+.rs-pf-tl__switch[data-rs-eye].is-on {
+	opacity: 0.4;
+}
+
+.rs-pf-tl__row.is-hidden .rs-pf-tl__track,
+.rs-pf-tl__row.is-hidden .rs-pf-tl__label {
+	opacity: 0.22;
+}
+
+/* Lock on: the lock lights up and the keyframes stop answering. */
+.rs-pf-tl__switch[data-rs-lock].is-on {
+	color: var(--pf-key);
+}
+
+.rs-pf-tl__row.is-locked .rs-pf-tl__track b {
+	cursor: not-allowed;
+}
+
+.rs-pf-tl__row.is-locked .rs-pf-tl__bar {
+	background-image: repeating-linear-gradient(135deg, rgba(0, 0, 0, 0.35) 0 4px, transparent 4px 8px);
+}
+
+.rs-pf-tl__tc {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.rs-pf-tl__speed {
+	padding: 0.1rem 0.35rem;
+	border-radius: 4px;
+	background: rgba(255, 209, 102, 0.14);
+	font-size: 0.68rem;
+	color: var(--pf-key);
+	opacity: 0;
+	transition: opacity 0.25s ease;
+}
+
+.rs-pf-tl__speed.is-on {
+	opacity: 1;
+}
+
+.rs-pf-tl__keys {
+	display: none;
+	margin: 0.75rem 0 0;
+	font-size: 0.78rem;
+	color: var(--pf-muted);
+	text-align: center;
+}
+
+@media (hover: hover) and (min-width: 700px) {
+	.rs-pf-tl__keys {
+		display: block;
+	}
+}
+
+.rs-pf-tl__keys span {
+	margin: 0 0.4rem;
+	color: var(--pf-dim);
+}
+
+.rs-pf-tl__keys kbd {
+	display: inline-block;
+	min-width: 1.5em;
+	margin: 0 0.1rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 5px;
+	border: 1px solid var(--pf-line);
+	border-bottom-width: 2px;
+	background: var(--pf-panel2);
+	font: 600 0.72rem/1.5 ui-monospace, "Cascadia Code", Consolas, monospace;
+	color: var(--pf-text2);
+	text-align: center;
+}
+
+/* GitHub numbers on a card */
+.rs-pf-card__stats {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.35rem 1rem;
+	margin: 0.2rem 0 0;
+	padding: 0;
+	list-style: none;
+	font-size: 0.8rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--pf-text2);
+}
+
+.rs-pf-card__stats li {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+}
+
+.rs-pf-card__stats svg {
+	width: 14px;
+	height: 14px;
+	color: var(--pf-key);
+}
+
+.rs-pf-card__stats li + li svg {
+	color: var(--pf-green);
+}
+
+.rs-pf-card__ver {
+	padding: 0.12rem 0.5rem;
+	border-radius: 999px;
+	border: 1px solid var(--pf-line);
+	font: 0.72rem/1.4 ui-monospace, "Cascadia Code", Consolas, monospace;
+	color: var(--pf-muted);
+}
+
+/* Hover-scrub: a playhead line across the thumbnail. */
+.rs-pf-card__scrub {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 3;
+	width: 2px;
+	margin-left: -1px;
+	background: #ea77ff;
+	box-shadow: 0 0 10px #ea77ff;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.2s ease;
+}
+
+.rs-pf-card__media.is-scrubbing .rs-pf-card__scrub {
+	opacity: 1;
+}
+
+.rs-pf-card__media.is-scrubbing .rs-pf-card__play {
+	opacity: 0;
+}
+
+/* Before & after slider in the case study */
+.rs-ba {
+	--ba: 50%;
+	position: relative;
+	overflow: hidden;
+	border-radius: 14px;
+	border: 1px solid #2c2642;
+	background: #0c0a13;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+.rs-ba__img {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+.rs-ba__img--before {
+	position: absolute;
+	inset: 0;
+	height: 100%;
+	object-fit: cover;
+	clip-path: inset(0 calc(100% - var(--ba)) 0 0);
+}
+
+.rs-ba__line {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: var(--ba);
+	width: 2px;
+	margin-left: -1px;
+	background: #fff;
+	box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+	pointer-events: none;
+}
+
+/* The grip: a round knob with arrows pointing both ways. */
+.rs-ba__line span {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 38px;
+	height: 38px;
+	margin: -19px 0 0 -19px;
+	border-radius: 50%;
+	border: 2px solid #fff;
+	background: linear-gradient(135deg, #6c4cff, #ea77ff);
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+.rs-ba__line span::before,
+.rs-ba__line span::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	width: 0;
+	height: 0;
+	margin-top: -5px;
+	border-top: 5px solid transparent;
+	border-bottom: 5px solid transparent;
+}
+
+.rs-ba__line span::before {
+	left: 7px;
+	border-right: 6px solid #fff;
+}
+
+.rs-ba__line span::after {
+	right: 7px;
+	border-left: 6px solid #fff;
+}
+
+.rs-ba__tag {
+	position: absolute;
+	top: 0.7rem;
+	padding: 0.2rem 0.55rem;
+	border-radius: 999px;
+	background: rgba(12, 10, 19, 0.7);
+	font-size: 0.7rem;
+	font-weight: 600;
+	color: #fff;
+	pointer-events: none;
+}
+
+.rs-ba__tag--before {
+	left: 0.7rem;
+}
+
+.rs-ba__tag--after {
+	right: 0.7rem;
+}
+
+.rs-ba__range {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	opacity: 0;
+	cursor: ew-resize;
+}
+
+.rs-ba:focus-within .rs-ba__line span {
+	outline: 2px solid #ffd166;
+	outline-offset: 3px;
+}
+
+/* Render Queue easter egg */
+.rs-pf-rq {
+	position: fixed;
+	left: 50%;
+	bottom: clamp(16px, 4vw, 32px);
+	z-index: 90;
+	width: min(92vw, 440px);
+	padding: 0.9rem 1rem 0.85rem;
+	border-radius: 16px;
+	border: 1px solid #2c2642;
+	background: rgba(16, 13, 25, 0.96);
+	box-shadow: 0 30px 70px -20px rgba(108, 76, 255, 0.55);
+	font-family: var(--rs-sans);
+	color: #f5f3fb;
+	opacity: 0;
+	transform: translate(-50%, 24px);
+	transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.rs-pf-rq.is-on {
+	opacity: 1;
+	transform: translate(-50%, 0);
+}
+
+.rs-pf-rq__head,
+.rs-pf-rq__row,
+.rs-pf-rq__meta {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.rs-pf-rq__head {
+	margin-bottom: 0.6rem;
+	font: 600 0.7rem/1 ui-monospace, "Cascadia Code", Consolas, monospace;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: #9a93b5;
+}
+
+.rs-pf-rq__row {
+	font-size: 0.85rem;
+}
+
+.rs-pf-rq__name {
+	overflow: hidden;
+	font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.rs-pf-rq__status {
+	flex: none;
+	color: #ffd166;
+}
+
+.rs-pf-rq.is-done .rs-pf-rq__status {
+	color: #3ddc97;
+}
+
+.rs-pf-rq__bar {
+	overflow: hidden;
+	height: 8px;
+	margin: 0.6rem 0 0.5rem;
+	border-radius: 8px;
+	background: #221d34;
+}
+
+.rs-pf-rq__bar i {
+	display: block;
+	width: 0;
+	height: 100%;
+	border-radius: inherit;
+	background: linear-gradient(90deg, #6c4cff, #ea77ff);
+}
+
+.rs-pf-rq.is-done .rs-pf-rq__bar i {
+	background: linear-gradient(90deg, #3ddc97, #31a8ff);
+}
+
+.rs-pf-rq__meta {
+	font: 0.7rem/1.4 ui-monospace, "Cascadia Code", Consolas, monospace;
+	color: #8c85a6;
+}
+
+.rs-pf-confetti {
+	position: fixed;
+	inset: 0;
+	z-index: 89;
+	overflow: hidden;
+	pointer-events: none;
+}
+
+.rs-pf-confetti i {
+	position: absolute;
+	top: -12px;
+	width: 8px;
+	height: 12px;
+	border-radius: 2px;
+	animation: rs-pf-fall var(--d) cubic-bezier(0.25, 0.5, 0.45, 1) var(--delay) forwards;
+}
+
+@keyframes rs-pf-fall {
+	to {
+		transform: translate(var(--dx), 108vh) rotate(var(--r));
 	}
 }

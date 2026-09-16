@@ -2,13 +2,27 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.7.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.8.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.8
+
+**Nine small delights for a motion designer's site.**
+
+- **Ease presets:** Linear, Easy Ease, Ease Out, Snappy and Overshoot glide the speed graph into shape, and a Copy button puts the live `cubic-bezier()` on the clipboard.
+- **Transport keys:** with the pointer over the hero, `Space` plays and pauses the timeline, `J` and `L` run it backwards and forwards (press again to go faster), `K` stops. A speed badge sits beside the timecode.
+- **Layer switches:** every timeline layer has an eye that hides it and a lock that pins its keyframes.
+- **Type `render`** anywhere on the portfolio: a Render Queue slides up, crawls through its last frames the way renders do, and finishes with confetti.
+- **Missing Footage 404:** a lost address now shows After Effects' colour bars, names the missing "file", and offers Relink and search.
+- **Live GitHub numbers** on tool cards: stars, total release downloads and the latest version with its age, plus a downloads total in the hero. A cron event refreshes them twice a day, so pages never wait on GitHub.
+- **Hover-scrub video cards:** moving across a video thumbnail flips through YouTube's stills with a playhead line, loaded only on hover.
+- **Before & after slider** in a case study, for any project given a Before and an After image in the dashboard.
+- **Render complete:** finishing a story turns the reading progress bar and its label green.
 
 ## What's new in 7.7
 

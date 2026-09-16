@@ -109,6 +109,8 @@ function rs_portfolio_meta_box_html( $post ) {
 	}
 	$direct_url   = get_post_meta( $post->ID, '_rs_portfolio_direct_url', true );
 	$github_url   = get_post_meta( $post->ID, '_rs_portfolio_github_url', true );
+	$before_img   = get_post_meta( $post->ID, '_rs_portfolio_before', true );
+	$after_img    = get_post_meta( $post->ID, '_rs_portfolio_after', true );
 	$tags         = get_post_meta( $post->ID, '_rs_portfolio_tags', true );
 
 	// Bengali fields
@@ -329,6 +331,18 @@ function rs_portfolio_meta_box_html( $post ) {
 				<input type="url" name="rs_portfolio_github_url" id="rs_portfolio_github_url" value="<?php echo esc_attr( $github_url ); ?>" placeholder="https://github.com/..." />
 			</div>
 		</div>
+
+		<div class="rs-meta-grid">
+			<div class="rs-meta-field">
+				<label for="rs_portfolio_before">Before image URL (আগের ছবি, ঐচ্ছিক)</label>
+				<input type="url" name="rs_portfolio_before" id="rs_portfolio_before" value="<?php echo esc_attr( $before_img ); ?>" placeholder="https://..." />
+			</div>
+			<div class="rs-meta-field">
+				<label for="rs_portfolio_after">After image URL (পরের ছবি, ঐচ্ছিক)</label>
+				<input type="url" name="rs_portfolio_after" id="rs_portfolio_after" value="<?php echo esc_attr( $after_img ); ?>" placeholder="https://..." />
+			</div>
+		</div>
+		<p class="description">দুটো ছবিই দিলে কেস স্টাডিতে টেনে তুলনা করার Before/After স্লাইডার দেখাবে। একই মাপের ছবি দিন, Media Library থেকে ছবির URL কপি করে বসাতে পারেন।</p>
 	</div>
 
 	<!-- TAB 2: Bengali Content -->
@@ -559,6 +573,8 @@ function rs_save_portfolio_meta( $post_id ) {
 		'rs_portfolio_image'      => '_rs_portfolio_image',
 		'rs_portfolio_direct_url' => '_rs_portfolio_direct_url',
 		'rs_portfolio_github_url' => '_rs_portfolio_github_url',
+		'rs_portfolio_before'     => '_rs_portfolio_before',
+		'rs_portfolio_after'      => '_rs_portfolio_after',
 	);
 
 	foreach ( $fields_url as $post_key => $meta_key ) {
@@ -984,6 +1000,8 @@ function rs_get_portfolio_projects() {
 				'action_en'    => get_post_meta( $p->ID, '_rs_portfolio_action_en', true ) ?: 'View Details',
 				'direct_url'   => get_post_meta( $p->ID, '_rs_portfolio_direct_url', true ) ?: home_url( '/' ),
 				'github_url'   => get_post_meta( $p->ID, '_rs_portfolio_github_url', true ) ?: '',
+				'before'       => get_post_meta( $p->ID, '_rs_portfolio_before', true ) ?: '',
+				'after'        => get_post_meta( $p->ID, '_rs_portfolio_after', true ) ?: '',
 			);
 		}
 	}
@@ -1826,3 +1844,116 @@ function rs_add_portfolio_project_once( $slug ) {
 	update_option( $flag, 1 );
 }
 
+
+/**
+ * 12. Live GitHub numbers for the project cards.
+ *
+ * Stars, total release downloads and the latest release, per repository.
+ * Nothing is fetched while a page renders: the numbers live in a network
+ * option, a cron event refreshes them twice a day, and a page that finds
+ * them stale only asks for that event. A first visit therefore shows the
+ * cards without numbers, and the next rendered copy has them.
+ */
+function rs_github_repo_slug( $url ) {
+	if ( ! preg_match( '#github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)#i', (string) $url, $m ) ) {
+		return '';
+	}
+
+	return strtolower( $m[1] . '/' . preg_replace( '/\.git$/i', '', $m[2] ) );
+}
+
+/**
+ * The stored numbers for one repository URL, or null.
+ *
+ * @param string $url GitHub URL.
+ * @return array|null { stars, downloads, version, published }
+ */
+function rs_github_stats( $url ) {
+	$slug = rs_github_repo_slug( $url );
+
+	if ( ! $slug ) {
+		return null;
+	}
+
+	$all = get_site_option( 'rs_github_stats', array() );
+
+	if ( empty( $all['fetched'] ) || ( time() - (int) $all['fetched'] ) > 12 * HOUR_IN_SECONDS ) {
+		if ( ! wp_next_scheduled( 'rs_refresh_github_stats' ) ) {
+			wp_schedule_single_event( time(), 'rs_refresh_github_stats' );
+		}
+	}
+
+	return isset( $all['repos'][ $slug ] ) ? $all['repos'][ $slug ] : null;
+}
+
+/**
+ * Cron: fetch every repository the portfolio links to.
+ */
+function rs_refresh_github_stats() {
+	$slugs = array();
+
+	foreach ( rs_get_portfolio_projects() as $project ) {
+		$slug = rs_github_repo_slug( isset( $project['github_url'] ) ? $project['github_url'] : '' );
+		if ( $slug ) {
+			$slugs[ $slug ] = true;
+		}
+	}
+
+	$args  = array(
+		'timeout' => 8,
+		'headers' => array(
+			'Accept'     => 'application/vnd.github+json',
+			'User-Agent' => 'raisulsohan.com portfolio',
+		),
+	);
+	$old   = get_site_option( 'rs_github_stats', array() );
+	$repos = isset( $old['repos'] ) && is_array( $old['repos'] ) ? $old['repos'] : array();
+
+	foreach ( array_keys( $slugs ) as $slug ) {
+		$response = wp_remote_get( 'https://api.github.com/repos/' . $slug, $args );
+
+		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+			continue; /* keep whatever was known before */
+		}
+
+		$repo = json_decode( wp_remote_retrieve_body( $response ), true );
+		$data = array(
+			'stars'     => isset( $repo['stargazers_count'] ) ? (int) $repo['stargazers_count'] : 0,
+			'downloads' => 0,
+			'version'   => '',
+			'published' => '',
+		);
+
+		$response = wp_remote_get( 'https://api.github.com/repos/' . $slug . '/releases?per_page=100', $args );
+
+		if ( ! is_wp_error( $response ) && 200 === (int) wp_remote_retrieve_response_code( $response ) ) {
+			$releases = json_decode( wp_remote_retrieve_body( $response ), true );
+
+			if ( is_array( $releases ) ) {
+				foreach ( array_values( $releases ) as $i => $release ) {
+					if ( ! empty( $release['assets'] ) && is_array( $release['assets'] ) ) {
+						foreach ( $release['assets'] as $asset ) {
+							$data['downloads'] += isset( $asset['download_count'] ) ? (int) $asset['download_count'] : 0;
+						}
+					}
+
+					if ( 0 === $i ) {
+						$data['version']   = isset( $release['tag_name'] ) ? sanitize_text_field( $release['tag_name'] ) : '';
+						$data['published'] = isset( $release['published_at'] ) ? sanitize_text_field( $release['published_at'] ) : '';
+					}
+				}
+			}
+		}
+
+		$repos[ $slug ] = $data;
+	}
+
+	update_site_option(
+		'rs_github_stats',
+		array(
+			'fetched' => time(),
+			'repos'   => $repos,
+		)
+	);
+}
+add_action( 'rs_refresh_github_stats', 'rs_refresh_github_stats' );

@@ -38,3 +38,188 @@
 	border-top: 0;
 	padding-top: 0;
 }
+
+/* --------------------------------------------------------------------------
+   404: Missing Footage
+   -------------------------------------------------------------------------- */
+
+.rs-missing__inner {
+	max-width: 44rem;
+	margin: clamp(2rem, 6vw, 4rem) auto 2rem;
+	text-align: center;
+}
+
+.rs-missing__frame {
+	position: relative;
+	overflow: hidden;
+	aspect-ratio: 16 / 9;
+	max-width: 100%;
+	margin: 0 auto 2rem;
+	border-radius: 14px;
+	border: 1px solid var(--rs-border-50);
+	box-shadow: var(--rs-shadow-lg);
+}
+
+/* SMPTE colour bars, as After Effects draws for a file it cannot find. */
+.rs-missing__bars {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	grid-template-rows: 67fr 8fr 25fr;
+}
+
+.rs-missing__bars i:nth-child(1) {
+	background: linear-gradient(90deg, #c0c0c0 0 14.28%, #c0c000 0 28.57%, #00c0c0 0 42.85%, #00c000 0 57.14%, #c000c0 0 71.42%, #c00000 0 85.71%, #0000c0 0);
+}
+
+.rs-missing__bars i:nth-child(2) {
+	background: linear-gradient(90deg, #0000c0 0 14.28%, #131313 0 28.57%, #c000c0 0 42.85%, #131313 0 57.14%, #00c0c0 0 71.42%, #131313 0 85.71%, #c0c0c0 0);
+}
+
+.rs-missing__bars i:nth-child(3) {
+	background: linear-gradient(90deg, #00214c 0 17.85%, #fff 0 35.7%, #32006a 0 53.55%, #131313 0 71.4%, #090909 0 77.35%, #131313 0 83.3%, #1d1d1d 0 89.25%, #131313 0);
+}
+
+/* Faint scan lines that jump now and then, like a bad signal. */
+.rs-missing__frame::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.1) 0 2px, transparent 2px 4px);
+	animation: rs-missing-glitch 4s steps(1) infinite;
+}
+
+@keyframes rs-missing-glitch {
+	0%,
+	100% {
+		transform: none;
+	}
+
+	92% {
+		transform: translateY(3px);
+	}
+
+	94% {
+		transform: translateX(-4px);
+	}
+}
+
+.rs-missing__badge {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.4rem;
+	max-width: 88%;
+	padding: 0.85rem 1.2rem;
+	border-radius: 12px;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	background: rgba(10, 10, 14, 0.84);
+	-webkit-backdrop-filter: blur(6px);
+	backdrop-filter: blur(6px);
+	transform: translate(-50%, -50%);
+	font: 600 clamp(0.85rem, 2.4vw, 1.05rem)/1.3 var(--rs-sans);
+	color: #fff;
+}
+
+.rs-missing__warn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45rem;
+	color: #ffd166;
+}
+
+.rs-missing__warn svg {
+	width: 1.1em;
+	height: 1.1em;
+}
+
+.rs-missing__badge code {
+	max-width: 100%;
+	overflow: hidden;
+	font: 0.75rem/1.4 ui-monospace, "Cascadia Code", Consolas, monospace;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	color: #c4bdd8;
+}
+
+.rs-missing__tc {
+	position: absolute;
+	right: 0.7rem;
+	bottom: 0.6rem;
+	padding: 0.15rem 0.45rem;
+	border-radius: 4px;
+	background: rgba(0, 0, 0, 0.6);
+	font: 0.7rem/1.4 ui-monospace, "Cascadia Code", Consolas, monospace;
+	color: #fff;
+}
+
+.rs-missing__title {
+	margin: 0 0 0.75rem;
+	font-family: var(--rs-serif);
+	font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+	font-weight: 700;
+	line-height: 1.4;
+	text-wrap: balance;
+}
+
+.rs-missing__text {
+	max-width: 32rem;
+	margin: 0 auto 1.75rem;
+	font-family: var(--rs-serif);
+	line-height: 1.8;
+	color: var(--rs-muted-fg);
+}
+
+.rs-missing__actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.75rem;
+}
+
+.rs-missing__btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-height: 44px;
+	padding: 0.6rem 1.15rem;
+	border-radius: 999px;
+	border: 1px solid var(--rs-border);
+	background: transparent;
+	font: 600 0.92rem/1.2 var(--rs-sans);
+	color: var(--rs-fg);
+	text-decoration: none;
+	cursor: pointer;
+	transition: border-color 0.2s ease, transform 0.2s ease, filter 0.2s ease;
+}
+
+.rs-missing__btn svg {
+	width: 16px;
+	height: 16px;
+}
+
+.rs-missing__btn:hover {
+	border-color: var(--rs-hover);
+	transform: translateY(-1px);
+}
+
+.rs-missing__btn--primary {
+	border-color: transparent;
+	background: var(--rs-solid-bg);
+	color: var(--rs-solid-fg);
+}
+
+.rs-missing__btn--primary:hover {
+	color: var(--rs-solid-fg);
+	filter: brightness(1.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.rs-missing__frame::after {
+		animation: none;
+	}
+}

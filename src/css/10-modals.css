@@ -230,3 +230,18 @@
 .rs-modal__top svg {
 	display: block;
 }
+
+/* The end of a story is a finished render: the label and the bar turn green. */
+.rs-time-left.is-done {
+	color: #0f7a52;
+	box-shadow: var(--rs-shadow-sm), inset 0 0 0 1px rgba(61, 220, 151, 0.55);
+}
+
+:root[data-theme="dark"] .rs-time-left.is-done {
+	color: #3ddc97;
+}
+
+.rs-bar-done {
+	background: linear-gradient(90deg, #3ddc97, #31a8ff) !important;
+	box-shadow: 0 0 10px rgba(61, 220, 151, 0.6);
+}

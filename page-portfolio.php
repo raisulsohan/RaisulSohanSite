@@ -37,12 +37,18 @@ $projects = function_exists( 'rs_get_portfolio_projects' ) ? rs_get_portfolio_pr
 /* Numbers for the hero, worked out from the projects themselves. */
 $rs_count_cat  = array( 'web' => 0, 'video' => 0, 'tools' => 0 );
 $rs_count_open = 0;
+$rs_downloads  = 0;
+$rs_gh         = array();
 foreach ( $projects as $p ) {
 	if ( isset( $rs_count_cat[ $p['category'] ] ) ) {
 		$rs_count_cat[ $p['category'] ]++;
 	}
 	if ( ! empty( $p['github_url'] ) ) {
 		$rs_count_open++;
+		$rs_gh[ $p['id'] ] = function_exists( 'rs_github_stats' ) ? rs_github_stats( $p['github_url'] ) : null;
+		if ( $rs_gh[ $p['id'] ] ) {
+			$rs_downloads += (int) $rs_gh[ $p['id'] ]['downloads'];
+		}
 	}
 }
 $rs_num = function ( $n ) use ( $rs_is_en ) {
@@ -106,6 +112,12 @@ $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 						<dd><?php echo esc_html( $rs_num( $rs_count_open ) ); ?></dd>
 					</div>
 				<?php endif; ?>
+				<?php if ( $rs_downloads ) : ?>
+					<div>
+						<dt><?php echo esc_html( $rs_is_en ? 'Downloads' : 'ডাউনলোড' ); ?></dt>
+						<dd><?php echo esc_html( $rs_num( number_format_i18n( $rs_downloads ) ) ); ?></dd>
+					</div>
+				<?php endif; ?>
 				<?php if ( $rs_count_cat['video'] ) : ?>
 					<div>
 						<dt><?php echo esc_html( $rs_is_en ? 'Video & motion' : 'ভিডিও ও মোশন' ); ?></dt>
@@ -116,6 +128,8 @@ $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 		</div>
 
 		<?php
+		$rs_eye  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+		$rs_lock = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
 		$rs_hand = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12"/><path d="M11 11.5v-2a1.5 1.5 0 0 1 3 0V12"/><path d="M14 10.5a1.5 1.5 0 0 1 3 0V12"/><path d="M17 11.5a1.5 1.5 0 0 1 3 0V16a6 6 0 0 1-6 6h-2a6 6 0 0 1-5-2.7L4.3 15a1.5 1.5 0 0 1 2.4-1.8L8 15"/></svg>';
 		?>
 		<div class="rs-pf__graph rs-pf-rise rs-pf-rise--2" aria-hidden="true" data-rs-graph>
@@ -154,8 +168,16 @@ $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 					<text x="300" y="224" fill="#625c7e" font-family="ui-monospace, Consolas, monospace" font-size="10">24f</text>
 				</svg>
 			</div>
+			<div class="rs-pf__graph-presets">
+				<button type="button" tabindex="-1" data-ease="0,0,1,1">Linear</button>
+				<button type="button" tabindex="-1" data-ease="0.43,0,0.57,1" class="is-active">Easy Ease</button>
+				<button type="button" tabindex="-1" data-ease="0,0,0.2,1">Ease Out</button>
+				<button type="button" tabindex="-1" data-ease="0.8,0,0.2,1">Snappy</button>
+				<button type="button" tabindex="-1" data-ease="0.34,1.25,0.64,1">Overshoot</button>
+			</div>
 			<div class="rs-pf__graph-foot">
 				<code data-rs-graph-code>cubic-bezier(0.43, 0.00, 0.57, 1.00)</code>
+				<button type="button" tabindex="-1" class="rs-pf__graph-copy" data-rs-graph-copy data-done="<?php echo esc_attr( $rs_is_en ? 'Copied' : 'কপি হয়েছে' ); ?>"><?php echo esc_html( $rs_is_en ? 'Copy' : 'কপি' ); ?></button>
 				<span class="rs-pf__graph-track"><i data-rs-graph-ball></i></span>
 			</div>
 			<span class="rs-pf-hint" data-rs-hint="graph"><?php echo $rs_hand; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?><?php echo esc_html( $rs_is_en ? 'Go on, drag me' : 'ধরে টানুন তো!' ); ?></span>
@@ -165,24 +187,43 @@ $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 	<section class="rs-pf__wrap rs-pf__timeline rs-pf-rise rs-pf-rise--3" aria-hidden="true">
 		<div class="rs-pf-tl" data-rs-tl>
 			<div class="rs-pf-tl__head">
-				<span class="rs-pf-tl__tc" data-rs-tc>00:00:02:07</span>
+				<span class="rs-pf-tl__tc"><span data-rs-tc>00:00:02:07</span><span class="rs-pf-tl__speed" data-rs-speed></span></span>
 				<ol class="rs-pf-tl__ruler"><li>0s</li><li>1s</li><li>2s</li><li>3s</li><li>4s</li><li>5s</li><li>6s</li></ol>
 			</div>
 			<div class="rs-pf-tl__row" style="--c: #ea77ff">
-				<span class="rs-pf-tl__name"><?php echo esc_html( $rs_is_en ? 'Motion design' : 'মোশন ডিজাইন' ); ?></span>
+				<span class="rs-pf-tl__name">
+					<button type="button" tabindex="-1" class="rs-pf-tl__switch" data-rs-eye><?php echo $rs_eye; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
+					<button type="button" tabindex="-1" class="rs-pf-tl__switch" data-rs-lock><?php echo $rs_lock; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
+					<span class="rs-pf-tl__label"><?php echo esc_html( $rs_is_en ? 'Motion design' : 'মোশন ডিজাইন' ); ?></span>
+				</span>
 				<span class="rs-pf-tl__track"><i class="rs-pf-tl__bar" style="--x: 3%; --w: 60%"></i><b style="--x: 3%"></b><b style="--x: 28%"></b><b style="--x: 63%"></b></span>
 			</div>
 			<div class="rs-pf-tl__row" style="--c: #31a8ff">
-				<span class="rs-pf-tl__name"><?php echo esc_html( $rs_is_en ? 'Automation' : 'অটোমেশন' ); ?></span>
+				<span class="rs-pf-tl__name">
+					<button type="button" tabindex="-1" class="rs-pf-tl__switch" data-rs-eye><?php echo $rs_eye; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
+					<button type="button" tabindex="-1" class="rs-pf-tl__switch" data-rs-lock><?php echo $rs_lock; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
+					<span class="rs-pf-tl__label"><?php echo esc_html( $rs_is_en ? 'Automation' : 'অটোমেশন' ); ?></span>
+				</span>
 				<span class="rs-pf-tl__track"><i class="rs-pf-tl__bar" style="--x: 22%; --w: 72%"></i><b style="--x: 22%"></b><b style="--x: 47%"></b><b style="--x: 94%"></b></span>
 			</div>
 			<div class="rs-pf-tl__row" style="--c: #3ddc97">
-				<span class="rs-pf-tl__name"><?php echo esc_html( $rs_is_en ? 'Open source' : 'ওপেন সোর্স' ); ?></span>
+				<span class="rs-pf-tl__name">
+					<button type="button" tabindex="-1" class="rs-pf-tl__switch" data-rs-eye><?php echo $rs_eye; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
+					<button type="button" tabindex="-1" class="rs-pf-tl__switch" data-rs-lock><?php echo $rs_lock; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
+					<span class="rs-pf-tl__label"><?php echo esc_html( $rs_is_en ? 'Open source' : 'ওপেন সোর্স' ); ?></span>
+				</span>
 				<span class="rs-pf-tl__track"><i class="rs-pf-tl__bar" style="--x: 10%; --w: 86%"></i><b style="--x: 10%"></b><b style="--x: 54%"></b><b style="--x: 79%"></b><b style="--x: 96%"></b></span>
 			</div>
 			<span class="rs-pf-tl__scrub"><span class="rs-pf-tl__playhead"></span></span>
 			<span class="rs-pf-hint rs-pf-hint--tl" data-rs-hint="tl"><?php echo $rs_hand; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?><?php echo esc_html( $rs_is_en ? 'Grab me' : 'আমাকে ধরুন' ); ?></span>
 		</div>
+		<p class="rs-pf-tl__keys">
+			<?php if ( $rs_is_en ) : ?>
+				<kbd>Space</kbd> play or pause <span>·</span> <kbd>J</kbd><kbd>K</kbd><kbd>L</kbd> back, stop, forward <span>·</span> try typing <kbd>render</kbd>
+			<?php else : ?>
+				<kbd>Space</kbd> চালান বা থামান <span>·</span> <kbd>J</kbd><kbd>K</kbd><kbd>L</kbd> পেছনে, থামুন, সামনে <span>·</span> একবার <kbd>render</kbd> লিখে দেখুন
+			<?php endif; ?>
+		</p>
 	</section>
 
 	<section class="rs-pf__wrap rs-pf__section" aria-labelledby="rs-pf-toolbox">
@@ -249,10 +290,15 @@ $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 				$pf_more    = count( $p['tags'] ) - count( $pf_tags );
 				$pf_domain  = ! empty( $p['direct_url'] ) ? preg_replace( '#^https?://(?:www\.)?([^/]+).*$#', '$1', $p['direct_url'] ) : '';
 				$pf_label   = ( $rs_is_en ? 'Case study: ' : 'কেস স্টাডি: ' ) . $pf_name;
+				$pf_gh      = isset( $rs_gh[ $p['id'] ] ) ? $rs_gh[ $p['id'] ] : null;
+				$pf_yt      = ( 'video' === $p['category'] && preg_match( '~(?:youtu\.be/|youtube\.com/(?:watch\?v=|shorts/|embed/))([A-Za-z0-9_-]{11})~', (string) $p['direct_url'], $pf_ytm ) ) ? $pf_ytm[1] : '';
 				?>
 				<article class="rs-portfolio-card rs-pf-card rs-pf-card--<?php echo esc_attr( $p['category'] ); ?><?php echo $pf_feature ? ' is-featured' : ''; ?>" data-category="<?php echo esc_attr( $p['category'] ); ?>" data-project-id="<?php echo esc_attr( $p['id'] ); ?>" id="project-<?php echo esc_attr( $p['id'] ); ?>" style="--a: <?php echo esc_attr( $pf_accent ); ?>">
 
-					<div class="rs-pf-card__media rs-open-case-study" data-project-id="<?php echo esc_attr( $p['id'] ); ?>" role="button" tabindex="0" aria-label="<?php echo esc_attr( $pf_label ); ?>">
+					<div class="rs-pf-card__media rs-open-case-study" data-project-id="<?php echo esc_attr( $p['id'] ); ?>" role="button" tabindex="0" aria-label="<?php echo esc_attr( $pf_label ); ?>"<?php echo $pf_yt ? ' data-rs-scrub="' . esc_attr( $pf_yt ) . '"' : ''; ?>>
+						<?php if ( $pf_yt ) : ?>
+							<span class="rs-pf-card__scrub" aria-hidden="true"></span>
+						<?php endif; ?>
 						<?php if ( 'web' === $p['category'] ) : ?>
 							<span class="rs-pf-card__bar" aria-hidden="true"><i></i><i></i><i></i><span><?php echo esc_html( $pf_domain ); ?></span></span>
 						<?php endif; ?>
@@ -298,6 +344,26 @@ $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 								<?php endforeach; ?>
 								<?php if ( $pf_more > 0 ) : ?>
 									<li class="rs-pf-tag">+<?php echo esc_html( $rs_num( $pf_more ) ); ?></li>
+								<?php endif; ?>
+							</ul>
+						<?php endif; ?>
+
+						<?php if ( $pf_gh ) : ?>
+							<ul class="rs-pf-card__stats">
+								<li><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.2l2.7 5.5 6 .9-4.35 4.25 1 6L12 17l-5.35 2.85 1-6L3.3 9.6l6-.9z"/></svg><span class="rs-pf-sr"><?php echo esc_html( $rs_is_en ? 'GitHub stars:' : 'GitHub স্টার:' ); ?></span> <?php echo esc_html( $rs_num( number_format_i18n( $pf_gh['stars'] ) ) ); ?></li>
+								<?php if ( $pf_gh['downloads'] ) : ?>
+									<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="rs-pf-sr"><?php echo esc_html( $rs_is_en ? 'Downloads:' : 'ডাউনলোড:' ); ?></span> <?php echo esc_html( $rs_num( number_format_i18n( $pf_gh['downloads'] ) ) ); ?></li>
+								<?php endif; ?>
+								<?php if ( $pf_gh['version'] ) : ?>
+									<li class="rs-pf-card__ver">
+										<?php
+										echo esc_html( $pf_gh['version'] );
+										if ( $pf_gh['published'] && strtotime( $pf_gh['published'] ) ) {
+											$pf_ago = human_time_diff( strtotime( $pf_gh['published'] ), time() );
+											echo esc_html( ' · ' . ( $rs_is_en ? $pf_ago . ' ago' : rs_bn_digits( $pf_ago ) . ' আগে' ) );
+										}
+										?>
+									</li>
 								<?php endif; ?>
 							</ul>
 						<?php endif; ?>
@@ -406,6 +472,19 @@ $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 						<p class="rs-case-study-lead" id="rs-modal-summary"></p>
 					</div>
 
+					<!-- Before & after, when the project has both pictures -->
+					<div class="rs-case-study-section" id="rs-modal-ba" hidden>
+						<h4 class="rs-case-study-heading"><?php echo esc_html( $rs_is_en ? 'Before & after' : 'আগে ও পরে' ); ?></h4>
+						<div class="rs-ba" style="--ba: 50%">
+							<img class="rs-ba__img" data-rs-ba-after src="" alt="<?php echo esc_attr( $rs_is_en ? 'After' : 'পরে' ); ?>">
+							<img class="rs-ba__img rs-ba__img--before" data-rs-ba-before src="" alt="<?php echo esc_attr( $rs_is_en ? 'Before' : 'আগে' ); ?>">
+							<span class="rs-ba__line" aria-hidden="true"><span></span></span>
+							<span class="rs-ba__tag rs-ba__tag--before" aria-hidden="true"><?php echo esc_html( $rs_is_en ? 'Before' : 'আগে' ); ?></span>
+							<span class="rs-ba__tag rs-ba__tag--after" aria-hidden="true"><?php echo esc_html( $rs_is_en ? 'After' : 'পরে' ); ?></span>
+							<input class="rs-ba__range" type="range" min="0" max="100" value="50" data-rs-ba-range aria-label="<?php echo esc_attr( $rs_is_en ? 'Compare before and after' : 'আগে ও পরে তুলনা করুন' ); ?>">
+						</div>
+					</div>
+
 					<!-- The Challenge -->
 					<div class="rs-case-study-section rs-case-study-box rs-case-study-box--challenge">
 						<h4 class="rs-case-study-heading">
@@ -512,6 +591,8 @@ foreach ( $projects as $p ) {
 		'action_label'=> $rs_is_en ? $p['action_en'] : $p['action_bn'],
 		'direct_url'  => $p['direct_url'],
 		'github_url'  => ! empty( $p['github_url'] ) ? $p['github_url'] : '',
+		'before'      => ! empty( $p['before'] ) ? esc_url_raw( $p['before'] ) : '',
+		'after'       => ! empty( $p['after'] ) ? esc_url_raw( $p['after'] ) : '',
 	);
 }
 echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
@@ -873,6 +954,19 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 			}
 		}
 
+		// Before & after slider
+		var baWrap = document.getElementById('rs-modal-ba');
+		if (baWrap) {
+			var hasBa = Boolean(p.before && p.after);
+			baWrap.hidden = !hasBa;
+			if (hasBa) {
+				baWrap.querySelector('[data-rs-ba-before]').src = p.before;
+				baWrap.querySelector('[data-rs-ba-after]').src = p.after;
+				baWrap.querySelector('[data-rs-ba-range]').value = 50;
+				baWrap.querySelector('.rs-ba').style.setProperty('--ba', '50%');
+			}
+		}
+
 		// Show Modal
 		overlay.hidden = false;
 		document.body.style.overflow = 'hidden';
@@ -919,6 +1013,13 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 			}
 		});
 	});
+
+	var baRangeEl = document.querySelector('[data-rs-ba-range]');
+	if (baRangeEl) {
+		baRangeEl.addEventListener('input', function() {
+			this.parentNode.style.setProperty('--ba', this.value + '%');
+		});
+	}
 
 	// Close buttons
 	if (closeBtn) closeBtn.addEventListener('click', closeCaseStudy);
@@ -1013,16 +1114,16 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	}
 
 	function markPlayed() {
+		if (played) {
+			return;
+		}
+		played = true;
+
 		hints.forEach(function (h) {
 			h.classList.remove('is-on');
 		});
 		stage.classList.remove('rs-pf-toy-hint');
 		wakeTimeline();
-
-		if (played) {
-			return;
-		}
-		played = true;
 
 		try {
 			window.localStorage.setItem(FLAG, '1');
@@ -1183,6 +1284,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 				e.preventDefault();
 				capture(handle, e);
 				G.active = i;
+				markPreset(null);
 				handle.classList.add('is-dragging');
 				G.curve.style.strokeDasharray = 'none';
 				stopDemo();
@@ -1204,7 +1306,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 				pt.y = e.clientY;
 				pt = pt.matrixTransform(m.inverse());
 
-				G.p[i] = [clamp((pt.x - X0) / W, 0, 1), clamp((Y0 - pt.y) / H, -0.12, 1.12)];
+				G.p[i] = [clamp((pt.x - X0) / W, 0, 1), clamp((Y0 - pt.y) / H, -0.25, 1.25)];
 				drawGraph();
 			});
 
@@ -1221,8 +1323,97 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		G.svg.addEventListener('dblclick', function () {
 			stopDemo();
 			G.p = [DEFAULT[0].slice(), DEFAULT[1].slice()];
+			markPreset(presetBtns[1]);
 			drawGraph();
 		});
+
+		/* Presets glide the handles to a named ease. */
+		var presetBtns = Array.prototype.slice.call(graph.querySelectorAll('[data-ease]'));
+		var glide = 0;
+
+		function markPreset(btn) {
+			presetBtns.forEach(function (b) {
+				b.classList.toggle('is-active', b === btn);
+			});
+		}
+
+		presetBtns.forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				var to = btn.getAttribute('data-ease').split(',').map(parseFloat);
+				var from = [G.p[0][0], G.p[0][1], G.p[1][0], G.p[1][1]];
+				var started = 0;
+
+				stopDemo();
+				markPlayed();
+				markPreset(btn);
+				G.curve.style.strokeDasharray = 'none';
+				window.cancelAnimationFrame(glide);
+
+				function step(ts) {
+					if (!started) {
+						started = ts;
+					}
+
+					var k = reduce ? 1 : Math.min(1, (ts - started) / 450);
+					var e = 1 - Math.pow(1 - k, 3);
+					var v = from.map(function (f, n) {
+						return f + (to[n] - f) * e;
+					});
+
+					G.p = [[v[0], v[1]], [v[2], v[3]]];
+					drawGraph();
+					glide = k < 1 ? window.requestAnimationFrame(step) : 0;
+				}
+
+				glide = window.requestAnimationFrame(step);
+			});
+		});
+
+		/* Copy the curve as CSS. */
+		var copyBtn = graph.querySelector('[data-rs-graph-copy]');
+
+		if (copyBtn) {
+			var copyLabel = copyBtn.textContent;
+
+			copyBtn.addEventListener('click', function () {
+				var text = G.code ? G.code.textContent : '';
+
+				function done() {
+					copyBtn.textContent = copyBtn.getAttribute('data-done') + ' ✓';
+					copyBtn.classList.add('is-done');
+					window.setTimeout(function () {
+						copyBtn.textContent = copyLabel;
+						copyBtn.classList.remove('is-done');
+					}, 1600);
+				}
+
+				/* The old way, for browsers that refuse the clipboard API. */
+				function legacyCopy() {
+					var ta = document.createElement('textarea');
+					ta.value = text;
+					ta.setAttribute('readonly', '');
+					ta.style.position = 'fixed';
+					ta.style.opacity = '0';
+					document.body.appendChild(ta);
+					ta.select();
+					try {
+						if (document.execCommand('copy')) {
+							done();
+						}
+					} catch (err) {}
+					document.body.removeChild(ta);
+				}
+
+				markPlayed();
+
+				if (navigator.clipboard && navigator.clipboard.writeText) {
+					navigator.clipboard.writeText(text).then(done, legacyCopy);
+					return;
+				}
+
+				legacyCopy();
+			});
+		}
 
 		drawGraph();
 		placeMotion(reduce ? 0.5 : 0);
@@ -1245,6 +1436,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 			keys: Array.prototype.slice.call(tl.querySelectorAll('.rs-pf-tl__track b')),
 			t: 0.38,
 			playing: !reduce && played,
+			speed: 1,
 			resume: 0,
 			last: 0,
 			visible: true,
@@ -1290,7 +1482,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		var lo = Math.min(prev, cur), hi = Math.max(prev, cur);
 
 		T.keys.forEach(function (key) {
-			if (key.rsX > lo && key.rsX <= hi && !key.classList.contains('is-dragging')) {
+			if (key.rsX > lo && key.rsX <= hi && !key.classList.contains('is-dragging') && !key.closest('.is-hidden')) {
 				key.classList.remove('is-hit');
 				void key.offsetWidth;
 				key.classList.add('is-hit');
@@ -1310,6 +1502,15 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	if (T) {
 		tl.addEventListener('pointerdown', function (e) {
 			var key = e.target.closest ? e.target.closest('.rs-pf-tl__track b') : null;
+
+			if (e.target.closest && e.target.closest('.rs-pf-tl__switch')) {
+				return;
+			}
+
+			/* A locked layer's keyframes stay put; the press scrubs instead. */
+			if (key && key.closest('.is-locked')) {
+				key = null;
+			}
 
 			if (key) {
 				e.preventDefault();
@@ -1376,6 +1577,91 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		tl.addEventListener('pointerup', release);
 		tl.addEventListener('pointercancel', release);
 
+		/* The eye hides a layer; the lock keeps its keyframes where they are. */
+		Array.prototype.forEach.call(tl.querySelectorAll('[data-rs-eye], [data-rs-lock]'), function (btn) {
+			btn.addEventListener('click', function () {
+				var row = btn.closest('.rs-pf-tl__row');
+				var cls = btn.hasAttribute('data-rs-eye') ? 'is-hidden' : 'is-locked';
+
+				markPlayed();
+				row.classList.toggle(cls);
+				btn.classList.toggle('is-on', row.classList.contains(cls));
+			});
+		});
+
+		/*
+		 * Transport keys, as in an editor: Space plays and pauses, J runs
+		 * backwards, K stops, L runs forwards, and J or L again go faster.
+		 * They only listen while the pointer is over the hero or the
+		 * timeline, so Space keeps scrolling the page everywhere else.
+		 */
+		var speedEl = tl.querySelector('[data-rs-speed]');
+		var armed = false;
+
+		[stage.querySelector('.rs-pf__hero'), tl.parentNode].forEach(function (zone) {
+			if (!zone) {
+				return;
+			}
+			zone.addEventListener('pointerenter', function () {
+				armed = true;
+			});
+			zone.addEventListener('pointerleave', function () {
+				armed = false;
+			});
+		});
+
+		function showSpeed() {
+			if (!speedEl) {
+				return;
+			}
+			speedEl.textContent = ! T.playing ? '❚❚' : (T.speed < 0 ? '◀ ' : '▶ ') + Math.abs(T.speed) + '×';
+			speedEl.classList.add('is-on');
+			window.clearTimeout(speedEl.rsTimer);
+			speedEl.rsTimer = window.setTimeout(function () {
+				speedEl.classList.remove('is-on');
+			}, 1400);
+		}
+
+		document.addEventListener('keydown', function (e) {
+			if (!armed || e.ctrlKey || e.metaKey || e.altKey || !e.key) {
+				return;
+			}
+
+			var tag = e.target && e.target.tagName;
+			if ('INPUT' === tag || 'TEXTAREA' === tag || 'SELECT' === tag || (e.target && e.target.isContentEditable)) {
+				return;
+			}
+
+			var overlay = document.getElementById('rs-case-study-overlay');
+			if (overlay && !overlay.hidden) {
+				return;
+			}
+
+			var key = e.key.toLowerCase();
+			if (' ' !== key && 'j' !== key && 'k' !== key && 'l' !== key) {
+				return;
+			}
+
+			e.preventDefault();
+			markPlayed();
+			window.clearTimeout(T.resume);
+
+			if (' ' === key) {
+				T.playing = !T.playing;
+				T.speed = 1;
+			} else if ('k' === key) {
+				T.playing = false;
+			} else if ('l' === key) {
+				T.speed = T.playing && T.speed > 0 ? Math.min(8, T.speed * 2) : 1;
+				T.playing = true;
+			} else {
+				T.speed = T.playing && T.speed < 0 ? Math.max(-8, T.speed * 2) : -1;
+				T.playing = true;
+			}
+
+			showSpeed();
+		});
+
 		drawPlayhead();
 	}
 
@@ -1421,9 +1707,11 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 			if (T.visible && T.playing && !T.drag) {
 				var prev = T.t;
 
-				T.t += dt / (SPAN * 1000);
+				T.t += (dt * T.speed) / (SPAN * 1000);
 				if (T.t > 1) {
 					T.t = 0;
+				} else if (T.t < 0) {
+					T.t = 1;
 				}
 				flashCrossed(prev, T.t);
 				drawPlayhead();
@@ -1438,6 +1726,176 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	}
 
 	window.requestAnimationFrame(tick);
+
+	/* ------------------------------------------------------------------
+	 * Hover-scrub video cards, like a clip in an editor's bin
+	 * ---------------------------------------------------------------- */
+
+	if (window.matchMedia && window.matchMedia('(hover: hover)').matches) {
+		Array.prototype.forEach.call(stage.querySelectorAll('[data-rs-scrub]'), function (media) {
+			var img = media.querySelector('.rs-pf-card__img');
+			var line = media.querySelector('.rs-pf-card__scrub');
+
+			if (!img) {
+				return;
+			}
+
+			var id = media.getAttribute('data-rs-scrub');
+			var original = img.getAttribute('src');
+			var frames = null;
+			var current = -1;
+
+			media.addEventListener('pointerenter', function () {
+				if (frames) {
+					return;
+				}
+				/* YouTube keeps three stills from each video; they are only
+				   asked for once someone actually hovers the card. */
+				frames = [original].concat(['hq1', 'hq2', 'hq3'].map(function (name) {
+					var url = 'https://i.ytimg.com/vi/' + id + '/' + name + '.jpg';
+					(new Image()).src = url;
+					return url;
+				}));
+			});
+
+			media.addEventListener('pointermove', function (e) {
+				if (!frames) {
+					return;
+				}
+
+				var r = media.getBoundingClientRect();
+				var k = clamp((e.clientX - r.left) / r.width, 0, 0.999);
+				var i = Math.floor(k * frames.length);
+
+				media.classList.add('is-scrubbing');
+				if (line) {
+					line.style.left = (k * 100).toFixed(2) + '%';
+				}
+				if (i !== current) {
+					current = i;
+					img.setAttribute('src', frames[i]);
+				}
+			});
+
+			media.addEventListener('pointerleave', function () {
+				media.classList.remove('is-scrubbing');
+				current = -1;
+				img.setAttribute('src', original);
+			});
+		});
+	}
+
+	/* ------------------------------------------------------------------
+	 * Type "render" anywhere on the page
+	 * ---------------------------------------------------------------- */
+
+	var typed = '';
+	var rendering = false;
+
+	document.addEventListener('keydown', function (e) {
+		if (e.ctrlKey || e.metaKey || e.altKey || !e.key || 1 !== e.key.length) {
+			return;
+		}
+
+		var tag = e.target && e.target.tagName;
+		if ('INPUT' === tag || 'TEXTAREA' === tag || 'SELECT' === tag || (e.target && e.target.isContentEditable)) {
+			return;
+		}
+
+		typed = (typed + e.key.toLowerCase()).slice(-6);
+
+		if ('render' === typed && !rendering) {
+			typed = '';
+			renderQueue();
+		}
+	});
+
+	function renderQueue() {
+		var en = 0 === (document.documentElement.lang || '').indexOf('en');
+		var box = document.createElement('div');
+
+		rendering = true;
+		box.className = 'rs-pf-rq';
+		box.setAttribute('role', 'status');
+		box.innerHTML =
+			'<div class="rs-pf-rq__head"><span>Render Queue</span><span class="rs-pf-rq__time">0:00:00</span></div>' +
+			'<div class="rs-pf-rq__row"><span class="rs-pf-rq__name">Portfolio_FINAL_v7_final2.mp4</span><span class="rs-pf-rq__status">' + (en ? 'Rendering…' : 'রেন্ডার হচ্ছে…') + '</span></div>' +
+			'<div class="rs-pf-rq__bar"><i></i></div>' +
+			'<div class="rs-pf-rq__meta"><span class="rs-pf-rq__frames">0 / 240</span><span>H.264 · 1920×1080 · 24 fps</span></div>';
+		document.body.appendChild(box);
+
+		var bar = box.querySelector('.rs-pf-rq__bar i');
+		var frames = box.querySelector('.rs-pf-rq__frames');
+		var time = box.querySelector('.rs-pf-rq__time');
+		var status = box.querySelector('.rs-pf-rq__status');
+		var DUR = reduce ? 700 : 3200;
+		var started = 0;
+
+		window.requestAnimationFrame(function () {
+			box.classList.add('is-on');
+		});
+
+		function step(ts) {
+			if (!started) {
+				started = ts;
+			}
+
+			var k = Math.min(1, (ts - started) / DUR);
+			/* Quick to ninety percent, then the last frames drag, as they do. */
+			var done = k < 0.7 ? (k / 0.7) * 0.9 : 0.9 + ((k - 0.7) / 0.3) * 0.1;
+
+			bar.style.width = (done * 100).toFixed(1) + '%';
+			frames.textContent = Math.round(done * 240) + ' / 240';
+			time.textContent = '0:00:0' + Math.floor((ts - started) / 1000);
+
+			if (k < 1) {
+				window.requestAnimationFrame(step);
+				return;
+			}
+
+			box.classList.add('is-done');
+			status.textContent = en ? '✓ Render complete' : '✓ রেন্ডার শেষ';
+
+			if (!reduce) {
+				confetti();
+			}
+
+			window.setTimeout(function () {
+				box.classList.remove('is-on');
+				window.setTimeout(function () {
+					box.parentNode.removeChild(box);
+					rendering = false;
+				}, 450);
+			}, 3200);
+		}
+
+		window.requestAnimationFrame(step);
+	}
+
+	function confetti() {
+		var layer = document.createElement('div');
+		var colors = ['#6c4cff', '#ea77ff', '#31a8ff', '#3ddc97', '#ffd166', '#ff9a00'];
+
+		layer.className = 'rs-pf-confetti';
+		layer.setAttribute('aria-hidden', 'true');
+
+		for (var i = 0; i < 90; i++) {
+			var bit = document.createElement('i');
+
+			bit.style.left = (Math.random() * 100).toFixed(1) + '%';
+			bit.style.background = colors[i % colors.length];
+			bit.style.setProperty('--dx', ((Math.random() - 0.5) * 40).toFixed(1) + 'vw');
+			bit.style.setProperty('--r', Math.round(Math.random() * 900 - 450) + 'deg');
+			bit.style.setProperty('--d', (1.8 + Math.random() * 1.6).toFixed(2) + 's');
+			bit.style.setProperty('--delay', (Math.random() * 0.35).toFixed(2) + 's');
+			layer.appendChild(bit);
+		}
+
+		document.body.appendChild(layer);
+		window.setTimeout(function () {
+			layer.parentNode.removeChild(layer);
+		}, 4000);
+	}
 
 	/* ------------------------------------------------------------------
 	 * The first-visit nudge

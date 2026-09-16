@@ -57,13 +57,21 @@
 				}
 				if ( totalMinutes > 0 ) {
 					var remaining = Math.ceil( totalMinutes * ( 1 - ( pct / 100 ) ) );
-					if ( remaining > 0 && pct > 5 ) {
+					if ( pct >= 97 ) {
+						singleTimeLeft.textContent = ( window.RS && window.RS.isEn ) ? '✓ Render complete' : '✓ রেন্ডার শেষ';
+						singleTimeLeft.classList.add('is-visible');
+					} else if ( remaining > 0 && pct > 5 ) {
 						singleTimeLeft.textContent = ( window.RS && window.RS.isEn )
 							? ( remaining + " min left" )
 							: ( "আর " + bnDigits(remaining) + " মিনিট বাকি" );
 						singleTimeLeft.classList.add('is-visible');
 					} else {
 						singleTimeLeft.classList.remove('is-visible');
+					}
+					/* The end of a story is a finished render. */
+					singleTimeLeft.classList.toggle('is-done', pct >= 97);
+					if ( bar ) {
+						bar.classList.toggle('rs-bar-done', pct >= 97);
 					}
 				}
 			}
