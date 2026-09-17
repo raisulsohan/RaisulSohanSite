@@ -111,6 +111,8 @@ function rs_portfolio_meta_box_html( $post ) {
 	$github_url   = get_post_meta( $post->ID, '_rs_portfolio_github_url', true );
 	$before_img   = get_post_meta( $post->ID, '_rs_portfolio_before', true );
 	$after_img    = get_post_meta( $post->ID, '_rs_portfolio_after', true );
+	$demo_url     = get_post_meta( $post->ID, '_rs_portfolio_demo', true );
+	$demo_tall    = get_post_meta( $post->ID, '_rs_portfolio_demo_tall', true );
 	$tags         = get_post_meta( $post->ID, '_rs_portfolio_tags', true );
 
 	// Bengali fields
@@ -343,6 +345,17 @@ function rs_portfolio_meta_box_html( $post ) {
 			</div>
 		</div>
 		<p class="description">দুটো ছবিই দিলে কেস স্টাডিতে টেনে তুলনা করার Before/After স্লাইডার দেখাবে। একই মাপের ছবি দিন, Media Library থেকে ছবির URL কপি করে বসাতে পারেন।</p>
+		<div class="rs-meta-grid">
+			<div class="rs-meta-field">
+				<label for="rs_portfolio_demo">Demo URL, landscape 16:9 (ডেমো, ঐচ্ছিক)</label>
+				<input type="url" name="rs_portfolio_demo" id="rs_portfolio_demo" value="<?php echo esc_attr( $demo_url ); ?>" placeholder="https://.../demo.html" />
+			</div>
+			<div class="rs-meta-field">
+				<label for="rs_portfolio_demo_tall">Demo URL, portrait 9:16 for phones (মোবাইলের ডেমো, ঐচ্ছিক)</label>
+				<input type="url" name="rs_portfolio_demo_tall" id="rs_portfolio_demo_tall" value="<?php echo esc_attr( $demo_tall ); ?>" placeholder="https://.../demo-vertical.html" />
+			</div>
+		</div>
+		<p class="description">ডেমো দিলে কার্ড, কেস স্টাডি আর প্রজেক্টের পাতায় "Demo" বাটন আসবে, চাপলে ডেমোটা লুপে চলবে। খাড়া স্ক্রিনে (মোবাইলে) মোবাইলের ডেমো দেখাবে, না থাকলে আড়াআড়িটাই। ডেমো হবে এমন একটা HTML পাতা, যেটা নিজে থেকে চলে আর লুপ করে; থিমের assets/demo/ ফোল্ডারে রাখলে সবচেয়ে ভালো।</p>
 	</div>
 
 	<!-- TAB 2: Bengali Content -->
@@ -575,6 +588,8 @@ function rs_save_portfolio_meta( $post_id ) {
 		'rs_portfolio_github_url' => '_rs_portfolio_github_url',
 		'rs_portfolio_before'     => '_rs_portfolio_before',
 		'rs_portfolio_after'      => '_rs_portfolio_after',
+		'rs_portfolio_demo'       => '_rs_portfolio_demo',
+		'rs_portfolio_demo_tall'  => '_rs_portfolio_demo_tall',
 	);
 
 	foreach ( $fields_url as $post_key => $meta_key ) {
@@ -919,6 +934,17 @@ function rs_portfolio_reorder_ajax() {
 add_action( 'wp_ajax_rs_portfolio_reorder', 'rs_portfolio_reorder_ajax' );
 
 /**
+ * A theme file's address on this install, whatever domain or subsite it
+ * was saved from.
+ *
+ * @param string $url URL.
+ * @return string
+ */
+function rs_portfolio_theme_url( $url ) {
+	return (string) preg_replace( '#^https?://[^/]+(?:/[a-z]{2})?/wp-content/themes/[^/]+/#i', get_template_directory_uri() . '/', (string) $url );
+}
+
+/**
  * A theme image with the theme version on it. Theme files are served with a
  * one-year immutable cache, so a redrawn image at the same address would
  * otherwise never reach anyone who has already seen the old one.
@@ -1011,7 +1037,7 @@ function rs_get_portfolio_projects() {
 				'icon'         => get_post_meta( $p->ID, '_rs_portfolio_icon', true ) ?: 'code',
 				/* A theme asset seeded from the /en/ sub site was stored with that
 				   site's prefix in the path; point it back at this site's theme. */
-				'image'        => rs_portfolio_theme_asset( preg_replace( '#^https?://[^/]+(?:/[a-z]{2})?/wp-content/themes/[^/]+/#i', get_template_directory_uri() . '/', (string) get_post_meta( $p->ID, '_rs_portfolio_image', true ) ) ),
+				'image'        => rs_portfolio_theme_asset( rs_portfolio_theme_url( get_post_meta( $p->ID, '_rs_portfolio_image', true ) ) ),
 				'image_fit'    => get_post_meta( $p->ID, '_rs_portfolio_image_fit', true ) ?: 'cover',
 				'action_type'  => get_post_meta( $p->ID, '_rs_portfolio_action_type', true ) ?: 'web',
 				'action_bn'    => get_post_meta( $p->ID, '_rs_portfolio_action_bn', true ) ?: 'বিস্তারিত দেখুন',
@@ -1020,6 +1046,8 @@ function rs_get_portfolio_projects() {
 				'github_url'   => get_post_meta( $p->ID, '_rs_portfolio_github_url', true ) ?: '',
 				'before'       => get_post_meta( $p->ID, '_rs_portfolio_before', true ) ?: '',
 				'after'        => get_post_meta( $p->ID, '_rs_portfolio_after', true ) ?: '',
+				'demo'         => rs_portfolio_theme_asset( rs_portfolio_theme_url( get_post_meta( $p->ID, '_rs_portfolio_demo', true ) ) ),
+				'demo_tall'    => rs_portfolio_theme_asset( rs_portfolio_theme_url( get_post_meta( $p->ID, '_rs_portfolio_demo_tall', true ) ) ),
 			);
 		}
 	}
@@ -1800,11 +1828,49 @@ function rs_sync_new_portfolio_projects() {
 		}
 	}
 
+	rs_seed_portfolio_demo( 'lazylord', 'lazylord-demo.html', 'lazylord-demo-vertical.html' );
+
 	if ( $switched ) {
 		restore_current_blog();
 	}
 }
 add_action( 'init', 'rs_sync_new_portfolio_projects', 20 );
+
+/**
+ * Give an existing project the demo that ships with the theme, once, and
+ * never over one set in the dashboard.
+ *
+ * @param string $slug Project slug.
+ * @param string $wide 16:9 demo file in assets/demo/.
+ * @param string $tall 9:16 demo file in assets/demo/.
+ */
+function rs_seed_portfolio_demo( $slug, $wide, $tall ) {
+	$flag = 'rs_portfolio_demo_' . $slug;
+
+	if ( get_option( $flag ) ) {
+		return;
+	}
+
+	$ids = get_posts( array(
+		'post_type'      => 'rs_portfolio',
+		'name'           => $slug,
+		'posts_per_page' => 1,
+		'post_status'    => 'any',
+		'fields'         => 'ids',
+	) );
+
+	if ( ! $ids ) {
+		return; /* try again once the project exists */
+	}
+
+	if ( ! get_post_meta( $ids[0], '_rs_portfolio_demo', true ) ) {
+		$base = get_template_directory_uri() . '/assets/demo/';
+		update_post_meta( $ids[0], '_rs_portfolio_demo', $base . $wide );
+		update_post_meta( $ids[0], '_rs_portfolio_demo_tall', $base . $tall );
+	}
+
+	update_option( $flag, 1 );
+}
 
 /**
  * Insert one default project, by id, if it has never been added.

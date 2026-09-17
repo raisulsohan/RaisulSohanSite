@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LazyLord Demo</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #07070b; overflow: hidden; }
+  body, svg text { font-family: Inter, "Segoe UI", system-ui, sans-serif; }
+  #stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+  #bar { position: fixed; left: 0; right: 0; bottom: 0; height: 52px; box-sizing: border-box; display: flex; gap: 12px; align-items: center;
+         padding: 0 16px; background: #0d0d13; border-top: 1px solid #22222c; color: #cfcfe0; font: 13px Inter, "Segoe UI", sans-serif; }
+  #bar button { font: inherit; color: #fff; background: linear-gradient(135deg, #00c2ff, #6c63ff); border: 0; border-radius: 6px; padding: 7px 14px; cursor: pointer; min-width: 74px; }
+  #scrub { flex: 1; accent-color: #6c63ff; }
+  #time { font-variant-numeric: tabular-nums; min-width: 92px; text-align: right; color: #9a93b5; }
+  body.export #bar { display: none; }
+</style>
+</head>
+<body>
+<div id="stage"><svg id="svg" xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080"></svg></div>
+<div id="bar"><button id="play">Pause</button><input id="scrub" type="range" min="0" max="21.9" step="0.001" value="0"><span id="time">0.00 / 21.90 s</span></div>
+<script>
+"use strict";
+/* Brand geometry, filled in by build.mjs from the logo system. */
+const BRAND = { symbol: "M3.6 3 H5.4 Q6 3 6 3.6 V18 C6.8 19.25 7.6 19.25 8.4 18 H17.4 Q18 18 18 18.6 V20.4 Q18 21 17.4 21 H8.4 C7.6 19.75 6.8 19.75 6 21 H3.6 Q3 21 3 20.4 V3.6 Q3 3 3.6 3 Z", stem: "M3.6 3 H5.4 Q6 3 6 3.6 V21 H3.6 Q3 21 3 20.4 V3.6 Q3 3 3.6 3 Z", foot: "M8.4 18 H17.4 Q18 18 18 18.6 V20.4 Q18 21 17.4 21 H8.4 Z", bridge: "M5.9 18 C6.8 19.25 7.6 19.25 8.5 18 V21 C7.6 19.75 6.8 19.75 5.9 21 Z", word: "M24.070 21.272L24.070 21.272Q22.787 21.272 21.763 20.811Q20.739 20.350 20.146 19.444Q19.553 18.539 19.553 17.212L19.553 17.212Q19.553 16.069 19.975 15.322Q20.397 14.575 21.126 14.127Q21.856 13.679 22.774 13.446Q23.693 13.213 24.677 13.107L24.677 13.107Q25.863 12.984 26.602 12.883Q27.340 12.782 27.678 12.567Q28.017 12.352 28.017 11.895L28.017 11.895L28.017 11.842Q28.017 10.849 27.428 10.304Q26.839 9.759 25.732 9.759L25.732 9.759Q24.563 9.759 23.881 10.269Q23.200 10.778 22.963 11.473L22.963 11.473L19.992 11.051Q20.344 9.820 21.152 8.990Q21.961 8.159 23.130 7.742Q24.299 7.324 25.714 7.324L25.714 7.324Q26.690 7.324 27.656 7.553Q28.623 7.781 29.423 8.304Q30.223 8.827 30.711 9.724Q31.198 10.620 31.198 11.965L31.198 11.965L31.198 21L28.140 21L28.140 19.146L28.034 19.146Q27.744 19.708 27.221 20.196Q26.698 20.684 25.912 20.978Q25.125 21.272 24.070 21.272ZM24.897 18.935L24.897 18.935Q25.855 18.935 26.558 18.552Q27.261 18.170 27.643 17.537Q28.026 16.904 28.026 16.157L28.026 16.157L28.026 14.566Q27.876 14.689 27.520 14.795Q27.164 14.900 26.725 14.979Q26.285 15.059 25.855 15.120Q25.424 15.182 25.108 15.226L25.108 15.226Q24.396 15.322 23.833 15.542Q23.271 15.762 22.945 16.153Q22.620 16.544 22.620 17.159L22.620 17.159Q22.620 18.038 23.262 18.486Q23.903 18.935 24.897 18.935ZM44.819 21L33.736 21L33.736 18.979L40.697 10.251L40.697 10.137L33.964 10.137L33.964 7.500L44.590 7.500L44.590 9.671L37.963 18.249L37.963 18.363L44.819 18.363L44.819 21ZM49.298 26.063L49.298 26.063Q48.648 26.063 48.098 25.961Q47.549 25.860 47.224 25.729L47.224 25.729L47.962 23.250Q48.657 23.452 49.202 23.443Q49.746 23.435 50.164 23.105Q50.581 22.775 50.871 22.011L50.871 22.011L51.144 21.281L46.248 7.500L49.623 7.500L52.735 17.695L52.875 17.695L55.995 7.500L59.379 7.500L53.974 22.635Q53.596 23.707 52.972 24.476Q52.348 25.245 51.447 25.654Q50.546 26.063 49.298 26.063ZM72.411 21L61.222 21L61.222 3L64.483 3L64.483 18.267L72.411 18.267L72.411 21ZM80.485 21.264L80.485 21.264Q78.507 21.264 77.057 20.394Q75.607 19.523 74.812 17.959Q74.016 16.395 74.016 14.303L74.016 14.303Q74.016 12.211 74.812 10.638Q75.607 9.064 77.057 8.194Q78.507 7.324 80.485 7.324L80.485 7.324Q82.463 7.324 83.913 8.194Q85.363 9.064 86.158 10.638Q86.954 12.211 86.954 14.303L86.954 14.303Q86.954 16.395 86.158 17.959Q85.363 19.523 83.913 20.394Q82.463 21.264 80.485 21.264ZM80.503 18.715L80.503 18.715Q81.575 18.715 82.296 18.122Q83.016 17.528 83.372 16.526Q83.728 15.524 83.728 14.294L83.728 14.294Q83.728 13.055 83.372 12.048Q83.016 11.042 82.296 10.444Q81.575 9.847 80.503 9.847L80.503 9.847Q79.404 9.847 78.679 10.444Q77.954 11.042 77.598 12.048Q77.242 13.055 77.242 14.294L77.242 14.294Q77.242 15.524 77.598 16.526Q77.954 17.528 78.679 18.122Q79.404 18.715 80.503 18.715ZM92.330 21L89.148 21L89.148 7.500L92.233 7.500L92.233 9.750L92.374 9.750Q92.743 8.581 93.644 7.944Q94.545 7.307 95.705 7.307L95.705 7.307Q95.968 7.307 96.298 7.329Q96.628 7.351 96.847 7.395L96.847 7.395L96.847 10.321Q96.645 10.251 96.210 10.194Q95.775 10.137 95.371 10.137L95.371 10.137Q94.501 10.137 93.811 10.510Q93.121 10.884 92.725 11.543Q92.330 12.202 92.330 13.063L92.330 13.063L92.330 21ZM103.480 21.237L103.480 21.237Q101.889 21.237 100.633 20.420Q99.376 19.603 98.646 18.047Q97.917 16.491 97.917 14.268L97.917 14.268Q97.917 12.018 98.660 10.466Q99.402 8.915 100.668 8.120Q101.933 7.324 103.489 7.324L103.489 7.324Q104.676 7.324 105.440 7.724Q106.205 8.124 106.653 8.682Q107.101 9.240 107.347 9.732L107.347 9.732L107.479 9.732L107.479 3L110.670 3L110.670 21L107.541 21L107.541 18.873L107.347 18.873Q107.101 19.365 106.636 19.915Q106.170 20.464 105.405 20.851Q104.640 21.237 103.480 21.237ZM104.368 18.627L104.368 18.627Q105.379 18.627 106.091 18.078Q106.803 17.528 107.172 16.544Q107.541 15.560 107.541 14.250L107.541 14.250Q107.541 12.940 107.176 11.974Q106.811 11.007 106.104 10.471Q105.396 9.935 104.368 9.935L104.368 9.935Q103.305 9.935 102.593 10.488Q101.881 11.042 101.520 12.018Q101.160 12.993 101.160 14.250L101.160 14.250Q101.160 15.516 101.525 16.504Q101.889 17.493 102.606 18.060Q103.322 18.627 104.368 18.627Z" };
+const DUR = 21.9;
+
+/*
+ * One animation, two frames, chosen by build.mjs: 16:9 for YouTube, and 9:16 for Reels and
+ * Shorts, where Figma starts zoomed in on the design, the three Adobe apps stack underneath,
+ * and a line of large type at the top says what is happening for anyone watching muted.
+ */
+const V = "horizontal" === "vertical";
+const SW = V ? 1080 : 1920, SH = V ? 1920 : 1080;
+const LAY = V ? {
+  figA: [-260, 560, 1], figB: [188, 340, 0.44],
+  win: { x: 146.5, from: 90, s: 0.82, y: [766, 1030, 1294] },
+  glow: [540, 900, 1000], flyArc: "right", sideBow: 150,
+  cap: { x: 540, y: 205, size: 44, chipY: 245 },
+  any: { titleY: 350, subY: 405, pos: [[340, 800], [740, 800], [340, 1200], [740, 1200]], hub: [540, 1000], badge: 170 },
+  end: { caps: 132, top: 760, lines: [1010, 1062, 1122], sizes: [32, 26, 22] },
+  captions: true,
+} : {
+  figA: [160, 90, 1], figB: [60, 315, 0.5],
+  win: { x: 900, from: 90, s: 1, y: [70, 390, 710] },
+  glow: [960, 540, 760], flyArc: "up", sideBow: 260,
+  cap: { x: 460, y: 190, size: 34, chipY: 222 },
+  any: { titleY: 176, subY: 226, pos: [[720, 440], [1200, 440], [720, 800], [1200, 800]], hub: [960, 620], badge: 130 },
+  end: { caps: 96, top: 440, lines: [640, 690, 748], sizes: [36, 26, 20] },
+  captions: false,
+};
+/* Where the logo's ink ends, on the symbol's 24-unit grid ("azyLord" set after the symbol). */
+const WORD_RIGHT = 110.67;
+
+/* ------------------------------------------------------------------ timing helpers */
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, u) => a + (b - a) * u;
+const E = {
+  linear: (u) => u,
+  out: (u) => 1 - Math.pow(1 - u, 3),
+  in: (u) => u * u * u,
+  inOut: (u) => (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2),
+  back: (u) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(u - 1, 3) + c1 * Math.pow(u - 1, 2); },
+};
+/** Eased progress of t through [a, b]. */
+const P = (t, a, b, e = E.inOut) => e(clamp((t - a) / (b - a), 0, 1));
+
+/* ------------------------------------------------------------------ the design that travels */
+/* Bottom to top. `ae` is the After Effects label colour. */
+const LAYERS = [
+  { name: "Background", icon: "rect", ae: "#9a93b5" },
+  { name: "Sun", icon: "ellipse", ae: "#ff7a59" },
+  { name: "Mountains", icon: "vector", ae: "#8f89ff" },
+  { name: "Title", icon: "text", ae: "#4fb3ff" },
+  { name: "Button", icon: "rect", ae: "#e8b04c" },
+];
+const TOP_DOWN = [4, 3, 2, 1, 0];
+
+function layerMarkup(i, p) {
+  switch (i) {
+    case 0: return `<rect width="520" height="340" rx="24" fill="url(#${p}-sky)"/>`;
+    case 1: return `<circle cx="392" cy="104" r="42" fill="#ff7a59"/>`;
+    case 2: return `<path d="M0 290 L130 190 L220 250 L340 90 L520 270 L520 316 Q520 340 496 340 L24 340 Q0 340 0 316 Z" fill="url(#${p}-mtn)"/>` +
+      `<path d="M340 90 L378 144 L356 136 L340 156 L324 134 L302 146 Z" fill="#fff" fill-opacity=".92"/>`;
+    case 3: return `<text x="40" y="84" fill="#fff" font-size="46" font-weight="800" letter-spacing="8">PEAK</text>` +
+      `<text x="42" y="112" fill="#fff" fill-opacity=".72" font-size="15" font-weight="500">Trails above the clouds</text>`;
+    case 4: return `<rect x="40" y="134" width="132" height="42" rx="21" fill="#fff"/>` +
+      `<text x="106" y="161" text-anchor="middle" fill="#5b52f0" font-size="16" font-weight="700">Explore</text>`;
+  }
+  return "";
+}
+const designDefs = (p) =>
+  `<defs><linearGradient id="${p}-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d2656"/><stop offset="1" stop-color="#1b1730"/></linearGradient>` +
+  `<linearGradient id="${p}-mtn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8f89ff"/><stop offset="1" stop-color="#5b52f0"/></linearGradient></defs>`;
+const instance = (p) => designDefs(p) + LAYERS.map((_, i) => `<g id="${p}-L${i}">${layerMarkup(i, p)}</g>`).join("");
+
+/* ------------------------------------------------------------------ small pieces of UI */
+function badge(kind, x, y, s) {
+  const spec = { F: { bg: "#1e1e1e" }, Ai: { bg: "#330000", fg: "#ff9a00" }, Ps: { bg: "#001e36", fg: "#31a8ff" }, Ae: { bg: "#00005b", fg: "#9999ff" } }[kind];
+  let out = `<rect x="${x}" y="${y}" width="${s}" height="${s}" rx="${s * 0.22}" fill="${spec.bg}"/>`;
+  if (kind === "F") {
+    out += `<text x="${x + s / 2}" y="${y + s * 0.6}" text-anchor="middle" fill="#fff" font-size="${s * 0.5}" font-weight="700">F</text>`;
+    ["#f24e1e", "#ff7262", "#a259ff", "#1abcfe", "#0acf83"].forEach((c, i) => {
+      out += `<rect x="${x + s * 0.2 + i * s * 0.12}" y="${y + s * 0.74}" width="${s * 0.1}" height="${s * 0.07}" rx="${s * 0.03}" fill="${c}"/>`;
+    });
+  } else {
+    out += `<rect x="${x + s * 0.08}" y="${y + s * 0.08}" width="${s * 0.84}" height="${s * 0.84}" rx="${s * 0.15}" fill="none" stroke="${spec.fg}" stroke-width="${s * 0.05}"/>` +
+      `<text x="${x + s / 2}" y="${y + s * 0.66}" text-anchor="middle" fill="${spec.fg}" font-size="${s * 0.44}" font-weight="700">${kind}</text>`;
+  }
+  return out;
+}
+
+function icon(type, x, y, c) {
+  switch (type) {
+    case "frame": return `<text x="${x}" y="${y + 4.5}" text-anchor="middle" fill="${c}" font-size="13" font-weight="600">#</text>`;
+    case "text": return `<text x="${x}" y="${y + 4.5}" text-anchor="middle" fill="${c}" font-size="13" font-weight="700">T</text>`;
+    case "rect": return `<rect x="${x - 5}" y="${y - 5}" width="10" height="10" rx="2" fill="none" stroke="${c}" stroke-width="1.4"/>`;
+    case "ellipse": return `<circle cx="${x}" cy="${y}" r="5.2" fill="none" stroke="${c}" stroke-width="1.4"/>`;
+    case "vector": return `<path d="M${x - 6} ${y + 5} C${x - 3} ${y - 8} ${x + 3} ${y + 8} ${x + 6} ${y - 5}" fill="none" stroke="${c}" stroke-width="1.4" stroke-linecap="round"/>`;
+    case "group": return `<path d="M${x - 6} ${y - 4} h4 l2 2 h6 v7 h-12 z" fill="none" stroke="${c}" stroke-width="1.3" stroke-linejoin="round"/>`;
+  }
+  return "";
+}
+
+const T = (x, y, s, fill, size, weight = 400, anchor = "start", extra = "") =>
+  `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}" font-weight="${weight}" text-anchor="${anchor}" ${extra}>${s}</text>`;
+
+/* A small LazyLord lockup: gradient symbol, word in `wordFill`, capitals `h` px tall, ink starting at (x, y). */
+function lockup(id, x, y, h, wordFill) {
+  const k = h / 18;
+  return `<g transform="translate(${x - 3 * k} ${y - 3 * k}) scale(${k})"><path d="${BRAND.symbol}" fill="url(#${id})"/><path d="${BRAND.word}" fill="${wordFill}"/></g>`;
+}
+const brandGradient = (id) =>
+  `<linearGradient id="${id}" x1="3" y1="3" x2="18" y2="21" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#00c2ff"/><stop offset="1" stop-color="#6c63ff"/></linearGradient>`;
+
+/* ------------------------------------------------------------------ what travels the other ways */
+/* A photo from Photoshop, a sparkle drawn in Illustrator, a wave animated in After Effects. */
+function photo(p) {
+  return `<defs><linearGradient id="${p}-ph" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb199"/><stop offset=".55" stop-color="#ff7a59"/><stop offset="1" stop-color="#6c3fa0"/></linearGradient>` +
+    `<clipPath id="${p}-phc"><rect x="-60" y="-40" width="120" height="80" rx="8"/></clipPath></defs>` +
+    `<g clip-path="url(#${p}-phc)"><rect x="-60" y="-40" width="120" height="80" fill="url(#${p}-ph)"/>` +
+    `<circle cx="18" cy="-4" r="14" fill="#ffe3b0" opacity=".9"/><path d="M-60 40 L-60 18 L-30 0 L-8 14 L20 -6 L60 22 L60 40 Z" fill="#2b1f45"/></g>` +
+    `<rect x="-60" y="-40" width="120" height="80" rx="8" fill="none" stroke="#fff" stroke-opacity=".3"/>`;
+}
+function sparkle(p) {
+  return `<defs><linearGradient id="${p}-sg" x1="0" y1="-26" x2="0" y2="26" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#00c2ff"/></linearGradient></defs>` +
+    `<path d="M0 -26 C4 -6 6 -4 26 0 C6 4 4 6 0 26 C-4 6 -6 4 -26 0 C-6 -4 -4 -6 0 -26 Z" fill="url(#${p}-sg)"/>`;
+}
+const WAVE = "M50 312 C100 282 150 342 200 312 S300 282 350 312 S450 342 480 312";
+const wave = (extra = "") => `<path d="${WAVE}" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" ${extra}/>`;
+
+const PHOTO_IN_FIGMA = [260, 470, 1.33];   // design units, under the card
+const SPARK_IN_AI = [612, 166];            // window units, on the pasteboard
+const SPARK_IN_AE = [470, 290, 0.8];       // design units, over the mountains
+const PHOTO_IN_PS = [95, 166];             // window units, beside the canvas
+const SPARK_FLY = [11.5, 0.8], PHOTO_FLY = [12.95, 0.8], WAVE_FLY = [14.55, 0.8];
+const landedAt = ([t0, d]) => t0 + d;
+
+/* ------------------------------------------------------------------ Figma */
+const FIG_W = 1600, FIG_H = 900, FIG_DESIGN = [340, 290];
+const PLUGIN = [930, 150];
+const SEND_BTN = { x: 16, y: 268, w: 308, h: 44 };
+
+function figmaWindow() {
+  const rows = [{ name: "Hero card", icon: "frame", level: 0 }, ...TOP_DOWN.map((i) => ({ name: LAYERS[i].name, icon: LAYERS[i].icon, level: 1 }))];
+  const tools = ["M-5 -6 L5 1 L0 2 L-2 7 Z", "", "", "", ""];
+  return `<g id="figma">
+  <rect width="${FIG_W}" height="${FIG_H}" rx="12" fill="#fff" filter="url(#shadow)"/>
+  <g clip-path="url(#fclip)">
+    <rect width="${FIG_W}" height="44" fill="#2c2c2c"/>
+    ${badge("F", 12, 10, 24)}
+    <rect x="46" y="8" width="28" height="28" rx="5" fill="#0d99ff"/>
+    <path d="M56 15 L66 22 L61 23 L59 28 Z" fill="#fff"/>
+    <text x="95" y="27" fill="#e6e6e6" font-size="14" font-weight="600" text-anchor="middle">#</text>
+    <rect x="115" y="16" width="12" height="12" rx="1.5" fill="none" stroke="#e6e6e6" stroke-width="1.4"/>
+    <path d="M143 28 C146 14 152 30 156 16" fill="none" stroke="#e6e6e6" stroke-width="1.4" stroke-linecap="round"/>
+    <text x="178" y="28" fill="#e6e6e6" font-size="14" font-weight="700" text-anchor="middle">T</text>
+    ${T(800, 27, "Hero — Landing page", "#fff", 13, 500, "middle")}
+    <circle cx="1446" cy="22" r="12" fill="#ff7262"/>${T(1446, 26, "R", "#fff", 11, 700, "middle")}
+    <rect x="1470" y="10" width="64" height="24" rx="6" fill="#0d99ff"/>${T(1502, 26.5, "Share", "#fff", 12, 600, "middle")}
+    ${T(1586, 27, "100%", "#cfcfcf", 11, 500, "end")}
+
+    <rect x="0" y="44" width="260" height="${FIG_H - 44}" fill="#fff"/>
+    <line x1="260" y1="44" x2="260" y2="${FIG_H}" stroke="#e6e6e6"/>
+    ${T(16, 70, "Layers", "#1e1e1e", 12, 600)}${T(72, 70, "Assets", "#9a9a9a", 12, 500)}
+    <line x1="0" y1="86" x2="260" y2="86" stroke="#eeeeee"/>
+    <g id="fgphotorow" opacity="0">
+      <rect x="21" y="106" width="11" height="9" rx="1.5" fill="none" stroke="#555" stroke-width="1.3"/><path d="M22 114 l3 -3 l2 2 l2 -2 l2 3" fill="none" stroke="#555" stroke-width="1.1"/>
+      ${T(42, 115.5, "Photo", "#1e1e1e", 12, 600)}
+    </g>
+    ${rows.map((r, k) => {
+      const y = 96 + k * 32, ind = r.level * 18;
+      return `<g id="fgrowg${k}"><rect id="fgrow${k}" x="8" y="${y}" width="244" height="30" rx="5" fill="${k ? "#eaf4ff" : "#d6e9ff"}" opacity="0"/>` +
+        icon(r.icon, 26 + ind, y + 15, "#555") + T(42 + ind, y + 19.5, r.name, "#1e1e1e", 12, k ? 400 : 600) + `</g>`;
+    }).join("")}
+
+    <rect x="260" y="44" width="1060" height="${FIG_H - 44}" fill="#e5e5e5"/>
+    ${T(FIG_DESIGN[0], FIG_DESIGN[1] - 10, "Hero card", "#7a7a7a", 11, 500)}
+    <g transform="translate(${FIG_DESIGN[0]} ${FIG_DESIGN[1]})">${instance("fg")}
+      <g id="fg-photo" opacity="0" transform="translate(${PHOTO_IN_FIGMA[0]} ${PHOTO_IN_FIGMA[1]}) scale(${PHOTO_IN_FIGMA[2]})">${photo("fgp")}</g>
+      <g id="fgsel" opacity="0">
+        <rect x="-1" y="-1" width="522" height="342" fill="none" stroke="#0d99ff" stroke-width="2"/>
+        ${[[-1, -1], [521, -1], [-1, 341], [521, 341]].map(([x, y]) => `<rect x="${x - 4}" y="${y - 4}" width="8" height="8" fill="#fff" stroke="#0d99ff" stroke-width="1.5"/>`).join("")}
+        <rect x="220" y="352" width="80" height="20" rx="4" fill="#0d99ff"/>${T(260, 366, "520 × 340", "#fff", 11, 600, "middle")}
+      </g>
+    </g>
+
+    <rect x="1320" y="44" width="280" height="${FIG_H - 44}" fill="#fff"/>
+    <line x1="1320" y1="44" x2="1320" y2="${FIG_H}" stroke="#e6e6e6"/>
+    ${T(1336, 70, "Design", "#1e1e1e", 12, 600)}${T(1394, 70, "Prototype", "#9a9a9a", 12, 500)}
+    <line x1="1320" y1="86" x2="1600" y2="86" stroke="#eeeeee"/>
+    ${T(1336, 114, "Frame", "#1e1e1e", 11, 600)}
+    <rect x="1336" y="126" width="120" height="28" rx="5" fill="#f5f5f5"/>${T(1346, 144, "W", "#9a9a9a", 11)}${T(1366, 144, "520", "#1e1e1e", 11)}
+    <rect x="1464" y="126" width="120" height="28" rx="5" fill="#f5f5f5"/>${T(1474, 144, "H", "#9a9a9a", 11)}${T(1494, 144, "340", "#1e1e1e", 11)}
+    <line x1="1320" y1="172" x2="1600" y2="172" stroke="#eeeeee"/>
+    ${T(1336, 198, "Fill", "#1e1e1e", 11, 600)}
+    <rect x="1336" y="210" width="16" height="16" rx="3" fill="#2d2656"/>${T(1362, 222, "2D2656", "#1e1e1e", 11)}${T(1584, 222, "100 %", "#9a9a9a", 11, 400, "end")}
+    <line x1="1320" y1="244" x2="1600" y2="244" stroke="#eeeeee"/>
+    ${T(1336, 270, "Stroke", "#1e1e1e", 11, 600)}${T(1584, 270, "+", "#6a6a6a", 15, 400, "end")}
+    <line x1="1320" y1="288" x2="1600" y2="288" stroke="#eeeeee"/>
+    ${T(1336, 314, "Effects", "#1e1e1e", 11, 600)}${T(1584, 314, "+", "#6a6a6a", 15, 400, "end")}
+    <line x1="1320" y1="332" x2="1600" y2="332" stroke="#eeeeee"/>
+    ${T(1336, 358, "Export", "#1e1e1e", 11, 600)}${T(1584, 358, "+", "#6a6a6a", 15, 400, "end")}
+
+    ${pluginWindow()}
+  </g>
+</g>`;
+}
+
+function pluginWindow() {
+  const chip = (x, y, w, h, label, on) => on
+    ? `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="7" fill="url(#pgrad)"/>${T(x + w / 2, y + h / 2 + 4.5, label, "#fff", 12, 600, "middle")}`
+    : `<rect x="${x + 0.5}" y="${y + 0.5}" width="${w - 1}" height="${h - 1}" rx="7" fill="#f5f5f7" stroke="#e4e4ea"/>${T(x + w / 2, y + h / 2 + 4.5, label, "#3a3a44", 12, 500, "middle")}`;
+  const b = SEND_BTN;
+  return `<g transform="translate(${PLUGIN[0]} ${PLUGIN[1]})">
+    <rect width="340" height="356" rx="10" fill="#fff" filter="url(#pshadow)"/>
+    ${T(14, 25, "LazyLord", "#1e1e1e", 12, 600)}${T(324, 26, "×", "#8a8a8a", 16, 400, "end")}
+    <line x1="0" y1="40" x2="340" y2="40" stroke="#eeeeee"/>
+    ${lockup("pgradlogo", 16, 57, 14, "#17171d")}
+    <circle cx="262" cy="64" r="3.5" fill="#14ae5c"/>${T(324, 68, "Connected", "#14ae5c", 11, 600, "end")}
+    ${T(16, 104, "SEND TO", "#9a9aa6", 10, 600, "start", 'letter-spacing="0.8"')}
+    ${chip(16, 114, 150, 32, "All apps", true)}${chip(174, 114, 150, 32, "Photoshop", false)}
+    ${chip(16, 152, 150, 32, "Illustrator", false)}${chip(174, 152, 150, 32, "After Effects", false)}
+    ${T(16, 212, "IMAGE SCALE", "#9a9aa6", 10, 600, "start", 'letter-spacing="0.8"')}
+    ${["1x", "2x", "3x", "4x"].map((s, i) => chip(16 + i * 79, 222, 71, 28, s, i === 1)).join("")}
+    <g id="sendbtn">
+      <rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="8" fill="url(#pgrad)"/>
+      <rect id="sendpress" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="8" fill="#000" opacity="0"/>
+      <text id="sendlabel" x="${b.x + b.w / 2}" y="${b.y + 27}" fill="#fff" font-size="14" font-weight="600" text-anchor="middle">Send to all apps</text>
+    </g>
+    <text id="plugstatus" x="170" y="338" fill="#9a9aa6" font-size="12" font-weight="500" text-anchor="middle">3 Adobe apps connected</text>
+  </g>`;
+}
+
+/* ------------------------------------------------------------------ Adobe windows */
+const WIN_W = 960, WIN_H = 300;
+const ADOBE = [
+  { id: "ai", badge: "Ai", name: "Illustrator", doc: "Hero card.ai", y: 70, design: [206, 64, 0.6] },
+  { id: "ps", badge: "Ps", name: "Photoshop", doc: "Hero card.psd", y: 390, design: [189, 64, 0.6] },
+  { id: "ae", badge: "Ae", name: "After Effects", doc: "Hero card.aep", y: 710, design: [85, 81, 0.5] },
+];
+const WIN_X = 900;
+
+function adobeChrome(a, docX, body) {
+  return `<g id="win-${a.id}" opacity="0">
+    <rect width="${WIN_W}" height="${WIN_H}" rx="10" fill="#262626" filter="url(#shadow)"/>
+    <g clip-path="url(#aclip)">
+      <rect width="${WIN_W}" height="32" fill="#1b1b1b"/>
+      ${badge(a.badge, 10, 6, 20)}
+      ${T(38, 21, a.name, "#ececec", 13, 600)}${T(docX, 21, a.doc, "#8a8a8a", 12, 400)}
+      ${body}
+      <g id="toast-${a.id}" opacity="0">
+        <rect x="756" y="5" width="194" height="22" rx="11" fill="#6c63ff" fill-opacity=".2" stroke="#8f89ff" stroke-opacity=".7"/>
+        <g transform="translate(768 9.5) scale(0.72)"><path d="${BRAND.symbol}" fill="url(#mgrad)" transform="translate(-3 -3)"/></g>
+        ${T(786, 20.5, "5 layers from Figma", "#e0ddff", 11, 600)}
+      </g>
+    </g>
+    <rect x=".5" y=".5" width="${WIN_W - 1}" height="${WIN_H - 1}" rx="9.5" fill="none" stroke="#3a3a3a"/>
+  </g>`;
+}
+
+const rowsFor = (a) => [{ name: "Hero card", icon: "group", level: 0, layer: -1 }, ...TOP_DOWN.map((i) => ({ name: LAYERS[i].name, icon: LAYERS[i].icon, level: 1, layer: i }))];
+
+function illustrator(a) {
+  const [dx, dy, ds] = a.design;
+  const anchors = [[0, 290], [130, 190], [220, 250], [340, 90], [520, 270], [350, 104], [434, 104], [392, 62], [392, 146]];
+  const body = `
+    <rect x="0" y="32" width="34" height="268" fill="#2f2f2f"/>
+    ${[0, 1, 2, 3, 4, 5].map((i) => `<rect x="10" y="${46 + i * 28}" width="14" height="14" rx="3" fill="#8a8a8a" opacity=".55"/>`).join("")}
+    <rect x="34" y="32" width="656" height="268" fill="#1d1d1d"/>
+    <rect x="190" y="52" width="344" height="228" fill="#fff"/>
+    <g id="ai-spark" opacity="0">${sparkle("ais")}
+      ${[[0, -26], [26, 0], [0, 26], [-26, 0]].map(([x, y]) => `<rect x="${x - 3.5}" y="${y - 3.5}" width="7" height="7" fill="#fff" stroke="#4f9dff" stroke-width="1.4"/>`).join("")}
+    </g>
+    <g transform="translate(${dx} ${dy}) scale(${ds})">${instance("ai")}
+      <g id="ai-wave" opacity="0">${wave()}</g>
+      <g id="ai-anchors" opacity="0">
+        <path d="M0 290 L130 190 L220 250 L340 90 L520 270" fill="none" stroke="#4f9dff" stroke-width="${2 / ds}"/>
+        <circle cx="392" cy="104" r="42" fill="none" stroke="#4f9dff" stroke-width="${2 / ds}"/>
+        ${anchors.map(([x, y]) => `<rect x="${x - 6}" y="${y - 6}" width="12" height="12" fill="#fff" stroke="#4f9dff" stroke-width="${2 / ds}"/>`).join("")}
+      </g>
+    </g>
+    <rect x="690" y="32" width="270" height="268" fill="#2f2f2f"/>
+    ${T(704, 52, "Layers", "#e0e0e0", 11, 600)}<line x1="690" y1="60" x2="960" y2="60" stroke="#3d3d3d"/>
+    <g id="ai-waverow" opacity="0">
+      <path d="M699 105 q5 -5.5 10 0 q-5 5.5 -10 0z" fill="none" stroke="#b5b5b5" stroke-width="1.1"/>
+      <rect x="716" y="96" width="3" height="18" fill="#4f9dff"/>
+      ${icon("vector", 746, 105, "#c8c8c8")}${T(758, 109, "Wave", "#dedede", 11)}
+    </g>
+    ${rowsFor(a).map((r, k) => {
+      // Layers are drawn in the first slot under the group; render() pushes them down as newer ones land.
+      const y = 66 + Math.min(k, 1) * 26, ind = r.level * 14;
+      return `<g id="${r.layer < 0 ? `${a.id}-row0` : `${a.id}-lay${r.layer}`}" opacity="0">
+        <path d="M699 ${y + 13} q5 -5.5 10 0 q-5 5.5 -10 0z" fill="none" stroke="#b5b5b5" stroke-width="1.1"/>
+        <rect x="716" y="${y + 4}" width="3" height="18" fill="#4f9dff"/>
+        ${icon(r.icon, 732 + ind, y + 13, "#c8c8c8")}${T(744 + ind, y + 17, r.name, "#dedede", 11)}
+      </g>`;
+    }).join("")}`;
+  return adobeChrome(a, 118, body);
+}
+
+function photoshop(a) {
+  const [dx, dy, ds] = a.design;
+  const body = `
+    <rect x="0" y="32" width="690" height="268" fill="#1f1f1f"/>
+    <g id="ps-photo" opacity="0">${photo("psp")}</g>
+    <g transform="translate(${dx} ${dy}) scale(${ds})">${instance("ps")}
+      <g id="ps-bbox" opacity="0">
+        <rect x="36" y="130" width="140" height="50" fill="none" stroke="#fff" stroke-width="${1.4 / ds}" stroke-dasharray="${5 / ds} ${4 / ds}"/>
+        ${[[36, 130], [176, 130], [36, 180], [176, 180]].map(([x, y]) => `<rect x="${x - 5}" y="${y - 5}" width="10" height="10" fill="#fff"/>`).join("")}
+      </g>
+    </g>
+    <rect x="690" y="32" width="270" height="268" fill="#2b2b2b"/>
+    ${T(704, 52, "Layers", "#e0e0e0", 11, 600)}<line x1="690" y1="60" x2="960" y2="60" stroke="#3a3a3a"/>
+    <rect id="ps-select" x="690" y="${66 + 30}" width="270" height="30" fill="#3b5d8f" opacity="0"/>
+    ${rowsFor(a).map((r, k) => {
+      const y = 66 + Math.min(k, 1) * 30, ind = r.level * 14;
+      const thumb = r.layer < 0
+        ? icon("group", 728 + ind, y + 15, "#c8c8c8")
+        : `<rect x="${716 + ind}" y="${y + 5}" width="24" height="20" fill="#161616" stroke="#555"/>` +
+          (r.icon === "text" ? T(728 + ind, y + 19.5, "T", "#ddd", 11, 700, "middle") : `<rect x="${720 + ind}" y="${y + 9}" width="16" height="12" rx="2" fill="${LAYERS[r.layer].ae}" opacity=".85"/>`);
+      return `<g id="${r.layer < 0 ? `${a.id}-row0` : `${a.id}-lay${r.layer}`}" opacity="0">
+        <path d="M697 ${y + 15} q5 -5.5 10 0 q-5 5.5 -10 0z" fill="none" stroke="#b5b5b5" stroke-width="1.1"/>
+        ${thumb}${T((r.layer < 0 ? 742 : 748) + ind, y + 19, r.name, "#dedede", 11)}
+      </g>`;
+    }).join("")}`;
+  return adobeChrome(a, 122, body);
+}
+
+function afterEffects(a) {
+  const [dx, dy, ds] = a.design;
+  const rowY = (k) => 72 + k * 36;
+  const sunRow = TOP_DOWN.indexOf(1);
+  const body = `
+    <rect x="0" y="32" width="430" height="268" fill="#161616"/>
+    <g transform="translate(${dx} ${dy}) scale(${ds})">${instance("ae")}
+      <g id="ae-spark" opacity="0" transform="translate(${SPARK_IN_AE[0]} ${SPARK_IN_AE[1]}) scale(${SPARK_IN_AE[2]})">${sparkle("aes")}</g>
+      <path id="ae-wave" d="${WAVE}" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" opacity="0"/>
+    </g>
+    <rect x="430" y="32" width="530" height="268" fill="#232323"/>
+    ${T(444, 51, "Hero card", "#e0e0e0", 11, 600)}<line x1="444" y1="56" x2="500" y2="56" stroke="#6c63ff" stroke-width="2"/>
+    <line x1="430" y1="60" x2="960" y2="60" stroke="#333"/>
+    <line x1="600" y1="60" x2="600" y2="300" stroke="#333"/>
+    ${Array.from({ length: 11 }, (_, i) => `<line x1="${610 + i * 34}" y1="62" x2="${610 + i * 34}" y2="${i % 5 === 0 ? 70 : 67}" stroke="#666"/>`).join("")}
+    ${TOP_DOWN.map((i, k) => {
+      const y = rowY(0);
+      return `<g id="ae-lay${i}">
+        <g id="ae-label${i}" opacity="0">
+          <text id="ae-num${i}" x="440" y="${y + 22}" fill="#8a8a8a" font-size="10">1</text>
+          <rect x="456" y="${y + 13}" width="9" height="9" rx="1.5" fill="${LAYERS[i].ae}"/>
+          ${T(474, y + 22, LAYERS[i].name, "#dedede", 11)}
+        </g>
+        <rect id="ae-bar${i}" x="610" y="${y + 10}" width="0" height="16" rx="3" fill="${LAYERS[i].ae}" opacity=".78"/>
+      </g>`;
+    }).join("")}
+    <g id="ae-sparkrow" opacity="0">
+      ${T(440, rowY(0) + 22, "1", "#8a8a8a", 10)}
+      <rect x="456" y="${rowY(0) + 13}" width="9" height="9" rx="1.5" fill="#00c2ff"/>
+      ${T(474, rowY(0) + 22, "Sparkle", "#dedede", 11)}
+    </g>
+    <rect id="ae-sparkbar" x="610" y="${rowY(0) + 10}" width="0" height="16" rx="3" fill="#00c2ff" opacity=".78"/>
+    <g id="ae-keys" opacity="0">${[640, 780, 920].map((x) => `<path d="M${x} ${rowY(sunRow) + 11} l7 7 l-7 7 l-7 -7 z" fill="#fff" stroke="#232323" stroke-width="1.5"/>`).join("")}</g>
+    <g id="ae-play" opacity="0">
+      <line id="ae-playline" x1="610" y1="62" x2="610" y2="294" stroke="#4f9dff" stroke-width="1.6"/>
+      <path id="ae-playhead" d="M603 60 h14 v6 l-7 7 l-7 -7 z" fill="#4f9dff"/>
+    </g>`;
+  return adobeChrome(a, 135, body);
+}
+
+/* ------------------------------------------------------------------ any app to any app */
+const ANY_CHIPS = [["Ai", "Illustrator", "Ae", "After Effects"], ["Ps", "Photoshop", "F", "Figma"], ["Ae", "After Effects", "Ai", "Illustrator"]];
+const ANY_APPS = [["F", "Figma"], ["Ai", "Illustrator"], ["Ps", "Photoshop"], ["Ae", "After Effects"]];
+const ANY_POS = LAY.any.pos;
+const ANY_PAIRS = [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]];
+
+/* ------------------------------------------------------------------ stage */
+const svg = document.getElementById("svg");
+svg.setAttribute("width", SW);
+svg.setAttribute("height", SH);
+svg.setAttribute("viewBox", `0 0 ${SW} ${SH}`);
+document.getElementById("stage").style.width = SW + "px";
+document.getElementById("stage").style.height = SH + "px";
+svg.innerHTML = `
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="${SW}" y2="${SH}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#15141f"/><stop offset="1" stop-color="#09090e"/></linearGradient>
+  <radialGradient id="glow" cx="${LAY.glow[0]}" cy="${LAY.glow[1]}" r="${LAY.glow[2]}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#6c63ff" stop-opacity=".2"/><stop offset="1" stop-color="#6c63ff" stop-opacity="0"/></radialGradient>
+  <filter id="shadow" x="-10%" y="-10%" width="120%" height="140%"><feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#000" flood-opacity=".5"/></filter>
+  <filter id="pshadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000" flood-opacity=".22"/></filter>
+  <clipPath id="fclip"><rect width="${FIG_W}" height="${FIG_H}" rx="12"/></clipPath>
+  <clipPath id="aclip"><rect width="${WIN_W}" height="${WIN_H}" rx="10"/></clipPath>
+  <linearGradient id="pgrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00c2ff"/><stop offset="1" stop-color="#6c63ff"/></linearGradient>
+  ${brandGradient("pgradlogo")}${brandGradient("mgrad")}${brandGradient("endgrad")}
+  <linearGradient id="shinefill" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  <clipPath id="endwipe"><rect id="endwipe-rect" x="18" y="0" width="0" height="30"/></clipPath>
+  <clipPath id="endinside"><path d="${BRAND.symbol}"/><path d="${BRAND.word}"/></clipPath>
+</defs>
+<rect width="${SW}" height="${SH}"fill="url(#bg)"/>
+<rect width="${SW}" height="${SH}"fill="url(#glow)"/>
+<g id="routes" opacity="0" fill="none" stroke="#8f89ff" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1 11">
+  <path id="route0"/><path id="route1"/><path id="route2"/>
+</g>
+${figmaWindow()}
+${illustrator(ADOBE[0])}${photoshop(ADOBE[1])}${afterEffects(ADOBE[2])}
+<rect id="marquee" fill="#0d99ff" fill-opacity=".08" stroke="#0d99ff" stroke-width="1" opacity="0"/>
+${ADOBE.map((a, j) => LAYERS.map((_, i) => `<g id="fly${j}${i}" opacity="0">${designDefs(`fly${j}${i}`)}${layerMarkup(i, `fly${j}${i}`)}</g>`).join("")).join("")}
+<g id="fly-spark" opacity="0">${sparkle("fls")}</g>
+<g id="fly-photo" opacity="0">${photo("flp")}</g>
+<g id="fly-wave" opacity="0">${wave()}</g>
+<g id="cursor" opacity="0"><path d="M0 0 L0 34 L9 26 L16 41 L22 38 L15 23 L27 23 Z" fill="#fff" stroke="#111" stroke-width="2" stroke-linejoin="round"/></g>
+
+${LAY.captions ? [["capA", "Select in Figma, hit Send"], ["capB", "Real layers land in every Adobe app"]].map(([id, s]) =>
+  `<g id="${id}" opacity="0">${T(LAY.cap.x, LAY.cap.y, s, "#fff", LAY.cap.size, 800, "middle", 'letter-spacing="-0.5"')}</g>`).join("") : ""}
+<g id="anycap" opacity="0">${T(LAY.cap.x, LAY.cap.y, "Every app sends. Every app receives.", "#fff", LAY.cap.size, V ? 800 : 700, "middle", 'letter-spacing="-0.5"')}</g>
+${ANY_CHIPS.map(([b1, n1, b2, n2], k) => {
+  const x0 = LAY.cap.x - 270, y0 = LAY.cap.chipY;
+  return `<g id="anychip${k}" opacity="0">
+  <rect x="${x0}" y="${y0}" width="540" height="52" rx="26" fill="#17161f" stroke="#34304a"/>
+  ${badge(b1, x0 + 16, y0 + 12, 28)}${T(x0 + 54, y0 + 32, n1, "#e6e3f7", 17, 600)}
+  ${T(LAY.cap.x, y0 + 33, "→", "#8f89ff", 22, 700, "middle")}
+  ${badge(b2, x0 + 496, y0 + 12, 28)}${T(x0 + 486, y0 + 32, n2, "#e6e3f7", 17, 600, "end")}
+</g>`;
+}).join("")}
+
+<g id="anyall" opacity="0">
+  <rect width="${SW}" height="${SH}"fill="#0b0b11" opacity=".95"/>
+  <rect width="${SW}" height="${SH}"fill="url(#glow)"/>
+  <g id="anyall-title">
+    ${T(SW / 2, LAY.any.titleY, "Any app to any app", "#fff", 60, 800, "middle", 'letter-spacing="-1"')}
+    ${T(SW / 2, LAY.any.subY, "Twelve routes, every one both ways", "#9a93b5", 26, 500, "middle")}
+  </g>
+  <g fill="none" stroke="#8f89ff" stroke-opacity=".65" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 12">
+    ${ANY_PAIRS.map(([p, q], k) => `<path id="anyline${k}" d="M${ANY_POS[p][0]} ${ANY_POS[p][1]} L${ANY_POS[q][0]} ${ANY_POS[q][1]}" opacity="0"/>`).join("")}
+  </g>
+  <g id="anypackets" opacity="0" style="filter: drop-shadow(0 0 6px rgba(0,194,255,.9))">
+    ${ANY_PAIRS.map((_, k) => `<circle id="anypk${k}a" r="7" fill="#00c2ff"/><circle id="anypk${k}b" r="7" fill="#b3aeff"/>`).join("")}
+  </g>
+  <g id="anyhub" opacity="0">
+    <circle cx="${LAY.any.hub[0]}" cy="${LAY.any.hub[1]}" r="${V ? 70 : 60}" fill="#15141f" stroke="#6c63ff" stroke-width="3"/>
+    <g transform="translate(${LAY.any.hub[0] - 10.5 * (V ? 3.5 : 3)} ${LAY.any.hub[1] - 12 * (V ? 3.5 : 3)}) scale(${V ? 3.5 : 3})"><path d="${BRAND.symbol}" fill="url(#mgrad)"/></g>
+  </g>
+  ${ANY_APPS.map(([kind, name], k) => {
+    const [cx, cy] = ANY_POS[k], b = LAY.any.badge;
+    return `<g id="anyb${k}" opacity="0">${badge(kind, cx - b / 2, cy - b / 2, b)}${T(cx, cy < LAY.any.hub[1] ? cy - b / 2 - 23 : cy + b / 2 + 45, name, "#e6e3f7", 26, 600, "middle")}</g>`;
+  }).join("")}
+</g>
+
+<g id="end" opacity="0">
+  <rect width="${SW}" height="${SH}"fill="#0b0b11" opacity=".96"/>
+  <rect width="${SW}" height="${SH}"fill="url(#glow)"/>
+  <g transform="translate(${(SW - (WORD_RIGHT - 3) * LAY.end.caps / 18) / 2 - 3 * LAY.end.caps / 18} ${LAY.end.top - 3 * LAY.end.caps / 18}) scale(${LAY.end.caps / 18})">
+    <g id="end-stem"><path d="${BRAND.stem}" fill="url(#endgrad)"/></g>
+    <g id="end-foot"><path d="${BRAND.foot}" fill="url(#endgrad)"/></g>
+    <g id="end-bridge"><path d="${BRAND.bridge}" fill="url(#endgrad)"/></g>
+    <g clip-path="url(#endwipe)"><g id="end-word"><path d="${BRAND.word}" fill="#fff"/></g></g>
+    <g clip-path="url(#endinside)"><rect id="end-shine" x="2" y="2" width="4" height="26" fill="url(#shinefill)" opacity="0"/></g>
+  </g>
+  <g id="end-lines" opacity="0">
+    ${T(SW / 2, LAY.end.lines[0], "Figma · Photoshop · Illustrator · After Effects", "#e6e3f7", LAY.end.sizes[0], 600, "middle")}
+    ${T(SW / 2, LAY.end.lines[1], "Any app to any app, as real layers. Free forever.", "#9a93b5", LAY.end.sizes[1], 500, "middle")}
+    ${T(SW / 2, LAY.end.lines[2], "github.com/raisulsohan/LazyLord", "#6f6a88", LAY.end.sizes[2], 500, "middle")}
+  </g>
+</g>`;
+
+const $ = (id) => document.getElementById(id);
+const set = (el, attr, value) => { const v = String(value); if (el.getAttribute(attr) !== v) el.setAttribute(attr, v); };
+const op = (id, v) => set($(id), "opacity", +v.toFixed(4));
+const text = (id, s, fill) => { const el = $(id); if (el.textContent !== s) el.textContent = s; if (fill) set(el, "fill", fill); };
+
+/* ------------------------------------------------------------------ the timeline */
+const FLY_START = 5.0, FLY_GAP = 0.55, FLY_TARGET_GAP = 0.12, FLY_DUR = 0.9;
+const flyStart = (i, j) => FLY_START + i * FLY_GAP + j * FLY_TARGET_GAP;
+const landed = (i, j) => flyStart(i, j) + FLY_DUR;
+
+function figmaPose(t) {
+  const u = P(t, 3.2, 4.2);
+  const intro = P(t, 0, 0.8, E.out), s0 = lerp(0.965, 1, intro);
+  const [ax, ay, as] = LAY.figA, [bx, by, bs] = LAY.figB;
+  const s = lerp(as, bs, u), x = lerp(ax, bx, u), y = lerp(ay, by, u);
+  return { x: x + (1 - s0) * FIG_W / 2 * s, y: y + (1 - s0) * FIG_H / 2 * s, s: s * s0, opacity: intro };
+}
+function adobePose(t, j) {
+  const u = P(t, 4.0 + j * 0.15, 4.7 + j * 0.15, E.out);
+  return { x: lerp(LAY.win.x + LAY.win.from, LAY.win.x, u), y: LAY.win.y[j], s: LAY.win.s, opacity: u };
+}
+
+/* The cursor, in the Figma window's own units: it only moves while Figma is still at its first pose. */
+const CURSOR = [[0.9, 1160, 810], [1.1, 1160, 810], [1.55, 310, 260], [2.1, 885, 655], [2.25, 885, 655], [2.8, 1100, 442], [3.6, 1100, 442]];
+const MARQUEE_FROM = [310, 260];
+const onFigma = ([x, y]) => [LAY.figA[0] + LAY.figA[2] * x, LAY.figA[1] + LAY.figA[2] * y];
+function cursorAt(t) {
+  if (t <= CURSOR[0][0]) return onFigma(CURSOR[0].slice(1));
+  for (let k = 0; k < CURSOR.length - 1; k++) {
+    const [ta, xa, ya] = CURSOR[k], [tb, xb, yb] = CURSOR[k + 1];
+    if (t <= tb) { const u = P(t, ta, tb); return onFigma([lerp(xa, xb, u), lerp(ya, yb, u)]); }
+  }
+  return onFigma(CURSOR[CURSOR.length - 1].slice(1));
+}
+
+/**
+ * Move a flying copy from src to dst ({x, y, s} in stage space) over [t0, t0 + dur]. "up" arcs
+ * over the top; "side" bows out to the left, for sends between windows stacked on top of each
+ * other; "right" bows out to the right, for the tall layout's sends down the stack.
+ */
+function flight(id, src, dst, [t0, dur], t, arc) {
+  const el = $(id);
+  if (t < t0 || t >= t0 + dur) { set(el, "opacity", 0); return; }
+  const u = clamp((t - t0) / dur, 0, 1), e = E.inOut(u);
+  const cx = arc === "side" ? Math.min(src.x, dst.x) - LAY.sideBow : arc === "right" ? (src.x + dst.x) / 2 + 260 : (src.x + dst.x) / 2;
+  const cy = arc === "up" ? Math.min(src.y, dst.y) - 150 : (src.y + dst.y) / 2;
+  const x = (1 - e) * (1 - e) * src.x + 2 * (1 - e) * e * cx + e * e * dst.x;
+  const y = (1 - e) * (1 - e) * src.y + 2 * (1 - e) * e * cy + e * e * dst.y;
+  set(el, "transform", `translate(${x.toFixed(2)} ${y.toFixed(2)}) scale(${lerp(src.s, dst.s, e).toFixed(5)})`);
+  set(el, "opacity", 1);
+  const glow = Math.sin(Math.PI * u);
+  el.style.filter = `drop-shadow(0 0 ${(14 * glow).toFixed(1)}px rgba(0,194,255,${(0.75 * glow).toFixed(3)}))`;
+}
+
+function render(t) {
+  /* Figma */
+  const f = figmaPose(t);
+  set($("figma"), "transform", `translate(${f.x.toFixed(2)} ${f.y.toFixed(2)}) scale(${f.s.toFixed(5)})`);
+  op("figma", f.opacity);
+
+  const selected = P(t, 2.1, 2.22);
+  op("fgsel", selected);
+  for (let k = 0; k < 6; k++) op(`fgrow${k}`, selected);
+
+  const pressed = t >= 2.86 && t < 3.02 ? 0.18 : 0;
+  op("sendpress", pressed);
+  set($("sendbtn"), "transform", pressed ? `translate(${16 + 154} ${268 + 22}) scale(.98) translate(${-(16 + 154)} ${-(268 + 22)})` : "");
+  if (t < 2.95) { text("sendlabel", "Send to all apps"); text("plugstatus", "3 Adobe apps connected", "#9a9aa6"); }
+  else if (t < 8.4) { text("sendlabel", "Sending…"); text("plugstatus", "Sending 5 layers to 3 apps…", "#6c63ff"); }
+  else if (t < landedAt(PHOTO_FLY)) { text("sendlabel", "Send to all apps"); text("plugstatus", "Sent 5 layers to 3 apps", "#14ae5c"); }
+  else { text("sendlabel", "Send to all apps"); text("plugstatus", "Placed 1 layer from Photoshop", "#14ae5c"); }
+
+  /* a photo arrives from Photoshop: it goes on top of Figma's layer list */
+  const photoIn = P(t, landedAt(PHOTO_FLY), landedAt(PHOTO_FLY) + 0.3);
+  for (let k = 0; k < 6; k++) set($(`fgrowg${k}`), "transform", `translate(0 ${(32 * photoIn).toFixed(2)})`);
+  op("fgphotorow", P(t, landedAt(PHOTO_FLY), landedAt(PHOTO_FLY) + 0.25));
+  op("fg-photo", t >= landedAt(PHOTO_FLY) ? 1 : 0);
+
+  /* cursor and marquee (in stage space; Figma is still while they are on screen) */
+  const [cx, cy] = cursorAt(t);
+  const click = t >= 2.86 && t < 3.02 ? 0.9 : 1;
+  set($("cursor"), "transform", `translate(${cx.toFixed(2)} ${cy.toFixed(2)}) scale(${1.15 * click})`);
+  op("cursor", P(t, 0.9, 1.1) * (1 - P(t, 3.3, 3.6)));
+  const marquee = t >= 1.55 && t < 2.18 ? 1 - P(t, 2.1, 2.18) : 0;
+  const m = $("marquee"), [mx, my] = onFigma(MARQUEE_FROM);
+  set(m, "x", mx.toFixed(2)); set(m, "y", my.toFixed(2));
+  set(m, "width", Math.max(0, cx - mx).toFixed(2)); set(m, "height", Math.max(0, cy - my).toFixed(2));
+  op("marquee", marquee);
+
+  /* big type for anyone watching muted (tall layout only) */
+  if (LAY.captions) {
+    op("capA", P(t, 0.4, 0.8) * (1 - P(t, 3.0, 3.3)));
+    op("capB", P(t, 3.5, 3.9) * (1 - P(t, 10.55, 10.85)));
+  }
+
+  /* Adobe windows */
+  const poses = ADOBE.map((_, j) => adobePose(t, j));
+  ADOBE.forEach((a, j) => {
+    set($(`win-${a.id}`), "transform", `translate(${poses[j].x.toFixed(2)} ${poses[j].y}) scale(${poses[j].s})`);
+    op(`win-${a.id}`, poses[j].opacity);
+  });
+  /** A point in window j's own units, in stage space. */
+  const inWin = (j, x, y) => ({ x: poses[j].x + poses[j].s * x, y: poses[j].y + poses[j].s * y });
+
+  /* routes, from the design in Figma to the design in each app */
+  const src = { x: f.x + f.s * FIG_DESIGN[0], y: f.y + f.s * FIG_DESIGN[1], s: f.s };
+  const dst = ADOBE.map((a, j) => ({ ...inWin(j, a.design[0], a.design[1]), s: a.design[2] * poses[j].s }));
+  ADOBE.forEach((a, j) => {
+    const sx = src.x + 260 * src.s, sy = src.y + 170 * src.s, dx = dst[j].x + 260 * dst[j].s, dy = dst[j].y + 170 * dst[j].s;
+    const c = V ? `${sx.toFixed(1)} ${(sy + 160).toFixed(1)} ${dx.toFixed(1)} ${(dy - 160).toFixed(1)}`
+      : `${(sx + 260).toFixed(1)} ${sy.toFixed(1)} ${(dx - 320).toFixed(1)} ${dy.toFixed(1)}`;
+    set($(`route${j}`), "d", `M${sx.toFixed(1)} ${sy.toFixed(1)} C${c} ${dx.toFixed(1)} ${dy.toFixed(1)}`);
+  });
+  op("routes", 0.55 * P(t, 4.6, 5.0) * (1 - P(t, 8.6, 9.2)));
+
+  /* layers flying */
+  ADOBE.forEach((a, j) => {
+    LAYERS.forEach((_, i) => {
+      const t0 = flyStart(i, j);
+      set($(`${a.id}-L${i}`), "opacity", t >= t0 + FLY_DUR ? 1 : 0);
+      flight(`fly${j}${i}`, src, dst[j], [t0, FLY_DUR], t, LAY.flyArc);
+    });
+
+    /* panels fill in as layers land: each new layer arrives on top and pushes the others down */
+    const slotH = { ai: 26, ps: 30, ae: 36 }[a.id];
+    if (a.id !== "ae") op(`${a.id}-row0`, P(t, landed(0, j), landed(0, j) + 0.25));
+    /* later arrivals from the other apps also land on top */
+    const extra = a.id === "ae" ? P(t, landedAt(SPARK_FLY), landedAt(SPARK_FLY) + 0.3)
+      : a.id === "ai" ? P(t, landedAt(WAVE_FLY), landedAt(WAVE_FLY) + 0.3) : 0;
+    LAYERS.forEach((_, i) => {
+      let slot = extra;
+      for (let m = i + 1; m < LAYERS.length; m++) slot += P(t, landed(m, j), landed(m, j) + 0.3);
+      const appear = P(t, landed(i, j), landed(i, j) + 0.25);
+      const row = `${a.id}-lay${i}`;
+      if (a.id === "ae") {
+        set($(row), "transform", `translate(0 ${(slot * slotH).toFixed(2)})`);
+        op(`ae-label${i}`, appear);
+        set($(`ae-label${i}`), "transform", `translate(${lerp(-8, 0, appear).toFixed(2)} 0)`);
+        set($(`ae-bar${i}`), "width", (340 * P(t, landed(i, j), landed(i, j) + 0.45, E.out)).toFixed(2));
+        text(`ae-num${i}`, String(Math.round(slot) + 1));
+      } else {
+        set($(row), "transform", `translate(${lerp(-8, 0, appear).toFixed(2)} ${(slot * slotH).toFixed(2)})`);
+        op(row, appear);
+      }
+    });
+    op(`toast-${a.id}`, P(t, 8.4 + j * 0.1, 8.7 + j * 0.1) * (1 - P(t, 10.7, 11.0)));
+  });
+
+  /* each app shows what it can do with real layers */
+  op("ai-anchors", P(t, 8.8, 9.1));
+  op("ps-select", P(t, 9.0, 9.25));
+  op("ps-bbox", P(t, 9.0, 9.25));
+  op("ae-keys", P(t, 8.9, 9.1));
+  op("ae-play", P(t, 8.85, 9.0));
+  const play = P(t, 9.0, 10.8, E.linear);
+  set($("ae-playline"), "transform", `translate(${(340 * play).toFixed(2)} 0)`);
+  set($("ae-playhead"), "transform", `translate(${(340 * play).toFixed(2)} 0)`);
+  set($("ae-L1"), "transform", `translate(0 ${(-40 * Math.sin(Math.PI * play)).toFixed(2)})`);
+
+  /* ---- any app to any app: three quick sends between the other apps ---- */
+  op("anycap", P(t, 10.9, 11.2) * (1 - P(t, 15.55, 15.75)));
+  set($("anycap"), "transform", `translate(0 ${lerp(10, 0, P(t, 10.9, 11.3, E.out)).toFixed(2)})`);
+  op("anychip0", P(t, 10.95, 11.15) * (1 - P(t, 12.3, 12.45)));
+  op("anychip1", P(t, 12.45, 12.6) * (1 - P(t, 13.75, 13.9)));
+  op("anychip2", P(t, 13.9, 14.05) * (1 - P(t, 15.55, 15.75)));
+
+  // Illustrator → After Effects: a sparkle drawn in Illustrator
+  const sparkPop = P(t, 11.0, 11.35, E.back);
+  op("ai-spark", P(t, 11.0, 11.1));
+  set($("ai-spark"), "transform", `translate(${SPARK_IN_AI[0]} ${SPARK_IN_AI[1]}) scale(${Math.max(0, sparkPop).toFixed(4)})`);
+  flight("fly-spark",
+    { ...inWin(0, SPARK_IN_AI[0], SPARK_IN_AI[1]), s: poses[0].s },
+    { ...inWin(2, ADOBE[2].design[0] + ADOBE[2].design[2] * SPARK_IN_AE[0], ADOBE[2].design[1] + ADOBE[2].design[2] * SPARK_IN_AE[1]), s: ADOBE[2].design[2] * SPARK_IN_AE[2] * poses[2].s },
+    SPARK_FLY, t, "side");
+  op("ae-spark", t >= landedAt(SPARK_FLY) ? 1 : 0);
+  const sparkRow = P(t, landedAt(SPARK_FLY), landedAt(SPARK_FLY) + 0.25);
+  op("ae-sparkrow", sparkRow);
+  set($("ae-sparkrow"), "transform", `translate(${lerp(-8, 0, sparkRow).toFixed(2)} 0)`);
+  set($("ae-sparkbar"), "width", (340 * P(t, landedAt(SPARK_FLY), landedAt(SPARK_FLY) + 0.45, E.out)).toFixed(2));
+  set($("ae-keys"), "transform", `translate(0 ${(36 * P(t, landedAt(SPARK_FLY), landedAt(SPARK_FLY) + 0.3)).toFixed(2)})`);
+
+  // Photoshop → Figma: a photo
+  op("ps-photo", P(t, 12.55, 12.7));
+  set($("ps-photo"), "transform", `translate(${PHOTO_IN_PS[0]} ${PHOTO_IN_PS[1]}) scale(${Math.max(0, P(t, 12.55, 12.9, E.back)).toFixed(4)})`);
+  flight("fly-photo",
+    { ...inWin(1, PHOTO_IN_PS[0], PHOTO_IN_PS[1]), s: poses[1].s },
+    { x: f.x + f.s * (FIG_DESIGN[0] + PHOTO_IN_FIGMA[0]), y: f.y + f.s * (FIG_DESIGN[1] + PHOTO_IN_FIGMA[1]), s: f.s * PHOTO_IN_FIGMA[2] },
+    PHOTO_FLY, t, "up");
+
+  // After Effects → Illustrator: a wave animated in After Effects
+  const wavePath = $("ae-wave");
+  op("ae-wave", t >= 13.95 ? 1 : 0);
+  set(wavePath, "stroke-dashoffset", (1 - P(t, 13.95, 14.45)).toFixed(4));
+  flight("fly-wave",
+    { ...inWin(2, ADOBE[2].design[0], ADOBE[2].design[1]), s: ADOBE[2].design[2] * poses[2].s },
+    { ...inWin(0, ADOBE[0].design[0], ADOBE[0].design[1]), s: ADOBE[0].design[2] * poses[0].s },
+    WAVE_FLY, t, "side");
+  op("ai-wave", t >= landedAt(WAVE_FLY) ? 1 : 0);
+  const waveRow = P(t, landedAt(WAVE_FLY), landedAt(WAVE_FLY) + 0.25);
+  op("ai-waverow", waveRow);
+  set($("ai-waverow"), "transform", `translate(${lerp(-8, 0, waveRow).toFixed(2)} 0)`);
+
+  /* ---- all twelve routes at once ---- */
+  op("anyall", P(t, 15.7, 16.1) * (1 - P(t, 18.1, 18.6)));
+  op("anyall-title", P(t, 15.9, 16.3));
+  set($("anyall-title"), "transform", `translate(0 ${lerp(14, 0, P(t, 15.9, 16.4, E.out)).toFixed(2)})`);
+  ANY_POS.forEach(([cx, cy], k) => {
+    const pop = P(t, 16.0 + k * 0.08, 16.35 + k * 0.08, E.back);
+    op(`anyb${k}`, P(t, 16.0 + k * 0.08, 16.1 + k * 0.08));
+    set($(`anyb${k}`), "transform", `translate(${cx} ${cy}) scale(${Math.max(0, pop).toFixed(4)}) translate(${-cx} ${-cy})`);
+  });
+  op("anyhub", P(t, 16.2, 16.5));
+  op("anypackets", P(t, 16.6, 16.9));
+  ANY_PAIRS.forEach(([p, q], k) => {
+    op(`anyline${k}`, P(t, 16.3 + k * 0.07, 16.6 + k * 0.07));
+    const [px, py] = ANY_POS[p], [qx, qy] = ANY_POS[q];
+    const len = Math.hypot(qx - px, qy - py), ux = (qx - px) / len, uy = (qy - py) / len, pad = LAY.any.badge * 0.62;
+    const along = (u) => [px + ux * (pad + (len - 2 * pad) * u), py + uy * (pad + (len - 2 * pad) * u)];
+    const phase = (((t - 16.6) * 0.7 + k * 0.23) % 1 + 1) % 1;
+    const [ax, ay] = along(phase), [bx, by] = along(1 - ((phase + 0.5) % 1));
+    const pa = $(`anypk${k}a`), pb = $(`anypk${k}b`);
+    set(pa, "cx", ax.toFixed(1)); set(pa, "cy", ay.toFixed(1)); set(pa, "opacity", Math.sin(Math.PI * phase).toFixed(3));
+    const phaseB = (phase + 0.5) % 1;
+    set(pb, "cx", bx.toFixed(1)); set(pb, "cy", by.toFixed(1)); set(pb, "opacity", Math.sin(Math.PI * phaseB).toFixed(3));
+  });
+
+  /* the end: the logo builds, then the line */
+  op("end", P(t, 18.0, 18.5));
+  const stem = P(t, 18.35, 18.65, E.out);
+  op("end-stem", stem); set($("end-stem"), "transform", `translate(0 ${lerp(1.5, 0, stem).toFixed(3)})`);
+  op("end-foot", P(t, 18.45, 18.7)); set($("end-foot"), "transform", `translate(${lerp(2.5, 0, P(t, 18.65, 19.15, E.out)).toFixed(3)} 0)`);
+  const bridge = P(t, 19.05, 19.35, E.back);
+  op("end-bridge", P(t, 19.05, 19.15));
+  set($("end-bridge"), "transform", `translate(7.2 19.5) scale(${Math.max(0, bridge).toFixed(4)} 1) translate(-7.2 -19.5)`);
+  const wipe = P(t, 19.35, 19.95, E.linear);
+  set($("endwipe-rect"), "width", (95.2 * wipe).toFixed(3));
+  set($("end-word"), "transform", `translate(${lerp(-1.5, 0, wipe).toFixed(3)} 0)`);
+  const shine = P(t, 20.0, 20.6, E.linear);
+  set($("end-shine"), "transform", `translate(${lerp(-2, 108.7, shine).toFixed(3)} 0)`);
+  op("end-shine", t > 20.0 && t < 20.6 ? 0.9 * Math.min(1, shine * 8, (1 - shine) * 8) : 0);
+  const lines = P(t, 19.9, 20.4, E.out);
+  op("end-lines", lines); set($("end-lines"), "transform", `translate(0 ${lerp(14, 0, lines).toFixed(2)})`);
+}
+
+/* ------------------------------------------------------------------ playback */
+const stage = $("stage"), scrub = $("scrub"), playBtn = $("play"), timeLabel = $("time");
+const query = new URLSearchParams(location.search);
+if (query.has("export")) document.body.classList.add("export");
+function fit() {
+  const bar = document.body.classList.contains("export") ? 0 : 52;
+  const s = Math.min(innerWidth / SW, (innerHeight - bar) / SH);
+  stage.style.transform = `translate(${(innerWidth - SW * s) / 2}px, ${(innerHeight - bar - SH * s) / 2}px) scale(${s})`;
+}
+addEventListener("resize", fit);
+fit();
+
+let playing = !query.has("t"), tNow = query.has("t") ? +query.get("t") : 0, origin = performance.now() - tNow * 1000;
+function show(t) {
+  tNow = t;
+  render(t);
+  scrub.value = t;
+  timeLabel.textContent = `${t.toFixed(2)} / ${DUR.toFixed(2)} s`;
+}
+function setPlaying(on) {
+  playing = on;
+  playBtn.textContent = on ? "Pause" : "Play";
+  if (on) origin = performance.now() - tNow * 1000;
+}
+playBtn.onclick = () => setPlaying(!playing);
+scrub.oninput = () => { setPlaying(false); show(+scrub.value); };
+addEventListener("keydown", (e) => {
+  if (e.code === "Space") { e.preventDefault(); setPlaying(!playing); }
+  if (e.code === "ArrowRight" || e.code === "ArrowLeft") { setPlaying(false); show(clamp(tNow + (e.code === "ArrowRight" ? 1 : -1) / 30, 0, DUR)); }
+});
+function tick(now) {
+  if (playing) show(((now - origin) / 1000) % DUR);
+  requestAnimationFrame(tick);
+}
+show(tNow);
+setPlaying(playing);
+requestAnimationFrame(tick);
+window.renderAt = (t) => { setPlaying(false); show(t); };
+</script>
+</body>
+</html>

@@ -142,6 +142,12 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 						<?php echo $rs_arrow_out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
 					</a>
 				<?php endif; ?>
+				<?php if ( ! empty( $pp['demo'] ) ) : ?>
+					<button type="button" class="rs-pf-btn rs-pf-btn--ghost rs-pf-btn--demo" data-rs-demo="<?php echo esc_url( $pp['demo'] ); ?>" data-rs-demo-tall="<?php echo esc_url( $pp['demo_tall'] ); ?>" data-rs-demo-title="<?php echo esc_attr( $pp_name[0] ); ?>">
+						<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.2v13.6L18.8 12z"/></svg>
+						<?php echo esc_html( $rs_is_en ? 'Watch demo' : 'ডেমো দেখুন' ); ?>
+					</button>
+				<?php endif; ?>
 				<?php if ( ! empty( $pp['github_url'] ) && $pp['github_url'] !== $pp['direct_url'] ) : ?>
 					<a class="rs-pf-btn rs-pf-btn--ghost" href="<?php echo esc_url( $pp['github_url'] ); ?>" target="_blank" rel="noopener noreferrer">GitHub</a>
 				<?php endif; ?>
@@ -529,6 +535,12 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 								<?php echo esc_html( $rs_is_en ? 'Case study' : 'কেস স্টাডি' ); ?>
 								<?php echo $rs_arrow_right; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
 							</a>
+							<?php if ( ! empty( $p['demo'] ) ) : ?>
+								<button type="button" class="rs-pf-card__demo" data-rs-demo="<?php echo esc_url( $p['demo'] ); ?>" data-rs-demo-tall="<?php echo esc_url( $p['demo_tall'] ); ?>" data-rs-demo-title="<?php echo esc_attr( $pf_name ); ?>">
+									<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.2v13.6L18.8 12z"/></svg>
+									<?php echo esc_html( $rs_is_en ? 'Demo' : 'ডেমো' ); ?>
+								</button>
+							<?php endif; ?>
 							<?php if ( ! empty( $p['direct_url'] ) ) : ?>
 								<a class="rs-pf-card__link" href="<?php echo esc_url( $p['direct_url'] ); ?>" target="_blank" rel="noopener noreferrer">
 									<?php echo esc_html( $rs_is_en ? $p['action_en'] : $p['action_bn'] ); ?>
@@ -685,6 +697,10 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 							<polyline points="7 7 17 7 17 17"></polyline>
 						</svg>
 					</a>
+					<button type="button" class="rs-portfolio-btn rs-portfolio-btn--secondary rs-portfolio-btn--demo" id="rs-modal-demo-btn" style="display: none;">
+						<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.2v13.6L18.8 12z"/></svg>
+						<span><?php echo esc_html( $rs_is_en ? 'Watch demo' : 'ডেমো দেখুন' ); ?></span>
+					</button>
 					<a href="#" class="rs-portfolio-btn rs-portfolio-btn--secondary" id="rs-modal-github-btn" target="_blank" rel="noopener noreferrer" style="display: none;">
 						<span>GitHub</span>
 						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -751,6 +767,8 @@ foreach ( $projects as $p ) {
 		'url'         => function_exists( 'rs_project_url' ) ? rs_project_url( $p['id'] ) : '',
 		'before'      => ! empty( $p['before'] ) ? esc_url_raw( $p['before'] ) : '',
 		'after'       => ! empty( $p['after'] ) ? esc_url_raw( $p['after'] ) : '',
+		'demo'        => ! empty( $p['demo'] ) ? esc_url_raw( $p['demo'] ) : '',
+		'demo_tall'   => ! empty( $p['demo_tall'] ) ? esc_url_raw( $p['demo_tall'] ) : '',
 	);
 }
 echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
@@ -972,6 +990,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	var actionBtn       = document.getElementById('rs-modal-action-btn');
 	var actionLabel     = document.getElementById('rs-modal-action-label');
 	var githubBtn       = document.getElementById('rs-modal-github-btn');
+	var demoBtn         = document.getElementById('rs-modal-demo-btn');
 	var topBtn          = document.getElementById('rs-case-study-top');
 	var lightboxOverlay = document.getElementById('rs-image-lightbox');
 	var lightboxClose   = document.getElementById('rs-lightbox-close');
@@ -1064,6 +1083,19 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 			githubBtn.querySelector('span').textContent = isEn ? 'View on GitHub' : 'গিটহাবে কোড দেখুন';
 		} else if (githubBtn) {
 			githubBtn.style.display = 'none';
+		}
+
+		// Demo: the player reads these when the button is clicked.
+		if (demoBtn) {
+			if (p.demo) {
+				demoBtn.setAttribute('data-rs-demo', p.demo);
+				demoBtn.setAttribute('data-rs-demo-tall', p.demo_tall || '');
+				demoBtn.setAttribute('data-rs-demo-title', String(p.title || '').split(' — ')[0]);
+				demoBtn.style.display = 'inline-flex';
+			} else {
+				demoBtn.removeAttribute('data-rs-demo');
+				demoBtn.style.display = 'none';
+			}
 		}
 
 		// Dynamic Visual Banner (Real Screenshot or CSS Mockup)
@@ -2206,6 +2238,173 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 }());
 </script>
 
+
+<?php if ( array_filter( array_column( $projects, 'demo' ) ) ) : ?>
+<div class="rs-demo" id="rs-demo" role="dialog" aria-modal="true" aria-labelledby="rs-demo-title" hidden>
+	<div class="rs-demo__box">
+		<div class="rs-demo__head">
+			<span class="rs-demo__title" id="rs-demo-title"></span>
+			<button type="button" class="rs-demo__close" aria-label="<?php echo esc_attr( $rs_is_en ? 'Close demo' : 'ডেমো বন্ধ করুন' ); ?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+		</div>
+		<div class="rs-demo__frame"></div>
+	</div>
+</div>
+<script>
+/* Demo player. The demo loads only when asked for, loops on its own, and is
+   thrown away on close so nothing keeps animating in the background. A
+   portrait screen gets the 9:16 cut when the project has one. */
+(function () {
+	'use strict';
+
+	var root = document.getElementById('rs-demo');
+
+	if (!root) {
+		return;
+	}
+
+	var slot     = root.querySelector('.rs-demo__frame');
+	var titleEl  = root.querySelector('.rs-demo__title');
+	var closeBtn = root.querySelector('.rs-demo__close');
+	var HEAD     = 49; /* this player's title row */
+	var BAR      = 52; /* the demo's own play bar */
+	var frame    = null;
+	var opener   = null;
+	var tall     = false;
+	var wideSrc  = '';
+	var tallSrc  = '';
+	var turned   = window.matchMedia ? window.matchMedia('(orientation: portrait)') : null;
+
+	function portrait() {
+		return window.innerHeight > window.innerWidth;
+	}
+
+	function fit() {
+		if (!frame) {
+			return;
+		}
+
+		var ratio = tall ? 1080 / 1920 : 1920 / 1080;
+		var maxW  = Math.min(window.innerWidth - 24, tall ? 560 : 1280);
+		var maxH  = window.innerHeight - 24 - HEAD;
+		var w     = Math.max(160, Math.min(maxW, (maxH - BAR) * ratio));
+
+		frame.style.width  = Math.floor(w) + 'px';
+		frame.style.height = Math.floor(w / ratio + BAR) + 'px';
+	}
+
+	/* While the player is open the page's own shortcuts (the timeline's
+	   J/K/L, typing "render", Ctrl+K) stay quiet. */
+	/* Turning a phone sideways swaps to the other cut. */
+	function onResize() {
+		var want = Boolean(tallSrc) && portrait();
+
+		if (frame && want !== tall) {
+			tall = want;
+			frame.src = tall ? tallSrc : wideSrc;
+		}
+
+		fit();
+	}
+
+	function onKey(e) {
+		if (e.key === 'Escape') {
+			e.preventDefault();
+			close();
+		}
+
+		e.stopPropagation();
+	}
+
+	function onFrameKey(e) {
+		if (e.key === 'Escape') {
+			close();
+		}
+	}
+
+	function open(src, srcTall, title, from) {
+		if (!src) {
+			return;
+		}
+
+		if (frame) {
+			close();
+		}
+
+		wideSrc = src;
+		tallSrc = srcTall || '';
+		tall    = Boolean(tallSrc) && portrait();
+		opener = from || document.activeElement;
+		frame  = document.createElement('iframe');
+
+		frame.className = 'rs-demo__iframe';
+		frame.title     = title;
+		frame.setAttribute('allow', 'fullscreen');
+		frame.addEventListener('load', function () {
+			try {
+				frame.contentWindow.addEventListener('keydown', onFrameKey);
+				frame.contentWindow.focus();
+			} catch (err) {
+				/* another origin: Esc works from the page instead */
+			}
+		});
+		frame.src = tall ? tallSrc : wideSrc;
+
+		titleEl.textContent = title;
+		slot.appendChild(frame);
+		root.hidden = false;
+		document.documentElement.classList.add('rs-demo-open');
+		window.addEventListener('keydown', onKey, true);
+		window.addEventListener('resize', onResize);
+		if (turned && turned.addEventListener) {
+			turned.addEventListener('change', onResize);
+		}
+		fit();
+		closeBtn.focus();
+	}
+
+	function close() {
+		if (root.hidden) {
+			return;
+		}
+
+		root.hidden = true;
+
+		if (frame) {
+			frame.src = 'about:blank';
+			frame.parentNode.removeChild(frame);
+			frame = null;
+		}
+
+		document.documentElement.classList.remove('rs-demo-open');
+		window.removeEventListener('keydown', onKey, true);
+		window.removeEventListener('resize', onResize);
+		if (turned && turned.removeEventListener) {
+			turned.removeEventListener('change', onResize);
+		}
+
+		if (opener && opener.focus) {
+			opener.focus();
+		}
+	}
+
+	document.addEventListener('click', function (e) {
+		var trigger = e.target.closest ? e.target.closest('[data-rs-demo]') : null;
+
+		if (trigger && !root.contains(trigger)) {
+			e.preventDefault();
+			e.stopPropagation();
+			open(trigger.getAttribute('data-rs-demo'), trigger.getAttribute('data-rs-demo-tall'), trigger.getAttribute('data-rs-demo-title') || 'Demo', trigger);
+			return;
+		}
+
+		if (!root.hidden && (e.target === root || (e.target.closest && e.target.closest('.rs-demo__close')))) {
+			e.stopPropagation();
+			close();
+		}
+	}, true);
+}());
+</script>
+<?php endif; ?>
 
 <?php if ( function_exists( 'rs_github_stats_html' ) ) : ?>
 <script>
