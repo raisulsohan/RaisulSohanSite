@@ -1,6 +1,6 @@
 {
   "name": "raisul-sohan-theme",
-  "version": "7.9.5",
+  "version": "7.9.6",
   "private": true,
   "description": "Build step for the Raisul Sohan WordPress theme: joins src/css and src/js into the minified files the theme enqueues.",
   "scripts": {
