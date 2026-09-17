@@ -1992,7 +1992,7 @@ function rs_github_stats_html( $slug, $stats, $is_en ) {
  */
 function rs_github_now_html( $latest, $is_en ) {
 	$html  = '<span class="rs-pf-now__dot" aria-hidden="true"></span>';
-	$html .= '<span class="rs-pf-now__label">' . esc_html( $is_en ? 'Now building' : 'এখন বানাচ্ছি' ) . '</span>';
+	$html .= '<span class="rs-pf-now__label">' . esc_html( $is_en ? 'Last worked on' : 'সর্বশেষ কাজ' ) . '</span>';
 	$html .= '<strong>' . esc_html( $latest['repo'] ) . '</strong>';
 
 	if ( ! empty( $latest['date'] ) && strtotime( $latest['date'] ) ) {
@@ -2100,8 +2100,9 @@ function rs_refresh_github_stats() {
 		$repos[ $slug ] = $data;
 	}
 
-	/* What is being built right now: the last commit on the repository
-	   the author pushed to most recently. */
+	/* Last worked on: the last commit on the repository the author pushed
+	   to most recently, leaving out this theme's own repository, whose
+	   releases would otherwise crowd out the actual work. */
 	$latest = isset( $old['latest'] ) ? $old['latest'] : null;
 	$owner  = '';
 
@@ -2110,14 +2111,29 @@ function rs_refresh_github_stats() {
 		break;
 	}
 
+	/**
+	 * Repositories (owner/repo) never shown as last worked on.
+	 *
+	 * @param string[] $skip Lower-case owner/repo slugs; the theme's own by default.
+	 */
+	$skip = array_map( 'strtolower', (array) apply_filters( 'rs_github_latest_skip', array( rs_github_repo_slug( wp_get_theme( get_template() )->get( 'ThemeURI' ) ) ) ) );
+
 	if ( $owner ) {
-		$response = wp_remote_get( 'https://api.github.com/users/' . rawurlencode( $owner ) . '/repos?type=owner&sort=pushed&per_page=1', $args );
+		$response = wp_remote_get( 'https://api.github.com/users/' . rawurlencode( $owner ) . '/repos?type=owner&sort=pushed&per_page=10', $args );
 
 		if ( ! is_wp_error( $response ) && 200 === (int) wp_remote_retrieve_response_code( $response ) ) {
 			$list = json_decode( wp_remote_retrieve_body( $response ), true );
+			$pick = null;
 
-			if ( ! empty( $list[0]['full_name'] ) ) {
-				$response = wp_remote_get( 'https://api.github.com/repos/' . $list[0]['full_name'] . '/commits?per_page=1', $args );
+			foreach ( is_array( $list ) ? $list : array() as $repo_item ) {
+				if ( ! empty( $repo_item['full_name'] ) && ! in_array( strtolower( $repo_item['full_name'] ), $skip, true ) ) {
+					$pick = $repo_item;
+					break;
+				}
+			}
+
+			if ( $pick ) {
+				$response = wp_remote_get( 'https://api.github.com/repos/' . $pick['full_name'] . '/commits?per_page=1', $args );
 
 				if ( ! is_wp_error( $response ) && 200 === (int) wp_remote_retrieve_response_code( $response ) ) {
 					$commits = json_decode( wp_remote_retrieve_body( $response ), true );
@@ -2125,7 +2141,7 @@ function rs_refresh_github_stats() {
 					if ( ! empty( $commits[0]['sha'] ) ) {
 						$message = isset( $commits[0]['commit']['message'] ) ? (string) $commits[0]['commit']['message'] : '';
 						$latest  = array(
-							'repo'    => sanitize_text_field( isset( $list[0]['name'] ) ? $list[0]['name'] : '' ),
+							'repo'    => sanitize_text_field( isset( $pick['name'] ) ? $pick['name'] : '' ),
 							'message' => sanitize_text_field( strtok( $message, "\n" ) ),
 							'date'    => sanitize_text_field( isset( $commits[0]['commit']['author']['date'] ) ? $commits[0]['commit']['author']['date'] : '' ),
 							'url'     => esc_url_raw( isset( $commits[0]['html_url'] ) ? $commits[0]['html_url'] : '' ),

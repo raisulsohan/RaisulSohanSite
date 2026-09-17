@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.9.6-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.9.7-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -16,7 +16,7 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 - **Story timeline archive** at `/timeline/`: every story laid out like a composition, categories as layers and stories as clips as long as their reading time. Empty years fold into a single break, a cursor reads out the date under the pointer, clips show a tooltip and open in the reading pop-up, and the whole thing drags sideways. Linked from the footer.
 - **Shareable eases:** `?ease=x1,y1,x2,y2` loads a curve into the speed graph (marked "shared curve"), a Share button copies that link (or opens the phone's share sheet), and a little "ease" word dances along the track with the curve.
 - **Ctrl+K / Cmd+K command palette** on every page: stories by title, portfolio projects and site actions (home, portfolio, timeline, a random story, about, search, dark mode, email, language), all from the keyboard.
-- **Now building:** the portfolio hero shows the latest commit from the author's most recently pushed repository, refreshed with the GitHub numbers.
+- **Last worked on:** the portfolio hero shows the latest commit from the author's most recently pushed repository, refreshed with the GitHub numbers. Since 7.9.7 it leaves out this theme's own repository (read from the Theme URI, extendable with the `rs_github_latest_skip` filter), so theme releases never crowd out the actual work, and the label reads "Last worked on" rather than "Now building".
 - **GitHub token (7.9.3):** on shared hosting, GitHub's 60-requests-an-hour allowance per IP address is often spent by other sites, and the numbers come back 403. A read-only token can be saved from the notice on the Portfolio screen (or set as `RS_GITHUB_TOKEN` in `wp-config.php`), and the notice now says when a failure is the rate limit.
 - **Live GitHub numbers (7.9.4):** the portfolio may come from the full-page cache, so after it loads the browser asks `rs/v1/github` for fresh stars, downloads, versions and the latest commit, and swaps in only what changed. With a token the server asks GitHub again once the numbers are two minutes old; the cron event stays as a twelve-hour safety net. Cards, project pages and the live refresh share one renderer, so the swap is seamless in both languages.
 - **LazyLord's new look (7.9.5):** the LazyLord card, pop-up and project page now show the animated artwork from the LazyLord README, reframed to 16:9: the new L symbol builds itself, the wordmark wipes in, then a transfer runs along the wire from Figma to After Effects; since 7.9.6 the logo fades and builds again every eight seconds. Pure CSS inside the SVG, so it plays in a plain `<img>` and stays still for reduced motion. Theme images now carry the theme version in their address, so redrawn artwork gets past the one-year browser cache.
