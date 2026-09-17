@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.10.2-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.10.3-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -23,6 +23,7 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 - **Costs nothing elsewhere:** the demo is a page bundle (`assets/lazylord-demo.min.*`) loaded only on its project page, starts only when it scrolls near, and its box is sized by CSS alone, so a cached page never shifts. The build now turns any `src/css` or `src/js` file without a numeric prefix into such a bundle.
 - **7.10.1:** the case study pop-up on the portfolio shows a "Try the interactive demo" card for projects that have one, and it opens the project page right at the demo. Fixed: closing a case study by clicking outside it left the portfolio unable to scroll, because the site-wide overlay code hid the pop-up before the portfolio's own close could give the page its scroll back. Overlays that close through their own script are now marked `data-rs-self-managed`, and a case study that is already closed still restores the scroll.
 - **7.10.2:** a card whose project has both a demo animation and an interactive demo turns its Demo button into a small menu, Video or Interactive. It opens upward inside the card (cards clip), closes on a choice, a click elsewhere or Esc, takes focus to its first choice when opened from the keyboard, and after the video player closes, focus returns to the Demo button. A phone's address bar resizing the window only re-places it; a change of width closes it. A project with only one kind keeps a plain button or link.
+- **7.10.3:** the interactive demo opens in a pop-up on the portfolio too, from the card's Interactive choice and from the case study's "Try the interactive demo" card, over the case study when that is open. It shares the demo player: the page bundle loads the first time it is asked for, the wide stage is used when it fits the screen and the tall one otherwise (scrolling inside the pop-up on a phone), arrow keys still move through its choices, and Esc, the close button or a click outside close it and throw the demo away. A new-tab click, or a bundle that fails to load, still goes to the project page.
 
 ## What's new in 7.9
 

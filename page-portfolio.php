@@ -561,7 +561,7 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 										<span class="rs-pf-demos__icon"><?php echo $pf_play; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></span>
 										<span class="rs-pf-demos__text"><strong><?php echo esc_html( $rs_is_en ? 'Video' : 'ভিডিও' ); ?></strong><small><?php echo esc_html( $rs_is_en ? 'Watch it in motion' : 'অ্যানিমেশনে দেখুন' ); ?></small></span>
 									</button>
-									<a class="rs-pf-demos__item" href="<?php echo esc_url( $pf_try ); ?>">
+									<a class="rs-pf-demos__item" href="<?php echo esc_url( $pf_try ); ?>" data-rs-interactive data-rs-demo-title="<?php echo esc_attr( $pf_name ); ?>">
 										<span class="rs-pf-demos__icon rs-pf-demos__icon--try"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 9l5 12 1.8-5.2L21 14z"/><path d="M7.2 2.2 8 5.1M5.1 8l-2.9-.8M14 4.1 12 6.2M6.2 12l-2.1 2"/></svg></span>
 										<span class="rs-pf-demos__text"><strong><?php echo esc_html( $rs_is_en ? 'Interactive' : 'ইন্টারঅ্যাক্টিভ' ); ?></strong><small><?php echo esc_html( $rs_is_en ? 'Try it yourself' : 'নিজে চালিয়ে দেখুন' ); ?></small></span>
 									</a>
@@ -572,7 +572,7 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 									<?php echo esc_html( $rs_is_en ? 'Demo' : 'ডেমো' ); ?>
 								</button>
 							<?php elseif ( $pf_try ) : ?>
-								<a class="rs-pf-card__demo" href="<?php echo esc_url( $pf_try ); ?>">
+								<a class="rs-pf-card__demo" href="<?php echo esc_url( $pf_try ); ?>" data-rs-interactive data-rs-demo-title="<?php echo esc_attr( $pf_name ); ?>">
 									<?php echo $pf_play; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
 									<?php echo esc_html( $rs_is_en ? 'Demo' : 'ডেমো' ); ?>
 								</a>
@@ -675,7 +675,7 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 					<!-- Overview / Summary -->
 					<div class="rs-case-study-section">
 						<p class="rs-case-study-lead" id="rs-modal-summary"></p>
-						<a class="rs-case-study-try" id="rs-modal-try" hidden>
+						<a class="rs-case-study-try" id="rs-modal-try" data-rs-interactive hidden>
 							<span class="rs-case-study-try__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9l5 12 1.8-5.2L21 14z"/><path d="M7.2 2.2 8 5.1M5.1 8l-2.9-.8M14 4.1 12 6.2M6.2 12l-2.1 2"/></svg></span>
 							<span class="rs-case-study-try__text"><strong><?php echo esc_html( $rs_is_en ? 'Try the interactive demo' : 'ইন্টারঅ্যাক্টিভ ডেমো চালিয়ে দেখুন' ); ?></strong><small><?php echo esc_html( $rs_is_en ? 'Pick layers and send them yourself, on the project page' : 'প্রজেক্টের পাতায় নিজেই লেয়ার বেছে পাঠিয়ে দেখুন' ); ?></small></span>
 							<?php echo $rs_arrow_right; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
@@ -1096,6 +1096,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		if (tryLink) {
 			if (p['try']) {
 				tryLink.href = p['try'];
+				tryLink.setAttribute('data-rs-demo-title', String(p.title || '').split(' — ')[0]);
 				tryLink.hidden = false;
 			} else {
 				tryLink.removeAttribute('href');
@@ -2315,8 +2316,21 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 </script>
 
 
-<?php if ( array_filter( array_column( $projects, 'demo' ) ) ) : ?>
-<div class="rs-demo" id="rs-demo" role="dialog" aria-modal="true" aria-labelledby="rs-demo-title" hidden>
+<?php
+$rs_any_video = array_filter( array_column( $projects, 'demo' ) );
+$rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
+	$projects,
+	function ( $project ) {
+		return rs_project_has_demo( $project['id'] );
+	}
+);
+?>
+<?php if ( $rs_any_video || $rs_any_try ) : ?>
+<div class="rs-demo" id="rs-demo" role="dialog" aria-modal="true" aria-labelledby="rs-demo-title" hidden
+	data-lld-css="<?php echo esc_url( get_template_directory_uri() . '/assets/lazylord-demo.min.css?ver=' . RS_VERSION ); ?>"
+	data-lld-js="<?php echo esc_url( get_template_directory_uri() . '/assets/lazylord-demo.min.js?ver=' . RS_VERSION ); ?>"
+	data-lld-lang="<?php echo esc_attr( $rs_is_en ? 'en' : 'bn' ); ?>"
+	data-lld-label="<?php echo esc_attr( $rs_is_en ? 'Interactive demo' : 'ইন্টারঅ্যাক্টিভ ডেমো' ); ?>">
 	<div class="rs-demo__box">
 		<div class="rs-demo__head">
 			<span class="rs-demo__title" id="rs-demo-title"></span>
@@ -2326,9 +2340,14 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	</div>
 </div>
 <script>
-/* Demo player. The demo loads only when asked for, loops on its own, and is
-   thrown away on close so nothing keeps animating in the background. A
-   portrait screen gets the 9:16 cut when the project has one. */
+/* Demo player, for both kinds of demo.
+   - A demo animation ([data-rs-demo]) plays in an iframe, loops on its own,
+     and is thrown away on close so nothing keeps animating in the
+     background. A portrait screen gets the 9:16 cut when there is one.
+   - An interactive demo ([data-rs-interactive]) is mounted in the same
+     pop-up. Its page bundle loads the first time one is asked for, so the
+     portfolio carries none of it until then; if it cannot load, the link
+     goes to the project page instead. */
 (function () {
 	'use strict';
 
@@ -2338,12 +2357,15 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		return;
 	}
 
+	var box      = root.querySelector('.rs-demo__box');
 	var slot     = root.querySelector('.rs-demo__frame');
 	var titleEl  = root.querySelector('.rs-demo__title');
 	var closeBtn = root.querySelector('.rs-demo__close');
 	var HEAD     = 49; /* this player's title row */
-	var BAR      = 52; /* the demo's own play bar */
+	var BAR      = 52; /* the demo animation's own play bar */
 	var frame    = null;
+	var lld      = null; /* the interactive demo's wrap, when that is open */
+	var loading  = null;
 	var opener   = null;
 	var tall     = false;
 	var wideSrc  = '';
@@ -2355,22 +2377,30 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	}
 
 	function fit() {
+		var maxH = window.innerHeight - 24 - HEAD;
+
+		if (lld) {
+			/* The wide stage when it fits the screen at 980px or more, else
+			   the tall one, which scrolls inside the pop-up. */
+			var wide = Math.min(1280, window.innerWidth - 24, maxH * 1280 / 760);
+			lld.style.width = Math.floor(wide >= 980 ? wide : Math.min(520, window.innerWidth - 24)) + 'px';
+			slot.style.maxHeight = maxH + 'px';
+			return;
+		}
+
 		if (!frame) {
 			return;
 		}
 
 		var ratio = tall ? 1080 / 1920 : 1920 / 1080;
 		var maxW  = Math.min(window.innerWidth - 24, tall ? 560 : 1280);
-		var maxH  = window.innerHeight - 24 - HEAD;
 		var w     = Math.max(160, Math.min(maxW, (maxH - BAR) * ratio));
 
 		frame.style.width  = Math.floor(w) + 'px';
 		frame.style.height = Math.floor(w / ratio + BAR) + 'px';
 	}
 
-	/* While the player is open the page's own shortcuts (the timeline's
-	   J/K/L, typing "render", Ctrl+K) stay quiet. */
-	/* Turning a phone sideways swaps to the other cut. */
+	/* Turning a phone sideways swaps a demo animation to its other cut. */
 	function onResize() {
 		var want = Boolean(tallSrc) && portrait();
 
@@ -2382,10 +2412,19 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		fit();
 	}
 
+	/* While the player is open the page's own shortcuts (the timeline's
+	   J/K/L, typing "render", Ctrl+K) stay quiet. The interactive demo keeps
+	   its arrow keys, which move through its choices. */
 	function onKey(e) {
 		if (e.key === 'Escape') {
 			e.preventDefault();
+			e.stopPropagation();
 			close();
+			return;
+		}
+
+		if (lld && /^Arrow/.test(e.key) && lld.contains(e.target)) {
+			return;
 		}
 
 		e.stopPropagation();
@@ -2397,20 +2436,31 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		}
 	}
 
+	function show(title, from) {
+		opener = from || document.activeElement;
+		titleEl.textContent = title;
+		root.hidden = false;
+		document.documentElement.classList.add('rs-demo-open');
+		window.addEventListener('keydown', onKey, true);
+		window.addEventListener('resize', onResize);
+		if (turned && turned.addEventListener) {
+			turned.addEventListener('change', onResize);
+		}
+		fit();
+		closeBtn.focus();
+	}
+
 	function open(src, srcTall, title, from) {
 		if (!src) {
 			return;
 		}
 
-		if (frame) {
-			close();
-		}
+		close();
 
 		wideSrc = src;
 		tallSrc = srcTall || '';
 		tall    = Boolean(tallSrc) && portrait();
-		opener = from || document.activeElement;
-		frame  = document.createElement('iframe');
+		frame   = document.createElement('iframe');
 
 		frame.className = 'rs-demo__iframe';
 		frame.title     = title;
@@ -2425,17 +2475,88 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		});
 		frame.src = tall ? tallSrc : wideSrc;
 
-		titleEl.textContent = title;
 		slot.appendChild(frame);
-		root.hidden = false;
-		document.documentElement.classList.add('rs-demo-open');
-		window.addEventListener('keydown', onKey, true);
-		window.addEventListener('resize', onResize);
-		if (turned && turned.addEventListener) {
-			turned.addEventListener('change', onResize);
+		show(title, from);
+	}
+
+	/* The interactive demo's page bundle, once. */
+	function load() {
+		if (window.LazyLordDemo) {
+			return Promise.resolve();
 		}
-		fit();
-		closeBtn.focus();
+
+		if (!loading) {
+			loading = new Promise(function (resolve, reject) {
+				var left = 2;
+				var done = function () {
+					if (--left === 0) {
+						resolve();
+					}
+				};
+				var fail = function () {
+					loading = null;
+					reject();
+				};
+				var css = document.createElement('link');
+				var js  = document.createElement('script');
+
+				css.rel = 'stylesheet';
+				css.href = root.getAttribute('data-lld-css');
+				css.onload = done;
+				css.onerror = fail;
+				js.src = root.getAttribute('data-lld-js');
+				js.onload = done;
+				js.onerror = fail;
+				document.head.appendChild(css);
+				document.head.appendChild(js);
+			});
+		}
+
+		return loading;
+	}
+
+	/* The project page, as a plain link would have gone. The case study
+	   pop-up's address is already that page's, so step it back first or the
+	   click only changes the hash. */
+	function go(href) {
+		try {
+			var url = new URL(href, window.location.href);
+			if (url.pathname === window.location.pathname) {
+				window.history.replaceState(null, '', window.location.pathname.replace(/[^\/]+\/?$/, ''));
+			}
+			window.location.assign(url.href);
+		} catch (err) {
+			window.location.href = href;
+		}
+	}
+
+	function openInteractive(href, title, from) {
+		close();
+
+		var wrap = document.createElement('div');
+		var demo = document.createElement('div');
+
+		wrap.className = 'lld-wrap';
+		demo.className = 'lld';
+		demo.setAttribute('data-lang', root.getAttribute('data-lld-lang') || 'en');
+		demo.setAttribute('data-label', root.getAttribute('data-lld-label') || 'Interactive demo');
+		wrap.appendChild(demo);
+
+		lld = wrap;
+		box.classList.add('is-interactive');
+		slot.appendChild(wrap);
+		show(title + ' · ' + demo.getAttribute('data-label'), from);
+
+		load().then(function () {
+			if (lld === wrap && window.LazyLordDemo) {
+				window.LazyLordDemo.mount(demo);
+			}
+		}, function () {
+			if (lld === wrap) {
+				close();
+				go(href);
+			}
+		});
 	}
 
 	function close() {
@@ -2449,6 +2570,13 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 			frame.src = 'about:blank';
 			frame.parentNode.removeChild(frame);
 			frame = null;
+		}
+
+		if (lld) {
+			lld.parentNode.removeChild(lld);
+			lld = null;
+			box.classList.remove('is-interactive');
+			slot.style.maxHeight = '';
 		}
 
 		document.documentElement.classList.remove('rs-demo-open');
@@ -2469,7 +2597,20 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	}
 
 	document.addEventListener('click', function (e) {
-		var trigger = e.target.closest ? e.target.closest('[data-rs-demo]') : null;
+		var t = e.target instanceof Element ? e.target : null;
+		var interactive = t ? t.closest('[data-rs-interactive]') : null;
+		var trigger = t ? t.closest('[data-rs-demo]') : null;
+
+		if (interactive && !root.contains(interactive)) {
+			/* A new tab still gets the project page. */
+			if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || (e.button && e.button !== 0)) {
+				return;
+			}
+			e.preventDefault();
+			e.stopPropagation();
+			openInteractive(interactive.getAttribute('href'), interactive.getAttribute('data-rs-demo-title') || 'LazyLord', interactive);
+			return;
+		}
 
 		if (trigger && !root.contains(trigger)) {
 			e.preventDefault();
@@ -2478,7 +2619,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 			return;
 		}
 
-		if (!root.hidden && (e.target === root || (e.target.closest && e.target.closest('.rs-demo__close')))) {
+		if (!root.hidden && t && (t === root || t.closest('.rs-demo__close'))) {
 			e.stopPropagation();
 			close();
 		}

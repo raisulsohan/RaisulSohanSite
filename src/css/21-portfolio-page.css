@@ -2668,6 +2668,32 @@ a.rs-pf-card__demo {
 	height: 18px;
 }
 
+/* The interactive demo in the player. On a phone its tall stage can be
+   taller than the screen, so the pop-up scrolls inside itself. Until its
+   bundle has loaded, the box holds a quiet placeholder. */
+.rs-demo__box.is-interactive .rs-demo__frame {
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	-webkit-overflow-scrolling: touch;
+	background: #0b0b12;
+}
+
+.rs-demo__box.is-interactive .lld {
+	border-radius: 0;
+}
+
+.rs-demo__box.is-interactive .lld:not(.lld-ready) {
+	display: grid;
+	place-items: center;
+	min-height: 280px;
+	color: #8e8aa6;
+	font-weight: 600;
+}
+
+.rs-demo__box.is-interactive .lld:not(.lld-ready)::before {
+	content: attr(data-label) "…";
+}
+
 .rs-demo__iframe {
 	display: block;
 	border: 0;
