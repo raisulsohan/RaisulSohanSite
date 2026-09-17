@@ -919,6 +919,24 @@ function rs_portfolio_reorder_ajax() {
 add_action( 'wp_ajax_rs_portfolio_reorder', 'rs_portfolio_reorder_ajax' );
 
 /**
+ * A theme image with the theme version on it. Theme files are served with a
+ * one-year immutable cache, so a redrawn image at the same address would
+ * otherwise never reach anyone who has already seen the old one.
+ *
+ * @param string $url Image URL.
+ * @return string
+ */
+function rs_portfolio_theme_asset( $url ) {
+	$base = get_template_directory_uri() . '/';
+
+	if ( '' === $url || 0 !== strpos( $url, $base ) || false !== strpos( $url, '?' ) ) {
+		return $url;
+	}
+
+	return $url . '?ver=' . rawurlencode( RS_VERSION );
+}
+
+/**
  * 7. Query Portfolio Projects for Frontend Display
  *
  * Checks database for rs_portfolio posts. If multisite, switches to the main blog.
@@ -993,7 +1011,7 @@ function rs_get_portfolio_projects() {
 				'icon'         => get_post_meta( $p->ID, '_rs_portfolio_icon', true ) ?: 'code',
 				/* A theme asset seeded from the /en/ sub site was stored with that
 				   site's prefix in the path; point it back at this site's theme. */
-				'image'        => preg_replace( '#^https?://[^/]+(?:/[a-z]{2})?/wp-content/themes/[^/]+/#i', get_template_directory_uri() . '/', (string) get_post_meta( $p->ID, '_rs_portfolio_image', true ) ),
+				'image'        => rs_portfolio_theme_asset( preg_replace( '#^https?://[^/]+(?:/[a-z]{2})?/wp-content/themes/[^/]+/#i', get_template_directory_uri() . '/', (string) get_post_meta( $p->ID, '_rs_portfolio_image', true ) ) ),
 				'image_fit'    => get_post_meta( $p->ID, '_rs_portfolio_image_fit', true ) ?: 'cover',
 				'action_type'  => get_post_meta( $p->ID, '_rs_portfolio_action_type', true ) ?: 'web',
 				'action_bn'    => get_post_meta( $p->ID, '_rs_portfolio_action_bn', true ) ?: 'বিস্তারিত দেখুন',

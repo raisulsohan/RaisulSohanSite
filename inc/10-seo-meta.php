@@ -92,8 +92,8 @@ function rs_share_image() {
 	   social networks can show (they skip SVG) and its size is known. */
 	$project = function_exists( 'rs_current_project' ) ? rs_current_project() : null;
 
-	if ( $project && preg_match( '~\.(png|jpe?g|webp)$~i', (string) $project['image'] ) ) {
-		$path = str_replace( get_template_directory_uri(), get_template_directory(), $project['image'] );
+	if ( $project && preg_match( '~\.(png|jpe?g|webp)(?:\?.*)?$~i', (string) $project['image'] ) ) {
+		$path = str_replace( get_template_directory_uri(), get_template_directory(), strtok( $project['image'], '?' ) );
 		$size = ( $path !== $project['image'] && is_readable( $path ) ) ? getimagesize( $path ) : false;
 
 		if ( $size ) {
