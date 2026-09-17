@@ -72,8 +72,15 @@
 		return openOverlays[ openOverlays.length - 1 ] || null;
 	}
 
-	/* Click on the backdrop closes. */
+	/* Click on the backdrop closes. An overlay marked data-rs-self-managed
+	   (the portfolio's case study and lightbox) closes through its own
+	   script, which also has the address and the page's scroll to restore;
+	   hiding it from here first left the page unable to scroll. */
 	$$( '.rs-overlay' ).forEach( function ( overlay ) {
+		if ( overlay.hasAttribute( 'data-rs-self-managed' ) ) {
+			return;
+		}
+
 		overlay.addEventListener( 'mousedown', function ( event ) {
 			if ( event.target === overlay ) {
 				requestClose( overlay );

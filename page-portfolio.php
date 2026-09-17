@@ -615,7 +615,7 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 <!-- =========================================================================
      Case Study Pop-up Modal (Native .rs-overlay Architecture)
      ====================================================================== -->
-<div class="rs-overlay" id="rs-case-study-overlay" role="dialog" aria-modal="true" aria-labelledby="rs-modal-project-title" hidden>
+<div class="rs-overlay" id="rs-case-study-overlay" data-rs-self-managed role="dialog" aria-modal="true" aria-labelledby="rs-modal-project-title" hidden>
 	<div class="rs-modal rs-modal--case-study">
 		<button class="rs-modal__close" type="button" id="rs-case-study-close" aria-label="<?php echo esc_attr( $rs_is_en ? 'Close' : 'বন্ধ করুন' ); ?>">
 			<?php echo wp_kses( rs_icon( 'close', 18 ), rs_svg_tags() ); ?>
@@ -649,6 +649,11 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 					<!-- Overview / Summary -->
 					<div class="rs-case-study-section">
 						<p class="rs-case-study-lead" id="rs-modal-summary"></p>
+						<a class="rs-case-study-try" id="rs-modal-try" hidden>
+							<span class="rs-case-study-try__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9l5 12 1.8-5.2L21 14z"/><path d="M7.2 2.2 8 5.1M5.1 8l-2.9-.8M14 4.1 12 6.2M6.2 12l-2.1 2"/></svg></span>
+							<span class="rs-case-study-try__text"><strong><?php echo esc_html( $rs_is_en ? 'Try the interactive demo' : 'ইন্টারঅ্যাক্টিভ ডেমো চালিয়ে দেখুন' ); ?></strong><small><?php echo esc_html( $rs_is_en ? 'Pick layers and send them yourself, on the project page' : 'প্রজেক্টের পাতায় নিজেই লেয়ার বেছে পাঠিয়ে দেখুন' ); ?></small></span>
+							<?php echo $rs_arrow_right; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
+						</a>
 					</div>
 
 					<!-- Before & after, when the project has both pictures -->
@@ -735,7 +740,7 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 <!-- =========================================================================
      Full-Resolution Image Lightbox Overlay
      ====================================================================== -->
-<div class="rs-overlay rs-overlay--lightbox" id="rs-image-lightbox" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr( $rs_is_en ? 'Full Image Preview' : 'ছবির পূর্ণাঙ্গ প্রিভিউ' ); ?>" hidden>
+<div class="rs-overlay rs-overlay--lightbox" id="rs-image-lightbox" data-rs-self-managed role="dialog" aria-modal="true" aria-label="<?php echo esc_attr( $rs_is_en ? 'Full Image Preview' : 'ছবির পূর্ণাঙ্গ প্রিভিউ' ); ?>" hidden>
 	<button class="rs-lightbox__close" type="button" id="rs-lightbox-close" aria-label="<?php echo esc_attr( $rs_is_en ? 'Close preview' : 'প্রিভিউ বন্ধ করুন' ); ?>" title="<?php echo esc_attr( $rs_is_en ? 'Close (Esc)' : 'বন্ধ করুন (Esc)' ); ?>">
 		<?php echo wp_kses( rs_icon( 'close', 18 ), rs_svg_tags() ); ?>
 	</button>
@@ -777,6 +782,7 @@ foreach ( $projects as $p ) {
 		'url'         => function_exists( 'rs_project_url' ) ? rs_project_url( $p['id'] ) : '',
 		'before'      => ! empty( $p['before'] ) ? esc_url_raw( $p['before'] ) : '',
 		'after'       => ! empty( $p['after'] ) ? esc_url_raw( $p['after'] ) : '',
+		'try'         => function_exists( 'rs_project_has_demo' ) && rs_project_has_demo( $p['id'] ) && function_exists( 'rs_project_url' ) ? rs_project_url( $p['id'] ) . '#try' : '',
 		'demo'        => ! empty( $p['demo'] ) ? esc_url_raw( $p['demo'] ) : '',
 		'demo_tall'   => ! empty( $p['demo_tall'] ) ? esc_url_raw( $p['demo_tall'] ) : '',
 	);
@@ -1001,6 +1007,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	var actionLabel     = document.getElementById('rs-modal-action-label');
 	var githubBtn       = document.getElementById('rs-modal-github-btn');
 	var demoBtn         = document.getElementById('rs-modal-demo-btn');
+	var tryLink         = document.getElementById('rs-modal-try');
 	var topBtn          = document.getElementById('rs-case-study-top');
 	var lightboxOverlay = document.getElementById('rs-image-lightbox');
 	var lightboxClose   = document.getElementById('rs-lightbox-close');
@@ -1058,6 +1065,17 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		roleEl.textContent     = p.role;
 		contextEl.textContent  = p.context;
 		summaryEl.textContent  = p.summary;
+
+		// The interactive demo lives on the project page.
+		if (tryLink) {
+			if (p['try']) {
+				tryLink.href = p['try'];
+				tryLink.hidden = false;
+			} else {
+				tryLink.removeAttribute('href');
+				tryLink.hidden = true;
+			}
+		}
 		renderRichText(challengeEl, p.challenge);
 		renderRichText(solutionEl, p.solution);
 
@@ -1203,7 +1221,13 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 
 	function closeCaseStudy(fromHistory) {
 		closeLightbox();
-		if (!overlay || overlay.hidden) return;
+		if (!overlay) return;
+
+		/* Already closed (by anything): still give the page its scroll back. */
+		if (overlay.hidden) {
+			document.body.style.overflow = '';
+			return;
+		}
 
 		/* Opened by a push: step back, and popstate finishes the close. */
 		if (fromHistory !== true && window.history && window.history.state && window.history.state.rsProject) {
@@ -1257,6 +1281,22 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	if (baRangeEl) {
 		baRangeEl.addEventListener('input', function() {
 			this.parentNode.style.setProperty('--ba', this.value + '%');
+		});
+	}
+
+	/* The pop-up's address is already /portfolio/<slug>/, so a plain click on
+	   /portfolio/<slug>/#try would only change the hash and load nothing.
+	   Step the address back to the portfolio first, then load the page. */
+	if (tryLink) {
+		tryLink.addEventListener('click', function(e) {
+			if (!tryLink.href || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || (e.button && e.button !== 0)) {
+				return;
+			}
+			e.preventDefault();
+			try {
+				window.history.replaceState(null, '', portfolioPath);
+			} catch (err) {}
+			window.location.assign(tryLink.href);
 		});
 	}
 

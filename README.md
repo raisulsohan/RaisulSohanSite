@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.10.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.10.1-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -21,6 +21,7 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 - **Reset**, an "Interactive demo" label so nobody mistakes it for a real transfer, and a hint line that suggests the next thing to try, in Bengali and English.
 - **Built for every screen:** a wide stage for desktops and a tall one for phones, where the Adobe apps sit behind tabs that count new arrivals; tap, mouse and keyboard (arrow keys move through the choices) all work, and reduced-motion settings place layers without the flight.
 - **Costs nothing elsewhere:** the demo is a page bundle (`assets/lazylord-demo.min.*`) loaded only on its project page, starts only when it scrolls near, and its box is sized by CSS alone, so a cached page never shifts. The build now turns any `src/css` or `src/js` file without a numeric prefix into such a bundle.
+- **7.10.1:** the case study pop-up on the portfolio shows a "Try the interactive demo" card for projects that have one, and it opens the project page right at the demo. Fixed: closing a case study by clicking outside it left the portfolio unable to scroll, because the site-wide overlay code hid the pop-up before the portfolio's own close could give the page its scroll back. Overlays that close through their own script are now marked `data-rs-self-managed`, and a case study that is already closed still restores the scroll.
 
 ## What's new in 7.9
 
