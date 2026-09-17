@@ -2416,6 +2416,40 @@ function rs_rest_github_route() {
 add_action( 'rest_api_init', 'rs_rest_github_route' );
 
 /**
+ * Whether a project's page carries the interactive demo.
+ *
+ * @param string $slug Project slug.
+ * @return bool
+ */
+function rs_project_has_demo( $slug ) {
+	/**
+	 * Project slugs whose page shows the interactive demo.
+	 *
+	 * @param string[] $slugs Slugs; LazyLord by default.
+	 */
+	return in_array( (string) $slug, (array) apply_filters( 'rs_project_interactive_demos', array( 'lazylord' ) ), true );
+}
+
+/**
+ * The interactive demo's page bundle, only on a page that shows it. The
+ * stylesheet loads in the head so the demo's box has its size before the
+ * first paint; the script waits for the footer.
+ */
+function rs_project_demo_assets() {
+	$project = function_exists( 'rs_current_project' ) ? rs_current_project() : null;
+
+	if ( ! $project || ! rs_project_has_demo( $project['id'] ) ) {
+		return;
+	}
+
+	$base = get_template_directory_uri() . '/assets/';
+
+	wp_enqueue_style( 'rs-lazylord-demo', $base . 'lazylord-demo.min.css', array( 'rs-style' ), RS_VERSION );
+	wp_enqueue_script( 'rs-lazylord-demo', $base . 'lazylord-demo.min.js', array(), RS_VERSION, true );
+}
+add_action( 'wp_enqueue_scripts', 'rs_project_demo_assets', 20 );
+
+/**
  * The portfolio page may come from the full-page cache, so after it loads
  * the browser asks here. Stale numbers are fetched from GitHub right away;
  * the page is already on screen, so nobody waits on it.

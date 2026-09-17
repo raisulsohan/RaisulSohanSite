@@ -2,13 +2,25 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.9.8-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.10.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.10
+
+**Try LazyLord without installing it.** The LazyLord project page now carries an interactive demo, built on the same drawing code as the LazyLord demo animation (the hero card's layers, the app badges, the logo, the flight curve and its easing), with real buttons around it:
+
+- **Pick layers** on the Figma canvas or in its Layers list (Hero card takes all five, Shift-click adds), choose **All apps, Photoshop, Illustrator or After Effects** in the plugin and press Send: the layers fly only to that app and fill its Layers panel or timeline.
+- **Updates in place:** change a colour or the title in Figma and the copies in the apps are marked out of date; send again and the same layer changes, no new copy.
+- **Live:** switched on, every change travels to the apps that already hold the layer the moment it is made.
+- **The other way:** Send to Figma in Photoshop or Illustrator brings a photo or a sparkle back, and it waits on the Figma canvas as an Incoming card until Place on canvas, as LazyLord does.
+- **Reset**, an "Interactive demo" label so nobody mistakes it for a real transfer, and a hint line that suggests the next thing to try, in Bengali and English.
+- **Built for every screen:** a wide stage for desktops and a tall one for phones, where the Adobe apps sit behind tabs that count new arrivals; tap, mouse and keyboard (arrow keys move through the choices) all work, and reduced-motion settings place layers without the flight.
+- **Costs nothing elsewhere:** the demo is a page bundle (`assets/lazylord-demo.min.*`) loaded only on its project page, starts only when it scrolls near, and its box is sized by CSS alone, so a cached page never shifts. The build now turns any `src/css` or `src/js` file without a numeric prefix into such a bundle.
 
 ## What's new in 7.9
 
@@ -20,7 +32,7 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 - **GitHub token (7.9.3):** on shared hosting, GitHub's 60-requests-an-hour allowance per IP address is often spent by other sites, and the numbers come back 403. A read-only token can be saved from the notice on the Portfolio screen (or set as `RS_GITHUB_TOKEN` in `wp-config.php`), and the notice now says when a failure is the rate limit.
 - **Live GitHub numbers (7.9.4):** the portfolio may come from the full-page cache, so after it loads the browser asks `rs/v1/github` for fresh stars, downloads, versions and the latest commit, and swaps in only what changed. With a token the server asks GitHub again once the numbers are two minutes old; the cron event stays as a twelve-hour safety net. Cards, project pages and the live refresh share one renderer, so the swap is seamless in both languages.
 - **LazyLord's new look (7.9.5):** the LazyLord card, pop-up and project page now show the animated artwork from the LazyLord README, reframed to 16:9: the new L symbol builds itself, the wordmark wipes in, then a transfer runs along the wire from Figma to After Effects; since 7.9.6 the logo fades and builds again every eight seconds. Pure CSS inside the SVG, so it plays in a plain `<img>` and stays still for reduced motion. Theme images now carry the theme version in their address, so redrawn artwork gets past the one-year browser cache.
-- **Watch the demo (7.9.8):** a project can carry an interactive demo, a landscape 16:9 page and an optional portrait 9:16 cut, set in the dashboard. A Demo button on its card, in the case study pop-up and on its project page opens a player that loads the demo only when asked, loops it, fits any screen, gives portrait screens the 9:16 cut and swaps cuts when a phone turns. Esc or a click outside closes it and the demo is unloaded, so nothing animates in the background; the page's own shortcuts stay quiet while it plays. LazyLord ships with its demo in `assets/demo/`, filled in once on update.
+- **Watch the demo (7.9.8):** a project can carry a demo animation, a landscape 16:9 page and an optional portrait 9:16 cut, set in the dashboard. A Demo button on its card, in the case study pop-up and on its project page opens a player that loads the demo only when asked, loops it, fits any screen, gives portrait screens the 9:16 cut and swaps cuts when a phone turns. Esc or a click outside closes it and the demo is unloaded, so nothing animates in the background; the page's own shortcuts stay quiet while it plays. LazyLord ships with its demo in `assets/demo/`, filled in once on update.
 
 ## What's new in 7.8
 

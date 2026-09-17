@@ -4,6 +4,9 @@
  * src/css/NN-name.css  ->  assets/style.min.css   (joined in name order, minified)
  * src/js/NN-name.js    ->  assets/app.min.js      (joined in name order, wrapped in
  *                                                  one IIFE, minified)
+ * src/css/name.css     ->  assets/name.min.css    (no number: a page bundle, built on
+ * src/js/name.js       ->  assets/name.min.js      its own and enqueued only on the
+ *                                                  page that needs it)
  *
  * The numeric prefixes decide the order, which matters: the JS parts share
  * one closure, exactly as they did when they were one file, and the CSS
@@ -27,13 +30,14 @@ const esbuild = require( 'esbuild' );
 const root = path.resolve( __dirname, '..' );
 const check = process.argv.includes( '--check' );
 const banner = '/* Built from src/ by `npm run build`. Edit the sources, not this file. */\n';
+const numbered = /^\d+-/;
 
 function join( dir, ext ) {
 	const full = path.join( root, dir );
 
 	return fs
 		.readdirSync( full )
-		.filter( ( name ) => name.endsWith( ext ) )
+		.filter( ( name ) => name.endsWith( ext ) && numbered.test( name ) )
 		.sort()
 		.map( ( name ) => fs.readFileSync( path.join( full, name ), 'utf8' ) )
 		.join( '\n' );
@@ -56,6 +60,23 @@ const outputs = {
 	'assets/style.min.css': banner + css,
 	'assets/app.min.js': banner + js,
 };
+
+/* Page bundles: one source file each, already wrapped in its own scope. */
+for ( const [ dir, ext, loader ] of [ [ 'src/css', '.css', 'css' ], [ 'src/js', '.js', 'js' ] ] ) {
+	fs.readdirSync( path.join( root, dir ) )
+		.filter( ( name ) => name.endsWith( ext ) && ! numbered.test( name ) )
+		.sort()
+		.forEach( ( name ) => {
+			const options = { loader, minify: true, legalComments: 'none' };
+
+			if ( 'js' === loader ) {
+				options.target = 'es2017';
+			}
+
+			outputs[ 'assets/' + name.slice( 0, -ext.length ) + '.min' + ext ] =
+				banner + esbuild.transformSync( fs.readFileSync( path.join( root, dir, name ), 'utf8' ), options ).code;
+		} );
+}
 
 let stale = false;
 

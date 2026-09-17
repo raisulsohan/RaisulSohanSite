@@ -160,6 +160,16 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 			</figure>
 		<?php endif; ?>
 
+		<?php if ( function_exists( 'rs_project_has_demo' ) && rs_project_has_demo( $pp['id'] ) ) : ?>
+			<section class="rs-pf-project__section rs-lld-section" id="try" aria-labelledby="rs-lld-heading">
+				<h2 class="rs-pf-h" id="rs-lld-heading"><?php echo esc_html( $rs_is_en ? 'Try it yourself' : 'নিজে চালিয়ে দেখুন' ); ?></h2>
+				<p class="rs-lld-sub"><?php echo esc_html( $rs_is_en ? 'Pick layers in Figma and send them to Photoshop, Illustrator or After Effects.' : 'Figma-য় লেয়ার বেছে Photoshop, Illustrator বা After Effects-এ পাঠিয়ে দেখুন।' ); ?></p>
+				<div class="lld-wrap">
+					<div class="lld" data-lazylord-demo data-lang="<?php echo esc_attr( $rs_is_en ? 'en' : 'bn' ); ?>" data-label="<?php echo esc_attr( $rs_is_en ? 'Interactive demo' : 'ইন্টারঅ্যাক্টিভ ডেমো' ); ?>"></div>
+				</div>
+			</section>
+		<?php endif; ?>
+
 		<div class="rs-pf-project__body">
 			<p class="rs-pf-project__lead"><?php echo esc_html( $rs_is_en ? $pp['summary_en'] : $pp['summary_bn'] ); ?></p>
 
