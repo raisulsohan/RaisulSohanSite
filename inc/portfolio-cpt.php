@@ -1888,13 +1888,105 @@ function rs_github_stats( $url ) {
 function rs_github_stats_store() {
 	$all = get_site_option( 'rs_github_stats', array() );
 
-	if ( empty( $all['fetched'] ) || ( time() - (int) $all['fetched'] ) > 12 * HOUR_IN_SECONDS ) {
+	/* Cron is only the slow safety net; the page's live request (see
+	   rs_rest_github) keeps the numbers minutes fresh. */
+	if ( rs_github_is_stale( is_array( $all ) ? $all : array(), 12 * HOUR_IN_SECONDS ) ) {
 		if ( ! wp_next_scheduled( 'rs_refresh_github_stats' ) ) {
 			wp_schedule_single_event( time(), 'rs_refresh_github_stats' );
 		}
 	}
 
 	return is_array( $all ) ? $all : array();
+}
+
+/**
+ * How long fetched numbers count as fresh. A token has 5,000 requests an
+ * hour to spend, so it can ask every couple of minutes; without one GitHub
+ * allows 60, shared with every site on the server.
+ *
+ * @return int Seconds.
+ */
+function rs_github_ttl() {
+	return rs_github_token() ? 2 * MINUTE_IN_SECONDS : 12 * HOUR_IN_SECONDS;
+}
+
+/**
+ * Whether it is time to ask GitHub again.
+ *
+ * @param array $all Stored numbers.
+ * @param int   $ttl Freshness window; defaults to rs_github_ttl().
+ * @return bool
+ */
+function rs_github_is_stale( $all, $ttl = 0 ) {
+	$tried = ! empty( $all['tried'] ) ? (int) $all['tried'] : ( ! empty( $all['fetched'] ) ? (int) $all['fetched'] : 0 );
+	$wait  = $ttl ? (int) $ttl : rs_github_ttl();
+
+	/* After a failed run, back off instead of hammering. */
+	if ( ! empty( $all['failed'] ) ) {
+		$wait = rs_github_token() ? 10 * MINUTE_IN_SECONDS : HOUR_IN_SECONDS;
+	}
+
+	return ( time() - $tried ) > $wait;
+}
+
+/**
+ * The stars, downloads and version list for one repository. Cards, project
+ * pages and the live refresh all use this, so a swap is seamless.
+ *
+ * @param string $slug  owner/repo.
+ * @param array  $stats { stars, downloads, version, published }.
+ * @param bool   $is_en English site.
+ * @return string
+ */
+function rs_github_stats_html( $slug, $stats, $is_en ) {
+	$num = function ( $n ) use ( $is_en ) {
+		$n = number_format_i18n( (int) $n );
+		return $is_en ? $n : rs_bn_digits( $n );
+	};
+
+	$html  = '<ul class="rs-pf-card__stats" data-rs-gh="' . esc_attr( $slug ) . '">';
+	$html .= '<li><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.2l2.7 5.5 6 .9-4.35 4.25 1 6L12 17l-5.35 2.85 1-6L3.3 9.6l6-.9z"/></svg><span class="rs-pf-sr">' . esc_html( $is_en ? 'GitHub stars:' : 'GitHub স্টার:' ) . '</span> ' . esc_html( $num( $stats['stars'] ) ) . '</li>';
+
+	if ( ! empty( $stats['downloads'] ) ) {
+		$html .= '<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="rs-pf-sr">' . esc_html( $is_en ? 'Downloads:' : 'ডাউনলোড:' ) . '</span> ' . esc_html( $num( $stats['downloads'] ) ) . '</li>';
+	}
+
+	if ( ! empty( $stats['version'] ) ) {
+		$ver = $stats['version'];
+
+		if ( ! empty( $stats['published'] ) && strtotime( $stats['published'] ) ) {
+			$ago  = human_time_diff( strtotime( $stats['published'] ), time() );
+			$ver .= ' · ' . ( $is_en ? $ago . ' ago' : rs_bn_digits( $ago ) . ' আগে' );
+		}
+
+		$html .= '<li class="rs-pf-card__ver">' . esc_html( $ver ) . '</li>';
+	}
+
+	return $html . '</ul>';
+}
+
+/**
+ * The inside of the "now building" strip.
+ *
+ * @param array $latest { repo, message, date, url }.
+ * @param bool  $is_en  English site.
+ * @return string
+ */
+function rs_github_now_html( $latest, $is_en ) {
+	$html  = '<span class="rs-pf-now__dot" aria-hidden="true"></span>';
+	$html .= '<span class="rs-pf-now__label">' . esc_html( $is_en ? 'Now building' : 'এখন বানাচ্ছি' ) . '</span>';
+	$html .= '<strong>' . esc_html( $latest['repo'] ) . '</strong>';
+
+	if ( ! empty( $latest['date'] ) && strtotime( $latest['date'] ) ) {
+		$ago   = human_time_diff( strtotime( $latest['date'] ), time() );
+		$html .= '<time datetime="' . esc_attr( $latest['date'] ) . '">' . esc_html( $is_en ? $ago . ' ago' : rs_bn_digits( $ago ) . ' আগে' ) . '</time>';
+	}
+
+	if ( ! empty( $latest['message'] ) ) {
+		$html .= '<span class="rs-pf-now__msg">' . esc_html( mb_substr( $latest['message'], 0, 80 ) ) . '</span>';
+	}
+
+	return $html;
 }
 
 /**
@@ -1950,7 +2042,7 @@ function rs_refresh_github_stats() {
 			$errors[] = $slug . ':' . $code . ( $limited ? ' (rate limit' . ( $token ? '' : ', no token' ) . ')' : '' ) . ( 401 === $code ? ' (token rejected)' : '' );
 
 			/* Rate limited or blocked: stop asking, keep what was known. */
-			if ( ! is_wp_error( $response ) && in_array( (int) wp_remote_retrieve_response_code( $response ), array( 403, 429 ), true ) ) {
+			if ( ! is_wp_error( $response ) && in_array( (int) wp_remote_retrieve_response_code( $response ), array( 401, 403, 429 ), true ) ) {
 				break;
 			}
 			continue;
@@ -2029,9 +2121,10 @@ function rs_refresh_github_stats() {
 	update_site_option(
 		'rs_github_stats',
 		array(
-			/* A run that got nothing tries again in about an hour rather
-			   than waiting out the usual twelve. */
-			'fetched' => $fresh ? time() : time() - 11 * HOUR_IN_SECONDS,
+			/* fetched is the last run that worked; tried is the last run. */
+			'fetched' => $fresh ? time() : ( isset( $old['fetched'] ) ? (int) $old['fetched'] : 0 ),
+			'tried'   => time(),
+			'failed'  => ! $fresh,
 			'repos'   => $repos,
 			'latest'  => $latest,
 			'errors'  => array_slice( $errors, 0, 5 ),
@@ -2205,6 +2298,74 @@ function rs_rest_projects_route() {
 	);
 }
 add_action( 'rest_api_init', 'rs_rest_projects_route' );
+
+/**
+ * REST: live GitHub numbers, rendered as the page renders them.
+ */
+function rs_rest_github_route() {
+	register_rest_route(
+		'rs/v1',
+		'/github',
+		array(
+			'methods'             => WP_REST_Server::READABLE,
+			'callback'            => 'rs_rest_github',
+			'permission_callback' => '__return_true',
+		)
+	);
+}
+add_action( 'rest_api_init', 'rs_rest_github_route' );
+
+/**
+ * The portfolio page may come from the full-page cache, so after it loads
+ * the browser asks here. Stale numbers are fetched from GitHub right away;
+ * the page is already on screen, so nobody waits on it.
+ *
+ * @return WP_REST_Response
+ */
+function rs_rest_github() {
+	$all = get_site_option( 'rs_github_stats', array() );
+	$all = is_array( $all ) ? $all : array();
+
+	if ( rs_github_is_stale( $all ) && ! get_site_transient( 'rs_github_busy' ) ) {
+		set_site_transient( 'rs_github_busy', 1, MINUTE_IN_SECONDS );
+		rs_refresh_github_stats();
+		delete_site_transient( 'rs_github_busy' );
+
+		$all = get_site_option( 'rs_github_stats', array() );
+		$all = is_array( $all ) ? $all : array();
+	}
+
+	$is_en     = rs_is_en();
+	$repos     = array();
+	$downloads = 0;
+
+	foreach ( rs_get_portfolio_projects() as $project ) {
+		$slug = rs_github_repo_slug( isset( $project['github_url'] ) ? $project['github_url'] : '' );
+
+		if ( ! $slug || empty( $all['repos'][ $slug ] ) ) {
+			continue;
+		}
+
+		$downloads     += (int) $all['repos'][ $slug ]['downloads'];
+		$repos[ $slug ] = rs_github_stats_html( $slug, $all['repos'][ $slug ], $is_en );
+	}
+
+	$total    = number_format_i18n( $downloads );
+	$response = rest_ensure_response(
+		array(
+			'repos'     => $repos,
+			'downloads' => $downloads ? ( $is_en ? $total : rs_bn_digits( $total ) ) : '',
+			'now'       => empty( $all['latest']['repo'] ) ? null : array(
+				'url'  => $all['latest']['url'],
+				'html' => rs_github_now_html( $all['latest'], $is_en ),
+			),
+			'fetched'   => empty( $all['fetched'] ) ? null : gmdate( 'c', (int) $all['fetched'] ),
+		)
+	);
+	$response->header( 'Cache-Control', 'public, max-age=60, s-maxage=60' );
+
+	return $response;
+}
 
 /**
  * @return WP_REST_Response

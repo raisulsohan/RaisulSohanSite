@@ -133,15 +133,7 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 				<span><?php echo esc_html( $rs_is_en ? $pp['context_en'] : $pp['context_bn'] ); ?></span>
 			</p>
 			<?php if ( $pp_gh ) : ?>
-				<ul class="rs-pf-card__stats">
-					<li><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.2l2.7 5.5 6 .9-4.35 4.25 1 6L12 17l-5.35 2.85 1-6L3.3 9.6l6-.9z"/></svg><span class="rs-pf-sr"><?php echo esc_html( $rs_is_en ? 'GitHub stars:' : 'GitHub স্টার:' ); ?></span> <?php echo esc_html( $rs_num( number_format_i18n( $pp_gh['stars'] ) ) ); ?></li>
-					<?php if ( $pp_gh['downloads'] ) : ?>
-						<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="rs-pf-sr"><?php echo esc_html( $rs_is_en ? 'Downloads:' : 'ডাউনলোড:' ); ?></span> <?php echo esc_html( $rs_num( number_format_i18n( $pp_gh['downloads'] ) ) ); ?></li>
-					<?php endif; ?>
-					<?php if ( $pp_gh['version'] ) : ?>
-						<li class="rs-pf-card__ver"><?php echo esc_html( $pp_gh['version'] ); ?></li>
-					<?php endif; ?>
-				</ul>
+				<?php echo rs_github_stats_html( rs_github_repo_slug( $pp['github_url'] ), $pp_gh, $rs_is_en ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside. ?>
 			<?php endif; ?>
 			<div class="rs-pf__actions">
 				<?php if ( ! empty( $pp['direct_url'] ) ) : ?>
@@ -288,7 +280,7 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 				<?php if ( $rs_downloads ) : ?>
 					<div>
 						<dt><?php echo esc_html( $rs_is_en ? 'Downloads' : 'ডাউনলোড' ); ?></dt>
-						<dd><?php echo esc_html( $rs_num( number_format_i18n( $rs_downloads ) ) ); ?></dd>
+						<dd data-rs-gh-downloads><?php echo esc_html( $rs_num( number_format_i18n( $rs_downloads ) ) ); ?></dd>
 					</div>
 				<?php endif; ?>
 				<?php if ( $rs_count_cat['video'] ) : ?>
@@ -301,18 +293,7 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 
 			<?php $rs_latest = function_exists( 'rs_github_latest_commit' ) ? rs_github_latest_commit() : null; ?>
 			<?php if ( $rs_latest ) : ?>
-				<a class="rs-pf-now rs-pf-rise rs-pf-rise--3" href="<?php echo esc_url( $rs_latest['url'] ); ?>" target="_blank" rel="noopener noreferrer">
-					<span class="rs-pf-now__dot" aria-hidden="true"></span>
-					<span class="rs-pf-now__label"><?php echo esc_html( $rs_is_en ? 'Now building' : 'এখন বানাচ্ছি' ); ?></span>
-					<strong><?php echo esc_html( $rs_latest['repo'] ); ?></strong>
-					<?php if ( $rs_latest['date'] && strtotime( $rs_latest['date'] ) ) : ?>
-						<?php $rs_latest_ago = human_time_diff( strtotime( $rs_latest['date'] ), time() ); ?>
-						<time datetime="<?php echo esc_attr( $rs_latest['date'] ); ?>"><?php echo esc_html( $rs_is_en ? $rs_latest_ago . ' ago' : rs_bn_digits( $rs_latest_ago ) . ' আগে' ); ?></time>
-					<?php endif; ?>
-					<?php if ( $rs_latest['message'] ) : ?>
-						<span class="rs-pf-now__msg"><?php echo esc_html( mb_substr( $rs_latest['message'], 0, 80 ) ); ?></span>
-					<?php endif; ?>
-				</a>
+				<a class="rs-pf-now rs-pf-rise rs-pf-rise--3" href="<?php echo esc_url( $rs_latest['url'] ); ?>" target="_blank" rel="noopener noreferrer" data-rs-gh-now><?php echo rs_github_now_html( $rs_latest, $rs_is_en ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside. ?></a>
 			<?php endif; ?>
 		</div>
 
@@ -540,23 +521,7 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 						<?php endif; ?>
 
 						<?php if ( $pf_gh ) : ?>
-							<ul class="rs-pf-card__stats">
-								<li><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.2l2.7 5.5 6 .9-4.35 4.25 1 6L12 17l-5.35 2.85 1-6L3.3 9.6l6-.9z"/></svg><span class="rs-pf-sr"><?php echo esc_html( $rs_is_en ? 'GitHub stars:' : 'GitHub স্টার:' ); ?></span> <?php echo esc_html( $rs_num( number_format_i18n( $pf_gh['stars'] ) ) ); ?></li>
-								<?php if ( $pf_gh['downloads'] ) : ?>
-									<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="rs-pf-sr"><?php echo esc_html( $rs_is_en ? 'Downloads:' : 'ডাউনলোড:' ); ?></span> <?php echo esc_html( $rs_num( number_format_i18n( $pf_gh['downloads'] ) ) ); ?></li>
-								<?php endif; ?>
-								<?php if ( $pf_gh['version'] ) : ?>
-									<li class="rs-pf-card__ver">
-										<?php
-										echo esc_html( $pf_gh['version'] );
-										if ( $pf_gh['published'] && strtotime( $pf_gh['published'] ) ) {
-											$pf_ago = human_time_diff( strtotime( $pf_gh['published'] ), time() );
-											echo esc_html( ' · ' . ( $rs_is_en ? $pf_ago . ' ago' : rs_bn_digits( $pf_ago ) . ' আগে' ) );
-										}
-										?>
-									</li>
-								<?php endif; ?>
-							</ul>
+							<?php echo rs_github_stats_html( rs_github_repo_slug( $p['github_url'] ), $pf_gh, $rs_is_en ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside. ?>
 						<?php endif; ?>
 
 						<div class="rs-pf-card__foot">
@@ -2241,6 +2206,77 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 }());
 </script>
 
+
+<?php if ( function_exists( 'rs_github_stats_html' ) ) : ?>
+<script>
+/* Live GitHub numbers. This page may be served from the cache, so fresh
+   numbers are fetched after load and swapped in only where they changed. */
+(function () {
+	'use strict';
+
+	if (!window.fetch || !document.querySelector('[data-rs-gh], [data-rs-gh-now], [data-rs-gh-downloads]')) {
+		return;
+	}
+
+	var url = <?php echo wp_json_encode( rest_url( 'rs/v1/github' ) ); ?>;
+	var tmp = document.createElement('div');
+
+	function run() {
+		/* A minute bucket keeps any cache in front of the API from serving
+		   older numbers than that. */
+		var bucket = Math.floor(Date.now() / 60000);
+
+		fetch(url + (url.indexOf('?') === -1 ? '?' : '&') + 't=' + bucket, { credentials: 'omit' })
+			.then(function (r) {
+				return r.ok ? r.json() : null;
+			})
+			.then(function (d) {
+				if (!d) {
+					return;
+				}
+
+				Array.prototype.forEach.call(document.querySelectorAll('[data-rs-gh]'), function (el) {
+					var html = d.repos && d.repos[el.getAttribute('data-rs-gh')];
+
+					if (!html) {
+						return;
+					}
+
+					tmp.innerHTML = html;
+
+					if (tmp.firstElementChild && tmp.textContent !== el.textContent) {
+						el.parentNode.replaceChild(tmp.firstElementChild, el);
+					}
+				});
+
+				var dl = document.querySelector('[data-rs-gh-downloads]');
+
+				if (dl && d.downloads && dl.textContent !== d.downloads) {
+					dl.textContent = d.downloads;
+				}
+
+				var now = document.querySelector('[data-rs-gh-now]');
+
+				if (now && d.now) {
+					tmp.innerHTML = d.now.html;
+
+					if (tmp.textContent !== now.textContent) {
+						now.innerHTML = d.now.html;
+						now.href = d.now.url;
+					}
+				}
+			})
+			.catch(function () {});
+	}
+
+	if (document.readyState === 'complete') {
+		run();
+	} else {
+		window.addEventListener('load', run);
+	}
+}());
+</script>
+<?php endif; ?>
 
 <?php
 get_footer();
