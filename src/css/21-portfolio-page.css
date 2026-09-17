@@ -2479,6 +2479,122 @@ button.rs-pf-page:hover {
 	}
 }
 
+/* A card with a video and an interactive demo: the Demo button opens a
+   small menu, upward and inside the card, since cards clip. */
+.rs-pf-card__foot {
+	position: relative;
+}
+
+.rs-pf-card__demo .rs-pf-card__chev {
+	width: 11px;
+	height: 11px;
+	margin-left: 0.05rem;
+	color: currentColor;
+	transition: transform 0.2s ease;
+}
+
+.rs-pf-card__demo[aria-expanded="true"] {
+	border-color: color-mix(in srgb, var(--a, #8f74ff) 60%, transparent);
+	background: color-mix(in srgb, var(--a, #8f74ff) 16%, transparent);
+}
+
+.rs-pf-card__demo[aria-expanded="true"] .rs-pf-card__chev {
+	transform: rotate(180deg);
+}
+
+a.rs-pf-card__demo {
+	text-decoration: none;
+}
+
+.rs-pf-demos {
+	position: absolute;
+	bottom: calc(100% - 0.55rem);
+	z-index: 5;
+	display: grid;
+	gap: 4px;
+	width: 240px;
+	padding: 6px;
+	border: 1px solid var(--pf-line, #2c2642);
+	border-radius: 14px;
+	background: var(--pf-bg1, #16122a);
+	box-shadow: 0 24px 50px -16px rgba(0, 0, 0, 0.75);
+	animation: rs-pf-demos-in 0.18s ease-out;
+}
+
+.rs-pf-demos[hidden] {
+	display: none;
+}
+
+.rs-pf-demos__item {
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+	width: 100%;
+	padding: 0.55rem 0.6rem;
+	border-radius: 10px;
+	font: inherit;
+	text-align: left;
+	text-decoration: none;
+	color: var(--pf-text);
+}
+
+.rs-pf-demos__item:hover,
+.rs-pf-demos__item:focus-visible {
+	background: rgba(255, 255, 255, 0.06);
+}
+
+.rs-pf-demos__icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 34px;
+	height: 34px;
+	border-radius: 9px;
+	background: rgba(143, 116, 255, 0.2);
+	background: color-mix(in srgb, var(--a, #8f74ff) 22%, transparent);
+	color: color-mix(in srgb, var(--a, #8f74ff) 60%, #fff);
+}
+
+.rs-pf-demos__icon--try {
+	background: linear-gradient(135deg, #00c2ff, #6c63ff);
+	color: #fff;
+}
+
+.rs-pf-demos__icon svg {
+	width: 16px;
+	height: 16px;
+}
+
+.rs-pf-demos__text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	line-height: 1.25;
+}
+
+.rs-pf-demos__text strong {
+	font-size: 0.9rem;
+	font-weight: 600;
+}
+
+.rs-pf-demos__text small {
+	font-size: 0.75rem;
+	color: var(--pf-muted);
+}
+
+@keyframes rs-pf-demos-in {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.rs-pf-demos {
+		animation: none;
+	}
+}
+
 .rs-demo {
 	position: fixed;
 	inset: 0;

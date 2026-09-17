@@ -545,11 +545,37 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 								<?php echo esc_html( $rs_is_en ? 'Case study' : 'কেস স্টাডি' ); ?>
 								<?php echo $rs_arrow_right; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
 							</a>
-							<?php if ( ! empty( $p['demo'] ) ) : ?>
+							<?php
+							$pf_try  = function_exists( 'rs_project_has_demo' ) && rs_project_has_demo( $p['id'] ) && function_exists( 'rs_project_url' ) ? rs_project_url( $p['id'] ) . '#try' : '';
+							$pf_play = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.2v13.6L18.8 12z"/></svg>';
+							?>
+							<?php if ( ! empty( $p['demo'] ) && $pf_try ) : ?>
+								<?php /* Both kinds: the button offers a choice. */ ?>
+								<button type="button" class="rs-pf-card__demo" data-rs-demo-menu aria-expanded="false" aria-controls="rs-pf-demos-<?php echo esc_attr( $p['id'] ); ?>">
+									<?php echo $pf_play; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
+									<?php echo esc_html( $rs_is_en ? 'Demo' : 'ডেমো' ); ?>
+									<svg class="rs-pf-card__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>
+								</button>
+								<div class="rs-pf-demos" id="rs-pf-demos-<?php echo esc_attr( $p['id'] ); ?>" hidden>
+									<button type="button" class="rs-pf-demos__item" data-rs-demo="<?php echo esc_url( $p['demo'] ); ?>" data-rs-demo-tall="<?php echo esc_url( $p['demo_tall'] ); ?>" data-rs-demo-title="<?php echo esc_attr( $pf_name ); ?>">
+										<span class="rs-pf-demos__icon"><?php echo $pf_play; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></span>
+										<span class="rs-pf-demos__text"><strong><?php echo esc_html( $rs_is_en ? 'Video' : 'ভিডিও' ); ?></strong><small><?php echo esc_html( $rs_is_en ? 'Watch it in motion' : 'অ্যানিমেশনে দেখুন' ); ?></small></span>
+									</button>
+									<a class="rs-pf-demos__item" href="<?php echo esc_url( $pf_try ); ?>">
+										<span class="rs-pf-demos__icon rs-pf-demos__icon--try"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 9l5 12 1.8-5.2L21 14z"/><path d="M7.2 2.2 8 5.1M5.1 8l-2.9-.8M14 4.1 12 6.2M6.2 12l-2.1 2"/></svg></span>
+										<span class="rs-pf-demos__text"><strong><?php echo esc_html( $rs_is_en ? 'Interactive' : 'ইন্টারঅ্যাক্টিভ' ); ?></strong><small><?php echo esc_html( $rs_is_en ? 'Try it yourself' : 'নিজে চালিয়ে দেখুন' ); ?></small></span>
+									</a>
+								</div>
+							<?php elseif ( ! empty( $p['demo'] ) ) : ?>
 								<button type="button" class="rs-pf-card__demo" data-rs-demo="<?php echo esc_url( $p['demo'] ); ?>" data-rs-demo-tall="<?php echo esc_url( $p['demo_tall'] ); ?>" data-rs-demo-title="<?php echo esc_attr( $pf_name ); ?>">
-									<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.2v13.6L18.8 12z"/></svg>
+									<?php echo $pf_play; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
 									<?php echo esc_html( $rs_is_en ? 'Demo' : 'ডেমো' ); ?>
 								</button>
+							<?php elseif ( $pf_try ) : ?>
+								<a class="rs-pf-card__demo" href="<?php echo esc_url( $pf_try ); ?>">
+									<?php echo $pf_play; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
+									<?php echo esc_html( $rs_is_en ? 'Demo' : 'ডেমো' ); ?>
+								</a>
 							<?php endif; ?>
 							<?php if ( ! empty( $p['direct_url'] ) ) : ?>
 								<a class="rs-pf-card__link" href="<?php echo esc_url( $p['direct_url'] ); ?>" target="_blank" rel="noopener noreferrer">
@@ -2432,8 +2458,13 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 			turned.removeEventListener('change', onResize);
 		}
 
-		if (opener && opener.focus) {
-			opener.focus();
+		/* Opened from a card's demo menu, which has closed since: go back to
+		   the menu's button instead. */
+		var menu = opener && !opener.offsetParent && opener.closest ? opener.closest('.rs-pf-demos') : null;
+		var back = (menu && document.querySelector('[aria-controls="' + menu.id + '"]')) || opener;
+
+		if (back && back.focus) {
+			back.focus();
 		}
 	}
 
@@ -2452,6 +2483,109 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 			close();
 		}
 	}, true);
+}());
+</script>
+<script>
+/* A card's Demo button with two kinds behind it: a small menu offering the
+   video and the interactive demo. It opens upward, inside the card. */
+(function () {
+	'use strict';
+
+	var open = null;
+	var openWidth = 0;
+
+	function popFor(toggle) {
+		return document.getElementById(toggle.getAttribute('aria-controls'));
+	}
+
+	function hide(focusToggle) {
+		if (!open) {
+			return;
+		}
+
+		var pop = popFor(open);
+		if (pop) {
+			pop.hidden = true;
+		}
+		open.setAttribute('aria-expanded', 'false');
+		if (focusToggle) {
+			open.focus();
+		}
+		open = null;
+	}
+
+	function show(toggle) {
+		var pop = popFor(toggle);
+
+		hide();
+		if (!pop) {
+			return;
+		}
+
+		pop.hidden = false;
+		place(toggle, pop);
+		toggle.setAttribute('aria-expanded', 'true');
+		open = toggle;
+		openWidth = window.innerWidth;
+	}
+
+	/* Centre it on the button, but keep it inside the card. */
+	function place(toggle, pop) {
+		var foot = toggle.parentNode.getBoundingClientRect();
+		var btn = toggle.getBoundingClientRect();
+		var left = btn.left - foot.left + btn.width / 2 - pop.offsetWidth / 2;
+		pop.style.left = Math.max(0, Math.min(foot.width - pop.offsetWidth, left)) + 'px';
+	}
+
+	/* On window, in the capture phase: before the demo player, which keeps
+	   the click to itself once it opens. */
+	window.addEventListener('click', function (e) {
+		var t = e.target instanceof Element ? e.target : null;
+		var toggle = t ? t.closest('[data-rs-demo-menu]') : null;
+
+		if (toggle) {
+			if (open === toggle) {
+				hide();
+			} else {
+				show(toggle);
+				var first = popFor(toggle).querySelector('.rs-pf-demos__item');
+				if (first && e.detail === 0) {
+					first.focus(); /* opened from the keyboard */
+				}
+			}
+			return;
+		}
+
+		if (open) {
+			var pop = popFor(open);
+			/* A choice, or a click anywhere else, closes it; the click carries on. */
+			if (!pop || !t || !pop.contains(t) || t.closest('.rs-pf-demos__item')) {
+				setTimeout(function () {
+					hide();
+				}, 0);
+			}
+		}
+	}, true);
+
+	document.addEventListener('keydown', function (e) {
+		if (open && (e.key === 'Escape' || e.key === 'Esc')) {
+			e.preventDefault();
+			hide(true);
+		}
+	});
+
+	/* A phone's address bar coming and going resizes the window too: only a
+	   change of width closes the menu, anything else just re-places it. */
+	window.addEventListener('resize', function () {
+		if (!open) {
+			return;
+		}
+		if (window.innerWidth !== openWidth) {
+			hide();
+		} else {
+			place(open, popFor(open));
+		}
+	});
 }());
 </script>
 <?php endif; ?>
