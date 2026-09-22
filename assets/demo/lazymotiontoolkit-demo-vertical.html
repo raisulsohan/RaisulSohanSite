@@ -1,0 +1,1510 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LazyMotionToolkit — Mobile 9:16 Demo</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #07070b; overflow: hidden; }
+  body, svg text { font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif; }
+  #stage { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 0 0; }
+  #bar { position: fixed; left: 0; right: 0; bottom: 0; height: 56px; box-sizing: border-box; display: flex; gap: 14px; align-items: center;
+         padding: 0 20px; background: #0d0e12; border-top: 1px solid #1e2028; color: #cfcfe0; font: 13px Inter, "Segoe UI", sans-serif; user-select: none; z-index: 99; }
+  #bar button { font: inherit; font-weight: 600; color: #fff; background: linear-gradient(135deg, #5865f2, #7852ff); border: 0; border-radius: 6px; padding: 7px 16px; cursor: pointer; min-width: 80px; transition: opacity 0.15s; }
+  #bar button:hover { opacity: 0.9; }
+  #scrub { flex: 1; accent-color: #5865f2; cursor: pointer; }
+  #time { font-variant-numeric: tabular-nums; min-width: 105px; text-align: right; color: #8e95ab; font-size: 13px; }
+  #hint { color: #5a6075; font-size: 11px; margin-left: 8px; }
+  body.export #bar { display: none; }
+</style>
+</head>
+<body>
+<div id="stage"><svg id="svg" xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920"></svg></div>
+<div id="bar">
+  <button id="play">Pause</button>
+  <input id="scrub" type="range" min="0" max="38.0" step="0.001" value="0">
+  <span id="time">0.00 / 38.00 s</span>
+  <span id="hint">Space: play/pause · 9:16 Vertical</span>
+</div>
+<script>
+"use strict";
+
+/* ==========================================================================
+   CONSTANTS & MATH HELPERS
+   ========================================================================== */
+const DUR = 38.0;
+const SW = 1080, SH = 1920;
+
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, u) => a + (b - a) * u;
+
+const E = {
+  linear: (u) => u,
+  out: (u) => 1 - Math.pow(1 - u, 3),
+  in: (u) => u * u * u,
+  inOut: (u) => (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2),
+  back: (u) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(u - 1, 3) + c1 * Math.pow(u - 1, 2); },
+  bounce: (u) => {
+    let n1 = 7.5625, d1 = 2.75;
+    if (u < 1 / d1) return n1 * u * u;
+    else if (u < 2 / d1) return n1 * (u -= 1.5 / d1) * u + 0.75;
+    else if (u < 2.5 / d1) return n1 * (u -= 2.25 / d1) * u + 0.9375;
+    else return n1 * (u -= 2.625 / d1) * u + 0.984375;
+  }
+};
+
+const P = (t, a, b, e = E.inOut) => e(clamp((t - a) / (b - a), 0, 1));
+
+/* ==========================================================================
+   DOM & SVG ELEMENT BUILDERS
+   ========================================================================== */
+const T = (x, y, s, fill, size, weight = 400, anchor = "start", extra = "") =>
+  `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}" font-weight="${weight}" text-anchor="${anchor}" ${extra}>${s}</text>`;
+
+function badge(kind, x, y, s) {
+  return `<rect x="${x}" y="${y}" width="${s}" height="${s}" rx="${s * 0.22}" fill="#00005b"/>` +
+    `<rect x="${x + s * 0.08}" y="${y + s * 0.08}" width="${s * 0.84}" height="${s * 0.84}" rx="${s * 0.15}" fill="none" stroke="#9999ff" stroke-width="${s * 0.05}"/>` +
+    `<text x="${x + s / 2}" y="${y + s * 0.66}" text-anchor="middle" fill="#9999ff" font-size="${s * 0.44}" font-weight="700">${kind}</text>`;
+}
+
+/* ==========================================================================
+   UI MOCKUP: 9:16 AFTER EFFECTS MOBILE WORKSPACE
+   ========================================================================== */
+const AE_W = 1000, AE_H = 1840;
+const AE_X = 40, AE_Y = 40;
+
+// Coordinates inside AE Window (Vertical Stack with full Timeline Panel)
+const COMP_X = 20, COMP_Y = 56, COMP_W = 960, COMP_H = 494;
+const TIME_X = 20, TIME_Y = 564, TIME_W = 960, TIME_H = 300;
+const PANEL_X = 20, PANEL_Y = 880, PANEL_W = 960, PANEL_H = 936;
+
+function aeWindow() {
+  return `
+  <g id="ae-host" transform="translate(${AE_X} ${AE_Y})">
+    <!-- Window Base Drop Shadow & Chrome -->
+    <rect width="${AE_W}" height="${AE_H}" rx="18" fill="#131418" filter="url(#ae-shadow)"/>
+    <rect width="${AE_W}" height="${AE_H}" rx="18" fill="none" stroke="#252732" stroke-width="1.5"/>
+
+    <!-- App Title Bar -->
+    <rect width="${AE_W}" height="46" rx="18" fill="#1b1c23"/>
+    <rect y="30" width="${AE_W}" height="16" fill="#1b1c23"/>
+    ${badge("Ae", 16, 10, 26)}
+    ${T(54, 28, "After Effects 2026", "#e0e3ed", 14, 700)}
+    ${T(AE_W / 2 + 30, 28, "LazyMotion_Showcase.aep", "#8c92a4", 13, 500, "middle")}
+    
+    <!-- Window controls -->
+    <circle cx="${AE_W - 60}" cy="23" r="6" fill="#f5a623" opacity="0.8"/>
+    <circle cx="${AE_W - 40}" cy="23" r="6" fill="#27c93f" opacity="0.8"/>
+    <circle cx="${AE_W - 20}" cy="23" r="6" fill="#ff5f56" opacity="0.8"/>
+
+    <!-- ================= 1. COMPOSITION VIEWER (TOP HALF) ================= -->
+    <g transform="translate(${COMP_X} ${COMP_Y})">
+      <rect width="${COMP_W}" height="${COMP_H}" rx="12" fill="#181920"/>
+      <rect width="${COMP_W}" height="${COMP_H}" rx="12" fill="none" stroke="#262834" stroke-width="1"/>
+      
+      <!-- Comp Header Bar -->
+      <rect width="${COMP_W}" height="36" rx="12" fill="#1f2029"/>
+      <rect y="22" width="${COMP_W}" height="14" fill="#1f2029"/>
+      ${T(18, 23, "Comp 1", "#e0e3ed", 13, 700)}
+      ${T(80, 23, "1080 × 1920 · 60.00 fps · Full Preview", "#6f7587", 12, 400)}
+      ${T(COMP_W - 20, 23, "Fit (100%)", "#8f95a8", 12, 600, "end")}
+
+      <!-- Comp Canvas Area (Centered) -->
+      <g transform="translate(15, 46)">
+        <!-- Canvas Background (930 x 434) -->
+        <rect id="comp-canvas" width="930" height="434" rx="8" fill="#0d0e13" stroke="#2b2d3d" stroke-width="1.5"/>
+        <g id="comp-grid" opacity="0.25">
+          <line x1="465" y1="0" x2="465" y2="434" stroke="#3b3f55" stroke-dasharray="4 4"/>
+          <line x1="0" y1="217" x2="930" y2="217" stroke="#3b3f55" stroke-dasharray="4 4"/>
+          <line x1="310" y1="0" x2="310" y2="434" stroke="#252838" stroke-dasharray="2 4"/>
+          <line x1="620" y1="0" x2="620" y2="434" stroke="#252838" stroke-dasharray="2 4"/>
+          <line x1="0" y1="144" x2="930" y2="144" stroke="#252838" stroke-dasharray="2 4"/>
+          <line x1="0" y1="290" x2="930" y2="290" stroke="#252838" stroke-dasharray="2 4"/>
+        </g>
+
+        <!-- Scene 0: Smart Precomp (1:1 & Group) & Null + Parent (0.5s - 5.2s) -->
+        <g id="scene-precomp-null-group" opacity="0">
+          <g id="pc-item1" transform="translate(300 217)">
+            <rect id="pc-crop1" x="-110" y="-75" width="220" height="150" rx="14" fill="#1a1c28" stroke="#5865f2" stroke-width="2"/>
+            <circle cx="-55" cy="0" r="30" fill="#5865f2" opacity="0.25"/>
+            <polygon points="-55,-14 -42,12 -68,12" fill="#5865f2"/>
+            ${T(-10, -4, "BADGE ICON", "#ffffff", 14, 700)}
+            ${T(-10, 16, "Vector Graphic", "#8c92a6", 11)}
+            <rect id="pc-tag1" x="25" y="-65" width="75" height="18" rx="4" fill="#00005b" opacity="0"/>
+            <text id="pc-tag-text1" x="62" y="-52" fill="#9999ff" font-size="9" font-weight="700" text-anchor="middle" opacity="0">1:1 CROP</text>
+          </g>
+
+          <g id="pc-item2" transform="translate(630 217)">
+            <rect id="pc-crop2" x="-110" y="-75" width="220" height="150" rx="14" fill="#1a1c28" stroke="#00c2ff" stroke-width="2"/>
+            <rect x="-75" y="-20" width="40" height="40" rx="8" fill="#00c2ff" opacity="0.25"/>
+            ${T(-55, 6, "★", "#00c2ff", 20, 700, "middle")}
+            ${T(-10, -4, "CALLOUT CARD", "#ffffff", 14, 700)}
+            ${T(-10, 16, "Motion Element", "#8c92a6", 11)}
+            <rect id="pc-tag2" x="25" y="-65" width="75" height="18" rx="4" fill="#00005b" opacity="0"/>
+            <text id="pc-tag-text2" x="62" y="-52" fill="#9999ff" font-size="9" font-weight="700" text-anchor="middle" opacity="0">1:1 CROP</text>
+          </g>
+
+          <!-- Merged Group Precomp Bounding Box -->
+          <g id="pc-group-box" opacity="0">
+            <rect x="165" y="117" width="600" height="200" rx="16" fill="none" stroke="#27c93f" stroke-width="2" stroke-dasharray="6 4"/>
+            <rect x="405" y="105" width="120" height="24" rx="12" fill="#18261b" stroke="#27c93f"/>
+            ${T(465, 121, "▣ Group_PC", "#27c93f", 11, 700, "middle")}
+          </g>
+
+          <!-- Null 1 Controller Wireframe & Parent Link -->
+          <g id="null-controller" opacity="0" transform="translate(465 217)">
+            <line x1="-165" y1="0" x2="-28" y2="0" stroke="#ff2e74" stroke-width="1.8" stroke-dasharray="4 3"/>
+            <line x1="28" y1="0" x2="165" y2="0" stroke="#ff2e74" stroke-width="1.8" stroke-dasharray="4 3"/>
+            <rect x="-26" y="-26" width="52" height="52" fill="#ff2e74" fill-opacity="0.15" stroke="#ff2e74" stroke-width="2"/>
+            <line x1="-36" y1="0" x2="36" y2="0" stroke="#ff2e74" stroke-width="2"/>
+            <line x1="0" y1="-36" x2="0" y2="36" stroke="#ff2e74" stroke-width="2"/>
+            <circle cx="0" cy="0" r="4" fill="#ffffff"/>
+            <rect x="-32" y="-50" width="64" height="20" rx="4" fill="#ff2e74"/>
+            ${T(0, -36, "Null 1", "#ffffff", 11, 800, "middle")}
+          </g>
+        </g>
+
+        <!-- Scene 1: Auto Box & LazyType Target (Centered perfectly at 465, 217) -->
+        <g id="scene1-group" opacity="0">
+          <g id="autobox-rect-grp">
+            <rect id="autobox-rect" x="225" y="169" width="480" height="96" rx="20" fill="#171822" stroke="#5865f2" stroke-width="3" filter="url(#glow-box)"/>
+          </g>
+          <text id="autobox-text" x="465" y="231" fill="#ffffff" font-size="44" font-weight="800" letter-spacing="4" text-anchor="middle">MOTION DESIGN PRO</text>
+          <rect id="autobox-caret" x="705" y="193" width="4" height="48" rx="2" fill="#00e5ff"/>
+        </g>
+
+        <!-- Auto Box & Text Reveal Dialog Popup -->
+        <g id="autobox-dialog" opacity="0" transform="translate(465, 200)">
+          <rect x="-260" y="-135" width="520" height="270" rx="14" fill="#151620" stroke="#5865f2" stroke-width="2.5" filter="url(#shadow)"/>
+          <rect x="-260" y="-135" width="520" height="38" rx="14" fill="#1d1e2b"/>
+          <rect x="-260" y="-110" width="520" height="15" fill="#1d1e2b"/>
+          ${T(-236, -111, "LazyMotion — Auto Box & Text Reveal", "#e2e6f5", 14, 700)}
+          ${T(236, -111, "✕", "#7a8096", 15, 400, "end")}
+
+          <!-- Left col: Text Reveal -->
+          <g transform="translate(-236, -82)">
+            <rect width="145" height="150" rx="8" fill="#181a26" stroke="#282a3a"/>
+            ${T(10, 20, "Text reveal", "#8c92a6", 11, 700)}
+            <rect x="10" y="30" width="125" height="22" rx="4" fill="#111218" stroke="#363a4d"/>
+            ${T(18, 45, "Line Reveal", "#e0e3ed", 10, 600)}
+            ${T(10, 72, "Frames / unit:", "#6f7587", 10)}
+            <rect x="95" y="60" width="40" height="18" rx="3" fill="#111218" stroke="#363a4d"/>
+            ${T(115, 73, "3", "#00e5ff", 10, 700, "middle")}
+            ${T(10, 98, "Ease:", "#6f7587", 10)}
+            <rect x="46" y="86" width="89" height="18" rx="3" fill="#111218" stroke="#363a4d"/>
+            ${T(90, 99, "Back Out", "#e0e3ed", 10, 600, "middle")}
+          </g>
+
+          <!-- Middle col: Box and Padding -->
+          <g transform="translate(-78, -82)">
+            <rect width="156" height="150" rx="8" fill="#181a26" stroke="#282a3a"/>
+            ${T(10, 20, "Box and Padding", "#8c92a6", 11, 700)}
+            ${T(10, 42, "Padding X:", "#6f7587", 10)}
+            <rect x="92" y="30" width="54" height="18" rx="3" fill="#111218" stroke="#363a4d"/>
+            ${T(119, 43, "24", "#c2c7d9", 10, 600, "middle")}
+            ${T(10, 68, "Padding Y:", "#6f7587", 10)}
+            <rect x="92" y="56" width="54" height="18" rx="3" fill="#111218" stroke="#363a4d"/>
+            ${T(119, 69, "14", "#c2c7d9", 10, 600, "middle")}
+            ${T(10, 94, "Roundness:", "#6f7587", 10)}
+            <rect x="92" y="82" width="54" height="18" rx="3" fill="#111218" stroke="#363a4d"/>
+            ${T(119, 95, "20", "#c2c7d9", 10, 600, "middle")}
+            ${T(10, 120, "Box colour:", "#6f7587", 10)}
+            <rect x="92" y="108" width="54" height="18" rx="3" fill="#171822" stroke="#5865f2"/>
+          </g>
+
+          <!-- Right col: Caret and Stroke -->
+          <g transform="translate(90, -82)">
+            <rect width="146" height="150" rx="8" fill="#181a26" stroke="#282a3a"/>
+            ${T(10, 20, "Caret and Stroke", "#8c92a6", 11, 700)}
+            <rect x="10" y="30" width="12" height="12" rx="2" fill="#5865f2"/>
+            <path d="M12 36 L15 39 L20 33" fill="none" stroke="#fff" stroke-width="1.5"/>
+            ${T(28, 40, "Show Caret", "#c2c7d9", 10, 500)}
+            ${T(10, 68, "Caret Width:", "#6f7587", 10)}
+            <rect x="88" y="56" width="48" height="18" rx="3" fill="#111218" stroke="#363a4d"/>
+            ${T(112, 69, "4", "#c2c7d9", 10, 600, "middle")}
+            <rect x="10" y="86" width="12" height="12" rx="2" fill="#5865f2"/>
+            <path d="M12 92 L15 95 L20 89" fill="none" stroke="#fff" stroke-width="1.5"/>
+            ${T(28, 96, "Add Stroke", "#c2c7d9", 10, 500)}
+            <rect x="88" y="112" width="48" height="18" rx="3" fill="#5865f2" opacity="0.3" stroke="#5865f2"/>
+            ${T(112, 125, "Glow", "#00e5ff", 10, 600, "middle")}
+          </g>
+
+          <!-- Bottom Actions -->
+          <g transform="translate(-236, 80)">
+            <rect x="0" y="0" width="105" height="34" rx="6" fill="#20222a" stroke="#2e313d"/>
+            ${T(52, 21, "Remove box", "#8c92a6", 11, 500, "middle")}
+
+            <g id="btn-autobox-apply" transform="translate(365, 0)">
+              <rect x="0" y="0" width="108" height="34" rx="6" fill="url(#strike-btn-grad)"/>
+              <rect id="btn-autobox-apply-press" x="0" y="0" width="108" height="34" rx="6" fill="#ffffff" opacity="0"/>
+              ${T(54, 22, "Apply", "#ffffff", 13, 700, "middle")}
+            </g>
+          </g>
+        </g>
+
+        <!-- Scene 2: Head to Line & Path Follower -->
+        <g id="scene2-group" opacity="0">
+          <path id="spline-path" d="M 90 340 C 240 90, 640 370, 850 120" fill="none" stroke="#5865f2" stroke-width="7" stroke-linecap="round"/>
+          <path id="spline-path-glow" d="M 90 340 C 240 90, 640 370, 850 120" fill="none" stroke="#8c99ff" stroke-width="14" stroke-linecap="round" opacity="0.35"/>
+          <g id="arrow-head" transform="translate(90, 340)">
+            <polygon points="-20,-15 15,0 -20,15 -10,0" fill="#00f0ff" stroke="#ffffff" stroke-width="2.5"/>
+          </g>
+          <circle id="arrow-trail" cx="0" cy="0" r="24" fill="none" stroke="#00f0ff" stroke-width="2" stroke-dasharray="4 4" opacity="0.7"/>
+        </g>
+
+        <!-- Scene 3: 9-Point Visual Anchor Demo -->
+        <g id="scene3-group" opacity="0">
+          <g id="anchor-card" transform="translate(465 215)">
+            <rect x="-200" y="-115" width="400" height="230" rx="16" fill="url(#card-grad)" stroke="#3a3d52" stroke-width="2.5" filter="url(#shadow)"/>
+            <rect x="-175" y="-95" width="56" height="56" rx="12" fill="#5865f2" opacity="0.25"/>
+            <polygon points="-147,-82 -135,-58 -159,-58" fill="#5865f2"/>
+            ${T(-105, -70, "ANCHOR SYNC", "#ffffff", 20, 700)}
+            ${T(-105, -48, "Zero Visual Shift Compensation", "#8a90a6", 13, 500)}
+            <line x1="-175" y1="-20" x2="175" y2="-20" stroke="#2a2d3c" stroke-width="1.5"/>
+            <rect x="-175" y="6" width="160" height="15" rx="4" fill="#242636"/>
+            <rect x="-175" y="30" width="250" height="15" rx="4" fill="#242636"/>
+            <rect x="-175" y="54" width="100" height="15" rx="4" fill="#242636"/>
+
+            <!-- Reticle / Anchor Crosshair -->
+            <g id="anchor-reticle" transform="translate(0, 0)">
+              <circle cx="0" cy="0" r="16" fill="#ff2e74" fill-opacity="0.25" stroke="#ff2e74" stroke-width="2.5"/>
+              <line x1="-22" y1="0" x2="22" y2="0" stroke="#ff2e74" stroke-width="2.5"/>
+              <line x1="0" y1="-22" x2="0" y2="22" stroke="#ff2e74" stroke-width="2.5"/>
+              <circle cx="0" cy="0" r="3.5" fill="#ffffff"/>
+            </g>
+          </g>
+        </g>
+
+        <!-- Scene 4: ⇥ Stagger Demo (5-Frame Cascade in Comp) -->
+        <g id="scene-stagger-group" opacity="0">
+          ${[
+            [0, "1", "Hero Title Layer", "Base Keyframes · In-point locked", "+ 0 f", "#5865f2", "#8b95f8"],
+            [1, "2", "Graphic Badge Pill", "Position & Opacity · 5f Offset", "+ 5 f", "#00c2ff", "#00e5ff"],
+            [2, "3", "Call to Action Box", "Scale & Rotation · 10f Offset", "+ 10 f", "#ff7262", "#ff7262"],
+            [3, "4", "Metric Counter Group", "Trim Paths Vector · 15f Offset", "+ 15 f", "#e8b04c", "#e8b04c"],
+            [4, "5", "Secondary Subtext Pill", "Character Animator · 20f Offset", "+ 20 f", "#27c93f", "#27c93f"]
+          ].map(([idx, num, title, sub, offset, col, colLight]) => `
+            <g id="stag-card-${idx}" transform="translate(130, ${18 + idx * 70})">
+              <rect width="670" height="56" rx="10" fill="#181a25" stroke="${col}" stroke-width="1.8"/>
+              <rect x="12" y="9" width="38" height="38" rx="7" fill="${col}" opacity="0.22"/>
+              ${T(31, 34, num, col, 20, 800, "middle")}
+              ${T(62, 28, title, "#ffffff", 15, 700)}
+              ${T(62, 46, sub, "#8c92a6", 11)}
+              <rect x="560" y="14" width="86" height="28" rx="14" fill="${col}" opacity="0.22"/>
+              ${T(603, 33, offset, colLight, 12, 700, "middle")}
+            </g>
+          `).join("")}
+        </g>
+
+        <!-- Scene 5: ⊞ Grid Maker Dialog Popup -->
+        <g id="grid-dialog" opacity="0" transform="translate(465, 195)">
+          <rect x="-240" y="-140" width="480" height="280" rx="14" fill="#151620" stroke="#5865f2" stroke-width="2.5" filter="url(#shadow)"/>
+          <rect x="-240" y="-140" width="480" height="40" rx="14" fill="#1d1e2b"/>
+          <rect x="-240" y="-115" width="480" height="15" fill="#1d1e2b"/>
+          ${T(-216, -114, "Grid Designer (Rule of Thirds)", "#e2e6f5", 15, 700)}
+          ${T(216, -114, "✕", "#7a8096", 15, 600, "end")}
+
+          <g transform="translate(-200, -65)">
+            ${T(0, 20, "Columns:", "#8c92a6", 13, 500)}
+            <rect x="80" y="0" width="75" height="30" rx="5" fill="#0d0e14" stroke="#5865f2"/>
+            ${T(117, 21, "3", "#00e5ff", 15, 700, "middle")}
+
+            ${T(200, 20, "Rows:", "#8c92a6", 13, 500)}
+            <rect x="255" y="0" width="75" height="30" rx="5" fill="#0d0e14" stroke="#5865f2"/>
+            ${T(292, 21, "3", "#00e5ff", 15, 700, "middle")}
+          </g>
+
+          <g transform="translate(-200, -18)">
+            ${T(0, 18, "Preset:", "#8c92a6", 13, 500)}
+            <rect x="80" y="0" width="250" height="30" rx="5" fill="#24273c" stroke="#5865f2"/>
+            ${T(205, 20, "Rule of Thirds (3×3 Grid)", "#e2e6f5", 12, 600, "middle")}
+          </g>
+
+          <g transform="translate(-200, 30)">
+            ${T(0, 16, "Gutters: 16 px", "#6c7288", 12, 400)}
+            ${T(190, 16, "Margins: 30 px", "#6c7288", 12, 400)}
+          </g>
+
+          <g id="btn-dlg-create" transform="translate(-200, 68)">
+            <rect x="0" y="0" width="400" height="44" rx="8" fill="url(#strike-btn-grad)"/>
+            <rect id="btn-dlg-create-press" x="0" y="0" width="400" height="44" rx="8" fill="#ffffff" opacity="0"/>
+            ${T(200, 28, "Create 3×3 Grid", "#ffffff", 15, 700, "middle")}
+          </g>
+        </g>
+
+        <!-- Scene 5 Generated Grid: ⊞ Grid Maker (3x3 Layout) -->
+        <g id="scene-grid-group" opacity="0" transform="translate(465, 215)">
+          <rect x="-420" y="-170" width="840" height="340" rx="14" fill="#10111a" stroke="#5865f2" stroke-width="2" stroke-dasharray="8 5"/>
+          <rect x="-180" y="-192" width="360" height="34" rx="17" fill="#181a26" stroke="#5865f2"/>
+          ${T(0, -170, "GRID DESIGNER · 3×3 LAYOUT", "#00e5ff", 13, 700, "middle")}
+
+          <g id="grid-cells-container">
+            ${[
+              [-390, -145, "Cell 1 · Top-Left"],   [-130, -145, "Cell 2 · Top-Center"], [130, -145, "Cell 3 · Top-Right"],
+              [-390, -35,  "Cell 4 · Mid-Left"],   [-130, -35,  "Focus · Rule of 3rds"], [130, -35,  "Cell 6 · Mid-Right"],
+              [-390, 75,   "Cell 7 · Bot-Left"],   [-130, 75,   "Cell 8 · Bot-Center"], [130, 75,   "Cell 9 · Bot-Right"]
+            ].map(([cx, cy, label], idx) => `
+              <g id="gcell-${idx}" transform="translate(${cx}, ${cy})">
+                <rect width="260" height="95" rx="8" fill="#181a28" stroke="${idx === 4 ? '#00e5ff' : '#2b2f45'}" stroke-width="${idx === 4 ? '2.5' : '1.5'}"/>
+                <rect x="12" y="10" width="22" height="22" rx="5" fill="${idx === 4 ? '#00e5ff' : '#5865f2'}" opacity="0.3"/>
+                ${T(23, 26, `${idx + 1}`, idx === 4 ? '#00e5ff' : '#8b95f8', 12, 700, "middle")}
+                ${T(42, 27, label, "#e0e3ed", 12, 600)}
+                ${T(130, 68, "260 × 95 px", "#5a6078", 11, 500, "middle")}
+              </g>
+            `).join("")}
+          </g>
+          ${T(0, 192, "Gutters: 16px · Margins: 30px · 1-Click Layer Null Guides", "#8c92a6", 12, 500, "middle")}
+        </g>
+
+        <!-- Scene 6: Fade Animator Pro (Bounce Curve) -->
+        <g id="scene4-group" opacity="0">
+          <g id="fade-card1" transform="translate(180 215)">
+            <rect x="-95" y="-95" width="190" height="190" rx="18" fill="#1b1c26" stroke="#5865f2" stroke-width="2.5"/>
+            <circle cx="0" cy="-22" r="30" fill="#5865f2" opacity="0.25"/>
+            ${T(0, -12, "01", "#5865f2", 24, 800, "middle")}
+            ${T(0, 40, "BOUNCE IN", "#ffffff", 15, 700, "middle")}
+          </g>
+          <g id="fade-card2" transform="translate(465 215)">
+            <rect x="-95" y="-95" width="190" height="190" rx="18" fill="#1b1c26" stroke="#00c2ff" stroke-width="2.5"/>
+            <circle cx="0" cy="-22" r="30" fill="#00c2ff" opacity="0.25"/>
+            ${T(0, -12, "02", "#00c2ff", 24, 800, "middle")}
+            ${T(0, 40, "ELASTIC", "#ffffff", 15, 700, "middle")}
+          </g>
+          <g id="fade-card3" transform="translate(750 215)">
+            <rect x="-95" y="-95" width="190" height="190" rx="18" fill="#1b1c26" stroke="#ff7262" stroke-width="2.5"/>
+            <circle cx="0" cy="-22" r="30" fill="#ff7262" opacity="0.25"/>
+            ${T(0, -12, "03", "#ff7262", 24, 800, "middle")}
+            ${T(0, 40, "EXPO EASE", "#ffffff", 15, 700, "middle")}
+          </g>
+        </g>
+
+        <!-- LazyStrike FX Floating Palette -->
+        <g id="lazystrike-dialog" opacity="0" transform="translate(465, 200)">
+          <rect x="-250" y="-130" width="500" height="260" rx="14" fill="#151620" stroke="#5865f2" stroke-width="2.5" filter="url(#shadow)"/>
+          <rect x="-250" y="-130" width="500" height="38" rx="14" fill="#1d1e2b"/>
+          <rect x="-250" y="-105" width="500" height="15" fill="#1d1e2b"/>
+          ${T(-226, -106, "⚡ LazyStrike FX", "#e2e6f5", 14, 700)}
+          ${T(226, -106, "✕", "#7a8096", 15, 400, "end")}
+
+          <g transform="translate(-226, -78)">
+            <rect width="216" height="180" rx="8" fill="#181a26" stroke="#282a3a"/>
+            ${T(12, 20, "Style & Timing", "#8c92a6", 11, 700)}
+            <rect x="12" y="28" width="192" height="24" rx="4" fill="#111218" stroke="#363a4d"/>
+            ${T(22, 44, "Direct Bolt + Sky Flash", "#e0e3ed", 11, 600)}
+
+            ${T(12, 74, "Bolt Color:", "#6f7587", 11)}
+            <rect x="136" y="60" width="68" height="18" rx="3" fill="#00f0ff"/>
+            ${T(12, 100, "Flash Color:", "#6f7587", 11)}
+            <rect x="136" y="86" width="68" height="18" rx="3" fill="#ffffff"/>
+
+            ${T(12, 126, "Strike Dur (fr):", "#6f7587", 11)}
+            <rect x="136" y="112" width="68" height="18" rx="3" fill="#111218" stroke="#363a4d"/>
+            ${T(170, 125, "14", "#00e5ff", 11, 700, "middle")}
+
+            ${T(12, 152, "Flickers / Sky:", "#6f7587", 11)}
+            <rect x="136" y="138" width="68" height="18" rx="3" fill="#111218" stroke="#363a4d"/>
+            ${T(170, 151, "3", "#c2c7d9", 11, 600, "middle")}
+          </g>
+
+          <g transform="translate(10, -78)">
+            <rect width="216" height="180" rx="8" fill="#181a26" stroke="#282a3a"/>
+            ${T(12, 20, "Intensity & Options", "#8c92a6", 11, 700)}
+
+            ${T(12, 46, "Bolt Intensity:", "#6f7587", 11)}
+            <rect x="12" y="52" width="192" height="6" rx="3" fill="#242636"/>
+            <rect x="12" y="52" width="160" height="6" rx="3" fill="#00e5ff"/>
+
+            ${T(12, 80, "Flash Intensity:", "#6f7587", 11)}
+            <rect x="12" y="86" width="192" height="6" rx="3" fill="#242636"/>
+            <rect x="12" y="86" width="150" height="6" rx="3" fill="#5865f2"/>
+
+            <rect x="12" y="106" width="14" height="14" rx="3" fill="#5865f2"/>
+            <path d="M14 113 L18 117 L24 109" fill="none" stroke="#fff" stroke-width="1.6"/>
+            ${T(34, 118, "Fill Work Area", "#c2c7d9", 11, 500)}
+
+            <g id="btn-strike-generate" transform="translate(12, 132)">
+              <rect x="0" y="0" width="192" height="38" rx="7" fill="url(#strike-btn-grad)" filter="url(#glow-strike)"/>
+              <rect id="btn-strike-gen-press" x="0" y="0" width="192" height="38" rx="7" fill="#ffffff" opacity="0"/>
+              ${T(96, 24, "⚡ Generate Lightning", "#ffffff", 12, 700, "middle")}
+            </g>
+          </g>
+        </g>
+
+        <!-- Scene 7: LazyStrike FX Lightning Strike -->
+        <g id="scene5-group" opacity="0">
+          <rect id="sky-flash" width="930" height="434" fill="#a4c4ff" opacity="0"/>
+          <path id="lightning-bolt" d="" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" filter="url(#glow-lightning)"/>
+          <path id="lightning-glow" d="" fill="none" stroke="#00e5ff" stroke-width="18" stroke-linecap="round" opacity="0.8"/>
+        </g>
+
+        <!-- Scene Banner Toast -->
+        <g id="scene-toast" opacity="0" transform="translate(465 395)">
+          <rect x="-340" y="-22" width="680" height="44" rx="22" fill="#12131bf6" stroke="#5865f2" stroke-width="2" filter="url(#shadow)"/>
+          <text id="scene-toast-text" x="0" y="7" text-anchor="middle" fill="#e2e6f5" font-size="15" font-weight="700">⚡ Dynamic Auto Text Box — Zero Squish Geometry</text>
+        </g>
+      </g>
+    </g>
+
+    <!-- ================= 2. FULL AFTER EFFECTS TIMELINE PANEL ================= -->
+    <g transform="translate(${TIME_X} ${TIME_Y})">
+      <rect width="${TIME_W}" height="${TIME_H}" rx="10" fill="#16171f"/>
+      <rect width="${TIME_W}" height="${TIME_H}" rx="10" fill="none" stroke="#262834" stroke-width="1.2"/>
+      
+      <!-- Timeline Header -->
+      <rect width="${TIME_W}" height="36" rx="10" fill="#1c1d27"/>
+      <rect y="24" width="${TIME_W}" height="12" fill="#1c1d27"/>
+      ${T(18, 23, "00:00:04:12", "#00e5ff", 13, 700)}
+      ${T(125, 23, "Comp 1 Timeline", "#8e95a8", 12, 600)}
+      <line x1="280" y1="0" x2="280" y2="${TIME_H}" stroke="#252735" stroke-width="1.2"/>
+
+      <!-- Time Ruler Ticks & Labels -->
+      ${Array.from({ length: 11 }, (_, i) => `
+        <line x1="${300 + i * 62}" y1="22" x2="${300 + i * 62}" y2="34" stroke="#4a4f66" stroke-width="1"/>
+        ${T(300 + i * 62, 17, `${i * 2}s`, "#6f7587", 9, 500, "middle")}
+      `).join("")}
+
+      <!-- Layers Container -->
+      <g transform="translate(0, 42)">
+        <!-- Default Layers (Scenes 1-3, 5-7) -->
+        <g id="tl-default-layers">
+          <!-- Layer 1 -->
+          <rect y="0" width="280" height="44" fill="#1a1b24"/>
+          ${T(18, 27, "1", "#6f7587", 11)}
+          <rect x="36" y="11" width="20" height="20" rx="4" fill="#ff2e74"/>
+          <text id="tl-name1" x="66" y="27" fill="#e0e3ed" font-size="13" font-weight="600">Auto Text Box</text>
+          <rect id="tl-bar1" x="300" y="11" width="380" height="22" rx="4" fill="#ff2e74" opacity="0.85"/>
+          <g id="tl-keys1" transform="translate(300, 11)">
+            <polygon points="0,11 7,4 14,11 7,18" fill="#ffffff"/>
+            <polygon points="120,11 127,4 134,11 127,18" fill="#ffffff"/>
+          </g>
+
+          <!-- Layer 2 -->
+          <rect y="48" width="280" height="44" fill="#16171f"/>
+          ${T(18, 75, "2", "#6f7587", 11)}
+          <rect x="36" y="59" width="20" height="20" rx="4" fill="#5865f2"/>
+          <text id="tl-name2" x="66" y="75" fill="#e0e3ed" font-size="13" font-weight="500">Spline Path + Head</text>
+          <rect id="tl-bar2" x="300" y="59" width="480" height="22" rx="4" fill="#5865f2" opacity="0.85"/>
+          <g transform="translate(300, 59)">
+            <polygon points="0,11 7,4 14,11 7,18" fill="#ffffff"/>
+            <polygon points="260,11 267,4 274,11 267,18" fill="#ffffff"/>
+          </g>
+
+          <!-- Layer 3 -->
+          <rect y="96" width="280" height="44" fill="#1a1b24"/>
+          ${T(18, 123, "3", "#6f7587", 11)}
+          <rect x="36" y="107" width="20" height="20" rx="4" fill="#00c2ff"/>
+          ${T(66, 123, "Motion Elements", "#e0e3ed", 13, 500)}
+          <rect id="tl-bar3" x="300" y="107" width="580" height="22" rx="4" fill="#00c2ff" opacity="0.85"/>
+
+          <!-- Layer 4 -->
+          <rect y="144" width="280" height="44" fill="#16171f"/>
+          ${T(18, 171, "4", "#6f7587", 11)}
+          <rect x="36" y="155" width="20" height="20" rx="4" fill="#e8b04c"/>
+          ${T(66, 171, "Grid Null Controls", "#e0e3ed", 13, 500)}
+          <rect id="tl-bar4" x="300" y="155" width="420" height="22" rx="4" fill="#e8b04c" opacity="0.85"/>
+
+          <!-- Layer 0: Null 1 Parent Controller (Scene 0) -->
+          <g id="tl-null-layer" opacity="0">
+            <rect y="144" width="280" height="44" fill="#241b24"/>
+            ${T(18, 171, "0", "#ff2e74", 11, 700)}
+            <rect x="36" y="155" width="20" height="20" rx="4" fill="#ff2e74"/>
+            ${T(66, 171, "Null 1 [Parent Controller]", "#ff8ab8", 13, 600)}
+            <rect x="300" y="155" width="460" height="22" rx="4" fill="#ff2e74" opacity="0.88"/>
+            <polygon points="306,166 313,159 320,166 313,173" fill="#ffffff"/>
+            <polygon points="420,166 427,159 434,166 427,173" fill="#ffffff"/>
+          </g>
+
+          <!-- Layer 5: Preview/Audio -->
+          <rect y="192" width="280" height="44" fill="#1a1b24"/>
+          ${T(18, 219, "5", "#6f7587", 11)}
+          <rect x="36" y="203" width="20" height="20" rx="4" fill="#27c93f"/>
+          ${T(66, 219, "Background & Audio", "#e0e3ed", 13, 500)}
+          <rect id="tl-bar5" x="300" y="203" width="620" height="22" rx="4" fill="#27c93f" opacity="0.85"/>
+        </g>
+
+        <!-- STAGGER DEDICATED 5-LAYER TIMELINE CASCADE (Scene 4: The Core Magic!) -->
+        <g id="tl-stagger-stack" opacity="0">
+          ${[
+            [0, "1", "Hero Title Layer", "#5865f2", "+ 0 f"],
+            [1, "2", "Graphic Badge Pill", "#00c2ff", "+ 5 f"],
+            [2, "3", "Call to Action Box", "#ff7262", "+ 10 f"],
+            [3, "4", "Metric Counter Group", "#e8b04c", "+ 15 f"],
+            [4, "5", "Secondary Subtext Pill", "#27c93f", "+ 20 f"]
+          ].map(([idx, num, name, col, offset]) => `
+            <g id="tl-stag-row-${idx}" transform="translate(0, ${idx * 48})">
+              <!-- Left Layer Info -->
+              <rect y="0" width="280" height="44" fill="${idx % 2 === 0 ? '#1b1d28' : '#161720'}"/>
+              ${T(18, 27, num, "#8c92a6", 11, 700)}
+              <rect x="36" y="11" width="20" height="20" rx="4" fill="${col}"/>
+              ${T(66, 27, name, "#ffffff", 13, 600)}
+              
+              <!-- Layer Track & Diamond Keyframes ◆ (Cascading Waterfall) -->
+              <g id="tl-stag-track-${idx}" transform="translate(300, 11)">
+                <rect width="270" height="22" rx="4" fill="${col}" opacity="0.88"/>
+                <!-- Diamond Keyframes ◆ -->
+                <polygon points="6,11 13,4 20,11 13,18" fill="#ffffff"/>
+                <polygon points="100,11 107,4 114,11 107,18" fill="#ffffff"/>
+                ${T(128, 16, "Position / Scale", "#ffffff", 10, 700, "start", 'opacity="0.9"')}
+                
+                <!-- 5-frame cascade badge pill -->
+                <rect x="200" y="2" width="60" height="18" rx="9" fill="#000000" opacity="0.4"/>
+                ${T(230, 15, offset, "#ffffff", 10, 700, "middle")}
+              </g>
+            </g>
+          `).join("")}
+        </g>
+      </g>
+
+      <!-- Timeline Playhead CTI (Full vertical height line & indicator) -->
+      <g id="tl-cti" transform="translate(300, 0)">
+        <line x1="0" y1="0" x2="0" y2="${TIME_H}" stroke="#00e5ff" stroke-width="2.2"/>
+        <polygon points="-8,0 8,0 8,14 0,22 -8,14" fill="#00e5ff"/>
+      </g>
+    </g>
+
+    <!-- ================= 3. LAZYMOTIONTOOLKIT PANEL (BOTTOM HALF) ================= -->
+    <g transform="translate(${PANEL_X} ${PANEL_Y})">
+      <!-- Panel Base -->
+      <rect width="${PANEL_W}" height="${PANEL_H}" rx="14" fill="#131418" filter="url(#shadow)"/>
+      <rect width="${PANEL_W}" height="${PANEL_H}" rx="14" fill="none" stroke="#252733" stroke-width="1.5"/>
+
+      <!-- Header -->
+      <rect width="${PANEL_W}" height="48" rx="14" fill="#171820"/>
+      <rect y="32" width="${PANEL_W}" height="16" fill="#171820"/>
+      <circle cx="26" cy="24" r="6" fill="#5865f2" filter="url(#glow-dot)"/>
+      ${T(42, 30, "LazyMotionToolkit", "#e2e6f5", 15, 700)}
+      <text x="${PANEL_W - 66}" y="29" text-anchor="end" font-size="12">
+        <tspan fill="#626779">Made by </tspan>
+        <tspan fill="#8b95f8" font-weight="700">Raisul Sohan</tspan>
+      </text>
+      <rect x="${PANEL_W - 54}" y="14" width="40" height="20" rx="5" fill="#1d1e28" stroke="#2c2e3d"/>
+      ${T(PANEL_W - 34, 28, "v1.11", "#8b92a8", 10, 700, "middle")}
+
+      <!-- Inner Content -->
+      <g transform="translate(24, 62)">
+
+        <!-- SECTION 1: MOTION TOOLS -->
+        <g transform="translate(0, 0)">
+          ${T(0, 12, "MOTION TOOLS", "#5e6377", 12, 800, "start", 'letter-spacing="1"')}
+          <line x1="120" y1="8" x2="912" y2="8" stroke="#262836"/>
+
+          <g transform="translate(0, 22)">
+            <!-- Row 1: 4 Grid Buttons -->
+            <rect id="btn-precomp1" x="0" y="0" width="216" height="42" rx="7" fill="#20222a" stroke="#2e313d"/>
+            <rect id="btn-precomp1-press" x="0" y="0" width="216" height="42" rx="7" fill="#5865f2" opacity="0"/>
+            ${T(108, 26, "⊞ Precomp (1:1)", "#c2c7d9", 13, 600, "middle")}
+
+            <rect id="btn-precompG" x="232" y="0" width="216" height="42" rx="7" fill="#20222a" stroke="#2e313d"/>
+            <rect id="btn-precompG-press" x="232" y="0" width="216" height="42" rx="7" fill="#5865f2" opacity="0"/>
+            ${T(340, 26, "▣ Precomp (Group)", "#c2c7d9", 13, 600, "middle")}
+
+            <rect id="btn-autobox" x="464" y="0" width="216" height="42" rx="7" fill="#20222a" stroke="#2e313d"/>
+            <rect id="btn-autobox-press" x="464" y="0" width="216" height="42" rx="7" fill="#5865f2" opacity="0"/>
+            ${T(572, 26, "⊡ Auto Box", "#ffffff", 13, 700, "middle")}
+
+            <rect id="btn-gridmaker" x="696" y="0" width="216" height="42" rx="7" fill="#20222a" stroke="#2e313d"/>
+            <rect id="btn-gridmaker-press" x="696" y="0" width="216" height="42" rx="7" fill="#5865f2" opacity="0"/>
+            ${T(804, 26, "⊞ Grid Maker", "#c2c7d9", 13, 600, "middle")}
+
+            <!-- Row 2: Stagger & Parent -->
+            <rect id="btn-stagger" x="0" y="52" width="216" height="42" rx="7" fill="#20222a" stroke="#2e313d"/>
+            <rect id="btn-stagger-press" x="0" y="52" width="216" height="42" rx="7" fill="#5865f2" opacity="0"/>
+            ${T(108, 78, "⇥ Stagger", "#c2c7d9", 13, 600, "middle")}
+
+            <rect id="btn-nullparent" x="232" y="52" width="216" height="42" rx="7" fill="#20222a" stroke="#2e313d"/>
+            <rect id="btn-nullparent-press" x="232" y="52" width="216" height="42" rx="7" fill="#ff2e74" opacity="0"/>
+            ${T(340, 78, "◎ Null + Parent", "#c2c7d9", 13, 600, "middle")}
+
+            <!-- Stagger Subrow Controls -->
+            <g transform="translate(470, 56)">
+              ${T(0, 24, "Stagger by", "#626779", 12, 400)}
+              <rect x="70" y="8" width="38" height="24" rx="4" fill="#16171f" stroke="#5865f2"/>
+              ${T(89, 25, "5", "#00e5ff", 13, 700, "middle")}
+              ${T(118, 24, "frames", "#626779", 12, 400)}
+              <circle cx="180" cy="20" r="5" fill="#16171f" stroke="#2a2c3a"/>
+              ${T(194, 24, "Rev", "#8c92a6", 12, 500)}
+              <circle cx="240" cy="20" r="5" fill="#5865f2"/>
+              ${T(254, 24, "Keys only", "#8c92a6", 12, 500)}
+            </g>
+
+            <!-- Row 3: Big LazyStrike FX Button -->
+            <g transform="translate(0, 106)">
+              <rect id="btn-lazystrike" x="0" y="0" width="912" height="46" rx="8" fill="url(#strike-btn-grad)" filter="url(#glow-strike)"/>
+              <rect id="btn-lazystrike-press" x="0" y="0" width="912" height="46" rx="8" fill="#ffffff" opacity="0"/>
+              ${T(456, 29, "⚡ LazyStrike FX — High-Voltage Lightning", "#ffffff", 15, 700, "middle")}
+            </g>
+          </g>
+        </g>
+
+        <!-- SECTION 2: LAZYPREVIEW RENDER -->
+        <g transform="translate(0, 204)">
+          ${T(0, 12, "🎬 LAZYPREVIEW RENDER", "#5e6377", 12, 800, "start", 'letter-spacing="1"')}
+          <line x1="180" y1="8" x2="912" y2="8" stroke="#262836"/>
+          
+          <g transform="translate(0, 22)">
+            <rect id="btn-render" x="0" y="0" width="320" height="38" rx="6" fill="#20222a" stroke="#2e313d"/>
+            ${T(160, 24, "▶ Render In→Out", "#c2c7d9", 13, 600, "middle")}
+
+            <rect id="btn-toggle" x="340" y="0" width="260" height="38" rx="6" fill="#20222a" stroke="#2e313d"/>
+            ${T(470, 24, "Toggle", "#c2c7d9", 13, 600, "middle")}
+
+            <rect id="btn-remove" x="620" y="0" width="292" height="38" rx="6" fill="#231718" stroke="#3d2224"/>
+            ${T(766, 24, "Remove", "#ed4245", 13, 600, "middle")}
+
+            ${T(0, 64, "Set work area (B / N), then render immediate MP4 preview.", "#626779", 12)}
+          </g>
+        </g>
+
+        <!-- SECTION 3: HEAD TO LINE & 9-POINT ANCHOR (2 DUAL COLUMNS) -->
+        <g transform="translate(0, 316)">
+          ${T(0, 12, "HEAD TO LINE", "#5e6377", 12, 800, "start", 'letter-spacing="1"')}
+          <line x1="110" y1="8" x2="430" y2="8" stroke="#262836"/>
+          ${T(470, 12, "9-POINT ANCHOR", "#5e6377", 12, 800, "start", 'letter-spacing="1"')}
+          <line x1="600" y1="8" x2="912" y2="8" stroke="#262836"/>
+
+          <g transform="translate(0, 24)">
+            <!-- Left: Head to Line Controls -->
+            <g transform="translate(0, 0)">
+              ${T(0, 18, "Type:", "#757b90", 12, 400)}
+              <rect x="50" y="0" width="370" height="30" rx="5" fill="#16171f" stroke="#2a2c3a"/>
+              <text id="drop-headtype" x="64" y="20" fill="#e0e3ed" font-size="13" font-weight="600">Triangle</text>
+              <polygon points="400,12 408,20 392,20" fill="#6f7587" transform="rotate(180 400 16)"/>
+
+              <g transform="translate(0, 42)">
+                <circle cx="6" cy="8" r="5" fill="#5865f2"/>
+                ${T(18, 13, "Round", "#8c92a6", 12, 500)}
+                <circle cx="100" cy="8" r="5" fill="#16171f" stroke="#2a2c3a"/>
+                ${T(112, 13, "Double", "#8c92a6", 12, 500)}
+                <circle cx="200" cy="8" r="5" fill="#16171f" stroke="#2a2c3a"/>
+                ${T(212, 13, "Rev", "#8c92a6", 12, 500)}
+              </g>
+
+              <g transform="translate(0, 72)">
+                <rect x="0" y="0" width="16" height="16" rx="3" fill="#5865f2"/>
+                <path d="M3 8 L7 12 L13 4" fill="none" stroke="#fff" stroke-width="2"/>
+                ${T(24, 13, "Anim:", "#8c92a6", 12, 500)}
+                <rect x="70" y="-2" width="44" height="22" rx="4" fill="#16171f" stroke="#2a2c3a"/>
+                ${T(92, 14, "30", "#c2c7d9", 13, 600, "middle")}
+                ${T(122, 13, "frames", "#626779", 12, 400)}
+              </g>
+
+              <!-- Head It! Button -->
+              <rect id="btn-headit" x="0" y="104" width="420" height="42" rx="7" fill="#20222a" stroke="#2e313d"/>
+              <rect id="btn-headit-press" x="0" y="104" width="420" height="42" rx="7" fill="#5865f2" opacity="0"/>
+              ${T(210, 130, "⚙ Head it! — Follow Spline Path", "#c2c7d9", 13, 700, "middle")}
+            </g>
+
+            <!-- Right: 3x3 Anchor Alignment Grid -->
+            <g transform="translate(470, 0)">
+              <g id="anchor-grid-btns" transform="translate(50, 0)">
+                ${[
+                  ['↖', 0, 0], ['↑', 1, 0], ['↗', 2, 0],
+                  ['←', 0, 1], ['●', 1, 1], ['→', 2, 1],
+                  ['↙', 0, 2], ['↓', 1, 2], ['↘', 2, 2]
+                ].map(([char, col, row], i) => `
+                  <g id="agrid-${i}" transform="translate(${col * 70}, ${row * 32})">
+                    <rect x="0" y="0" width="60" height="28" rx="5" fill="${i === 4 ? '#252945' : '#1a1b22'}" stroke="${i === 4 ? '#5865f2' : '#2b2d3c'}"/>
+                    ${T(30, 20, char, i === 4 ? '#8b95f8' : '#6f7587', 15, 600, "middle")}
+                  </g>
+                `).join("")}
+              </g>
+
+              <rect id="btn-centercomp" x="40" y="104" width="380" height="42" rx="7" fill="#20222a" stroke="#2e313d"/>
+              ${T(230, 130, "Center Comp (Zero Shift)", "#c2c7d9", 13, 600, "middle")}
+            </g>
+          </g>
+        </g>
+
+        <!-- SECTION 4: FADE & COLOR SWATCHES -->
+        <g transform="translate(0, 508)">
+          ${T(0, 12, "FADE ANIMATOR PRO", "#5e6377", 12, 800, "start", 'letter-spacing="1"')}
+          <line x1="160" y1="8" x2="430" y2="8" stroke="#262836"/>
+          ${T(470, 12, "COLOR PALETTE", "#5e6377", 12, 800, "start", 'letter-spacing="1"')}
+          <line x1="590" y1="8" x2="912" y2="8" stroke="#262836"/>
+
+          <g transform="translate(0, 24)">
+            <!-- Left: Fade Controls -->
+            <g transform="translate(0, 0)">
+              <g transform="translate(0, 0)">
+                ${T(0, 16, "Dur:", "#757b90", 12, 400)}
+                <rect x="36" y="0" width="50" height="24" rx="4" fill="#16171f" stroke="#2a2c3a"/>
+                ${T(61, 17, "20", "#c2c7d9", 13, 600, "middle")}
+
+                ${T(105, 16, "Spd:", "#757b90", 12, 400)}
+                <rect x="142" y="0" width="44" height="24" rx="4" fill="#16171f" stroke="#2a2c3a"/>
+                ${T(164, 17, "1", "#c2c7d9", 13, 600, "middle")}
+              </g>
+
+              <g transform="translate(0, 34)">
+                ${T(0, 18, "Ease:", "#757b90", 12, 400)}
+                <rect x="44" y="0" width="376" height="30" rx="5" fill="#16171f" stroke="#2a2c3a"/>
+                <text id="drop-fadeease" x="58" y="20" fill="#e0e3ed" font-size="13" font-weight="600">Bounce Ease</text>
+                <polygon points="400,12 408,20 392,20" fill="#6f7587" transform="rotate(180 400 16)"/>
+              </g>
+
+              <g transform="translate(0, 76)">
+                <circle cx="6" cy="8" r="5" fill="#5865f2"/>
+                ${T(18, 13, "In", "#8c92a6", 12, 500)}
+                <circle cx="70" cy="8" r="5" fill="#5865f2"/>
+                ${T(82, 13, "Out", "#8c92a6", 12, 500)}
+                <circle cx="145" cy="8" r="5" fill="#5865f2"/>
+                ${T(157, 13, "Markers", "#8c92a6", 12, 500)}
+              </g>
+
+              <g transform="translate(0, 104)">
+                <rect id="btn-applyfade" x="0" y="0" width="240" height="42" rx="7" fill="url(#strike-btn-grad)"/>
+                <rect id="btn-applyfade-press" x="0" y="0" width="240" height="42" rx="7" fill="#ffffff" opacity="0"/>
+                ${T(120, 26, "⚡ Apply Fade", "#ffffff", 14, 700, "middle")}
+
+                <rect id="btn-clearfade" x="256" y="0" width="164" height="42" rx="7" fill="#20222a" stroke="#2e313d"/>
+                ${T(338, 26, "✕ Clear", "#8c92a6", 13, 600, "middle")}
+              </g>
+            </g>
+
+            <!-- Right: Swatches -->
+            <g transform="translate(470, 0)">
+              <g transform="translate(0, 0)">
+                ${T(0, 16, "Total:", "#757b90", 12, 400)}
+                <rect x="42" y="0" width="40" height="24" rx="4" fill="#16171f" stroke="#2a2c3a"/>
+                ${T(62, 17, "5", "#c2c7d9", 13, 600, "middle")}
+
+                ${T(100, 16, "Palette:", "#757b90", 12, 400)}
+                <rect x="156" y="0" width="40" height="24" rx="4" fill="#16171f" stroke="#2a2c3a"/>
+                ${T(176, 17, "5", "#c2c7d9", 13, 600, "middle")}
+              </g>
+
+              <g transform="translate(0, 36)">
+                ${["#ed4245", "#ffffff", "#57d4e0", "#5b88d4", "#1e2744"].map((c, i) => `
+                  <g transform="translate(${i * 86}, 0)">
+                    <rect x="0" y="0" width="76" height="42" rx="6" fill="${c}" stroke="${i === 2 ? '#5865f2' : '#2b2d3c'}" stroke-width="${i === 2 ? '2.5' : '1.5'}"/>
+                    <rect x="0" y="48" width="36" height="24" rx="4" fill="#1c1d26" stroke="#2b2d3c"/>
+                    ${T(18, 64, "Fill", "#8c92a6", 10, 700, "middle")}
+                    <rect x="40" y="48" width="36" height="24" rx="4" fill="#1c1d26" stroke="#2b2d3c"/>
+                    ${T(58, 64, "Strk", "#8c92a6", 10, 700, "middle")}
+                  </g>
+                `).join("")}
+              </g>
+
+              ${T(0, 134, "1-Click Color Harmonizer across Selected Layers", "#626779", 12)}
+            </g>
+          </g>
+        </g>
+
+      </g>
+    </g>
+  </g>
+  `;
+}
+
+/* ==========================================================================
+   OUTRO CARD MOCKUP (9:16 VERTICAL FORMAT)
+   ========================================================================== */
+function outroCard() {
+  return `
+  <g id="outro-view" opacity="0">
+    <rect width="${SW}" height="${SH}" fill="#08090e" opacity="0.97"/>
+    <circle cx="${SW/2}" cy="700" r="540" fill="url(#radial-glow)"/>
+
+    <g transform="translate(${SW/2} 420)">
+      <!-- Glowing Logo Icon & Title -->
+      <g id="outro-badge" transform="scale(1)">
+        <circle cx="0" cy="-60" r="52" fill="url(#strike-btn-grad)" filter="url(#glow-box)"/>
+        ${T(0, -42, "⚡", "#ffffff", 50, 800, "middle")}
+      </g>
+
+      ${T(0, 50, "LazyMotionToolkit", "#ffffff", 58, 800, "middle", 'letter-spacing="-1"')}
+      <path id="outro-shine" d="M -260 60 L 260 60" stroke="url(#shine-grad)" stroke-width="4" stroke-linecap="round"/>
+
+      ${T(0, 115, "All-in-One Motion Graphics Suite for After Effects", "#9aa1bc", 24, 500, "middle")}
+      ${T(0, 160, "100% Free & Open Source · Created by Raisul Sohan", "#6a7088", 18, 500, "middle")}
+
+      <!-- Feature Pill Badges (2 Columns x 4 Rows for 9:16) -->
+      <g id="outro-pills" transform="translate(0, 220)">
+        ${[
+          ["Smart Precomp", "Null + Parent"],
+          ["Auto Text Box", "Head to Line"],
+          ["9-Point Anchor", "Fade Animator Pro"],
+          ["LazyStrike FX", "Grid Maker 3×3"]
+        ].map(([f1, f2], row) => `
+          <g transform="translate(0, ${row * 58})">
+            <rect x="-360" y="0" width="340" height="46" rx="23" fill="#151722" stroke="#2d3145" stroke-width="1.5"/>
+            ${T(-190, 29, f1, "#cfd5eb", 15, 600, "middle")}
+
+            <rect x="20" y="0" width="340" height="46" rx="23" fill="#151722" stroke="#2d3145" stroke-width="1.5"/>
+            ${T(190, 29, f2, "#cfd5eb", 15, 600, "middle")}
+          </g>
+        `).join("")}
+      </g>
+
+      <!-- GitHub Link Badge -->
+      <g transform="translate(0, 520)">
+        <rect x="-360" y="0" width="720" height="64" rx="32" fill="#181a26" stroke="#5865f2" stroke-width="2" filter="url(#shadow)"/>
+        ${T(0, 39, "github.com/raisulsohan/LazyMotionToolkit", "#00e5ff", 20, 700, "middle")}
+      </g>
+    </g>
+  </g>
+  `;
+}
+
+/* ==========================================================================
+   CURSOR GRAPHIC
+   ========================================================================== */
+function cursorGraphic() {
+  return `
+  <g id="cursor" opacity="0">
+    <path d="M0 0 L0 36 L10 27 L18 42 L24 38 L16 23 L28 23 Z" fill="#ffffff" stroke="#121319" stroke-width="3" stroke-linejoin="round"/>
+  </g>
+  `;
+}
+
+/* ==========================================================================
+   INITIALIZE SVG SCENE
+   ========================================================================== */
+const svg = document.getElementById("svg");
+svg.innerHTML = `
+<defs>
+  <linearGradient id="bg-grad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#0c0d12"/>
+    <stop offset="100%" stop-color="#050608"/>
+  </linearGradient>
+  <radialGradient id="radial-glow" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#5865f2" stop-opacity="0.35"/>
+    <stop offset="70%" stop-color="#5865f2" stop-opacity="0.08"/>
+    <stop offset="100%" stop-color="#5865f2" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="card-grad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#1e202c"/>
+    <stop offset="100%" stop-color="#14151e"/>
+  </linearGradient>
+  <linearGradient id="strike-btn-grad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#6b77ff"/>
+    <stop offset="100%" stop-color="#4b56d6"/>
+  </linearGradient>
+  <linearGradient id="shine-grad" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+    <stop offset="50%" stop-color="#ffffff" stop-opacity="1"/>
+    <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+  </linearGradient>
+
+  <filter id="ae-shadow" x="-10%" y="-10%" width="120%" height="120%">
+    <feDropShadow dx="0" dy="24" stdDeviation="36" flood-color="#000000" flood-opacity="0.75"/>
+  </filter>
+  <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#000000" flood-opacity="0.5"/>
+  </filter>
+  <filter id="glow-box" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#5865f2" flood-opacity="0.6"/>
+  </filter>
+  <filter id="glow-dot" x="-100%" y="-100%" width="300%" height="300%">
+    <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#5865f2" flood-opacity="0.9"/>
+  </filter>
+  <filter id="glow-strike" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#5865f2" flood-opacity="0.55"/>
+  </filter>
+  <filter id="glow-lightning" x="-30%" y="-30%" width="160%" height="160%">
+    <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#00f0ff" flood-opacity="0.95"/>
+  </filter>
+</defs>
+
+<rect width="${SW}" height="${SH}" fill="url(#bg-grad)"/>
+<circle cx="${SW/2}" cy="500" r="600" fill="url(#radial-glow)"/>
+
+<!-- After Effects Workspace -->
+${aeWindow()}
+
+<!-- Outro Showcase Card -->
+${outroCard()}
+
+<!-- Mouse Pointer -->
+${cursorGraphic()}
+`;
+
+/* ==========================================================================
+   DOM HELPERS
+   ========================================================================== */
+const $ = (id) => document.getElementById(id);
+const set = (el, attr, val) => { const v = String(val); if (el.getAttribute(attr) !== v) el.setAttribute(attr, v); };
+const op = (id, v) => set($(id), "opacity", (+v).toFixed(4));
+const txt = (id, s) => { const el = $(id); if (el.textContent !== s) el.textContent = s; };
+
+/* ==========================================================================
+   PROCEDURAL LIGHTNING BOLT GENERATOR
+   ========================================================================== */
+function makeLightningPath(x1, y1, x2, y2, displace, roughness, seed) {
+  let points = [[x1, y1], [x2, y2]];
+  let curDisp = displace;
+  for (let iter = 0; iter < 5; iter++) {
+    let next = [];
+    for (let i = 0; i < points.length - 1; i++) {
+      let p1 = points[i], p2 = points[i + 1];
+      let mx = (p1[0] + p2[0]) / 2;
+      let my = (p1[1] + p2[1]) / 2;
+      let dx = p2[0] - p1[0], dy = p2[1] - p1[1];
+      let len = Math.hypot(dx, dy);
+      let nx = -dy / len, ny = dx / len;
+      let jitter = (Math.sin((iter * 17 + i * 29 + seed) * 1.3) * 2 - 1) * curDisp;
+      next.push(p1);
+      next.push([mx + nx * jitter, my + ny * jitter]);
+    }
+    next.push(points[points.length - 1]);
+    points = next;
+    curDisp *= roughness;
+  }
+  return "M " + points.map(p => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" L ");
+}
+
+/* ==========================================================================
+   PROCEDURAL TIMELINE & RENDER ENGINE (9:16 COORDINATES)
+   ========================================================================== */
+function render(t) {
+  const introIn = P(t, 0.0, 0.45, E.out);
+  const aeScale = lerp(0.96, 1.0, introIn);
+  set($("ae-host"), "transform", `translate(${AE_X} ${AE_Y}) scale(${aeScale}) translate(${((1 - aeScale) * -AE_W / 2).toFixed(1)} ${((1 - aeScale) * -AE_H / 2).toFixed(1)})`);
+  op("ae-host", t < 35.0 ? 1 : 1 - P(t, 35.0, 35.6));
+
+  // Playhead CTI motion across Timeline
+  const playheadX = lerp(300, 930, (t % 15.0) / 15.0);
+  set($("tl-cti"), "transform", `translate(${playheadX.toFixed(1)}, 0)`);
+
+  /* ------------------------------------------------------------------
+     CURSOR MOTION KEYFRAMES (Targeting Panels & Dialogs)
+     ------------------------------------------------------------------ */
+  let curX = 540, curY = 1200, curOp = 0, curClick = 0;
+
+  // Scene 0: Precomp (1:1) (0.5s - 2.2s) -> btn-precomp1: (192, 1025)
+  if (t >= 0.5 && t < 2.3) {
+    curOp = P(t, 0.6, 0.9) * (1 - P(t, 2.0, 2.3));
+    const u = P(t, 0.8, 1.3, E.inOut);
+    curX = lerp(540, 192, u);
+    curY = lerp(600, 1025, u);
+    curClick = t >= 1.3 && t < 1.6 ? 1 : 0;
+  }
+  // Scene 0: Precomp Group (2.3s - 3.7s) -> btn-precompG: (424, 1025)
+  else if (t >= 2.3 && t < 3.7) {
+    curOp = 1;
+    const u = P(t, 2.3, 2.8, E.inOut);
+    curX = lerp(192, 424, u);
+    curY = 1025;
+    curClick = t >= 2.8 && t < 3.1 ? 1 : 0;
+  }
+  // Scene 0: Null + Parent (3.7s - 5.2s) -> btn-nullparent: (424, 1077)
+  else if (t >= 3.7 && t < 5.2) {
+    curOp = 1 - P(t, 4.9, 5.2);
+    const u = P(t, 3.7, 4.1, E.inOut);
+    curX = 424;
+    curY = lerp(1025, 1077, u);
+    curClick = t >= 4.1 && t < 4.4 ? 1 : 0;
+  }
+  // Scene 1: Auto Box Button (5.2s - 6.2s) -> btn-autobox: (656, 1025)
+  else if (t >= 5.2 && t < 6.3) {
+    curOp = P(t, 5.2, 5.5);
+    const u = P(t, 5.3, 5.8, E.inOut);
+    curX = lerp(424, 656, u);
+    curY = lerp(1077, 1025, u);
+    curClick = t >= 5.8 && t < 6.1 ? 1 : 0;
+  }
+  // Scene 1: Auto Box Dialog Apply Button (6.3s - 9.8s) -> Dialog Apply: (723, 439)
+  else if (t >= 6.3 && t < 9.8) {
+    curOp = 1 - P(t, 9.4, 9.8);
+    const u = P(t, 6.3, 7.0, E.inOut);
+    curX = lerp(656, 723, u);
+    curY = lerp(1025, 439, u);
+    curClick = t >= 7.0 && t < 7.3 ? 1 : 0;
+  }
+  // Scene 2: Head it! (9.8s - 14.0s) -> Target btn-headit: (294, 1448)
+  else if (t >= 9.8 && t < 14.0) {
+    curOp = P(t, 9.8, 10.1) * (1 - P(t, 13.6, 14.0));
+    const u = P(t, 9.9, 10.7, E.inOut);
+    curX = lerp(723, 294, u);
+    curY = lerp(439, 1448, u);
+    curClick = t >= 10.7 && t < 11.0 ? 1 : 0;
+  }
+  // Scene 3: 9-Point Anchor (14.0s - 18.2s) -> Top-Left (634, 1336), Bottom-Right (774, 1400)
+  else if (t >= 14.0 && t < 18.2) {
+    curOp = P(t, 14.0, 14.3) * (1 - P(t, 17.8, 18.2));
+    if (t < 15.8) {
+      const u = P(t, 14.1, 14.9, E.inOut);
+      curX = lerp(294, 634, u);
+      curY = lerp(1448, 1336, u);
+      curClick = t >= 14.9 && t < 15.2 ? 1 : 0;
+    } else {
+      const u = P(t, 16.0, 16.8, E.inOut);
+      curX = lerp(634, 774, u);
+      curY = lerp(1336, 1400, u);
+      curClick = t >= 16.8 && t < 17.1 ? 1 : 0;
+    }
+  }
+  // Scene 4: ⇥ Stagger (18.2s - 23.0s) -> Target btn-stagger: (192, 1077)
+  else if (t >= 18.2 && t < 23.0) {
+    curOp = P(t, 18.2, 18.5) * (1 - P(t, 22.5, 23.0));
+    const u = P(t, 18.2, 18.9, E.inOut);
+    curX = lerp(774, 192, u);
+    curY = lerp(1400, 1077, u);
+    curClick = t >= 18.9 && t < 19.2 ? 1 : 0;
+  }
+  // Scene 5: ⊞ Grid Maker (23.0s - 27.5s) -> Target btn-gridmaker: (888, 1025) then Dialog Create: (540, 427)
+  else if (t >= 23.0 && t < 27.5) {
+    curOp = P(t, 23.0, 23.3) * (1 - P(t, 27.0, 27.5));
+    if (t < 24.3) {
+      const u = P(t, 23.0, 23.8, E.inOut);
+      curX = lerp(192, 888, u);
+      curY = lerp(1077, 1025, u);
+      curClick = t >= 23.8 && t < 24.1 ? 1 : 0;
+    } else {
+      const u = P(t, 24.3, 25.1, E.inOut);
+      curX = lerp(888, 540, u);
+      curY = lerp(1025, 427, u);
+      curClick = t >= 25.1 && t < 25.4 ? 1 : 0;
+    }
+  }
+  // Scene 6: Apply Fade (27.5s - 31.0s) -> Target btn-applyfade: (204, 1638)
+  else if (t >= 27.5 && t < 31.0) {
+    curOp = P(t, 27.5, 27.8) * (1 - P(t, 30.5, 31.0));
+    const u = P(t, 27.5, 28.3, E.inOut);
+    curX = lerp(540, 204, u);
+    curY = lerp(427, 1638, u);
+    curClick = t >= 28.3 && t < 28.6 ? 1 : 0;
+  }
+  // Scene 7: LazyStrike FX (31.0s - 35.0s) -> Target btn-lazystrike: (540, 1133) then Palette: (658, 415)
+  else if (t >= 31.0 && t < 35.0) {
+    curOp = P(t, 31.0, 31.3) * (1 - P(t, 34.5, 35.0));
+    if (t < 32.2) {
+      const u = P(t, 31.0, 31.6, E.inOut);
+      curX = lerp(204, 540, u);
+      curY = lerp(1638, 1133, u);
+      curClick = t >= 31.6 && t < 31.9 ? 1 : 0;
+    } else {
+      const u = P(t, 32.2, 32.9, E.inOut);
+      curX = lerp(540, 658, u);
+      curY = lerp(1133, 415, u);
+      curClick = t >= 32.9 && t < 33.2 ? 1 : 0;
+    }
+  }
+
+  set($("cursor"), "transform", `translate(${curX.toFixed(1)} ${curY.toFixed(1)}) scale(${curClick ? 0.88 : 1.0})`);
+  op("cursor", curOp);
+
+  /* ------------------------------------------------------------------
+     SCENE 0: SMART PRECOMP (1:1 & GROUP) & NULL + PARENT (0.5s - 5.2s)
+     ------------------------------------------------------------------ */
+  const s0Vis = P(t, 0.4, 0.6) * (1 - P(t, 5.0, 5.3));
+  op("scene-precomp-null-group", s0Vis);
+  if (t >= 0.4 && t < 5.3) {
+    op("btn-precomp1-press", t >= 1.3 && t < 1.6 ? 0.35 : 0);
+    op("btn-precompG-press", t >= 2.8 && t < 3.1 ? 0.35 : 0);
+    op("btn-nullparent-press", t >= 4.1 && t < 4.4 ? 0.4 : 0);
+
+    // Timeline layer 1 and 2 naming
+    txt("tl-name1", t < 1.5 ? "Badge Layer" : "Badge_01_PC");
+    txt("tl-name2", t < 1.5 ? "Card Layer" : "Card_02_PC");
+
+    // 1:1 Crop tags appear after 1.5s
+    const cropPop = P(t, 1.4, 1.8, E.back);
+    op("pc-tag1", cropPop);
+    op("pc-tag-text1", cropPop);
+    op("pc-tag2", cropPop);
+    op("pc-tag-text2", cropPop);
+
+    // Group bounding box at 2.9s
+    const grpPop = P(t, 2.9, 3.4, E.back);
+    op("pc-group-box", grpPop * (1 - P(t, 5.0, 5.3)));
+
+    // Null + Parent controller at 4.2s
+    const nullPop = P(t, 4.2, 4.6, E.back);
+    op("null-controller", nullPop);
+    op("tl-null-layer", nullPop);
+
+    // Null rotation drives elements
+    const nullRot = Math.sin((t - 4.3) * 5) * 18 * P(t, 4.4, 4.9);
+    set($("null-controller"), "transform", `translate(465 217) rotate(${nullRot.toFixed(2)})`);
+    set($("pc-item1"), "transform", `translate(300 217) rotate(${nullRot.toFixed(2)})`);
+    set($("pc-item2"), "transform", `translate(630 217) rotate(${nullRot.toFixed(2)})`);
+
+    op("scene-toast", P(t, 0.8, 1.2) * (1 - P(t, 4.9, 5.2)));
+    txt("scene-toast-text", t < 2.5 ? "⊞ Smart Precomp (1:1) — Individual Layer Bounds Auto-Crop" : (t < 3.8 ? "▣ Smart Precomp (Group) — Multi-Layer Grouping" : "◎ Null + Parent — 1-Click Center Rigging & Hierarchy"));
+  } else {
+    op("tl-null-layer", 0);
+    txt("tl-name1", "Auto Text Box");
+    txt("tl-name2", "Spline Path + Head");
+  }
+
+  /* ------------------------------------------------------------------
+     SCENE 1: AUTO BOX & LAZYTYPE (5.2s - 9.8s) - Centered Box & Text!
+     ------------------------------------------------------------------ */
+  const s1Vis = P(t, 5.2, 5.5) * (1 - P(t, 9.6, 9.9));
+  op("scene1-group", s1Vis);
+  if (t >= 5.2 && t < 9.9) {
+    op("btn-autobox-press", t >= 5.8 && t < 6.1 ? 0.35 : 0);
+
+    // Auto Box Dialog Popup (5.9s - 7.3s)
+    const dlgOpen = P(t, 5.9, 6.3, E.back);
+    const dlgClose = P(t, 7.2, 7.5, E.in);
+    const dlgVis = dlgOpen * (1 - dlgClose);
+    const dlgScale = lerp(0.7, 1.0, dlgOpen) * lerp(1.0, 0.8, dlgClose);
+    op("autobox-dialog", dlgVis);
+    set($("autobox-dialog"), "transform", `translate(465, 200) scale(${dlgScale.toFixed(3)})`);
+    op("btn-autobox-apply-press", t >= 7.0 && t < 7.3 ? 0.45 : 0);
+
+    // Box reveals FIRST at 7.25s, then text types inside from 7.5s
+    if (t >= 7.2) {
+      const boxReveal = P(t, 7.25, 7.6, E.back);
+      const fullText = "MOTION DESIGN PRO";
+      const typeProg = clamp(P(t, 7.5, 8.8, E.linear), 0, 1);
+      const charCount = Math.floor(typeProg * fullText.length);
+      const textEl = $("autobox-text");
+      const curStr = fullText.substring(0, charCount);
+      txt("autobox-text", curStr);
+
+      let textWidth = 0;
+      if (charCount > 0 && textEl.getComputedTextLength) {
+        try { textWidth = textEl.getComputedTextLength(); } catch(e) {}
+      }
+      if (!textWidth && charCount > 0) {
+        const widths = { 'M': 42, 'O': 36, 'T': 30, 'I': 14, 'N': 36, ' ': 18, 'D': 36, 'E': 28, 'S': 30, 'G': 38, 'P': 30, 'R': 32 };
+        for (let i = 0; i < charCount; i++) textWidth += (widths[curStr[i]] || 30) + 4;
+      }
+
+      // Box starts at base width (180px) and smoothly expands to perfectly frame text
+      const targetBoxW = Math.max(180, textWidth + 76);
+      const curBoxW = targetBoxW * boxReveal;
+      const boxH = 96;
+
+      set($("autobox-rect"), "x", (465 - curBoxW / 2).toFixed(1));
+      set($("autobox-rect"), "y", (217 - boxH / 2).toFixed(1));
+      set($("autobox-rect"), "width", Math.max(0, curBoxW).toFixed(1));
+      set($("autobox-rect"), "height", boxH);
+      op("autobox-rect-grp", boxReveal);
+
+      // Caret follows right edge of centered text
+      set($("autobox-caret"), "x", (465 + textWidth / 2 + 8).toFixed(1));
+      set($("autobox-caret"), "y", (217 - 24).toFixed(1));
+      op("autobox-caret", (Math.sin(t * 12) > 0 && boxReveal > 0.4) ? 1 : 0);
+    } else {
+      txt("autobox-text", "");
+      op("autobox-rect-grp", 0);
+      op("autobox-caret", 0);
+    }
+
+    op("scene-toast", P(t, 7.3, 7.7) * (1 - P(t, 9.5, 9.8)));
+    txt("scene-toast-text", "⚡ Dynamic Auto Text Box — Zero Squish Geometry");
+  } else {
+    op("autobox-dialog", 0);
+  }
+
+  /* ------------------------------------------------------------------
+     SCENE 2: HEAD TO LINE & PATH FOLLOWER (9.8s - 14.0s)
+     Path reveals first, then clicking Head it! attaches the triangle
+     ------------------------------------------------------------------ */
+  const s2Vis = P(t, 9.8, 10.1) * (1 - P(t, 13.8, 14.1));
+  op("scene2-group", s2Vis);
+  if (t >= 9.8 && t < 14.1) {
+    const spline = $("spline-path");
+    const totalLen = spline.getTotalLength ? spline.getTotalLength() : 900;
+    const INITIAL_REVEAL = 0.18; // First partial segment up to click (matches user screenshot)
+
+    let pathProg = 0;
+    let headAttach = 0;
+    let curProg = 0;
+
+    if (t < 9.9) {
+      pathProg = 0;
+      headAttach = 0;
+      curProg = 0;
+    } else if (t < 10.7) {
+      // 1. Path reveals initial ~18% segment on canvas while mouse approaches Head it!
+      pathProg = P(t, 9.9, 10.6, E.out) * INITIAL_REVEAL;
+      headAttach = 0;
+      curProg = pathProg;
+    } else if (t < 11.0) {
+      // 2. Mouse clicks Head it! (10.7s - 11.0s) -> Triangle reveals & pops onto path tip
+      pathProg = INITIAL_REVEAL;
+      headAttach = P(t, 10.7, 11.0, E.back);
+      curProg = INITIAL_REVEAL;
+    } else {
+      // 3. 11.0s to 13.5s: Path continues drawing to 100% with triangle leading at the head!
+      headAttach = 1;
+      const flyProg = P(t, 11.0, 13.5, E.inOut);
+      curProg = INITIAL_REVEAL + (1 - INITIAL_REVEAL) * flyProg;
+      pathProg = curProg;
+    }
+
+    // Set path dashoffset
+    set(spline, "stroke-dasharray", `${totalLen}`);
+    set(spline, "stroke-dashoffset", `${(1 - pathProg) * totalLen}`);
+    set($("spline-path-glow"), "stroke-dasharray", `${totalLen}`);
+    set($("spline-path-glow"), "stroke-dashoffset", `${(1 - pathProg) * totalLen}`);
+
+    // Head it button click highlight
+    op("btn-headit-press", t >= 10.7 && t < 11.0 ? 0.35 : 0);
+
+    // Triangle positioning and auto-orientation
+    if (headAttach > 0.001) {
+      const curLen = curProg * totalLen;
+      const pt = spline.getPointAtLength ? spline.getPointAtLength(Math.max(1, curLen)) : { x: 90 + curProg * 760, y: 340 - Math.sin(curProg * Math.PI) * 220 };
+      const ptBefore = spline.getPointAtLength ? spline.getPointAtLength(Math.max(0, curLen - 4)) : { x: pt.x - 4, y: pt.y };
+      const angle = Math.atan2(pt.y - ptBefore.y, pt.x - ptBefore.x) * (180 / Math.PI);
+
+      op("arrow-head", headAttach);
+      op("arrow-trail", headAttach);
+      set($("arrow-head"), "transform", `translate(${pt.x.toFixed(1)} ${pt.y.toFixed(1)}) rotate(${angle.toFixed(1)}) scale(${lerp(0, 1.3, headAttach).toFixed(3)})`);
+      set($("arrow-trail"), "cx", pt.x.toFixed(1));
+      set($("arrow-trail"), "cy", pt.y.toFixed(1));
+    } else {
+      op("arrow-head", 0);
+      op("arrow-trail", 0);
+    }
+
+    op("scene-toast", P(t, 10.0, 10.4) * (1 - P(t, 13.6, 13.9)));
+    txt("scene-toast-text", t < 10.7 ? "🏹 Head to Line — Draw Spline Path on Canvas" : "🏹 Head to Line — Auto-Orienting Dynamic Path Follower");
+  }
+
+  /* ------------------------------------------------------------------
+     SCENE 3: 9-POINT VISUAL ANCHOR (14.0s - 18.2s)
+     ------------------------------------------------------------------ */
+  const s3Vis = P(t, 14.0, 14.3) * (1 - P(t, 17.9, 18.2));
+  op("scene3-group", s3Vis);
+  if (t >= 14.0 && t < 18.2) {
+    const card = $("anchor-card");
+    const reticle = $("anchor-reticle");
+
+    let ancX = 0, ancY = 0, rot = 0;
+    if (t >= 15.0 && t < 16.8) {
+      ancX = -200;
+      ancY = -115;
+      rot = Math.sin((t - 15.0) * 6) * 14 * (1 - P(t, 15.6, 16.5));
+    } else if (t >= 16.8) {
+      ancX = 200;
+      ancY = 115;
+      rot = -Math.sin((t - 16.9) * 6) * 14 * (1 - P(t, 17.5, 18.0));
+    }
+
+    set(reticle, "transform", `translate(${ancX} ${ancY})`);
+    set(card, "transform", `translate(${465 + ancX} ${215 + ancY}) rotate(${rot.toFixed(2)}) translate(${-ancX} ${-ancY})`);
+
+    for (let k = 0; k < 9; k++) {
+      const isTarget = (t < 15.0 && k === 4) || (t >= 15.0 && t < 16.8 && k === 0) || (t >= 16.8 && k === 8);
+      $(`agrid-${k}`).children[0].setAttribute("fill", isTarget ? "#252945" : "#1a1b22");
+      $(`agrid-${k}`).children[0].setAttribute("stroke", isTarget ? "#5865f2" : "#2b2d3c");
+      $(`agrid-${k}`).children[1].setAttribute("fill", isTarget ? "#8b95f8" : "#6f7587");
+    }
+
+    op("scene-toast", P(t, 15.0, 15.3) * (1 - P(t, 17.8, 18.1)));
+    txt("scene-toast-text", "🎯 9-Point Anchor Alignment — Zero Visual Shift Math");
+  }
+
+  /* ------------------------------------------------------------------
+     SCENE 4: ⇥ STAGGER (18.2s - 23.0s)
+     5-Frame Cascade in Comp AND the After Effects Timeline Waterfall!
+     ------------------------------------------------------------------ */
+  const sStagVis = P(t, 18.2, 18.5) * (1 - P(t, 22.7, 23.0));
+  op("scene-stagger-group", sStagVis);
+
+  // Switch Timeline View to Stagger Cascade Stack
+  if (t >= 18.2 && t < 22.8) {
+    op("tl-default-layers", 1 - P(t, 18.2, 18.5));
+    op("tl-stagger-stack", P(t, 18.3, 18.6) * (1 - P(t, 22.5, 22.8)));
+  } else {
+    op("tl-default-layers", 1);
+    op("tl-stagger-stack", 0);
+  }
+
+  if (t >= 18.2 && t < 23.0) {
+    op("btn-stagger-press", t >= 18.9 && t < 19.2 ? 0.35 : 0);
+
+    // 1. Comp Cards pop in sequentially
+    const c0 = P(t, 18.9, 19.3, E.back);
+    const c1 = P(t, 19.1, 19.5, E.back);
+    const c2 = P(t, 19.3, 19.7, E.back);
+    const c3 = P(t, 19.5, 19.9, E.back);
+    const c4 = P(t, 19.7, 20.1, E.back);
+
+    [c0, c1, c2, c3, c4].forEach((c, idx) => {
+      set($(`stag-card-${idx}`), "transform", `translate(${lerp(50, 130, c).toFixed(1)}, ${18 + idx * 70}) scale(${c.toFixed(3)})`);
+      op(`stag-card-${idx}`, c);
+    });
+
+    // 2. TIMELINE WATERFALL CASCADE: 5 layer bars & diamond keyframes slide!
+    const stagSlide = P(t, 19.0, 20.0, E.out);
+    for (let k = 0; k < 5; k++) {
+      const offsetX = 300 + (k * 48 * stagSlide);
+      set($(`tl-stag-track-${k}`), "transform", `translate(${offsetX.toFixed(1)}, 11)`);
+    }
+
+    op("scene-toast", P(t, 19.0, 19.3) * (1 - P(t, 22.5, 22.8)));
+    txt("scene-toast-text", "⇥ Stagger — Cascade Layers & Keyframes with 5-Frame Offsets");
+  } else {
+    for (let k = 0; k < 5; k++) {
+      set($(`tl-stag-track-${k}`), "transform", "translate(300, 11)");
+    }
+  }
+
+  /* ------------------------------------------------------------------
+     SCENE 5: ⊞ GRID MAKER (23.0s - 27.5s)
+     ------------------------------------------------------------------ */
+  if (t >= 23.0 && t < 27.5) {
+    op("btn-gridmaker-press", t >= 23.8 && t < 24.1 ? 0.35 : 0);
+
+    const dlgOpen = P(t, 23.9, 24.3, E.back);
+    const dlgClose = P(t, 25.2, 25.5, E.in);
+    const dlgVis = dlgOpen * (1 - dlgClose);
+    const dlgScale = lerp(0.7, 1.0, dlgOpen) * lerp(1.0, 0.8, dlgClose);
+    op("grid-dialog", dlgVis);
+    set($("grid-dialog"), "transform", `translate(465, 195) scale(${dlgScale.toFixed(3)})`);
+
+    op("btn-dlg-create-press", t >= 25.1 && t < 25.4 ? 0.45 : 0);
+
+    const gridPop = P(t, 25.3, 26.0, E.back) * (1 - P(t, 27.2, 27.5));
+    op("scene-grid-group", gridPop);
+    set($("scene-grid-group"), "transform", `translate(465, 215) scale(${Math.max(0, gridPop).toFixed(3)})`);
+
+    for (let i = 0; i < 9; i++) {
+      const cellPop = P(t, 25.35 + i * 0.04, 25.75 + i * 0.04, E.out);
+      op(`gcell-${i}`, cellPop);
+    }
+
+    op("scene-toast", P(t, 24.0, 24.3) * (1 - P(t, 27.1, 27.4)));
+    txt("scene-toast-text", t < 25.2 ? "⊞ Grid Maker — Selecting 3×3 Grid with Rule of Thirds" : "⊞ Grid Maker — Smart 1-Click Layouts, Gutters & Margins");
+  } else {
+    op("grid-dialog", 0);
+    op("scene-grid-group", 0);
+  }
+
+  /* ------------------------------------------------------------------
+     SCENE 6: FADE ANIMATOR PRO (27.5s - 31.0s)
+     ------------------------------------------------------------------ */
+  const s4Vis = P(t, 27.5, 27.8) * (1 - P(t, 30.8, 31.1));
+  op("scene4-group", s4Vis);
+  if (t >= 27.5 && t < 31.1) {
+    op("btn-applyfade-press", t >= 28.3 && t < 28.6 ? 0.35 : 0);
+
+    const b1 = P(t, 28.4, 29.3, E.bounce);
+    const b2 = P(t, 28.55, 29.45, E.bounce);
+    const b3 = P(t, 28.7, 29.6, E.bounce);
+
+    set($("fade-card1"), "transform", `translate(180 ${lerp(320, 215, b1).toFixed(1)}) scale(${b1.toFixed(3)})`);
+    op("fade-card1", b1);
+    set($("fade-card2"), "transform", `translate(465 ${lerp(320, 215, b2).toFixed(1)}) scale(${b2.toFixed(3)})`);
+    op("fade-card2", b2);
+    set($("fade-card3"), "transform", `translate(750 ${lerp(320, 215, b3).toFixed(1)}) scale(${b3.toFixed(3)})`);
+    op("fade-card3", b3);
+
+    op("scene-toast", P(t, 28.4, 28.7) * (1 - P(t, 30.6, 30.9)));
+    txt("scene-toast-text", "🎨 Fade Animator Pro — 7 Mathematical Easing Curves");
+  }
+
+  /* ------------------------------------------------------------------
+     SCENE 7: LAZYSTRIKE FX (31.0s - 35.0s) - Dedicated Palette Popup!
+     ------------------------------------------------------------------ */
+  const s5Vis = P(t, 31.0, 31.3) * (1 - P(t, 34.8, 35.1));
+  op("scene5-group", s5Vis);
+  if (t >= 31.0 && t < 35.1) {
+    op("btn-lazystrike-press", t >= 31.6 && t < 31.9 ? 0.45 : 0);
+
+    // Palette window opens at 31.7s, closes at 33.3s
+    const palOpen = P(t, 31.7, 32.1, E.back);
+    const palClose = P(t, 33.2, 33.5, E.in);
+    const palVis = palOpen * (1 - palClose);
+    const palScale = lerp(0.7, 1.0, palOpen) * lerp(1.0, 0.8, palClose);
+    op("lazystrike-dialog", palVis);
+    set($("lazystrike-dialog"), "transform", `translate(465, 200) scale(${palScale.toFixed(3)})`);
+
+    op("btn-strike-gen-press", t >= 32.9 && t < 33.2 ? 0.45 : 0);
+
+    // Lightning strike fires at 33.2s
+    const strikeT = t - 33.2;
+    if (strikeT >= 0 && strikeT < 1.6) {
+      const pD = makeLightningPath(110, 20, 820, 390, 120, 0.52, Math.floor(strikeT * 18));
+      set($("lightning-bolt"), "d", pD);
+      set($("lightning-glow"), "d", pD);
+
+      const flash = Math.exp(-strikeT * 4.5) * (0.85 + 0.15 * Math.sin(strikeT * 60));
+      op("sky-flash", Math.max(0, flash));
+      op("lightning-bolt", flash > 0.05 ? 1 : 0);
+      op("lightning-glow", flash > 0.05 ? 0.8 : 0);
+    } else {
+      op("sky-flash", 0);
+      op("lightning-bolt", 0);
+      op("lightning-glow", 0);
+    }
+
+    op("scene-toast", P(t, 32.8, 33.1) * (1 - P(t, 34.7, 35.0)));
+    txt("scene-toast-text", t < 33.2 ? "⚡ LazyStrike FX — Configurable Style, Colors, Flickers & Audio Sync" : "⚡ LazyStrike FX — Procedural High-Voltage Lightning & Sky Flash");
+  } else {
+    op("lazystrike-dialog", 0);
+  }
+
+  /* ------------------------------------------------------------------
+     SCENE 8: OUTRO CARD & BRANDING (35.0s - 38.0s)
+     ------------------------------------------------------------------ */
+  const outroVis = P(t, 35.0, 35.7, E.out);
+  op("outro-view", outroVis);
+  if (t >= 35.0) {
+    const cardScale = lerp(0.88, 1.0, outroVis);
+    set($("outro-badge"), "transform", `scale(${cardScale.toFixed(3)})`);
+
+    const shineProg = P(t, 36.0, 37.4, E.inOut);
+    set($("outro-shine"), "transform", `translate(${lerp(-360, 360, shineProg).toFixed(1)}, 0)`);
+    op("outro-shine", Math.sin(Math.PI * shineProg));
+  }
+}
+
+/* ==========================================================================
+   INTERACTIVE PLAYER & RESIZE HANDLERS
+   ========================================================================== */
+const stage = $("stage"), scrub = $("scrub"), playBtn = $("play"), timeLabel = $("time");
+const query = new URLSearchParams(location.search);
+if (query.has("export")) document.body.classList.add("export");
+
+function fit() {
+  const barHeight = document.body.classList.contains("export") ? 0 : 56;
+  const s = Math.min(innerWidth / SW, (innerHeight - barHeight) / SH);
+  stage.style.transform = `translate(${(innerWidth - SW * s) / 2}px, ${(innerHeight - barHeight - SH * s) / 2}px) scale(${s})`;
+}
+window.addEventListener("resize", fit);
+fit();
+
+let playing = !query.has("t");
+let tNow = query.has("t") ? +query.get("t") : 0;
+let origin = performance.now() - tNow * 1000;
+
+function show(t) {
+  tNow = t;
+  render(t);
+  scrub.value = t;
+  timeLabel.textContent = `${t.toFixed(2)} / ${DUR.toFixed(2)} s`;
+}
+
+function setPlaying(on) {
+  playing = on;
+  playBtn.textContent = on ? "Pause" : "Play";
+  if (on) origin = performance.now() - tNow * 1000;
+}
+
+playBtn.onclick = () => setPlaying(!playing);
+scrub.oninput = () => { setPlaying(false); show(+scrub.value); };
+
+window.addEventListener("keydown", (e) => {
+  if (e.code === "Space") { e.preventDefault(); setPlaying(!playing); }
+  if (e.code === "ArrowRight" || e.code === "ArrowLeft") {
+    e.preventDefault();
+    setPlaying(false);
+    show(clamp(tNow + (e.code === "ArrowRight" ? 1 : -1) / 60, 0, DUR));
+  }
+});
+
+function tick(now) {
+  if (playing) {
+    show(((now - origin) / 1000) % DUR);
+  }
+  requestAnimationFrame(tick);
+}
+
+show(tNow);
+setPlaying(playing);
+requestAnimationFrame(tick);
+
+// Headless Export Hook
+window.renderAt = (t) => { setPlaying(false); show(t); };
+</script>
+</body>
+</html>

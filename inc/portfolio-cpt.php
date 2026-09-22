@@ -1829,6 +1829,7 @@ function rs_sync_new_portfolio_projects() {
 	}
 
 	rs_seed_portfolio_demo( 'lazylord', 'lazylord-demo.html', 'lazylord-demo-vertical.html' );
+	rs_seed_portfolio_demo( 'lazymotiontoolkit', 'lazymotiontoolkit-demo.html', 'lazymotiontoolkit-demo-vertical.html' );
 
 	if ( $switched ) {
 		restore_current_blog();

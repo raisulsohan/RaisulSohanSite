@@ -2362,7 +2362,7 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 	var titleEl  = root.querySelector('.rs-demo__title');
 	var closeBtn = root.querySelector('.rs-demo__close');
 	var HEAD     = 49; /* this player's title row */
-	var BAR      = 52; /* the demo animation's own play bar */
+	var bar      = 52; /* the demo animation's own play bar, measured on load */
 	var frame    = null;
 	var lld      = null; /* the interactive demo's wrap, when that is open */
 	var loading  = null;
@@ -2394,10 +2394,10 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 
 		var ratio = tall ? 1080 / 1920 : 1920 / 1080;
 		var maxW  = Math.min(window.innerWidth - 24, tall ? 560 : 1280);
-		var w     = Math.max(160, Math.min(maxW, (maxH - BAR) * ratio));
+		var w     = Math.max(160, Math.min(maxW, (maxH - bar) * ratio));
 
 		frame.style.width  = Math.floor(w) + 'px';
-		frame.style.height = Math.floor(w / ratio + BAR) + 'px';
+		frame.style.height = Math.floor(w / ratio + bar) + 'px';
 	}
 
 	/* Turning a phone sideways swaps a demo animation to its other cut. */
@@ -2459,6 +2459,7 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 
 		wideSrc = src;
 		tallSrc = srcTall || '';
+		bar     = 52;
 		tall    = Boolean(tallSrc) && portrait();
 		frame   = document.createElement('iframe');
 
@@ -2467,6 +2468,12 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 		frame.setAttribute('allow', 'fullscreen');
 		frame.addEventListener('load', function () {
 			try {
+				/* Every demo has its own play bar; measure it rather than guess. */
+				var own = frame.contentDocument.getElementById('bar');
+				if (own && own.offsetHeight) {
+					bar = own.offsetHeight;
+					fit();
+				}
 				frame.contentWindow.addEventListener('keydown', onFrameKey);
 				frame.contentWindow.focus();
 			} catch (err) {
