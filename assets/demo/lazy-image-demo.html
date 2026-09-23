@@ -1,0 +1,1062 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lazy-Image — Demo Animation</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #07070b; overflow: hidden; }
+  body, svg text { font-family: Inter, "Segoe UI", "Hind Siliguri", "Nirmala UI", system-ui, -apple-system, sans-serif; }
+  #stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+  #bar { position: fixed; left: 0; right: 0; bottom: 0; height: 52px; box-sizing: border-box; display: flex; gap: 14px; align-items: center;
+         padding: 0 20px; background: #0d0e12; border-top: 1px solid #1e2028; color: #cfcfe0; font: 13px Inter, "Segoe UI", sans-serif; user-select: none; z-index: 99; }
+  #bar button { font: inherit; font-weight: 600; color: #fff; background: linear-gradient(135deg, #1a73e8, #00bcd4); border: 0; border-radius: 6px; padding: 7px 16px; cursor: pointer; min-width: 80px; transition: opacity 0.15s; }
+  #bar button:hover { opacity: 0.9; }
+  #scrub { flex: 1; accent-color: #00bcd4; cursor: pointer; }
+  #time { font-variant-numeric: tabular-nums; min-width: 105px; text-align: right; color: #8e95ab; font-size: 13px; }
+  #hint { color: #5a6075; font-size: 11px; margin-left: 8px; }
+  body.export #bar { display: none; }
+</style>
+</head>
+<body>
+<div id="stage"><svg id="svg" xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080"></svg></div>
+<div id="bar">
+  <button id="play">Pause</button>
+  <input id="scrub" type="range" min="0" max="35.0" step="0.001" value="0">
+  <span id="time">0.00 / 35.00 s</span>
+  <span id="hint">Space: play/pause · ← → step frames</span>
+</div>
+<script>
+"use strict";
+
+/* ==========================================================================
+   CONSTANTS & MATH HELPERS
+   ========================================================================== */
+const DUR = 35.0;
+const SW = 1920, SH = 1080;
+
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, u) => a + (b - a) * u;
+
+const E = {
+  linear: (u) => u,
+  out: (u) => 1 - Math.pow(1 - u, 3),
+  in: (u) => u * u * u,
+  inOut: (u) => (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2),
+  back: (u) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(u - 1, 3) + c1 * Math.pow(u - 1, 2); },
+};
+
+const P = (t, a, b, e = E.inOut) => e(clamp((t - a) / (b - a), 0, 1));
+
+const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/* ==========================================================================
+   SVG ELEMENT BUILDERS
+   ========================================================================== */
+const T = (x, y, s, fill, size, weight = 400, anchor = "start", extra = "") =>
+  `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}" font-weight="${weight}" text-anchor="${anchor}" ${extra}>${esc(s)}</text>`;
+
+function badge(kind, x, y, s) {
+  const spec = kind === "Pr" ? { bg: "#2a0a3f", fg: "#e97fff" } : { bg: "#00005b", fg: "#9999ff" };
+  return `<rect x="${x}" y="${y}" width="${s}" height="${s}" rx="${s * 0.22}" fill="${spec.bg}"/>` +
+    `<rect x="${x + s * 0.08}" y="${y + s * 0.08}" width="${s * 0.84}" height="${s * 0.84}" rx="${s * 0.15}" fill="none" stroke="${spec.fg}" stroke-width="${s * 0.05}"/>` +
+    `<text x="${x + s / 2}" y="${y + s * 0.66}" text-anchor="middle" fill="${spec.fg}" font-size="${s * 0.44}" font-weight="700">${kind}</text>`;
+}
+
+/* ==========================================================================
+   LAYOUT
+   ========================================================================== */
+const AE_W = 1800, AE_H = 980;
+const AE_X = 60, AE_Y = 30;
+
+const COMP_X = 24, COMP_Y = 56, COMP_W = 1096, COMP_H = 620;
+const CAN_X = 98, CAN_Y = 60, CAN_W = 900, CAN_H = 506;
+const TIME_X = 24, TIME_Y = 690, TIME_W = 1096, TIME_H = 265;
+const PANEL_X = 1136, PANEL_Y = 56, PANEL_W = 640, PANEL_H = 900;
+
+// Absolute origins
+const PX = AE_X + PANEL_X, PY = AE_Y + PANEL_Y;     // panel
+const OX = AE_X + COMP_X, OY = AE_Y + COMP_Y;       // comp viewer (overlay windows live here)
+const VC = { x: 548, y: 300 };                       // centre of the viewer, comp-local
+
+// Aspect-ratio pills (panel-local)
+const PILLS = [
+  { label: "1:1", x: 18, w: 38 }, { label: "16:9", x: 62, w: 46 }, { label: "9:16", x: 114, w: 46 },
+  { label: "4:5", x: 166, w: 42 }, { label: "Custom", x: 214, w: 52 },
+];
+const PILL_Y = 448, PILL_H = 26;
+
+// Cursor targets (absolute)
+const AT = {
+  login: [PX + 421, PY + 32],
+  cont: [OX + VC.x, OY + VC.y + 92],
+  ta: [PX + 58, PY + 136],
+  gen: [PX + 143, PY + 812],
+  p169: [PX + PILLS[1].x + PILLS[1].w / 2, PY + PILL_Y + PILL_H / 2],
+  p916: [PX + PILLS[2].x + PILLS[2].w / 2, PY + PILL_Y + PILL_H / 2],
+};
+
+const PROMPT1 = "A single red apple on a white table, studio lighting";
+const PROMPT2 = "সূর্যাস্তে নদীর ধারে একটি ছোট নৌকা, সোনালি আলো";
+const PROMPT3 = "Neon city skyline at night, rain, cinematic";
+const PLACEHOLDER = "Describe the image you want to generate (Any language supported: English, বাংলা, etc.)...";
+
+const FILE_APPLE = "lazy_image_chatgpt_1758585123456.png";
+const FILE_BOAT = "lazy_image_chatgpt_1758585140912.png";
+const FILE_CITY = "lazy_image_chatgpt_1758585161377.png";
+
+/* ==========================================================================
+   PROCEDURAL "GENERATED" IMAGES
+   ========================================================================== */
+function imgApple(p) {
+  return `
+<defs>
+  <linearGradient id="${p}-wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7f7f9"/><stop offset="1" stop-color="#e2e2e7"/></linearGradient>
+  <linearGradient id="${p}-table" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fcfcfd"/><stop offset="1" stop-color="#d9d9df"/></linearGradient>
+  <radialGradient id="${p}-body" cx="0.36" cy="0.30" r="0.78"><stop offset="0" stop-color="#ff7364"/><stop offset="0.42" stop-color="#e51f30"/><stop offset="1" stop-color="#7f0a1c"/></radialGradient>
+  <linearGradient id="${p}-leaf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fe36a"/><stop offset="1" stop-color="#2f8f3c"/></linearGradient>
+  <filter id="${p}-blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<rect width="400" height="400" fill="url(#${p}-wall)"/>
+<rect y="262" width="400" height="138" fill="url(#${p}-table)"/>
+<ellipse cx="206" cy="324" rx="120" ry="20" fill="#000" opacity="0.22" filter="url(#${p}-blur)"/>
+<path d="M200 118 C 150 96, 80 118, 78 200 C 76 270, 130 330, 178 328 C 190 327, 196 322, 200 322 C 204 322, 210 327, 222 328 C 270 330, 324 270, 322 200 C 320 118, 250 96, 200 118 Z" fill="url(#${p}-body)"/>
+<ellipse cx="200" cy="123" rx="34" ry="12" fill="#7a0a1a" opacity="0.45"/>
+<path d="M200 124 C 198 108, 202 92, 214 78" fill="none" stroke="#5a3a1a" stroke-width="7" stroke-linecap="round"/>
+<path d="M212 92 C 232 70, 268 72, 282 86 C 262 104, 230 106, 212 92 Z" fill="url(#${p}-leaf)"/>
+<path d="M214 91 C 236 86, 258 84, 278 87" fill="none" stroke="#1f6b2c" stroke-width="1.5" opacity="0.6"/>
+<ellipse cx="150" cy="180" rx="26" ry="44" fill="#fff" opacity="0.32" transform="rotate(-18 150 180)"/>
+<ellipse cx="128" cy="240" rx="10" ry="22" fill="#fff" opacity="0.14" transform="rotate(-10 128 240)"/>
+`;
+}
+
+function imgBoat(p) {
+  const glints = Array.from({ length: 10 }, (_, i) =>
+    `<rect x="${180 - (40 + i * 9)}" y="${420 + i * 18}" width="${(40 + i * 9) * 2}" height="4" rx="2" fill="#ffe49a" opacity="${(0.55 - i * 0.045).toFixed(2)}"/>`).join("");
+  const ripples = Array.from({ length: 6 }, (_, i) =>
+    `<path d="M${20 + i * 60} ${470 + i * 26} q 20 -6 40 0" fill="none" stroke="#ffd0a0" stroke-width="1.5" opacity="0.35"/>`).join("");
+  const trees = [30, 55, 75, 215, 240, 300, 330].map(x => `<path d="M${x - 8} 400 L${x} 372 L${x + 8} 400 Z" fill="#1c0f31"/>`).join("");
+  const birds = [[60, 200], [92, 186], [120, 214], [280, 160], [300, 176]].map(([x, y]) =>
+    `<path d="M${x - 10} ${y} q 5 -7 10 0 q 5 -7 10 0" fill="none" stroke="#2a1640" stroke-width="2.2" stroke-linecap="round"/>`).join("");
+  return `
+<defs>
+  <linearGradient id="${p}-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c1240"/><stop offset="0.35" stop-color="#6a2f7e"/><stop offset="0.62" stop-color="#ff6e5a"/><stop offset="0.82" stop-color="#ffb347"/><stop offset="1" stop-color="#ffd98a"/></linearGradient>
+  <linearGradient id="${p}-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffae5e"/><stop offset="0.3" stop-color="#d9634f"/><stop offset="1" stop-color="#2a1b4e"/></linearGradient>
+  <radialGradient id="${p}-sunglow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#fff2b0" stop-opacity="0.9"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="360" height="640" fill="url(#${p}-sky)"/>
+<circle cx="180" cy="392" r="150" fill="url(#${p}-sunglow)"/>
+<circle cx="180" cy="392" r="62" fill="#ffe89a"/>
+<path d="M0 404 L40 398 L70 386 L90 396 L130 392 L160 400 L200 396 L230 386 L250 392 L290 388 L320 396 L360 392 L360 412 L0 412 Z" fill="#26143f"/>
+${trees}
+<rect y="410" width="360" height="230" fill="url(#${p}-water)"/>
+${glints}
+${ripples}
+<path d="M96 520 Q180 542 264 520 L246 548 Q180 560 114 548 Z" fill="#120b22"/>
+<path d="M96 520 Q180 532 264 520" fill="none" stroke="#2a1a3d" stroke-width="3"/>
+<path d="M176 522 L176 438" stroke="#120b22" stroke-width="4" stroke-linecap="round"/>
+<path d="M178 440 L178 512 L232 512 Z" fill="#1a1030"/>
+<path d="M150 522 C150 506, 168 506, 168 522 Z" fill="#120b22"/>
+<ellipse cx="180" cy="566" rx="90" ry="10" fill="#120b22" opacity="0.35"/>
+${birds}
+`;
+}
+
+function imgCity(p) {
+  let seed = 7;
+  const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  // Far skyline first (dim), then the near buildings with lit windows.
+  let b = "", x = 0;
+  while (x < 640) {
+    const w = 40 + Math.floor(rnd() * 60), h = 60 + Math.floor(rnd() * 90);
+    b += `<rect x="${x}" y="${300 - h - 40}" width="${w}" height="${h + 40}" fill="#182452"/>`;
+    x += w + 6;
+  }
+  x = 0;
+  while (x < 640) {
+    const w = 30 + Math.floor(rnd() * 48), h = 100 + Math.floor(rnd() * 150), top = 300 - h;
+    b += `<rect x="${x}" y="${top}" width="${w}" height="${h}" fill="#0a0f2c"/>`;
+    b += `<rect x="${x}" y="${top}" width="${w}" height="2" fill="#2b3d7a"/>`;
+    for (let wy = top + 8; wy < 290; wy += 10) {
+      for (let wx = x + 4; wx < x + w - 5; wx += 8) {
+        const r = rnd();
+        if (r < 0.62) b += `<rect x="${wx}" y="${wy}" width="4" height="6" fill="${r < 0.1 ? "#ff4fd8" : r < 0.22 ? "#3cf0ff" : "#ffd36a"}" opacity="${(0.55 + rnd() * 0.45).toFixed(2)}"/>`;
+      }
+    }
+    x += w + 3;
+  }
+  const stars = Array.from({ length: 40 }, () =>
+    `<circle cx="${(rnd() * 640).toFixed(0)}" cy="${(rnd() * 140).toFixed(0)}" r="${(0.6 + rnd()).toFixed(1)}" fill="#fff" opacity="${(0.3 + rnd() * 0.6).toFixed(2)}"/>`).join("");
+  const rain = Array.from({ length: 30 }, () => {
+    const rx = (rnd() * 640).toFixed(0), ry = (rnd() * 320).toFixed(0);
+    return `<line x1="${rx}" y1="${ry}" x2="${rx - 5}" y2="${+ry + 22}" stroke="#9fb6ff" stroke-width="1" opacity="0.28"/>`;
+  }).join("");
+  return `
+<defs>
+  <linearGradient id="${p}-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#050818"/><stop offset="0.55" stop-color="#1a2a5e"/><stop offset="1" stop-color="#4a2f7e"/></linearGradient>
+  <linearGradient id="${p}-street" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c0f24"/><stop offset="1" stop-color="#05060f"/></linearGradient>
+  <filter id="${p}-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+</defs>
+<rect width="640" height="360" fill="url(#${p}-sky)"/>
+${stars}
+<ellipse cx="320" cy="300" rx="360" ry="90" fill="#ff3fd0" opacity="0.14" filter="url(#${p}-glow)"/>
+${b}
+<rect x="250" y="150" width="110" height="26" rx="6" fill="none" stroke="#ff4fd8" stroke-width="3" filter="url(#${p}-glow)"/>
+<rect x="250" y="150" width="110" height="26" rx="6" fill="none" stroke="#ff8fe8" stroke-width="1.5"/>
+<rect x="470" y="120" width="60" height="18" rx="5" fill="none" stroke="#3cf0ff" stroke-width="2.5" filter="url(#${p}-glow)"/>
+<rect x="470" y="120" width="60" height="18" rx="5" fill="none" stroke="#a8f8ff" stroke-width="1.2"/>
+<rect y="300" width="640" height="60" fill="url(#${p}-street)"/>
+<rect x="200" y="304" width="210" height="40" fill="#ff4fd8" opacity="0.18" filter="url(#${p}-glow)"/>
+<rect x="440" y="304" width="120" height="40" fill="#3cf0ff" opacity="0.16" filter="url(#${p}-glow)"/>
+${rain}
+`;
+}
+
+/* Premiere program-monitor footage: a coastline drone shot. */
+function footageCoast(p) {
+  const waves = Array.from({ length: 7 }, (_, i) =>
+    `<path d="M0 ${270 + i * 34} q 60 -10 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0" fill="none" stroke="#ffffff" stroke-width="2" opacity="${(0.12 + i * 0.04).toFixed(2)}"/>`).join("");
+  return `
+<defs>
+  <linearGradient id="${p}-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5aa7e6"/><stop offset="1" stop-color="#dff2ff"/></linearGradient>
+  <linearGradient id="${p}-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a86c2"/><stop offset="1" stop-color="#0b3d6b"/></linearGradient>
+  <linearGradient id="${p}-cliff" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a7351"/><stop offset="1" stop-color="#3d3020"/></linearGradient>
+</defs>
+<rect width="900" height="506" fill="url(#${p}-sky)"/>
+<circle cx="700" cy="110" r="40" fill="#fff6d0" opacity="0.9"/>
+<rect y="230" width="900" height="276" fill="url(#${p}-sea)"/>
+${waves}
+<path d="M560 506 L600 300 L660 260 L720 280 L780 220 L860 250 L900 240 L900 506 Z" fill="url(#${p}-cliff)"/>
+<path d="M660 260 L720 280 L780 220 L860 250 L900 240 L900 262 L840 270 L780 246 L720 300 L660 284 Z" fill="#6f9a52" opacity="0.7"/>
+<path d="M430 506 C 520 468, 620 474, 720 506 Z" fill="#e9dcc3"/>
+<path d="M430 506 C 520 476, 620 482, 720 506" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.6"/>
+`;
+}
+
+/* After Effects comp design (what the user is working on). */
+function compDesign(p) {
+  return `
+<defs><linearGradient id="${p}-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1c2233"/><stop offset="1" stop-color="#0b0e16"/></linearGradient></defs>
+<rect width="900" height="506" fill="url(#${p}-bg)"/>
+<circle cx="760" cy="120" r="180" fill="#1a73e8" opacity="0.10"/>
+<circle cx="140" cy="440" r="140" fill="#00bcd4" opacity="0.08"/>
+${T(44, 78, "FRESH PICKS", "#ffffff", 40, 800, "start", 'letter-spacing="3"')}
+${T(46, 106, "Organic · Local · Daily", "#9aa1bc", 15, 500)}
+<rect x="44" y="124" width="60" height="4" rx="2" fill="url(#accent-grad)"/>
+`;
+}
+
+/* Places an image function inside a w×h rounded box (content starts at 0,0). */
+function placeImage(id, fn, p, w, h, nativeW, nativeH, rx = 6) {
+  return `<g id="${id}" opacity="0">
+    <g clip-path="url(#${id}-clip)"><g transform="scale(${(w / nativeW).toFixed(5)} ${(h / nativeH).toFixed(5)})">${fn(p)}</g></g>
+  </g>`;
+}
+const clipDef = (id, w, h, rx = 6) => `<clipPath id="${id}-clip"><rect width="${w}" height="${h}" rx="${rx}"/></clipPath>`;
+
+/* Thin selection box with 8 handles, as After Effects draws around a selected layer. */
+function selectionBox(id, w, h) {
+  const hs = 6;
+  const pts = [[0, 0], [w / 2, 0], [w, 0], [0, h / 2], [w, h / 2], [0, h], [w / 2, h], [w, h]];
+  return `<g id="${id}" opacity="0">
+    <rect x="0" y="0" width="${w}" height="${h}" fill="none" stroke="#00e5ff" stroke-width="1.5"/>
+    ${pts.map(([x, y]) => `<rect x="${x - hs / 2}" y="${y - hs / 2}" width="${hs}" height="${hs}" fill="#ffffff" stroke="#00e5ff" stroke-width="1"/>`).join("")}
+    <circle cx="${w / 2}" cy="${h / 2}" r="5" fill="none" stroke="#00e5ff" stroke-width="1.5"/>
+    <line x1="${w / 2 - 9}" y1="${h / 2}" x2="${w / 2 + 9}" y2="${h / 2}" stroke="#00e5ff" stroke-width="1.5"/>
+    <line x1="${w / 2}" y1="${h / 2 - 9}" x2="${w / 2}" y2="${h / 2 + 9}" stroke="#00e5ff" stroke-width="1.5"/>
+  </g>`;
+}
+
+/* ==========================================================================
+   WINDOW CHROME (shared by After Effects and Premiere Pro)
+   ========================================================================== */
+function windowChrome(kind, title) {
+  const menuItems = kind === "Pr"
+    ? [["File", 0], ["Edit", 38], ["Clip", 78], ["Sequence", 118], ["Markers", 190], ["Graphics", 254], ["Window", 322], ["Help", 384]]
+    : [["File", 0], ["Edit", 38], ["Composition", 78], ["Layer", 172], ["Animation", 220], ["View", 296], ["Window", 342], ["Help", 404]];
+  return `
+    <rect width="${AE_W}" height="${AE_H}" rx="14" fill="#131418" filter="url(#ae-shadow)"/>
+    <rect width="${AE_W}" height="${AE_H}" rx="14" fill="none" stroke="#252732" stroke-width="1.5"/>
+    <rect width="${AE_W}" height="42" rx="14" fill="#1b1c23"/>
+    <rect y="28" width="${AE_W}" height="14" fill="#1b1c23"/>
+    ${badge(kind, 14, 9, 24)}
+    <g transform="translate(48 15)">${menuItems.map(([s, x]) => T(x, 11, s, "#8c92a4", 12, 500)).join("")}</g>
+    ${T(AE_W / 2, 26, title, "#b0b6c8", 12, 500, "middle")}
+    <circle cx="${AE_W - 54}" cy="21" r="5" fill="#f5a623" opacity="0.8"/>
+    <circle cx="${AE_W - 36}" cy="21" r="5" fill="#27c93f" opacity="0.8"/>
+    <circle cx="${AE_W - 18}" cy="21" r="5" fill="#ff5f56" opacity="0.8"/>
+    <!-- empty dock where the panel sits (the panel itself is drawn on top, shared by both apps) -->
+    <rect x="${PANEL_X}" y="${PANEL_Y}" width="${PANEL_W}" height="${PANEL_H}" rx="10" fill="#131418"/>
+  `;
+}
+
+/* ==========================================================================
+   AFTER EFFECTS WORKSPACE
+   ========================================================================== */
+function tlRow(id, name, color, barFrom, keys) {
+  return `
+    <g id="tl-row-${id}" transform="translate(0 0)" opacity="1">
+      <rect y="0" width="300" height="34" fill="#1a1b24"/>
+      <line x1="0" y1="34" x2="${TIME_W}" y2="34" stroke="#22232e"/>
+      <text id="tl-num-${id}" x="16" y="22" fill="#6f7587" font-size="10">1</text>
+      <rect x="34" y="8" width="18" height="18" rx="3" fill="${color}"/>
+      ${T(60, 22, name, "#e0e3ed", 11.5, 500)}
+      <rect x="${barFrom}" y="8" width="${1060 - barFrom}" height="18" rx="3" fill="${color}" opacity="0.8"/>
+      ${keys ? `<g transform="translate(${barFrom} 8)"><polygon points="0,9 6,3 12,9 6,15" fill="#ffffff"/><polygon points="140,9 146,3 152,9 146,15" fill="#ffffff"/></g>` : ""}
+    </g>`;
+}
+
+function aeWindow() {
+  return `
+  <g id="ae-host" transform="translate(${AE_X} ${AE_Y})">
+    ${windowChrome("Ae", "FreshPicks_Promo.aep — Adobe After Effects 2026")}
+
+    <!-- ================= COMPOSITION VIEWER ================= -->
+    <g transform="translate(${COMP_X} ${COMP_Y})">
+      <rect width="${COMP_W}" height="${COMP_H}" rx="8" fill="#181920"/>
+      <rect width="${COMP_W}" height="${COMP_H}" rx="8" fill="none" stroke="#262834" stroke-width="1"/>
+      <rect width="${COMP_W}" height="32" rx="8" fill="#1f2029"/>
+      <rect y="20" width="${COMP_W}" height="12" fill="#1f2029"/>
+      ${T(16, 21, "Main Comp", "#e0e3ed", 12, 600)}
+      ${T(96, 21, "1920 × 1080 (1.00) · 30.00 fps · Full", "#6f7587", 11, 400)}
+      ${T(COMP_W - 16, 21, "100%", "#8f95a8", 11, 500, "end")}
+
+      <g transform="translate(${CAN_X} ${CAN_Y})">
+        <g clip-path="url(#canvas-clip)">
+          <rect width="${CAN_W}" height="${CAN_H}" fill="#0d0e13"/>
+          ${compDesign("cd")}
+          <!-- generated images land here -->
+          ${placeImage("cv-apple", imgApple, "cva", 240, 240, 400, 400, 4)}
+          ${placeImage("cv-boat", imgBoat, "cvb", 170, 302, 360, 640, 4)}
+        </g>
+        <rect width="${CAN_W}" height="${CAN_H}" rx="4" fill="none" stroke="#2b2d3d" stroke-width="1.5"/>
+        <g id="sel-apple-grp" transform="translate(280 193)">${selectionBox("sel-apple", 240, 240)}</g>
+        <g id="sel-boat-grp" transform="translate(615 162)">${selectionBox("sel-boat", 170, 302)}</g>
+      </g>
+    </g>
+
+    <!-- ================= TIMELINE PANEL ================= -->
+    <g transform="translate(${TIME_X} ${TIME_Y})">
+      <rect width="${TIME_W}" height="${TIME_H}" rx="8" fill="#16171f"/>
+      <rect width="${TIME_W}" height="${TIME_H}" rx="8" fill="none" stroke="#262834" stroke-width="1"/>
+      <rect width="${TIME_W}" height="32" rx="8" fill="#1c1d27"/>
+      <rect y="20" width="${TIME_W}" height="12" fill="#1c1d27"/>
+      ${T(16, 21, "00:00:02:15", "#00e5ff", 13, 700)}
+      ${T(120, 21, "Main Comp", "#8e95a8", 12, 600)}
+      <line x1="300" y1="0" x2="300" y2="${TIME_H}" stroke="#252735"/>
+      ${Array.from({ length: 12 }, (_, i) => `
+        <line x1="${320 + i * 62}" y1="20" x2="${320 + i * 62}" y2="30" stroke="#4a4f66" stroke-width="1"/>
+        ${T(320 + i * 62, 16, `${i * 2}s`, "#6f7587", 9, 500, "middle")}
+      `).join("")}
+
+      <g transform="translate(0 36)">
+        ${tlRow("bg", "Background", "#9a93b5", 320, false)}
+        ${tlRow("title", "Title Text", "#4fb3ff", 320, true)}
+        ${tlRow("boat", FILE_BOAT, "#ff7a59", 397, false)}
+        ${tlRow("apple", FILE_APPLE, "#e8b04c", 397, false)}
+      </g>
+
+      <g id="tl-cti" transform="translate(397 0)">
+        <line x1="0" y1="0" x2="0" y2="${TIME_H}" stroke="#00e5ff" stroke-width="1.8"/>
+        <polygon points="-7,0 7,0 7,12 0,19 -7,12" fill="#00e5ff"/>
+      </g>
+    </g>
+  </g>`;
+}
+
+/* ==========================================================================
+   PREMIERE PRO WORKSPACE
+   ========================================================================== */
+function prWindow() {
+  const trackRow = (name, y, isAudio) => `
+    <rect x="0" y="${y}" width="${TIME_W}" height="44" fill="${isAudio ? "#171c1a" : "#1a1b24"}"/>
+    <line x1="0" y1="${y + 44}" x2="${TIME_W}" y2="${y + 44}" stroke="#22232e"/>
+    <rect x="0" y="${y}" width="120" height="44" fill="#1c1d27"/>
+    <rect x="10" y="${y + 14}" width="14" height="14" rx="3" fill="#252838" stroke="#3a3e55"/>
+    <rect x="30" y="${y + 14}" width="14" height="14" rx="3" fill="#252838" stroke="#3a3e55"/>
+    ${T(56, y + 27, name, "#c2c7d9", 12, 700)}`;
+  const wave = Array.from({ length: 58 }, (_, i) => {
+    const h = 6 + Math.abs(Math.sin(i * 1.7) * 14 + Math.sin(i * 0.53) * 8);
+    return `<rect x="${136 + i * 15}" y="${158 - h / 2}" width="6" height="${h}" rx="1" fill="#0d3b1f" opacity="0.9"/>`;
+  }).join("");
+  return `
+  <g id="pr-host" transform="translate(${AE_X} ${AE_Y})" opacity="0">
+    ${windowChrome("Pr", "Coastline_Edit.prproj — Adobe Premiere Pro 2026")}
+
+    <!-- ================= PROGRAM MONITOR ================= -->
+    <g transform="translate(${COMP_X} ${COMP_Y})">
+      <rect width="${COMP_W}" height="${COMP_H}" rx="8" fill="#181920"/>
+      <rect width="${COMP_W}" height="${COMP_H}" rx="8" fill="none" stroke="#262834" stroke-width="1"/>
+      <rect width="${COMP_W}" height="32" rx="8" fill="#1f2029"/>
+      <rect y="20" width="${COMP_W}" height="12" fill="#1f2029"/>
+      ${T(16, 21, "Program: Sequence 01", "#e0e3ed", 12, 600)}
+      ${T(170, 21, "1920 × 1080 · 29.97 fps", "#6f7587", 11, 400)}
+      ${T(COMP_W - 16, 21, "Fit", "#8f95a8", 11, 500, "end")}
+      <g transform="translate(${CAN_X} ${CAN_Y})">
+        <g clip-path="url(#monitor-clip)">
+          ${footageCoast("fc")}
+          ${placeImage("pm-city", imgCity, "pmc", 900, 506, 640, 360, 0)}
+        </g>
+        <rect width="${CAN_W}" height="${CAN_H}" rx="4" fill="none" stroke="#2b2d3d" stroke-width="1.5"/>
+      </g>
+    </g>
+
+    <!-- ================= SEQUENCE TIMELINE ================= -->
+    <g transform="translate(${TIME_X} ${TIME_Y})">
+      <rect width="${TIME_W}" height="${TIME_H}" rx="8" fill="#16171f"/>
+      <rect width="${TIME_W}" height="${TIME_H}" rx="8" fill="none" stroke="#262834" stroke-width="1"/>
+      <rect width="${TIME_W}" height="32" rx="8" fill="#1c1d27"/>
+      <rect y="20" width="${TIME_W}" height="12" fill="#1c1d27"/>
+      ${T(16, 21, "00:00:02:15", "#2d8ceb", 13, 700)}
+      ${T(120, 21, "Sequence 01", "#8e95a8", 12, 600)}
+      ${Array.from({ length: 15 }, (_, i) => `
+        <line x1="${130 + i * 62}" y1="20" x2="${130 + i * 62}" y2="30" stroke="#4a4f66" stroke-width="1"/>
+        ${T(130 + i * 62, 16, `${i * 2}s`, "#6f7587", 9, 500, "middle")}
+      `).join("")}
+      ${trackRow("V2", 40, false)}
+      ${trackRow("V1", 88, false)}
+      ${trackRow("A1", 136, true)}
+      <!-- V1 clip -->
+      <rect x="130" y="92" width="880" height="36" rx="3" fill="#5f78c9"/>
+      <rect x="130" y="92" width="880" height="9" rx="3" fill="#7d93e6"/>
+      ${T(140, 116, "Coastline_Drone.mp4", "#0b1030", 11, 700)}
+      <!-- A1 clip -->
+      <rect x="130" y="140" width="880" height="36" rx="3" fill="#3f9a5a"/>
+      ${wave}
+      ${T(140, 154, "Coastline_Drone.mp4", "#062611", 10, 700)}
+      <!-- V2: the generated still, placed at the playhead -->
+      <g id="pr-v2clip" transform="translate(397 44)" opacity="0">
+        <rect width="155" height="36" rx="3" fill="#b455d6"/>
+        <rect width="155" height="9" rx="3" fill="#d08ae8"/>
+        ${T(8, 25, "lazy_image_chatgpt_…png", "#2a0a3f", 10.5, 700)}
+      </g>
+      <g id="pr-cti" transform="translate(397 0)">
+        <line x1="0" y1="0" x2="0" y2="${TIME_H}" stroke="#2d8ceb" stroke-width="1.8"/>
+        <polygon points="-7,0 7,0 7,12 0,19 -7,12" fill="#2d8ceb"/>
+      </g>
+    </g>
+  </g>`;
+}
+
+/* ==========================================================================
+   THE LAZY-IMAGE PANEL (docked on the right of both apps)
+   ========================================================================== */
+function panel() {
+  const pills = PILLS.map((p, i) => `
+    <g id="p-pill-${i}">
+      <rect id="p-pillrect-${i}" x="${p.x}" y="${PILL_Y}" width="${p.w}" height="${PILL_H}" rx="13" fill="#0f1923" stroke="#30363d" ${i === 4 ? 'stroke-dasharray="3 2"' : ""}/>
+      <rect id="p-pillpress-${i}" x="${p.x}" y="${PILL_Y}" width="${p.w}" height="${PILL_H}" rx="13" fill="#ffffff" opacity="0"/>
+      <text id="p-pilltext-${i}" x="${p.x + p.w / 2}" y="${PILL_Y + 17}" fill="#e6edf3" font-size="11" font-weight="500" text-anchor="middle">${p.label}</text>
+    </g>`).join("");
+
+  return `
+  <g id="panel" transform="translate(${PX} ${PY})">
+    <rect width="${PANEL_W}" height="${PANEL_H}" rx="10" fill="#0d1117" filter="url(#shadow)"/>
+    <rect width="${PANEL_W}" height="${PANEL_H}" rx="10" fill="none" stroke="#252733" stroke-width="1.5"/>
+
+    <!-- Header -->
+    ${T(18, 32, "Lazy-Image", "#e6edf3", 17, 700)}
+    <rect x="114" y="17" width="104" height="20" rx="4" fill="#00bcd4" fill-opacity="0.12" stroke="#00bcd4" stroke-opacity="0.35"/>
+    <text id="p-hosttag" x="166" y="31" fill="#00bcd4" font-size="9.5" font-weight="600" text-anchor="middle" letter-spacing="0.6">AFTER EFFECTS</text>
+    ${T(18, 50, "v2.6 · Developed By Raisul Sohan", "#8b949e", 10, 500)}
+
+    <rect x="286" y="19" width="52" height="26" rx="6" fill="none" stroke="#30363d"/>
+    ${T(312, 36, "🔍 Test", "#8b949e", 10.5, 600, "middle")}
+
+    <rect x="346" y="19" width="150" height="26" rx="6" fill="url(#accent-grad)"/>
+    <rect id="p-login-press" x="346" y="19" width="150" height="26" rx="6" fill="#ffffff" opacity="0"/>
+    <text id="p-loginlabel" x="421" y="36" fill="#ffffff" font-size="10.5" font-weight="600" text-anchor="middle">🌐 Login to ChatGPT</text>
+    ${T(506, 37, "ℹ️", "#ffffff", 13, 400, "middle")}
+
+    <g id="p-badge-req">
+      <rect x="526" y="20" width="96" height="24" rx="4" fill="#ffab00" fill-opacity="0.2" stroke="#ffab00"/>
+      <text id="p-badge-req-text" x="574" y="36" fill="#ffab00" font-size="11" font-weight="600" text-anchor="middle">Login required</text>
+    </g>
+    <g id="p-badge-ok" opacity="0">
+      <rect x="544" y="20" width="78" height="24" rx="4" fill="#00c853" fill-opacity="0.15" stroke="#00c853" stroke-opacity="0.6"/>
+      ${T(583, 36, "Logged in", "#00c853", 11, 600, "middle")}
+    </g>
+    <line x1="18" y1="66" x2="622" y2="66" stroke="#30363d"/>
+
+    <!-- Left column: prompt + ratio + generate -->
+    ${T(18, 96, "Image Prompt", "#8b949e", 13, 600)}
+    <rect id="p-ta" x="18" y="106" width="250" height="300" rx="8" fill="#0f1923" stroke="#30363d"/>
+    <text id="p-placeholder" fill="#8b949e" font-size="12.5" font-weight="400"></text>
+    <text id="p-prompt" fill="#e6edf3" font-size="13" font-weight="400"></text>
+    <rect id="p-caret" x="32" y="121" width="1.5" height="17" fill="#e6edf3" opacity="0"/>
+
+    ${T(18, 436, "Aspect Ratio", "#8b949e", 13, 600)}
+    ${pills}
+
+    <g id="p-gen-grp">
+      <rect x="18" y="790" width="250" height="44" rx="8" fill="url(#accent-grad)"/>
+      <rect id="p-gen-press" x="18" y="790" width="250" height="44" rx="8" fill="#ffffff" opacity="0"/>
+      <text id="p-gentext" x="143" y="818" fill="#ffffff" font-size="15" font-weight="700" text-anchor="middle">✨ Generate Image</text>
+    </g>
+    <g id="p-cancel" opacity="0">
+      <rect x="18" y="842" width="250" height="30" rx="8" fill="none" stroke="#30363d"/>
+      ${T(143, 862, "✕ Cancel", "#8b949e", 12, 500, "middle")}
+    </g>
+
+    <!-- Right column: preview card -->
+    <rect x="282" y="80" width="340" height="790" rx="8" fill="#161b22" stroke="#30363d"/>
+    ${T(298, 106, "Generated Image", "#8b949e", 13, 600)}
+    <rect x="298" y="118" width="308" height="560" rx="8" fill="#0d1117" stroke="#30363d"/>
+
+    <g id="p-empty">
+      ${T(452, 394, "📷", "#8b949e", 30, 400, "middle")}
+      ${T(452, 424, "Generated image will appear here", "#8b949e", 12, 400, "middle")}
+    </g>
+    <g id="p-spin" opacity="0">
+      <circle cx="452" cy="398" r="18" fill="none" stroke="#30363d" stroke-width="4"/>
+      <path id="p-spin-arc" d="M 452 380 A 18 18 0 0 1 470 398" fill="none" stroke="#00bcd4" stroke-width="4" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(302 248)">${placeImage("pv-apple", imgApple, "pva", 300, 300, 400, 400)}</g>
+    <g transform="translate(300 128)">${placeImage("pv-boat", imgBoat, "pvb", 304, 540, 360, 640)}</g>
+    <g transform="translate(302 314)">${placeImage("pv-city", imgCity, "pvc", 300, 169, 640, 360)}</g>
+
+    <g id="p-actions" opacity="0">
+      <rect x="329" y="694" width="118" height="30" rx="4" fill="#ffffff" fill-opacity="0.1" stroke="#ffffff" stroke-opacity="0.2"/>
+      ${T(388, 714, "📋 Copy Image", "#ffffff", 11.5, 500, "middle")}
+      <rect x="457" y="694" width="118" height="30" rx="4" fill="#ffffff" fill-opacity="0.1" stroke="#ffffff" stroke-opacity="0.2"/>
+      ${T(516, 714, "📂 Open Folder", "#ffffff", 11.5, 500, "middle")}
+    </g>
+
+    <g id="p-status" opacity="0">
+      <rect id="p-status-rect" x="298" y="740" width="308" height="29" rx="6" fill="#1a73e8" fill-opacity="0.12" stroke="#1a73e8"/>
+      <text id="p-status-text" fill="#00bcd4" font-size="11" font-weight="600"></text>
+    </g>
+
+    ${T(298, 822, "🔗 Auto-timeline import active", "#8b949e", 11, 400)}
+    <text id="p-meta" x="606" y="822" fill="#8b949e" font-size="11" text-anchor="end"></text>
+  </g>`;
+}
+
+/* ==========================================================================
+   OVERLAYS INSIDE THE VIEWER: login window, hidden browser, toasts
+   ========================================================================== */
+function overlays() {
+  return `
+  <g id="overlay" transform="translate(${OX} ${OY})">
+
+    <!-- The one visible browser window: the one-time ChatGPT login -->
+    <g id="loginwin" opacity="0" transform="translate(${VC.x} ${VC.y})">
+      <rect x="-310" y="-190" width="620" height="380" rx="12" fill="#ffffff" filter="url(#shadow)"/>
+      <rect x="-310" y="-190" width="620" height="36" rx="12" fill="#f1f3f4"/>
+      <rect x="-310" y="-166" width="620" height="12" fill="#f1f3f4"/>
+      <circle cx="-292" cy="-172" r="5" fill="#ff5f56"/><circle cx="-276" cy="-172" r="5" fill="#ffbd2e"/><circle cx="-260" cy="-172" r="5" fill="#27c93f"/>
+      <rect x="-200" y="-182" width="400" height="20" rx="10" fill="#ffffff" stroke="#dadce0"/>
+      ${T(0, -168, "🔒 chatgpt.com/auth/login", "#5f6368", 10.5, 500, "middle")}
+      ${T(0, -108, "ChatGPT", "#0d0d0d", 24, 800, "middle")}
+      ${T(0, -72, "Welcome back", "#0d0d0d", 19, 600, "middle")}
+      <rect x="-150" y="-46" width="300" height="40" rx="8" fill="#ffffff" stroke="#c4c7cd"/>
+      <text id="login-email" x="-136" y="-21" fill="#0d0d0d" font-size="13" font-weight="500"></text>
+      <rect x="-150" y="6" width="300" height="40" rx="8" fill="#ffffff" stroke="#c4c7cd"/>
+      <text id="login-pass" x="-136" y="31" fill="#0d0d0d" font-size="13" font-weight="500"></text>
+      <rect x="-150" y="72" width="300" height="40" rx="8" fill="#10a37f"/>
+      <rect id="btn-continue-press" x="-150" y="72" width="300" height="40" rx="8" fill="#ffffff" opacity="0"/>
+      ${T(0, 97, "Continue", "#ffffff", 14, 700, "middle")}
+      <text id="login-status" x="0" y="150" fill="#10a37f" font-size="13" font-weight="600" text-anchor="middle"></text>
+    </g>
+
+    <!-- The hidden browser: drawn as a ghost so the viewer understands what happens behind the scenes -->
+    <g id="ghost" opacity="0" transform="translate(${VC.x} ${VC.y})">
+      <rect x="-280" y="-170" width="560" height="340" rx="12" fill="#0d1117" fill-opacity="0.78" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="8 6"/>
+      <rect x="-280" y="-170" width="560" height="36" rx="12" fill="#161b22" fill-opacity="0.95"/>
+      <rect x="-280" y="-146" width="560" height="12" fill="#161b22" fill-opacity="0.95"/>
+      <circle cx="-262" cy="-152" r="5" fill="#ff5f56" opacity="0.6"/><circle cx="-246" cy="-152" r="5" fill="#ffbd2e" opacity="0.6"/><circle cx="-230" cy="-152" r="5" fill="#27c93f" opacity="0.6"/>
+      <rect x="-180" y="-162" width="360" height="20" rx="10" fill="#0d1117" stroke="#30363d"/>
+      ${T(0, -148, "🔒 chatgpt.com", "#8b949e", 10.5, 500, "middle")}
+      ${T(268, -148, "Chrome · Lazy-Image profile", "#5a6075", 9.5, 500, "end")}
+
+      <!-- user bubble -->
+      <g id="ghost-user" opacity="0">
+        <rect x="-20" y="-118" width="280" height="40" rx="14" fill="#2a2f3a"/>
+        <text id="ghost-prompt" x="-6" y="-93" fill="#e6edf3" font-size="12" font-weight="500"></text>
+      </g>
+      <!-- ChatGPT reply -->
+      <g id="ghost-reply" opacity="0">
+        <circle cx="-248" cy="-40" r="13" fill="#10a37f"/>
+        ${T(-248, -35, "✦", "#ffffff", 13, 700, "middle")}
+        <text id="ghost-reply-text" x="-226" y="-35" fill="#e6edf3" font-size="12.5" font-weight="600"></text>
+        <rect x="-226" y="-14" width="380" height="8" rx="4" fill="#262c36"/>
+        <rect id="ghost-bar" x="-226" y="-14" width="0" height="8" rx="4" fill="#10a37f"/>
+        <text id="ghost-pct" x="164" y="-8" fill="#8b949e" font-size="11" font-weight="600"></text>
+        <rect x="-226" y="10" width="140" height="100" rx="8" fill="#161b22" stroke="#30363d" stroke-dasharray="4 3"/>
+        <text id="ghost-thumb-text" x="-156" y="65" fill="#5a6075" font-size="11" font-weight="500" text-anchor="middle">generating…</text>
+      </g>
+
+      <rect x="-170" y="146" width="340" height="22" rx="11" fill="#161b22" stroke="#30363d"/>
+      ${T(0, 161, "🙈 hidden window · no taskbar button · never steals focus", "#8b949e", 10.5, 600, "middle")}
+    </g>
+
+    <!-- Scene banner toast -->
+    <g id="toast" opacity="0" transform="translate(${VC.x} 540)">
+      <rect x="-380" y="-22" width="760" height="44" rx="22" fill="#12131bf2" stroke="#00bcd4" stroke-width="1.5" filter="url(#shadow)"/>
+      <text id="toast-text" x="0" y="6" text-anchor="middle" fill="#e2e6f5" font-size="15" font-weight="600"></text>
+    </g>
+  </g>`;
+}
+
+/* ==========================================================================
+   OUTRO CARD
+   ========================================================================== */
+function outroCard() {
+  const feats = [
+    "Uses your ChatGPT account", "No API key · Free forever", "Hidden, on-demand browser", "Auto-import to timeline",
+    "After Effects + Premiere Pro", "Any language prompts", "1:1 · 16:9 · 9:16 · 4:5 · custom", "Cancel · Test · Copy · Folder",
+  ];
+  return `
+  <g id="outro-view" opacity="0">
+    <rect width="${SW}" height="${SH}" fill="#08090e" opacity="0.97"/>
+    <circle cx="${SW / 2}" cy="${SH / 2 - 40}" r="540" fill="url(#radial-glow)"/>
+    <g transform="translate(${SW / 2} 290)">
+      <g id="outro-badge" transform="scale(1)">
+        <circle cx="0" cy="-60" r="44" fill="url(#accent-grad)" filter="url(#glow-accent)"/>
+        ${T(0, -46, "✨", "#ffffff", 40, 800, "middle")}
+      </g>
+      ${T(0, 40, "Lazy-Image", "#ffffff", 56, 800, "middle", 'letter-spacing="-0.5"')}
+      <path id="outro-shine" d="M -260 48 L 260 48" stroke="url(#shine-grad)" stroke-width="3" stroke-linecap="round"/>
+      ${T(0, 92, "ChatGPT image generation inside After Effects & Premiere Pro", "#9aa1bc", 22, 500, "middle")}
+      ${T(0, 132, "Free forever · No API key · No browser extension · Created by Raisul Sohan", "#6a7088", 16, 500, "middle")}
+      <g id="outro-pills" transform="translate(0 180)">
+        ${feats.map((feat, i) => {
+          const w = 196, h = 34, gap = 14;
+          const totalRow = 4 * w + 3 * gap;
+          const row = Math.floor(i / 4), col = i % 4;
+          const x = -totalRow / 2 + col * (w + gap);
+          const y = row * (h + 12);
+          return `<g transform="translate(${x} ${y})">
+              <rect width="${w}" height="${h}" rx="17" fill="#151722" stroke="#2d3145" stroke-width="1.2"/>
+              ${T(w / 2, 22, feat, "#cfd5eb", 12, 600, "middle")}
+            </g>`;
+        }).join("")}
+      </g>
+      <g transform="translate(0 310)">
+        <rect x="-260" y="0" width="520" height="46" rx="23" fill="#181a26" stroke="#00bcd4" stroke-width="1.8" filter="url(#shadow)"/>
+        ${T(0, 29, "github.com/raisulsohan/LazyImageGeneration", "#00e5ff", 16, 700, "middle")}
+      </g>
+    </g>
+  </g>`;
+}
+
+function cursorGraphic() {
+  return `<g id="cursor" opacity="0">
+    <path d="M0 0 L0 32 L8 24 L15 38 L21 35 L14 21 L25 21 Z" fill="#ffffff" stroke="#121319" stroke-width="2.5" stroke-linejoin="round"/>
+  </g>`;
+}
+
+/* ==========================================================================
+   INITIALIZE SVG SCENE
+   ========================================================================== */
+const svg = document.getElementById("svg");
+svg.innerHTML = `
+<defs>
+  <linearGradient id="bg-grad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#0b0c10"/><stop offset="100%" stop-color="#06070a"/>
+  </linearGradient>
+  <radialGradient id="radial-glow" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#00bcd4" stop-opacity="0.26"/>
+    <stop offset="70%" stop-color="#1a73e8" stop-opacity="0.06"/>
+    <stop offset="100%" stop-color="#1a73e8" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="accent-grad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#1a73e8"/><stop offset="100%" stop-color="#00bcd4"/>
+  </linearGradient>
+  <linearGradient id="shine-grad" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/><stop offset="50%" stop-color="#ffffff" stop-opacity="1"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+  </linearGradient>
+  <filter id="ae-shadow" x="-10%" y="-10%" width="120%" height="130%">
+    <feDropShadow dx="0" dy="24" stdDeviation="36" flood-color="#000000" flood-opacity="0.75"/>
+  </filter>
+  <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#000000" flood-opacity="0.5"/>
+  </filter>
+  <filter id="glow-accent" x="-30%" y="-30%" width="160%" height="160%">
+    <feDropShadow dx="0" dy="0" stdDeviation="14" flood-color="#00bcd4" flood-opacity="0.75"/>
+  </filter>
+  ${clipDef("canvas", CAN_W, CAN_H, 4)}
+  ${clipDef("monitor", CAN_W, CAN_H, 4)}
+  ${clipDef("cv-apple", 240, 240, 4)}
+  ${clipDef("cv-boat", 170, 302, 4)}
+  ${clipDef("pm-city", 900, 506, 0)}
+  ${clipDef("pv-apple", 300, 300)}
+  ${clipDef("pv-boat", 304, 540)}
+  ${clipDef("pv-city", 300, 169)}
+</defs>
+
+<rect width="${SW}" height="${SH}" fill="url(#bg-grad)"/>
+<circle cx="${SW / 2}" cy="${SH / 2}" r="750" fill="url(#radial-glow)"/>
+<text id="measure" x="-5000" y="-5000" opacity="0"></text>
+
+${aeWindow()}
+${prWindow()}
+${overlays()}
+${panel()}
+${outroCard()}
+${cursorGraphic()}
+`;
+
+/* ==========================================================================
+   DOM HELPERS
+   ========================================================================== */
+const $ = (id) => document.getElementById(id);
+const set = (el, attr, val) => { const v = String(val); if (el.getAttribute(attr) !== v) el.setAttribute(attr, v); };
+// Fully transparent groups are also taken out of the paint tree: the page holds three
+// generated images and two app windows at once, and Chrome still rasterises opacity-0 layers.
+const op = (id, v) => {
+  const el = $(id), c = clamp(+v, 0, 1);
+  set(el, "opacity", c.toFixed(4));
+  set(el, "display", c <= 0 ? "none" : "inline");
+};
+const txt = (id, s) => { const el = $(id); if (el.textContent !== s) el.textContent = s; };
+
+const measureEl = $("measure");
+const mcache = new Map();
+function measure(str, size, weight) {
+  const k = size + "|" + weight + "|" + str;
+  if (mcache.has(k)) return mcache.get(k);
+  set(measureEl, "font-size", size);
+  set(measureEl, "font-weight", weight);
+  measureEl.textContent = str;
+  let w = 0;
+  try { w = measureEl.getComputedTextLength(); } catch (e) { w = str.length * size * 0.55; }
+  mcache.set(k, w);
+  return w;
+}
+function wrap(str, size, weight, maxW) {
+  const words = str.split(" ");
+  const lines = [];
+  let cur = "";
+  for (const w of words) {
+    const test = cur ? cur + " " + w : w;
+    if (!cur || measure(test, size, weight) <= maxW) cur = test;
+    else { lines.push(cur); cur = w; }
+  }
+  lines.push(cur);
+  return lines;
+}
+function setLines(id, lines, x, y0, lh) {
+  const el = $(id);
+  const key = x + "|" + y0 + "|" + lines.join("\n");
+  if (el.dataset.key === key) return;
+  el.dataset.key = key;
+  el.innerHTML = lines.map((l, i) => `<tspan x="${x}" y="${y0 + i * lh}">${esc(l)}</tspan>`).join("");
+}
+
+const seg = (typeof Intl !== "undefined" && Intl.Segmenter) ? new Intl.Segmenter(undefined, { granularity: "grapheme" }) : null;
+const gcache = new Map();
+function graphemes(s) {
+  if (!gcache.has(s)) gcache.set(s, seg ? Array.from(seg.segment(s), (x) => x.segment) : Array.from(s));
+  return gcache.get(s);
+}
+function typed(full, u) {
+  const g = graphemes(full);
+  return g.slice(0, Math.floor(clamp(u, 0, 1) * g.length)).join("");
+}
+function truncate(s, n) {
+  const g = graphemes(s);
+  return g.length <= n ? s : g.slice(0, n).join("") + "…";
+}
+
+/* ==========================================================================
+   SCRIPT: what happens when
+   ========================================================================== */
+const GENS = [
+  { start: 8.2, load: 9.2, send: 10.0, create: 10.8, download: 15.2, save: 15.7, done: 16.0, img: "apple" },
+  { start: 23.6, load: 23.9, send: 24.1, create: 24.3, download: 25.3, save: 25.5, done: 25.7, img: "boat" },
+  { start: 29.4, load: 29.7, send: 29.9, create: 30.1, download: 31.0, save: 31.15, done: 31.3, img: "city" },
+];
+function genAt(t) {
+  for (const g of GENS) {
+    if (t < g.start || t >= g.done) continue;
+    let stage, msg, pct;
+    if (t < g.load) { stage = "launch"; msg = "Starting ChatGPT in the background…"; pct = 2; }
+    else if (t < g.send) { stage = "load"; msg = "Loading ChatGPT…"; pct = 6; }
+    else if (t < g.create) { stage = "send"; msg = "Sending prompt…"; pct = 10; }
+    else if (t < g.download) { stage = "create"; msg = "ChatGPT is creating your image…"; pct = Math.round(lerp(12, 95, (t - g.create) / (g.download - g.create))); }
+    else if (t < g.save) { stage = "download"; msg = "Downloading image…"; pct = 97; }
+    else { stage = "save"; msg = "Saving image to project folder..."; pct = null; }
+    return { g, stage, msg, pct };
+  }
+  return null;
+}
+
+const CLICKS = [1.3, 2.7, 4.8, 8.2, 20.8, 23.0, 23.6, 29.0, 29.4];
+const CUR_KEYS = [
+  [0.6, 900, 700], [1.3, ...AT.login], [2.2, ...AT.login], [2.7, ...AT.cont], [3.9, ...AT.cont],
+  [4.8, ...AT.ta], [7.5, ...AT.ta], [8.2, ...AT.gen], [20.3, ...AT.gen], [20.8, ...AT.ta], [22.5, ...AT.ta],
+  [23.0, ...AT.p916], [23.1, ...AT.p916], [23.6, ...AT.gen], [28.5, ...AT.gen], [29.0, ...AT.p169],
+  [29.1, ...AT.p169], [29.4, ...AT.gen], [DUR + 1, ...AT.gen],
+];
+
+const TOASTS = [
+  [1.5, 3.8, "🔐 One-time login — the browser window closes by itself"],
+  [5.0, 8.0, "💬 Your own ChatGPT account — no API key, no extra billing"],
+  [8.8, 15.4, "🙈 The browser runs hidden — no window, no focus steal, closes when done"],
+  [16.6, 20.0, "⏱️ Saved to chatgptimages/ and placed at the playhead in Main Comp"],
+  [21.0, 23.3, "🌍 Prompts in any language — বাংলা, English, हिन्दी, العربية, Español"],
+  [25.9, 27.1, "📐 Presets 1:1 · 16:9 · 9:16 · 4:5 — or any custom W:H"],
+  [28.0, 31.0, "🎞️ The same panel in Premiere Pro — ChatGptImages bin, free video track"],
+];
+
+const IMG_META = { apple: "1024x1024 PNG", boat: "1024x1536 PNG", city: "1536x1024 PNG" };
+const STATUS_STYLE = {
+  loading: { fill: "#1a73e8", stroke: "#1a73e8", text: "#00bcd4" },
+  success: { fill: "#00c853", stroke: "#00c853", text: "#00c853" },
+  warning: { fill: "#ffab00", stroke: "#ffab00", text: "#ffab00" },
+};
+
+/* ==========================================================================
+   RENDER ENGINE (35.0s DURATION)
+   ========================================================================== */
+function render(t) {
+  /* ---------- app windows: intro pop, AE → Premiere crossfade, outro ---------- */
+  const introIn = P(t, 0.0, 0.45, E.out);
+  const aeScale = lerp(0.95, 1.0, introIn);
+  const hostTf = `translate(${AE_X} ${AE_Y}) scale(${aeScale}) translate(${((1 - aeScale) * -AE_W / 2).toFixed(1)} ${((1 - aeScale) * -AE_H / 2).toFixed(1)})`;
+  set($("ae-host"), "transform", hostTf);
+  set($("pr-host"), "transform", hostTf);
+  const prX = P(t, 27.2, 27.9);
+  const outroVis = P(t, 32.4, 33.1, E.out);
+  const isPr = t >= 27.5;
+  op("ae-host", (1 - prX) * (1 - outroVis));
+  op("pr-host", prX * (1 - outroVis));
+  op("panel", 1 - outroVis);
+  op("overlay", 1 - outroVis);
+  txt("p-hosttag", isPr ? "PREMIERE PRO" : "AFTER EFFECTS");
+
+  /* ---------- login ---------- */
+  const inLogin = t >= 1.3 && t < 3.9;
+  const loggedIn = t >= 3.9;
+  op("p-login-press", t >= 1.3 && t < 1.55 ? 0.35 : 0);
+  txt("p-loginlabel", loggedIn ? "🌐 Open ChatGPT" : inLogin ? "⏳ Waiting for login..." : "🌐 Login to ChatGPT");
+  txt("p-badge-req-text", inLogin ? "Browser open" : "Login required");
+  op("p-badge-req", loggedIn ? 0 : 0.8 + 0.2 * Math.sin(t * Math.PI));
+  const okPop = P(t, 3.9, 4.25, E.back);
+  op("p-badge-ok", loggedIn ? okPop : 0);
+  set($("p-badge-ok"), "transform", `translate(583 32) scale(${loggedIn ? okPop.toFixed(3) : 0}) translate(-583 -32)`);
+
+  const lwOpen = P(t, 1.4, 1.8, E.back);
+  const lwClose = P(t, 3.6, 3.9, E.in);
+  const lwVis = lwOpen * (1 - lwClose);
+  op("loginwin", lwVis);
+  set($("loginwin"), "transform", `translate(${VC.x} ${VC.y}) scale(${(lerp(0.8, 1, lwOpen) * lerp(1, 0.85, lwClose)).toFixed(3)})`);
+  if (lwVis > 0) {
+    txt("login-email", typed("you@example.com", P(t, 1.9, 2.4, E.linear)));
+    txt("login-pass", typed("••••••••••", P(t, 2.45, 2.7, E.linear)));
+    op("btn-continue-press", t >= 2.7 && t < 2.95 ? 0.3 : 0);
+    txt("login-status", t < 2.8 ? "" : t < 3.2 ? "Logging you in…" : "✓ Logged in — this window closes by itself");
+  }
+
+  /* ---------- prompt text ---------- */
+  let promptFull = "", u = 1, focused = false;
+  if (t >= 4.8 && t < 20.8) { promptFull = PROMPT1; u = P(t, 4.9, 7.3, E.linear); focused = t < 8.2; }
+  else if (t >= 20.8 && t < 27.2) { promptFull = PROMPT2; u = P(t, 20.9, 22.4, E.linear); focused = t < 23.6; }
+  else if (t >= 27.9) { promptFull = PROMPT3; u = P(t, 27.9, 28.9, E.linear); focused = t < 29.4; }
+  const promptNow = typed(promptFull, u);
+  const lines = promptNow ? wrap(promptNow, 13, 400, 222) : [];
+  setLines("p-prompt", lines, 32, 134, 20);
+  setLines("p-placeholder", promptNow ? [] : wrap(PLACEHOLDER, 12.5, 400, 222), 32, 134, 19);
+  set($("p-ta"), "stroke", focused ? "#1a73e8" : "#30363d");
+  if (focused) {
+    const last = lines.length ? lines[lines.length - 1] : "";
+    const cx = 32 + (last ? measure(last, 13, 400) : 0) + 1;
+    const cy = 134 + Math.max(0, lines.length - 1) * 20 - 13;
+    set($("p-caret"), "x", cx.toFixed(1));
+    set($("p-caret"), "y", cy.toFixed(1));
+    op("p-caret", Math.sin(t * 9) > -0.2 ? 1 : 0);
+  } else op("p-caret", 0);
+
+  /* ---------- aspect ratio pills ---------- */
+  const active = t < 23.0 ? 0 : t < 27.2 ? 2 : t < 29.0 ? 0 : 1;
+  for (let i = 0; i < 5; i++) {
+    const on = i === active;
+    set($(`p-pillrect-${i}`), "fill", on ? "url(#accent-grad)" : "#0f1923");
+    set($(`p-pillrect-${i}`), "stroke", on ? "none" : "#30363d");
+    set($(`p-pilltext-${i}`), "fill", on ? "#ffffff" : "#e6edf3");
+    set($(`p-pilltext-${i}`), "font-weight", on ? 600 : 500);
+  }
+  op("p-pillpress-2", t >= 23.0 && t < 23.25 ? 0.35 : 0);
+  op("p-pillpress-1", t >= 29.0 && t < 29.25 ? 0.35 : 0);
+
+  /* ---------- generation state ---------- */
+  const g = genAt(t);
+  txt("p-gentext", g ? "⏳ Generating..." : "✨ Generate Image");
+  op("p-gen-grp", g ? 0.7 : 1);
+  op("p-gen-press", CLICKS.some((c) => (c === 8.2 || c === 23.6 || c === 29.4) && t >= c && t < c + 0.25) ? 0.35 : 0);
+  op("p-cancel", g ? 1 : 0);
+
+  let img = null, imgSince = 0;
+  if (t >= 16.0 && t < 23.6) { img = "apple"; imgSince = 16.0; }
+  else if (t >= 25.7 && t < 27.2) { img = "boat"; imgSince = 25.7; }
+  else if (t >= 31.3) { img = "city"; imgSince = 31.3; }
+  const imgIn = img ? P(t, imgSince, imgSince + 0.5, E.out) : 0;
+  op("pv-apple", img === "apple" ? imgIn : 0);
+  op("pv-boat", img === "boat" ? imgIn : 0);
+  op("pv-city", img === "city" ? imgIn : 0);
+  op("p-empty", !img && !g ? 1 : 0);
+  op("p-spin", g ? 1 : 0);
+  if (g) set($("p-spin-arc"), "transform", `rotate(${((t * 360) % 360).toFixed(1)} 452 398)`);
+  op("p-actions", img ? P(t, imgSince + 0.2, imgSince + 0.5) : 0);
+  txt("p-meta", img ? IMG_META[img] : "");
+
+  /* ---------- status bar ---------- */
+  let st = null;
+  if (t >= 1.4 && t < 3.9) st = { msg: "🌐 Log in to ChatGPT in the Chrome window — it closes by itself when you are done.", type: "warning", since: 1.4 };
+  else if (t >= 3.9 && t < 6.5) st = { msg: "✅ Logged in to ChatGPT! Generate images right here — no browser needed.", type: "success", since: 3.9 };
+  if (g) st = { msg: g.pct === null ? g.msg : `🔄 ${g.msg} ${g.pct}%`, type: "loading", since: g.g.start };
+  else if (t >= 16.0 && t < 23.6) st = { msg: "✅ Generated & added to timeline (Main Comp)", type: "success", since: 16.0 };
+  else if (t >= 25.7 && t < 27.2) st = { msg: "✅ Generated & added to timeline (Main Comp)", type: "success", since: 25.7 };
+  else if (t >= 31.3) st = { msg: "✅ Generated & added to timeline (Sequence 01)", type: "success", since: 31.3 };
+  if (st) {
+    const sty = STATUS_STYLE[st.type];
+    const sl = wrap(st.msg, 11, 600, 284);
+    setLines("p-status-text", sl, 310, 765, 15);
+    set($("p-status-text"), "fill", sty.text);
+    set($("p-status-rect"), "fill", sty.fill);
+    set($("p-status-rect"), "stroke", sty.stroke);
+    set($("p-status-rect"), "height", 14 + sl.length * 15);
+    op("p-status", P(t, st.since, st.since + 0.25));
+  } else op("p-status", 0);
+
+  /* ---------- hidden browser ghost ---------- */
+  if (g) {
+    const gv = P(t, g.g.start + 0.3, g.g.start + 0.7, E.out) * (1 - P(t, g.g.done - 0.4, g.g.done - 0.1));
+    op("ghost", gv * 0.95);
+    set($("ghost"), "transform", `translate(${VC.x} ${VC.y}) scale(${lerp(0.94, 1, gv).toFixed(3)})`);
+    const sent = g.stage !== "launch" && g.stage !== "load";
+    op("ghost-user", sent ? 1 : 0);
+    txt("ghost-prompt", truncate(promptFull, 36));
+    const replying = g.stage === "create" || g.stage === "download" || g.stage === "save";
+    op("ghost-reply", replying ? 1 : 0);
+    txt("ghost-reply-text", g.stage === "create" ? "Creating image…" : g.stage === "download" ? "✓ Image ready — downloading" : "✓ Done — closing the browser");
+    const pct = g.pct === null ? 100 : g.pct;
+    set($("ghost-bar"), "width", (replying ? 380 * pct / 100 : 0).toFixed(1));
+    txt("ghost-pct", replying ? pct + "%" : "");
+    txt("ghost-thumb-text", g.stage === "create" ? "generating…" : "✓ image");
+  } else op("ghost", 0);
+
+  /* ---------- AE canvas: images landing at the playhead ---------- */
+  const applePop = P(t, 16.4, 17.0, E.back);
+  const boatPop = P(t, 26.0, 26.6, E.back);
+  op("cv-apple", clamp(applePop * 2, 0, 1));
+  set($("cv-apple"), "transform", `translate(400 313) scale(${Math.max(0.001, applePop).toFixed(3)}) translate(-120 -120)`);
+  op("cv-boat", clamp(boatPop * 2, 0, 1));
+  set($("cv-boat"), "transform", `translate(700 313) scale(${Math.max(0.001, boatPop).toFixed(3)}) translate(-85 -151)`);
+  op("sel-apple", applePop >= 0.999 ? 1 - P(t, 18.4, 18.8) : 0);
+  op("sel-boat", boatPop >= 0.999 ? 1 - P(t, 27.0, 27.3) : 0);
+
+  /* ---------- AE timeline rows ---------- */
+  const NEW_ROWS = [{ id: "apple", at: 16.3 }, { id: "boat", at: 25.9 }];
+  const appeared = NEW_ROWS.filter((r) => t >= r.at).sort((a, b) => b.at - a.at);
+  let shift = 0;
+  for (const r of NEW_ROWS) {
+    const idx = appeared.indexOf(r);
+    if (idx < 0) { op(`tl-row-${r.id}`, 0); continue; }
+    const pop = P(t, r.at, r.at + 0.45, E.back);
+    const ease = P(t, r.at, r.at + 0.45, E.out);
+    shift += ease;
+    op(`tl-row-${r.id}`, clamp(pop, 0, 1));
+    set($(`tl-row-${r.id}`), "transform", `translate(${lerp(-40, 0, pop).toFixed(1)} ${(idx * 36).toFixed(1)})`);
+    txt(`tl-num-${r.id}`, String(idx + 1));
+  }
+  set($("tl-row-title"), "transform", `translate(0 ${(shift * 36).toFixed(1)})`);
+  set($("tl-row-bg"), "transform", `translate(0 ${((shift + 1) * 36).toFixed(1)})`);
+  txt("tl-num-title", String(appeared.length + 1));
+  txt("tl-num-bg", String(appeared.length + 2));
+
+  /* ---------- Premiere: still on V2 + program monitor ---------- */
+  const v2Pop = P(t, 31.4, 31.9, E.back);
+  op("pr-v2clip", clamp(v2Pop * 2, 0, 1));
+  set($("pr-v2clip"), "transform", `translate(397 44) scale(${Math.max(0.001, v2Pop).toFixed(3)} 1)`);
+  op("pm-city", P(t, 31.4, 32.0));
+
+  /* ---------- toasts ---------- */
+  let toastOp = 0, toastMsg = "";
+  for (const [a, b, s] of TOASTS) {
+    if (t >= a && t < b) { toastOp = P(t, a, a + 0.3) * (1 - P(t, b - 0.3, b)); toastMsg = s; break; }
+  }
+  op("toast", toastOp);
+  if (toastOp > 0) txt("toast-text", toastMsg);
+
+  /* ---------- cursor ---------- */
+  let cx = CUR_KEYS[0][1], cy = CUR_KEYS[0][2];
+  for (let i = 0; i < CUR_KEYS.length - 1; i++) {
+    const a = CUR_KEYS[i], b = CUR_KEYS[i + 1];
+    if (t >= a[0] && t < b[0]) { const uu = P(t, a[0], b[0], E.inOut); cx = lerp(a[1], b[1], uu); cy = lerp(a[2], b[2], uu); break; }
+    if (t >= b[0]) { cx = b[1]; cy = b[2]; }
+  }
+  const curVis = P(t, 0.6, 0.9) * (1 - P(t, 8.5, 8.9)) + P(t, 20.0, 20.3) * (1 - P(t, 23.9, 24.3)) + P(t, 28.2, 28.5) * (1 - P(t, 29.7, 30.1));
+  const pressing = CLICKS.some((c) => t >= c && t < c + 0.25);
+  set($("cursor"), "transform", `translate(${cx.toFixed(1)} ${cy.toFixed(1)}) scale(${pressing ? 0.86 : 1})`);
+  op("cursor", curVis);
+
+  /* ---------- outro ---------- */
+  op("outro-view", outroVis);
+  if (t >= 32.4) {
+    set($("outro-badge"), "transform", `scale(${lerp(0.88, 1.0, outroVis).toFixed(3)})`);
+    const shineProg = P(t, 33.3, 34.6, E.inOut);
+    set($("outro-shine"), "transform", `translate(${lerp(-400, 400, shineProg).toFixed(1)} 0)`);
+    op("outro-shine", Math.sin(Math.PI * shineProg));
+  } else op("outro-shine", 0);
+}
+
+/* ==========================================================================
+   INTERACTIVE PLAYER & RESIZE HANDLERS
+   ========================================================================== */
+const stage = $("stage"), scrub = $("scrub"), playBtn = $("play"), timeLabel = $("time");
+const query = new URLSearchParams(location.search);
+if (query.has("export")) document.body.classList.add("export");
+
+function fit() {
+  const barHeight = document.body.classList.contains("export") ? 0 : 52;
+  const s = Math.min(innerWidth / SW, (innerHeight - barHeight) / SH);
+  stage.style.transform = `translate(${(innerWidth - SW * s) / 2}px, ${(innerHeight - barHeight - SH * s) / 2}px) scale(${s})`;
+}
+window.addEventListener("resize", fit);
+fit();
+
+let playing = !query.has("t");
+let tNow = query.has("t") ? +query.get("t") : 0;
+let origin = performance.now() - tNow * 1000;
+
+function show(t) {
+  tNow = t;
+  render(t);
+  scrub.value = t;
+  timeLabel.textContent = `${t.toFixed(2)} / ${DUR.toFixed(2)} s`;
+}
+
+function setPlaying(on) {
+  playing = on;
+  playBtn.textContent = on ? "Pause" : "Play";
+  if (on) origin = performance.now() - tNow * 1000;
+}
+
+playBtn.onclick = () => setPlaying(!playing);
+scrub.oninput = () => { setPlaying(false); show(+scrub.value); };
+
+window.addEventListener("keydown", (e) => {
+  if (e.code === "Space") { e.preventDefault(); setPlaying(!playing); }
+  if (e.code === "ArrowRight" || e.code === "ArrowLeft") {
+    e.preventDefault();
+    setPlaying(false);
+    show(clamp(tNow + (e.code === "ArrowRight" ? 1 : -1) / 60, 0, DUR));
+  }
+});
+
+function tick(now) {
+  if (playing) show(((now - origin) / 1000) % DUR);
+  requestAnimationFrame(tick);
+}
+
+show(tNow);
+setPlaying(playing);
+requestAnimationFrame(tick);
+
+// Headless export hook: page.evaluate(t => window.renderAt(t))
+window.renderAt = (t) => { setPlaying(false); show(t); };
+</script>
+</body>
+</html>
