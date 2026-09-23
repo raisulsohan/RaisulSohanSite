@@ -160,12 +160,13 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 			</figure>
 		<?php endif; ?>
 
-		<?php if ( function_exists( 'rs_project_has_demo' ) && rs_project_has_demo( $pp['id'] ) ) : ?>
+		<?php $pp_kit = function_exists( 'rs_project_demo_kit' ) ? rs_project_demo_kit( $pp['id'] ) : null; ?>
+		<?php if ( $pp_kit ) : ?>
 			<section class="rs-pf-project__section rs-lld-section" id="try" aria-labelledby="rs-lld-heading">
 				<h2 class="rs-pf-h" id="rs-lld-heading"><?php echo esc_html( $rs_is_en ? 'Try it yourself' : 'নিজে চালিয়ে দেখুন' ); ?></h2>
-				<p class="rs-lld-sub"><?php echo esc_html( $rs_is_en ? 'Pick layers in Figma and send them to Photoshop, Illustrator or After Effects.' : 'Figma-য় লেয়ার বেছে Photoshop, Illustrator বা After Effects-এ পাঠিয়ে দেখুন।' ); ?></p>
-				<div class="lld-wrap">
-					<div class="lld" data-lazylord-demo data-lang="<?php echo esc_attr( $rs_is_en ? 'en' : 'bn' ); ?>" data-label="<?php echo esc_attr( $rs_is_en ? 'Interactive demo' : 'ইন্টারঅ্যাক্টিভ ডেমো' ); ?>"></div>
+				<p class="rs-lld-sub"><?php echo esc_html( $rs_is_en ? $pp_kit['sub_en'] : $pp_kit['sub_bn'] ); ?></p>
+				<div class="rs-demo-wrap <?php echo esc_attr( $pp_kit['wrap'] ); ?>">
+					<div class="<?php echo esc_attr( $pp_kit['root'] ); ?> rs-demo-mount" <?php echo esc_attr( $pp_kit['attr'] ); ?> data-lang="<?php echo esc_attr( $rs_is_en ? 'en' : 'bn' ); ?>" data-label="<?php echo esc_attr( $rs_is_en ? 'Interactive demo' : 'ইন্টারঅ্যাক্টিভ ডেমো' ); ?>"></div>
 				</div>
 			</section>
 		<?php endif; ?>
@@ -561,7 +562,7 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 										<span class="rs-pf-demos__icon"><?php echo $pf_play; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></span>
 										<span class="rs-pf-demos__text"><strong><?php echo esc_html( $rs_is_en ? 'Video' : 'ভিডিও' ); ?></strong><small><?php echo esc_html( $rs_is_en ? 'Watch it in motion' : 'অ্যানিমেশনে দেখুন' ); ?></small></span>
 									</button>
-									<a class="rs-pf-demos__item" href="<?php echo esc_url( $pf_try ); ?>" data-rs-interactive data-rs-demo-title="<?php echo esc_attr( $pf_name ); ?>">
+									<a class="rs-pf-demos__item" href="<?php echo esc_url( $pf_try ); ?>"<?php echo rs_project_demo_attrs( $p['id'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside. ?> data-rs-demo-title="<?php echo esc_attr( $pf_name ); ?>">
 										<span class="rs-pf-demos__icon rs-pf-demos__icon--try"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 9l5 12 1.8-5.2L21 14z"/><path d="M7.2 2.2 8 5.1M5.1 8l-2.9-.8M14 4.1 12 6.2M6.2 12l-2.1 2"/></svg></span>
 										<span class="rs-pf-demos__text"><strong><?php echo esc_html( $rs_is_en ? 'Interactive' : 'ইন্টারঅ্যাক্টিভ' ); ?></strong><small><?php echo esc_html( $rs_is_en ? 'Try it yourself' : 'নিজে চালিয়ে দেখুন' ); ?></small></span>
 									</a>
@@ -572,7 +573,7 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 									<?php echo esc_html( $rs_is_en ? 'Demo' : 'ডেমো' ); ?>
 								</button>
 							<?php elseif ( $pf_try ) : ?>
-								<a class="rs-pf-card__demo" href="<?php echo esc_url( $pf_try ); ?>" data-rs-interactive data-rs-demo-title="<?php echo esc_attr( $pf_name ); ?>">
+								<a class="rs-pf-card__demo" href="<?php echo esc_url( $pf_try ); ?>"<?php echo rs_project_demo_attrs( $p['id'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside. ?> data-rs-demo-title="<?php echo esc_attr( $pf_name ); ?>">
 									<?php echo $pf_play; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
 									<?php echo esc_html( $rs_is_en ? 'Demo' : 'ডেমো' ); ?>
 								</a>
@@ -809,6 +810,13 @@ foreach ( $projects as $p ) {
 		'before'      => ! empty( $p['before'] ) ? esc_url_raw( $p['before'] ) : '',
 		'after'       => ! empty( $p['after'] ) ? esc_url_raw( $p['after'] ) : '',
 		'try'         => function_exists( 'rs_project_has_demo' ) && rs_project_has_demo( $p['id'] ) && function_exists( 'rs_project_url' ) ? rs_project_url( $p['id'] ) . '#try' : '',
+		'kit'         => function_exists( 'rs_project_demo_kit' ) && rs_project_demo_kit( $p['id'] ) ? array(
+			'css'   => esc_url_raw( get_template_directory_uri() . '/assets/' . rs_project_demo_kit( $p['id'] )['bundle'] . '.min.css?ver=' . RS_VERSION ),
+			'js'    => esc_url_raw( get_template_directory_uri() . '/assets/' . rs_project_demo_kit( $p['id'] )['bundle'] . '.min.js?ver=' . RS_VERSION ),
+			'mount' => rs_project_demo_kit( $p['id'] )['mount'],
+			'wrap'  => rs_project_demo_kit( $p['id'] )['wrap'],
+			'root'  => rs_project_demo_kit( $p['id'] )['root'],
+		) : null,
 		'demo'        => ! empty( $p['demo'] ) ? esc_url_raw( $p['demo'] ) : '',
 		'demo_tall'   => ! empty( $p['demo_tall'] ) ? esc_url_raw( $p['demo_tall'] ) : '',
 	);
@@ -1097,6 +1105,14 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 			if (p['try']) {
 				tryLink.href = p['try'];
 				tryLink.setAttribute('data-rs-demo-title', String(p.title || '').split(' — ')[0]);
+
+				if (p.kit) {
+					tryLink.setAttribute('data-rs-css', p.kit.css);
+					tryLink.setAttribute('data-rs-js', p.kit.js);
+					tryLink.setAttribute('data-rs-mount', p.kit.mount);
+					tryLink.setAttribute('data-rs-wrap', p.kit.wrap);
+					tryLink.setAttribute('data-rs-root', p.kit.root);
+				}
 				tryLink.hidden = false;
 			} else {
 				tryLink.removeAttribute('href');
@@ -2327,10 +2343,8 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 ?>
 <?php if ( $rs_any_video || $rs_any_try ) : ?>
 <div class="rs-demo" id="rs-demo" role="dialog" aria-modal="true" aria-labelledby="rs-demo-title" hidden
-	data-lld-css="<?php echo esc_url( get_template_directory_uri() . '/assets/lazylord-demo.min.css?ver=' . RS_VERSION ); ?>"
-	data-lld-js="<?php echo esc_url( get_template_directory_uri() . '/assets/lazylord-demo.min.js?ver=' . RS_VERSION ); ?>"
-	data-lld-lang="<?php echo esc_attr( $rs_is_en ? 'en' : 'bn' ); ?>"
-	data-lld-label="<?php echo esc_attr( $rs_is_en ? 'Interactive demo' : 'ইন্টারঅ্যাক্টিভ ডেমো' ); ?>">
+	data-demo-lang="<?php echo esc_attr( $rs_is_en ? 'en' : 'bn' ); ?>"
+	data-demo-label="<?php echo esc_attr( $rs_is_en ? 'Interactive demo' : 'ইন্টারঅ্যাক্টিভ ডেমো' ); ?>">
 	<div class="rs-demo__box">
 		<div class="rs-demo__head">
 			<span class="rs-demo__title" id="rs-demo-title"></span>
@@ -2365,7 +2379,7 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 	var bar      = 52; /* the demo animation's own play bar, measured on load */
 	var frame    = null;
 	var lld      = null; /* the interactive demo's wrap, when that is open */
-	var loading  = null;
+	var loading  = {};
 	var opener   = null;
 	var tall     = false;
 	var wideSrc  = '';
@@ -2486,14 +2500,14 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 		show(title, from);
 	}
 
-	/* The interactive demo's page bundle, once. */
-	function load() {
-		if (window.LazyLordDemo) {
+	/* A project's page bundle, fetched once and then remembered. */
+	function load(cssHref, jsSrc, mount) {
+		if (window[mount]) {
 			return Promise.resolve();
 		}
 
-		if (!loading) {
-			loading = new Promise(function (resolve, reject) {
+		if (!loading[jsSrc]) {
+			loading[jsSrc] = new Promise(function (resolve, reject) {
 				var left = 2;
 				var done = function () {
 					if (--left === 0) {
@@ -2501,17 +2515,17 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 					}
 				};
 				var fail = function () {
-					loading = null;
+					loading[jsSrc] = null;
 					reject();
 				};
 				var css = document.createElement('link');
 				var js  = document.createElement('script');
 
 				css.rel = 'stylesheet';
-				css.href = root.getAttribute('data-lld-css');
+				css.href = cssHref;
 				css.onload = done;
 				css.onerror = fail;
-				js.src = root.getAttribute('data-lld-js');
+				js.src = jsSrc;
 				js.onload = done;
 				js.onerror = fail;
 				document.head.appendChild(css);
@@ -2519,7 +2533,7 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 			});
 		}
 
-		return loading;
+		return loading[jsSrc];
 	}
 
 	/* The project page, as a plain link would have gone. The case study
@@ -2537,26 +2551,36 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 		}
 	}
 
-	function openInteractive(href, title, from) {
+	function openInteractive(trigger, title) {
+		var href = trigger.getAttribute('href');
+		var cssHref = trigger.getAttribute('data-rs-css');
+		var jsSrc = trigger.getAttribute('data-rs-js');
+		var mount = trigger.getAttribute('data-rs-mount');
+
+		if (!cssHref || !jsSrc || !mount) {
+			go(href);
+			return;
+		}
+
 		close();
 
 		var wrap = document.createElement('div');
 		var demo = document.createElement('div');
 
-		wrap.className = 'lld-wrap';
-		demo.className = 'lld';
-		demo.setAttribute('data-lang', root.getAttribute('data-lld-lang') || 'en');
-		demo.setAttribute('data-label', root.getAttribute('data-lld-label') || 'Interactive demo');
+		wrap.className = 'rs-demo-wrap ' + (trigger.getAttribute('data-rs-wrap') || '');
+		demo.className = (trigger.getAttribute('data-rs-root') || '') + ' rs-demo-mount';
+		demo.setAttribute('data-lang', root.getAttribute('data-demo-lang') || 'en');
+		demo.setAttribute('data-label', root.getAttribute('data-demo-label') || 'Interactive demo');
 		wrap.appendChild(demo);
 
 		lld = wrap;
 		box.classList.add('is-interactive');
 		slot.appendChild(wrap);
-		show(title + ' · ' + demo.getAttribute('data-label'), from);
+		show(title + ' · ' + demo.getAttribute('data-label'), trigger);
 
-		load().then(function () {
-			if (lld === wrap && window.LazyLordDemo) {
-				window.LazyLordDemo.mount(demo);
+		load(cssHref, jsSrc, mount).then(function () {
+			if (lld === wrap && window[mount]) {
+				window[mount].mount(demo);
 			}
 		}, function () {
 			if (lld === wrap) {
@@ -2615,7 +2639,7 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 			}
 			e.preventDefault();
 			e.stopPropagation();
-			openInteractive(interactive.getAttribute('href'), interactive.getAttribute('data-rs-demo-title') || 'LazyLord', interactive);
+			openInteractive(interactive, interactive.getAttribute('data-rs-demo-title') || 'Demo');
 			return;
 		}
 

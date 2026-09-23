@@ -2668,6 +2668,21 @@ a.rs-pf-card__demo {
 	height: 18px;
 }
 
+/* An interactive demo on a project page: the section's text keeps the 880px
+   column, the demo itself takes the portfolio's full content width (1116px)
+   so desktops get its wide stage. It never exceeds the screen less the page
+   gutters. */
+.rs-lld-section .rs-lld-sub {
+	margin: 0.6rem 0 1.4rem;
+	color: var(--pf-text2, #b9b4d4);
+}
+
+.rs-lld-section .rs-demo-wrap {
+	--lld-w: min(1116px, calc(100vw - 2 * clamp(16px, 4vw, 32px)));
+	width: var(--lld-w);
+	margin-left: calc((100% - var(--lld-w)) / 2);
+}
+
 /* The interactive demo in the player. On a phone its tall stage can be
    taller than the screen, so the pop-up scrolls inside itself. Until its
    bundle has loaded, the box holds a quiet placeholder. */
@@ -2678,11 +2693,12 @@ a.rs-pf-card__demo {
 	background: #0b0b12;
 }
 
-.rs-demo__box.is-interactive .lld {
+.rs-demo__box.is-interactive .rs-demo-mount {
 	border-radius: 0;
 }
 
-.rs-demo__box.is-interactive .lld:not(.lld-ready) {
+/* Empty until its bundle has loaded and mounted. */
+.rs-demo__box.is-interactive .rs-demo-mount:empty {
 	display: grid;
 	place-items: center;
 	min-height: 280px;
@@ -2690,7 +2706,7 @@ a.rs-pf-card__demo {
 	font-weight: 600;
 }
 
-.rs-demo__box.is-interactive .lld:not(.lld-ready)::before {
+.rs-demo__box.is-interactive .rs-demo-mount:empty::before {
 	content: attr(data-label) "…";
 }
 

@@ -5,20 +5,6 @@
    never shifts when the demo starts.
    ========================================================================== */
 
-/* On a project page: the section text keeps the 880px column, the demo
-   itself takes the portfolio's full content width (1116px) so desktops get
-   the wide stage. It never exceeds the screen less the page gutters. */
-.rs-lld-section .rs-lld-sub {
-	margin: 0.6rem 0 1.4rem;
-	color: var(--pf-text2, #b9b4d4);
-}
-
-.rs-lld-section .lld-wrap {
-	--lld-w: min(1116px, calc(100vw - 2 * clamp(16px, 4vw, 32px)));
-	width: var(--lld-w);
-	margin-left: calc((100% - var(--lld-w)) / 2);
-}
-
 .lld-wrap {
 	container-type: inline-size;
 }

@@ -2424,12 +2424,71 @@ add_action( 'rest_api_init', 'rs_rest_github_route' );
  * @return bool
  */
 function rs_project_has_demo( $slug ) {
+	return (bool) rs_project_demo_kit( $slug );
+}
+
+/**
+ * Everything a project's interactive demo needs: which page bundle to load,
+ * the classes and attribute its markup carries, the global its bundle
+ * exposes for the pop-up player to mount with, and its one-line intro.
+ *
+ * @param string $slug Project slug.
+ * @return array|null
+ */
+function rs_project_demo_kit( $slug ) {
 	/**
-	 * Project slugs whose page shows the interactive demo.
+	 * Projects that have an interactive demo, by slug.
 	 *
-	 * @param string[] $slugs Slugs; LazyLord by default.
+	 * @param array[] $kits Slug => { bundle, wrap, root, attr, mount, sub_en, sub_bn }.
 	 */
-	return in_array( (string) $slug, (array) apply_filters( 'rs_project_interactive_demos', array( 'lazylord' ) ), true );
+	$kits = (array) apply_filters( 'rs_project_interactive_demos', array(
+		'lazylord'      => array(
+			'bundle' => 'lazylord-demo',
+			'wrap'   => 'lld-wrap',
+			'root'   => 'lld',
+			'attr'   => 'data-lazylord-demo',
+			'mount'  => 'LazyLordDemo',
+			'sub_en' => 'Pick layers in Figma and send them to Photoshop, Illustrator or After Effects.',
+			'sub_bn' => 'Figma-য় লেয়ার বেছে Photoshop, Illustrator বা After Effects-এ পাঠিয়ে দেখুন।',
+		),
+		'lazy-image-ae' => array(
+			'bundle' => 'lazyimage-demo',
+			'wrap'   => 'lzi-wrap',
+			'root'   => 'lzi',
+			'attr'   => 'data-lazyimage-demo',
+			'mount'  => 'LazyImageDemo',
+			'sub_en' => 'Write a prompt in any language, generate, and watch the picture land on the timeline.',
+			'sub_bn' => 'যেকোনো ভাষায় প্রম্পট লিখে ছবি বানান, দেখুন সেটা নিজে থেকেই টাইমলাইনে বসে।',
+		),
+	) );
+
+	return isset( $kits[ $slug ] ) ? $kits[ $slug ] : null;
+}
+
+/**
+ * What a link or button needs so the pop-up player can open a project's
+ * interactive demo: which bundle to fetch and what to mount it into.
+ *
+ * @param string $slug Project slug.
+ * @return string Escaped attributes, or an empty string.
+ */
+function rs_project_demo_attrs( $slug ) {
+	$kit = rs_project_demo_kit( $slug );
+
+	if ( ! $kit ) {
+		return '';
+	}
+
+	$base = get_template_directory_uri() . '/assets/' . $kit['bundle'] . '.min';
+
+	return sprintf(
+		' data-rs-interactive data-rs-css="%s" data-rs-js="%s" data-rs-mount="%s" data-rs-wrap="%s" data-rs-root="%s"',
+		esc_url( $base . '.css?ver=' . RS_VERSION ),
+		esc_url( $base . '.js?ver=' . RS_VERSION ),
+		esc_attr( $kit['mount'] ),
+		esc_attr( $kit['wrap'] ),
+		esc_attr( $kit['root'] )
+	);
 }
 
 /**
@@ -2439,15 +2498,16 @@ function rs_project_has_demo( $slug ) {
  */
 function rs_project_demo_assets() {
 	$project = function_exists( 'rs_current_project' ) ? rs_current_project() : null;
+	$kit     = $project ? rs_project_demo_kit( $project['id'] ) : null;
 
-	if ( ! $project || ! rs_project_has_demo( $project['id'] ) ) {
+	if ( ! $kit ) {
 		return;
 	}
 
 	$base = get_template_directory_uri() . '/assets/';
 
-	wp_enqueue_style( 'rs-lazylord-demo', $base . 'lazylord-demo.min.css', array( 'rs-style' ), RS_VERSION );
-	wp_enqueue_script( 'rs-lazylord-demo', $base . 'lazylord-demo.min.js', array(), RS_VERSION, true );
+	wp_enqueue_style( 'rs-' . $kit['bundle'], $base . $kit['bundle'] . '.min.css', array( 'rs-style' ), RS_VERSION );
+	wp_enqueue_script( 'rs-' . $kit['bundle'], $base . $kit['bundle'] . '.min.js', array(), RS_VERSION, true );
 }
 add_action( 'wp_enqueue_scripts', 'rs_project_demo_assets', 20 );
 

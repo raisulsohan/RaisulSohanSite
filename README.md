@@ -2,13 +2,21 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.10.5-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.11.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.11
+
+**Lazy-Image gets an interactive demo, and the demos become a fitting.** A project page can now carry any project's interactive demo, not only LazyLord's:
+
+- **Try Lazy-Image** on its project page or in the portfolio's pop-up: log in with your own browser (no API key), pick a prompt in English or Bengali and watch it type itself, choose a ratio, press Generate, and the picture is generated, downloaded and dropped onto the timeline by itself — in After Effects or in Premiere Pro, each with its own timeline. The pictures, the coast footage and the comp are the demo animation's own drawing code, injected at build.
+- **One fitting for all of them:** `rs_project_demo_kit()` names each project's bundle, markup classes and mount, so adding the next demo is one array entry. The card's Demo menu, the case study's "Try the interactive demo" card and the project page all read from it, and the pop-up player fetches whichever bundle the trigger names, the first time it is asked for.
+- **Lazy-Image's demo animation** (7.10.5) plays from the same Demo button, in both cuts.
 
 ## What's new in 7.10
 

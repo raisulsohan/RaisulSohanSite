@@ -1,0 +1,848 @@
+/* ==========================================================================
+   Lazy-Image interactive demo
+   A mock Adobe workspace with the Lazy-Image panel beside it: log in, write a
+   prompt, choose a ratio, generate, and the picture lands on the timeline.
+   Two fixed stages, scaled to fit: 1280 x 760 for containers 980px and wider,
+   440 x 1120 for phones and narrow columns. The box's height comes from CSS
+   alone, so the page never shifts.
+   ========================================================================== */
+
+.lzi-wrap {
+	container-type: inline-size;
+}
+
+/* The page's own type rules stop at the demo's edge. */
+.lzi h4,
+.lzi h5,
+.lzi p,
+.lzi ul,
+.lzi li,
+.lzi b,
+.lzi small {
+	font-family: inherit;
+	line-height: inherit;
+	letter-spacing: normal;
+	text-transform: none;
+}
+
+.lzi li {
+	margin: 0;
+}
+
+.lzi {
+	--lzi-accent: #00bcd4;
+	--lzi-accent2: #1a73e8;
+	--lzi-grad: linear-gradient(135deg, #00bcd4, #1a73e8);
+	--lzi-ink: #e6edf3;
+	--lzi-dim: #8b949e;
+	--lzi-line: #30363d;
+	--lzi-panel: #0d1117;
+	--lzi-card: #161b22;
+	position: relative;
+	width: 100%;
+	aspect-ratio: 1280 / 760;
+	overflow: hidden;
+	border-radius: 18px;
+	background:
+		radial-gradient(55% 60% at 50% 40%, rgba(0, 188, 212, 0.16), transparent 70%),
+		linear-gradient(135deg, #12141a, #07080c);
+	color: var(--lzi-ink);
+	font: 13px/1.35 Inter, "Segoe UI", system-ui, -apple-system, var(--rs-sans, sans-serif), sans-serif;
+	letter-spacing: normal;
+	text-align: left;
+	isolation: isolate;
+	contain: layout paint;
+	-webkit-tap-highlight-color: transparent;
+}
+
+@container (max-width: 979px) {
+	.lzi {
+		max-width: 520px;
+		margin-inline: auto;
+		aspect-ratio: 440 / 1120;
+	}
+}
+
+.lzi:not(.lzi-ready)::after {
+	content: attr(data-label);
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	font-weight: 600;
+	color: #8b949e;
+}
+
+.lzi *,
+.lzi *::before,
+.lzi *::after {
+	box-sizing: border-box;
+}
+
+.lzi button {
+	margin: 0;
+	font: inherit;
+	color: inherit;
+	letter-spacing: inherit;
+	cursor: pointer;
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+.lzi button:focus-visible,
+.lzi [tabindex]:focus-visible {
+	outline: 2px solid var(--lzi-accent);
+	outline-offset: 2px;
+}
+
+.lzi svg text {
+	font-family: inherit;
+}
+
+.lzi-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- stage */
+
+.lzi-stage {
+	position: absolute;
+	left: 0;
+	top: 0;
+	transform-origin: 0 0;
+}
+
+.lzi-wide {
+	width: 1280px;
+	height: 760px;
+}
+
+.lzi-tall {
+	width: 440px;
+	height: 1120px;
+}
+
+/* ---------------------------------------------------------------- header */
+
+.lzi-head {
+	position: absolute;
+	left: 0;
+	top: 0;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+
+.lzi-wide .lzi-head {
+	width: 1280px;
+	height: 52px;
+}
+
+.lzi-tall .lzi-head {
+	flex-wrap: wrap;
+	align-content: center;
+	gap: 6px 10px;
+	width: 440px;
+	height: 78px;
+}
+
+.lzi-label {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	gap: 8px;
+	height: 32px;
+	padding: 0 14px 0 10px;
+	border: 1px solid rgba(0, 188, 212, 0.5);
+	border-radius: 999px;
+	background: rgba(0, 188, 212, 0.14);
+	font-weight: 700;
+	color: #fff;
+	white-space: nowrap;
+}
+
+.lzi-label svg {
+	width: 15px;
+	height: 15px;
+	color: var(--lzi-accent);
+}
+
+.lzi-label small {
+	font-weight: 500;
+	color: #a9c7d3;
+}
+
+.lzi-hint {
+	flex: 1;
+	min-width: 0;
+	margin: 0;
+	color: #c2ccd6;
+}
+
+.lzi-tall .lzi-hint {
+	order: 3;
+	flex-basis: 100%;
+	font-size: 12.5px;
+	line-height: 1.3;
+}
+
+.lzi-hint.lzi-nudging {
+	animation: lzi-nudge 0.4s ease;
+	color: #fff;
+}
+
+.lzi-reset {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	gap: 6px;
+	height: 34px;
+	margin-left: auto;
+	padding: 0 14px;
+	border: 1px solid var(--lzi-line);
+	border-radius: 999px;
+	background: #14171d;
+	font-weight: 600;
+}
+
+.lzi-reset svg {
+	width: 14px;
+	height: 14px;
+}
+
+.lzi-reset:hover {
+	border-color: var(--lzi-accent);
+}
+
+/* ---------------------------------------------------------------- the window */
+
+.lzi-app {
+	position: absolute;
+	left: 0;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	border: 1px solid #252732;
+	border-radius: 14px;
+	background: #131418;
+	box-shadow: 0 30px 70px -20px rgba(0, 0, 0, 0.8);
+}
+
+.lzi-wide .lzi-app {
+	top: 64px;
+	width: 1280px;
+	height: 696px;
+}
+
+.lzi-tall .lzi-app {
+	top: 86px;
+	width: 440px;
+	height: 1034px;
+}
+
+.lzi-titlebar {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 8px;
+	height: 36px;
+	padding: 0 12px;
+	background: #1b1c23;
+	font-size: 12px;
+	color: #8c92a4;
+	white-space: nowrap;
+}
+
+.lzi-tab {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	height: 24px;
+	padding: 0 10px 0 6px;
+	border: 1px solid transparent;
+	border-radius: 6px;
+	background: transparent;
+	font-size: 11.5px;
+	font-weight: 600;
+	color: #8c92a4;
+}
+
+.lzi-tab svg {
+	width: 16px;
+	height: 16px;
+}
+
+.lzi-tab[aria-selected="true"] {
+	border-color: #343747;
+	background: #23252f;
+	color: #fff;
+}
+
+.lzi-file {
+	flex: 1;
+	overflow: hidden;
+	text-align: center;
+	text-overflow: ellipsis;
+	color: #b0b6c8;
+}
+
+.lzi-dots {
+	display: flex;
+	flex: none;
+	gap: 6px;
+}
+
+.lzi-dots i {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	opacity: 0.85;
+}
+
+.lzi-tall .lzi-file,
+.lzi-tall .lzi-dots {
+	display: none;
+}
+
+.lzi-body {
+	display: grid;
+	flex: 1;
+	min-height: 0;
+	padding: 8px;
+	gap: 8px;
+}
+
+.lzi-wide .lzi-body {
+	grid-template-columns: minmax(0, 1fr) 360px;
+	grid-template-rows: minmax(0, 1fr) 176px;
+	grid-template-areas:
+		"viewer panel"
+		"timeline panel";
+}
+
+.lzi-tall .lzi-body {
+	grid-template-columns: minmax(0, 1fr);
+	grid-template-rows: auto 132px minmax(0, 1fr);
+	grid-template-areas:
+		"viewer"
+		"timeline"
+		"panel";
+}
+
+/* ---------------------------------------------------------------- viewer */
+
+.lzi-viewer {
+	grid-area: viewer;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	border: 1px solid #262834;
+	border-radius: 8px;
+	background: #181920;
+}
+
+.lzi-viewer__bar {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 10px;
+	height: 28px;
+	padding: 0 12px;
+	background: #1f2029;
+	font-size: 11px;
+	color: #6f7587;
+}
+
+.lzi-viewer__bar b {
+	font-size: 12px;
+	color: var(--lzi-ink);
+}
+
+.lzi-viewer__bar span:last-child {
+	margin-left: auto;
+}
+
+.lzi-canvas {
+	display: grid;
+	flex: 1;
+	min-height: 0;
+	place-items: center;
+	padding: 10px;
+}
+
+.lzi-canvas svg {
+	width: auto;
+	max-width: 100%;
+	max-height: 100%;
+	border-radius: 4px;
+	background: #05070b;
+}
+
+/* The little browser Lazy-Image drives, over the viewer. */
+.lzi-browser {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 300px;
+	padding: 10px 12px 12px;
+	border: 1px solid #2b3240;
+	border-radius: 10px;
+	background: #10141c;
+	box-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.85);
+	opacity: 0;
+	visibility: hidden;
+	transform: translate(-50%, -46%);
+	transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0.25s;
+}
+
+.lzi-browser.lzi-on {
+	opacity: 1;
+	visibility: visible;
+	transform: translate(-50%, -50%);
+	transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.lzi-browser__bar {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-bottom: 8px;
+}
+
+.lzi-browser__bar i {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: #3a4150;
+}
+
+.lzi-browser__url {
+	flex: 1;
+	padding: 3px 8px;
+	border-radius: 999px;
+	background: #171c26;
+	font-size: 10px;
+	color: #8b949e;
+}
+
+.lzi-browser p {
+	margin: 0;
+	font-size: 11.5px;
+	color: #c2ccd6;
+}
+
+.lzi-browser p + p {
+	margin-top: 6px;
+	color: var(--lzi-accent);
+	font-weight: 600;
+}
+
+/* ---------------------------------------------------------------- timeline */
+
+.lzi-timeline {
+	grid-area: timeline;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	border: 1px solid #262834;
+	border-radius: 8px;
+	background: #181920;
+}
+
+.lzi-timeline__bar {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 10px;
+	height: 26px;
+	padding: 0 12px;
+	background: #1f2029;
+	font-size: 11px;
+	color: #6f7587;
+}
+
+.lzi-rows {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+.lzi-row {
+	display: grid;
+	grid-template-columns: 18px 22px 130px minmax(0, 1fr);
+	align-items: center;
+	gap: 8px;
+	height: 30px;
+	padding: 0 10px;
+	border-bottom: 1px solid #1e1f28;
+	font-size: 11px;
+	color: #c2c7d9;
+}
+
+.lzi-row__n {
+	color: #6f7587;
+	text-align: right;
+}
+
+.lzi-row__chip {
+	width: 18px;
+	height: 18px;
+	overflow: hidden;
+	border-radius: 3px;
+	background: #262b36;
+}
+
+.lzi-row__chip svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.lzi-row__name {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.lzi-row__bar {
+	height: 16px;
+	border-radius: 3px;
+	background: linear-gradient(90deg, rgba(0, 188, 212, 0.55), rgba(26, 115, 232, 0.55));
+}
+
+.lzi-row--footage .lzi-row__bar {
+	background: #3d4658;
+}
+
+.lzi-row.lzi-new {
+	animation: lzi-rowin 0.4s ease;
+}
+
+/* ---------------------------------------------------------------- the panel */
+
+.lzi-panel {
+	grid-area: panel;
+	display: flex;
+	flex-direction: column;
+	gap: 9px;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	padding: 12px;
+	border: 1px solid #252733;
+	border-radius: 10px;
+	background: var(--lzi-panel);
+}
+
+.lzi-phead {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 8px;
+}
+
+.lzi-phead b {
+	font-size: 15px;
+	font-weight: 700;
+}
+
+.lzi-host {
+	padding: 2px 7px;
+	border: 1px solid rgba(0, 188, 212, 0.35);
+	border-radius: 4px;
+	background: rgba(0, 188, 212, 0.12);
+	font-size: 9px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	color: var(--lzi-accent);
+	white-space: nowrap;
+}
+
+.lzi-ver {
+	margin-left: auto;
+	font-size: 10px;
+	color: var(--lzi-dim);
+}
+
+.lzi-loginrow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.lzi-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	min-height: 30px;
+	padding: 0 12px;
+	border: 1px solid var(--lzi-line);
+	border-radius: 6px;
+	background: #0f1923;
+	font-size: 11.5px;
+	font-weight: 600;
+	color: var(--lzi-ink);
+}
+
+.lzi-btn:hover:not([aria-disabled="true"]) {
+	border-color: #465061;
+	background: #16212c;
+}
+
+.lzi-btn--go {
+	min-height: 40px;
+	border-color: transparent;
+	background: var(--lzi-grad);
+	font-size: 13.5px;
+	font-weight: 700;
+	color: #fff;
+}
+
+.lzi-btn[aria-disabled="true"] {
+	opacity: 0.5;
+	cursor: default;
+}
+
+.lzi-badge {
+	margin-left: auto;
+	padding: 3px 8px;
+	border: 1px solid #ffab00;
+	border-radius: 4px;
+	background: rgba(255, 171, 0, 0.18);
+	font-size: 10.5px;
+	font-weight: 600;
+	color: #ffab00;
+	white-space: nowrap;
+}
+
+.lzi-badge.lzi-ok {
+	border-color: rgba(0, 200, 83, 0.6);
+	background: rgba(0, 200, 83, 0.15);
+	color: #00c853;
+}
+
+.lzi-cap {
+	font-size: 11.5px;
+	font-weight: 600;
+	color: var(--lzi-dim);
+}
+
+.lzi-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+}
+
+.lzi-chip {
+	min-height: 26px;
+	padding: 0 9px;
+	border: 1px solid var(--lzi-line);
+	border-radius: 13px;
+	background: #0f1923;
+	font-size: 11px;
+	font-weight: 500;
+	color: var(--lzi-ink);
+}
+
+.lzi-chip[aria-checked="true"] {
+	border-color: var(--lzi-accent);
+	background: rgba(0, 188, 212, 0.16);
+	color: #9ee9f5;
+}
+
+.lzi-prompt {
+	min-height: 66px;
+	padding: 8px 10px;
+	border: 1px solid var(--lzi-line);
+	border-radius: 8px;
+	background: #0f1923;
+	font-size: 12px;
+	line-height: 1.45;
+	color: var(--lzi-ink);
+	word-break: break-word;
+}
+
+.lzi-prompt:empty::before,
+.lzi-prompt.lzi-empty::before {
+	content: attr(data-placeholder);
+	color: var(--lzi-dim);
+}
+
+.lzi-prompt i {
+	display: inline-block;
+	width: 1.5px;
+	height: 14px;
+	margin-left: 1px;
+	background: var(--lzi-ink);
+	vertical-align: -2px;
+	animation: lzi-blink 1s step-end infinite;
+}
+
+.lzi-preview {
+	display: grid;
+	flex: none;
+	place-items: center;
+	min-height: 150px;
+	padding: 10px;
+	border: 1px solid var(--lzi-line);
+	border-radius: 8px;
+	background: var(--lzi-card);
+	text-align: center;
+	color: var(--lzi-dim);
+	font-size: 11.5px;
+}
+
+.lzi-preview svg {
+	max-width: 100%;
+	max-height: 210px;
+	border-radius: 6px;
+}
+
+.lzi-tall .lzi-preview svg {
+	max-height: 260px;
+}
+
+.lzi-spin {
+	width: 34px;
+	height: 34px;
+	border: 4px solid #22303c;
+	border-top-color: var(--lzi-accent);
+	border-radius: 50%;
+	animation: lzi-spin 0.9s linear infinite;
+}
+
+.lzi-meter {
+	height: 6px;
+	overflow: hidden;
+	border-radius: 3px;
+	background: #12181f;
+}
+
+.lzi-meter i {
+	display: block;
+	height: 100%;
+	width: 0;
+	border-radius: 3px;
+	background: var(--lzi-grad);
+	transition: width 0.15s linear;
+}
+
+.lzi-status {
+	margin: 0;
+	font-size: 11px;
+	font-weight: 600;
+	color: var(--lzi-accent);
+}
+
+.lzi-status.lzi-quiet {
+	font-weight: 500;
+	color: var(--lzi-dim);
+}
+
+.lzi-status.lzi-ok {
+	color: #00c853;
+}
+
+.lzi-foot {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	font-size: 10px;
+	color: var(--lzi-dim);
+}
+
+.lzi-toast {
+	position: absolute;
+	left: 50%;
+	bottom: 12px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 7px 14px;
+	border: 1px solid #23394a;
+	border-radius: 999px;
+	background: rgba(13, 17, 23, 0.95);
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--lzi-ink);
+	white-space: nowrap;
+	opacity: 0;
+	transform: translate(-50%, 8px);
+	transition: opacity 0.25s ease, transform 0.25s ease;
+	pointer-events: none;
+}
+
+.lzi-toast.lzi-on {
+	opacity: 1;
+	transform: translate(-50%, 0);
+}
+
+/* The picture flying from the panel into the composition. */
+.lzi-fly {
+	position: absolute;
+	z-index: 10;
+	overflow: hidden;
+	border-radius: 6px;
+	box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.7), 0 20px 40px -12px rgba(0, 0, 0, 0.8);
+	pointer-events: none;
+}
+
+.lzi-fly svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+/* ---------------------------------------------------------------- motion */
+
+@keyframes lzi-nudge {
+	25% {
+		transform: translateX(-4px);
+	}
+	50% {
+		transform: translateX(4px);
+	}
+	75% {
+		transform: translateX(-2px);
+	}
+}
+
+@keyframes lzi-rowin {
+	from {
+		opacity: 0;
+		transform: translateX(-10px);
+	}
+}
+
+@keyframes lzi-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes lzi-blink {
+	50% {
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lzi *,
+	.lzi *::before,
+	.lzi *::after {
+		animation-duration: 0.01ms !important;
+		transition-duration: 0.01ms !important;
+	}
+
+	.lzi-spin {
+		animation-duration: 900ms !important;
+	}
+}
