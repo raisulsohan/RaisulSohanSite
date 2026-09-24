@@ -2116,10 +2116,60 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE ); // phpcs:ignore Wor
 		}
 	}
 
-	var LOOP = 2400, MOVE = 1700, clockStart = 0;
+	var LOOP = 2400, MOVE = 1700, clockStart = 0, firstFrame = 0;
+
+	/*
+	 * Whether the line the ball runs on is there yet.
+	 *
+	 * The curve draws itself in — see .rs-pf-curve — and the ball used to
+	 * set off the moment the page did, which put it out ahead of a line
+	 * that did not exist: a ball travelling over nothing, with the path
+	 * catching up behind it.
+	 *
+	 * Asked of the animation rather than counted off against the duration
+	 * written in the stylesheet. The two are not the same clock: a CSS
+	 * animation starts when its element first renders, which on a tab
+	 * opened in the background is not when this script starts — measured
+	 * on the live page, the curve was two per cent drawn at two and a half
+	 * seconds old. It also means nothing here has to be kept in step with
+	 * a number over in the CSS.
+	 *
+	 * Answered once and remembered, so this is not asked on every frame
+	 * for the rest of the visit.
+	 */
+	function curveDrawn(ts) {
+		if (!G || G.drawn) {
+			return true;
+		}
+
+		var running = G.curve && G.curve.getAnimations ? G.curve.getAnimations() : null;
+
+		if (running && running.length) {
+			G.sawDraw = true;
+
+			for (var i = 0; i < running.length; i++) {
+				if ('finished' !== running[i].playState) {
+					return false;
+				}
+			}
+		} else if (running && !G.sawDraw && (ts - firstFrame) < 6000) {
+			/* Styles may not have settled yet. Wait, but not for ever: a
+			   stylesheet that never brings the animation should still get a
+			   moving ball rather than a stuck one. */
+			return false;
+		}
+
+		G.drawn = true;
+
+		return true;
+	}
 
 	function tick(ts) {
-		if (G && G.visible && !reduce) {
+		if (!firstFrame) {
+			firstFrame = ts;
+		}
+
+		if (G && G.visible && !reduce && curveDrawn(ts)) {
 			if (!clockStart) {
 				clockStart = ts;
 			}
