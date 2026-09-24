@@ -40,8 +40,12 @@
 		}
 	}
 
+	function readMark( id ) {
+		return '|' + langKey( id ) + '|';
+	}
+
 	function hasRead( list, id ) {
-		return list.indexOf( '|' + id + '|' ) > -1;
+		return list.indexOf( readMark( id ) ) > -1;
 	}
 
 	/* The stored shape is "|3||17||8|", so an id is always surrounded by
@@ -86,18 +90,29 @@
 		} );
 	}
 
-	function countView( id ) {
+	/*
+	 * `base` is the REST route of the edition the story belongs to, which is
+	 * this site's own unless the reader asked for a translation: the number
+	 * being counted lives on whichever site holds the story.
+	 *
+	 * The "already read" list is this edition's alone. It exists to grey out
+	 * rows in the list on screen, and a translation has no row there — while
+	 * its id would collide with a local story that does.
+	 */
+	function countView( id, base ) {
 		if ( ! id || ! window.fetch ) {
 			return;
 		}
 
-		var mark = '|' + id + '|';
+		var where = base || rest;
+		var own = where === rest;
+		var mark = readMark( id );
 		var read = readList();
-		var first = ! hasRead( read, id );
+		var first = own && ! hasRead( read, id );
 
 		/* same-origin is what carries the login cookie, which is how the
 		   endpoint recognises the author and declines to count them. */
-		window.fetch( rest + 'view/' + id + ( first ? '?first=1' : '' ), {
+		window.fetch( where + 'view/' + id + ( first ? '?first=1' : '' ), {
 			method: 'POST',
 			credentials: 'same-origin',
 			/* Lets the request finish even if the reader closes the tab

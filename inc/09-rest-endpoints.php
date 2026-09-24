@@ -145,6 +145,10 @@ function rs_rest_post( $request ) {
 
 	$post = $restore; // phpcs:ignore WordPress.WP.GlobalVariablesOverride
 
+	/* The same story in the other edition, so the modal can offer it and,
+	   when it is asked for, fetch it from that edition's own route. */
+	$twin = rs_post_twin( $item->ID );
+
 	return rest_ensure_response(
 		array(
 			'id'           => $item->ID,
@@ -160,6 +164,12 @@ function rs_rest_post( $request ) {
 			'related'      => rs_related_payload( $item ),
 			'prev'         => rs_adjacent_payload( $prev ),
 			'next'         => rs_adjacent_payload( $next ),
+			'twin'         => $twin ? array(
+				'id'   => (int) $twin['id'],
+				'url'  => $twin['url'],
+				'rest' => $twin['rest'],
+				'lang' => $twin['lang'],
+			) : null,
 		)
 	);
 }

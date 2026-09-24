@@ -21,6 +21,23 @@
 	var LATER_KEY = 'rs-later';
 	var LATER_KEEP = 50;
 
+	/* Which shelf entry a button is about. The two editions share one
+	   localStorage and hand out the same ids, so a story is named by its
+	   language too — see langKey(). A button drawn in the modal carries the
+	   language of the story on screen, which may be the translation. */
+	function laterKey( btn ) {
+		return 'p' + langKey(
+			btn.getAttribute( 'data-rs-later' ),
+			btn.getAttribute( 'data-rs-later-lang' )
+		);
+	}
+
+	/* The route the story itself lives on, so the offline copy is fetched
+	   from the edition that holds it. */
+	function laterRest( btn ) {
+		return btn.getAttribute( 'data-rs-later-rest' ) || rest;
+	}
+
 	function readLater() {
 		try {
 			return JSON.parse( store( LATER_KEY ) || '{}' ) || {};
@@ -68,7 +85,7 @@
 		var inText     = ( strings && strings.inLater ) || 'তালিকায় আছে';
 
 		$$( '[data-rs-later]' ).forEach( function ( btn ) {
-			var on = !! map[ 'p' + btn.getAttribute( 'data-rs-later' ) ];
+			var on = !! map[ laterKey( btn ) ];
 			var text = $( '[data-rs-later-text]', btn );
 
 			btn.classList.toggle( 'is-saved', on );
@@ -92,7 +109,12 @@
 		}
 
 		var map = readLater();
-		var keys = Object.keys( map );
+		/* This edition's own shelf. A translation saved from the modal is
+		   marked with its language and belongs on the other edition's front
+		   page, where its id and its row actually mean something. */
+		var keys = Object.keys( map ).filter( function ( key ) {
+			return ( key.indexOf( '~en' ) > -1 ) === isEn;
+		} );
 		var html = '';
 		var removeText = ( strings && strings.removeLater ) || 'তালিকা থেকে সরান';
 		var laterText  = ( strings && strings.readLater ) || 'পরে পড়ব';
@@ -105,7 +127,8 @@
 				continue;
 			}
 
-			var id = keys[ i ].slice( 1 );
+			/* The key carries the edition; the post id is what precedes it. */
+			var id = keys[ i ].slice( 1 ).split( '~' )[ 0 ];
 
 			html += '<li class="rs-later__item">' +
 				'<a href="' + escapeHtml( entry.u ) + '" data-rs-post="' + escapeHtml( id ) + '">' +
@@ -127,7 +150,8 @@
 	function dropLater( id ) {
 		var map = readLater();
 
-		delete map[ 'p' + id ];
+		/* The X in the shelf, so always this edition's own story. */
+		delete map[ 'p' + langKey( id ) ];
 		store( LATER_KEY, JSON.stringify( map ) );
 		swMessage( { type: 'UNCACHE_POST', url: rest + 'post/' + id } );
 
@@ -166,7 +190,7 @@
 		}
 
 		var map = readLater();
-		var key = 'p' + id;
+		var key = laterKey( btn );
 		var saving = ! map[ key ];
 
 		if ( saving ) {
@@ -182,7 +206,7 @@
 		}
 
 		store( LATER_KEY, JSON.stringify( map ) );
-		swMessage( { type: saving ? 'CACHE_POST' : 'UNCACHE_POST', url: rest + 'post/' + id } );
+		swMessage( { type: saving ? 'CACHE_POST' : 'UNCACHE_POST', url: laterRest( btn ) + 'post/' + id } );
 
 		markLater();
 		renderLater();

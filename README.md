@@ -2,13 +2,23 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.11.1-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.12.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.12
+
+**The same story in the other language, without leaving the page.** A story that exists in both editions now says so, and the reader can cross between them without losing their place.
+
+- **A language pill on every translated story**, beside the date and the reading time. It appears only when the twin actually exists and is published — a button that lands the reader on a front page rather than the piece they were reading is worse than no button, so most stories carry none.
+- **Instant inside the reading modal.** The two editions are two sites on one domain, and both run this theme, so `/en/wp-json/rs/v1/post/<id>` answers in exactly the shape the modal already reads. Clicking the pill fetches the translation from that route and swaps it in: the list stays behind the modal, the address bar becomes the translated story's own, and Back closes it the way it always did. On a story's own page the same pill is an ordinary link to an ordinary page, so it works with JavaScript off.
+- **The pairing is the slug**, which is the one thing a story and its translation share — the same lookup `hreflang` has always used, now with a name (`rs_post_twin()`) so the reader is offered what the search engine was already being told about.
+- **Fixed: the two editions were writing over each other's lists.** They share one domain and therefore one `localStorage`, while each site hands out its own post ids — a story and its translation are both 190 on this network. Finishing the English piece greyed out the Bengali row in the list, one saved reading position overwrote the other, and the "read later" shelf kept whichever was saved last. Every entry is now named by its edition as well as its id; Bengali keeps the bare number, so nothing saved before this release is lost. "You were reading" and the shelf each show only their own edition's stories.
+- The edit buttons no longer appear on a translation opened in the modal: the nonce and the edit route belong to this site, so they were there to fail.
 
 ## What's new in 7.11
 

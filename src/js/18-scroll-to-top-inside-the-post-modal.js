@@ -28,8 +28,9 @@
 				bar.style.width = Math.min( 100, Math.max( 0, pct ) ) + '%';
 
 				var timeLeftIndicator = $( '#rs-time-left' );
-				if ( timeLeftIndicator && currentPostId && cache[currentPostId] && cache[currentPostId].readingTime ) {
-					var rt = cache[currentPostId].readingTime;
+				var shown = currentPostId ? cache[ postKey( currentPostRest, currentPostId ) ] : null;
+				if ( timeLeftIndicator && shown && shown.readingTime ) {
+					var rt = shown.readingTime;
 					var totalMinutes = 0;
 					var bnDigitsStr = rt.replace(/[^\u09E6-\u09EF]/g, '');
 					if ( bnDigitsStr ) {

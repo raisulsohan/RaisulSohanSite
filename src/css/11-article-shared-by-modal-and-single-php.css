@@ -48,6 +48,62 @@
 	display: block;
 }
 
+/* --------------------------------------------------------------------------
+   The other language
+   -------------------------------------------------------------------------- */
+
+/*
+ * "Read this in English", beside the reading time. An outlined pill rather
+ * than a bare link: it is the one thing in this row that does something to
+ * the page rather than describing it, and on a phone it has to be a target
+ * a thumb can find among three lines of small grey type.
+ */
+.rs-lang-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3125rem;
+	padding: 0.1875rem 0.5rem;
+	border: 1px solid var(--rs-border);
+	border-radius: 999px;
+	font-family: var(--rs-sans);
+	font-size: 0.75rem;
+	line-height: 1rem;
+	color: var(--rs-muted-fg);
+	text-decoration: none;
+	white-space: nowrap;
+	transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.rs-lang-pill svg {
+	display: block;
+	opacity: 0.75;
+}
+
+.rs-lang-pill:hover,
+.rs-lang-pill:focus-visible {
+	color: var(--rs-hover);
+	border-color: currentColor;
+	background: var(--rs-muted);
+}
+
+.rs-lang-pill:hover svg,
+.rs-lang-pill:focus-visible svg {
+	opacity: 1;
+}
+
+/*
+ * The row is now date · reading time · this · edit links · size controls.
+ * On a narrow screen it wraps rather than shrinking the pill to a bare
+ * globe: a word is what tells a reader the button changes the language,
+ * and the size controls keep their own line below when it comes to that.
+ */
+@media (max-width: 30rem) {
+	.rs-article__meta {
+		flex-wrap: wrap;
+		row-gap: 0.5rem;
+	}
+}
+
 /* ==========================================================================
    Editing in place
    ========================================================================== */

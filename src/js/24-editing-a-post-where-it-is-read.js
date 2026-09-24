@@ -117,11 +117,15 @@
 			}
 
 			/* The modal keeps what it fetched, so without this the old
-			   words come back the next time the post is opened. */
-			if ( cache[ data.id ] ) {
-				cache[ data.id ].title = data.title;
-				cache[ data.id ].content = data.content;
-				cache[ data.id ].readingTime = data.readingTime;
+			   words come back the next time the post is opened. Editing
+			   only ever happens on this edition's own stories, so this is
+			   the key they were cached under. */
+			var known = cache[ postKey( rest, data.id ) ];
+
+			if ( known ) {
+				known.title = data.title;
+				known.content = data.content;
+				known.readingTime = data.readingTime;
 			}
 
 			/* And the row underneath, if this list happens to show it. */

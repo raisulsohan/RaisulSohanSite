@@ -234,6 +234,133 @@ function rs_portfolio_path( $req = null ) {
 }
 
 /**
+ * The same story in the other edition, or null.
+ *
+ * The two editions are two sites in one network, and a story that exists in
+ * both carries the same slug in each — which is the only thing they share,
+ * the writing being in different languages and the post IDs being whatever
+ * each site handed out. So the slug is what the pairing is made of, exactly
+ * as rs_hreflang() has always done it; this is that lookup with a name, so
+ * the reader can be offered the twin as well as the search engine.
+ *
+ * The REST base of the other edition travels with the answer. Both sites run
+ * this theme, so /en/wp-json/rs/v1/post/<id> answers in the same shape as
+ * this site's own route — which is what lets the reading modal swap a story
+ * for its translation without leaving the page.
+ *
+ * @param int $post_id Post, or 0 for the current one.
+ * @return array|null { id, url, rest, lang, title }
+ */
+function rs_post_twin( $post_id = 0 ) {
+	static $cache = array();
+
+	$post_id = $post_id ? (int) $post_id : (int) get_the_ID();
+
+	if ( ! $post_id || 'post' !== get_post_type( $post_id ) ) {
+		return null;
+	}
+
+	/* Keyed by site as well as by post: the same number names a different
+	   story on each edition, and this static outlives a switch_to_blog(). */
+	$key = get_current_blog_id() . ':' . $post_id;
+
+	if ( array_key_exists( $key, $cache ) ) {
+		return $cache[ $key ];
+	}
+
+	$cache[ $key ] = null;
+
+	if ( ! is_multisite() ) {
+		return null;
+	}
+
+	$en_sites = get_sites( array( 'path' => '/en/', 'number' => 1 ) );
+
+	if ( empty( $en_sites ) ) {
+		return null;
+	}
+
+	$en_id   = (int) $en_sites[0]->blog_id;
+	$main_id = (int) get_main_site_id();
+	$here    = (int) get_current_blog_id();
+
+	/* Only these two know about each other. A third site in the network is
+	   not an edition of anything and should be offered no twin. */
+	if ( $here !== $en_id && $here !== $main_id ) {
+		return null;
+	}
+
+	$other = ( $here === $en_id ) ? $main_id : $en_id;
+	$slug  = (string) get_post_field( 'post_name', $post_id ); /* read before switching */
+
+	if ( '' === $slug ) {
+		return null;
+	}
+
+	switch_to_blog( $other );
+
+	$twin  = get_page_by_path( $slug, OBJECT, 'post' );
+	$found = null;
+
+	/* Published and unlocked, or there is nothing to offer: a draft
+	   translation behind a link is worse than no link. */
+	if ( $twin && 'publish' === $twin->post_status && '' === (string) $twin->post_password ) {
+		$found = array(
+			'id'    => (int) $twin->ID,
+			'url'   => get_permalink( $twin ),
+			'rest'  => esc_url_raw( rest_url( 'rs/v1/' ) ),
+			'lang'  => ( $other === $en_id ) ? 'en' : 'bn',
+			'title' => rs_plain_title( $twin ),
+		);
+	}
+
+	restore_current_blog();
+
+	$cache[ $key ] = $found;
+
+	return $found;
+}
+
+/**
+ * The button that takes a reader to this same story in the other language.
+ *
+ * Prints nothing when there is no twin, which is most stories: a button that
+ * lands the reader on a front page rather than the piece they were reading
+ * is worse than no button at all.
+ *
+ * The attributes are what app.js needs to fetch the translation from the
+ * other edition's REST route and swap it into the reading modal. Without
+ * JavaScript it is an ordinary link to an ordinary page, which is what it
+ * stays on a story's own page.
+ *
+ * @param int $post_id Post, or 0 for the current one.
+ */
+function rs_lang_pill( $post_id = 0 ) {
+	$twin = rs_post_twin( $post_id );
+
+	if ( ! $twin ) {
+		return;
+	}
+
+	$to_en = 'en' === $twin['lang'];
+	$label = $to_en ? 'English' : 'বাংলা';
+	$title = $to_en ? 'এই লেখাটি ইংরেজিতে পড়ুন' : 'Read this story in Bengali';
+
+	printf(
+		'<a class="rs-lang-pill" href="%1$s" hreflang="%2$s" lang="%2$s" rel="alternate"'
+			. ' data-rs-lang="%3$d" data-rs-lang-rest="%4$s" data-rs-lang-code="%2$s"'
+			. ' title="%5$s" aria-label="%5$s">%6$s<span>%7$s</span></a>',
+		esc_url( $twin['url'] ),
+		esc_attr( $twin['lang'] ),
+		(int) $twin['id'],
+		esc_url( $twin['rest'] ),
+		esc_attr( $title ),
+		wp_kses( rs_icon( 'globe', 13 ), rs_svg_tags() ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped on the line itself.
+		esc_html( $label )
+	);
+}
+
+/**
  * Language switcher data for header toggle.
  *
  * @return array

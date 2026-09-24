@@ -192,15 +192,15 @@ function rs_hreflang() {
 
 	if ( is_singular( 'post' ) ) {
 		$id            = get_queried_object_id();
-		$slug          = get_post_field( 'post_name', $id ); /* read before switching sites */
 		$pair[ $here ] = get_permalink( $id );
 
-		switch_to_blog( $other );
-		$twin = get_page_by_path( $slug, OBJECT, 'post' );
-		if ( $twin && 'publish' === $twin->post_status ) {
-			$pair[ $other ] = get_permalink( $twin );
+		/* The same lookup the reader's own language button uses, so the two
+		   can never disagree about whether a translation exists. */
+		$twin = rs_post_twin( $id );
+
+		if ( $twin ) {
+			$pair[ $other ] = $twin['url'];
 		}
-		restore_current_blog();
 	} elseif ( is_front_page() || is_home() ) {
 		$pair[ $here ]  = get_home_url( $here, '/' );
 		$pair[ $other ] = get_home_url( $other, '/' );

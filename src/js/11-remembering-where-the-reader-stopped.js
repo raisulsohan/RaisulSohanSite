@@ -31,9 +31,15 @@
 		}
 	}
 
+	/* A story's key in that map. See langKey(): a story and its translation
+	   carry the same id, and both editions write to one localStorage. */
+	function posKey( id, lang ) {
+		return 'p' + langKey( id, lang );
+	}
+
 	/* Both shapes, as one shape. */
-	function positionEntry( id ) {
-		var found = readPositions()[ 'p' + id ];
+	function positionEntry( id, lang ) {
+		var found = readPositions()[ posKey( id, lang ) ];
 
 		if ( ! found ) {
 			return null;
@@ -46,13 +52,13 @@
 		return found;
 	}
 
-	function savePosition( id, top, travel, title, url, catId ) {
+	function savePosition( id, top, travel, title, url, catId, lang ) {
 		if ( ! id ) {
 			return;
 		}
 
 		var map = readPositions();
-		var key = 'p' + id;
+		var key = posKey( id, lang );
 
 		/* Deleted either way, then re-added: an object's keys keep the
 		   order they were inserted in, so this also moves the entry to the
@@ -87,7 +93,7 @@
 		}
 
 		var scroller = postBody.parentNode;
-		var known = cache[ currentPostId ] || {};
+		var known = cache[ postKey( currentPostRest, currentPostId ) ] || {};
 
 		savePosition(
 			currentPostId,
@@ -95,7 +101,8 @@
 			scroller.scrollHeight - scroller.clientHeight,
 			known.title,
 			known.link,
-			known.categoryId
+			known.categoryId,
+			currentPostLang
 		);
 	}
 
@@ -173,7 +180,14 @@
 		);
 	}
 
-	function openPost( id, url, push ) {
+	/*
+	 * Open a story in the modal.
+	 *
+	 * `from` names the edition it belongs to — { rest, lang } — and is only
+	 * given when the reader has asked for a translation, which lives on the
+	 * other site of the network. Left out, the story is this edition's own.
+	 */
+	function openPost( id, url, push, from ) {
 		if ( ! postOverlay || ! postBody ) {
 			return;
 		}
@@ -184,24 +198,39 @@
 			closeOverlay( searchOverlay );
 		}
 
+		var base = ( from && from.rest ) || rest;
+		var lang = ( from && from.lang ) || ownLang;
+		var key = postKey( base, id );
+
 		/* Bank where the outgoing post was left before it is replaced. */
 		flushPosition();
 		currentPostId = id;
+		currentPostRest = base;
+		currentPostLang = lang;
 
 		postBody.innerHTML = '<p class="rs-search__hint">' + escapeHtml( strings.loading || 'আসছে...' ) + '</p>';
 		openOverlay( postOverlay );
 
 		if ( push ) {
 			postDepth += 1;
-			window.history.pushState( { rs: 'post', id: id, depth: postDepth }, '', url );
+			/* The edition rides along, so that going back to this entry
+			   reopens the story the reader was actually on rather than
+			   whatever carries the same id on this site. */
+			window.history.pushState(
+				{ rs: 'post', id: id, depth: postDepth, rest: base, lang: lang },
+				'',
+				url
+			);
 		}
 
 		var done = function ( data ) {
-			cache[ id ] = data;
+			cache[ key ] = data;
 			renderPost( data );
 			/* Here rather than at the top of openPost(), so a fetch that
-			   never arrives is not counted as a reading. */
-			countView( id );
+			   never arrives is not counted as a reading. Counted on the
+			   edition the story belongs to, which is the site holding the
+			   number. */
+			countView( id, base );
 			/* An en dash, because that is what WordPress puts between a title
 			   and the site name on the post's own page. The modal and the
 			   page are the same reading; a reader flicking between browser
@@ -215,12 +244,12 @@
 			}
 		};
 
-		if ( cache[ id ] ) {
-			done( cache[ id ] );
+		if ( cache[ key ] ) {
+			done( cache[ key ] );
 			return;
 		}
 
-		getJSON( rest + 'post/' + id ).then( done, function () {
+		getJSON( base + 'post/' + id ).then( done, function () {
 			postBody.innerHTML =
 				'<p class="rs-search__hint">' +
 				escapeHtml( strings.error || 'লেখাটি আনা যায়নি' ) +
@@ -236,6 +265,8 @@
 		flushPosition();
 		if ( typeof renderResume === 'function' ) renderResume();
 		currentPostId = null;
+		currentPostRest = null;
+		currentPostLang = null;
 
 		closeOverlay( postOverlay );
 		document.title = baseTitle;

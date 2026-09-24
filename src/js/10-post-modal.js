@@ -5,7 +5,22 @@
 	var postOverlay = $( '#rs-post-overlay' );
 	var postBody = $( '#rs-post-body' );
 	var baseTitle = document.title;
+
+	/*
+	 * Fetched stories, keyed by the route they came from as well as by their
+	 * id. The two editions are two sites, and they hand out their own ids: a
+	 * story and its translation are both 190 on this network. Keyed by id
+	 * alone, opening one would have served up the other from the cache.
+	 */
 	var cache = {};
+
+	/* Which edition the story in the modal belongs to. The site's own until
+	   the reader asks for the translation. */
+	var ownLang = isEn ? 'en' : 'bn';
+
+	function postKey( base, id ) {
+		return ( base || rest ) + '#' + id;
+	}
 
 	/* Which page of the list is on screen, and the loader that can fetch a
 	   different one. Both belong to the pagination module near the bottom
@@ -66,6 +81,36 @@
 		return html + '</nav>';
 	}
 
+	/*
+	 * "Read this in the other language", drawn from what the server said
+	 * about the story rather than worked out here: whether a translation
+	 * exists is a question only the other edition can answer.
+	 *
+	 * Kept in step with rs_lang_pill() in inc/01-theme-setup.php, which
+	 * prints the same link on a story's own page.
+	 */
+	function langPillHtml( data ) {
+		if ( ! data.twin || ! data.twin.url ) {
+			return '';
+		}
+
+		var toEn = 'en' === data.twin.lang;
+		var label = toEn ? 'English' : 'বাংলা';
+		var title = toEn ? 'এই লেখাটি ইংরেজিতে পড়ুন' : 'Read this story in Bengali';
+		var icon = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+			'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+			'<circle cx="12" cy="12" r="9"/>' +
+			'<path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18"/></svg>';
+
+		return '<a class="rs-lang-pill" href="' + escapeHtml( data.twin.url ) +
+			'" hreflang="' + escapeHtml( data.twin.lang ) + '" lang="' + escapeHtml( data.twin.lang ) +
+			'" rel="alternate" data-rs-lang="' + escapeHtml( data.twin.id ) +
+			'" data-rs-lang-rest="' + escapeHtml( data.twin.rest ) +
+			'" data-rs-lang-code="' + escapeHtml( data.twin.lang ) +
+			'" title="' + escapeHtml( title ) + '" aria-label="' + escapeHtml( title ) + '">' +
+			icon + '<span>' + escapeHtml( label ) + '</span></a>';
+	}
+
 	/* The same pair rs_edit_links() prints on a post's own page. */
 	function editLinkHtml() {
 		var icon = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>';
@@ -106,6 +151,11 @@
 			   read itself out of and carries what it needs instead. */
 			'<button class="rs-share__btn rs-share__btn--save" type="button" data-rs-later="' +
 			escapeHtml( data.id ) + '" data-rs-later-url="' + escapeHtml( link ) +
+			/* Which edition this story belongs to, because the modal may be
+			   showing a translation from the other site and the shelf is
+			   shared between the two. */
+			'" data-rs-later-lang="' + escapeHtml( currentPostLang || ownLang ) +
+			'" data-rs-later-rest="' + escapeHtml( currentPostRest || rest ) +
 			'" data-rs-later-title="' + escapeHtml( title || '' ) +
 			'" data-rs-later-time="' + escapeHtml( data.readingTime || '' ) + '">' +
 			bmIcon + '<span data-rs-later-text>' + escapeHtml( readLater ) + '</span></button>' +
@@ -144,7 +194,11 @@
 			'<div class="rs-article__meta">' +
 			'<p class="rs-article__date"></p>' +
 			( data.readingTime ? '<span class="rs-article__read"></span>' : '' ) +
-			( cfg.editBase ? editLinkHtml() : '' ) +
+			langPillHtml( data ) +
+			/* Only this edition's own stories. The nonce and the edit route
+			   belong to this site, so the buttons would be there to fail on
+			   a translation fetched from the other one. */
+			( cfg.editBase && currentPostRest === rest ? editLinkHtml() : '' ) +
 			fontControlsHtml() +
 			'</div>' +
 			'<div class="rs-article__head">' +
@@ -196,7 +250,7 @@
 		   to be told whether the story is already on the shelf. */
 		markLater();
 
-		var resume = positionEntry( data.id );
+		var resume = positionEntry( data.id, currentPostLang );
 
 		restoreScroll( postBody.parentNode, resume ? resume.t : 0 );
 	}
@@ -212,5 +266,8 @@
 	var postDepth = 0;
 
 	/* Which post the modal is showing, so the scroll listener further down
-	   knows what it is saving a position for. */
+	   knows what it is saving a position for — and which edition it came
+	   from, since the id alone no longer names a story on this network. */
 	var currentPostId = null;
+	var currentPostRest = null;
+	var currentPostLang = null;

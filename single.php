@@ -39,6 +39,11 @@ get_header();
 				<p class="rs-article__date"><?php echo esc_html( rs_bn_date() ); ?></p>
 				<span class="rs-article__read"><?php echo esc_html( rs_reading_time() ); ?></span>
 				<?php
+				/* Prints nothing unless this story exists in the other
+				   edition too. Here it is an ordinary link; in the reading
+				   modal app.js catches it and swaps the translation in. */
+				rs_lang_pill();
+
 				/* Checks the capability itself and prints nothing for
 				   readers, as edit_post_link() did before it. */
 				rs_edit_links();

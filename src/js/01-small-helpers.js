@@ -59,6 +59,25 @@
 		}
 	}
 
+	/*
+	 * A story's name in this browser's own lists.
+	 *
+	 * The two editions are two sites but one domain, so they share one
+	 * localStorage — and each site hands out its own post ids, which means a
+	 * story and its translation are both 190. Left at the bare number, the
+	 * three lists kept here (already read, where reading stopped, read
+	 * later) could not tell them apart: finishing the English piece greyed
+	 * out the Bengali row, and one saved position overwrote the other.
+	 *
+	 * Bengali keeps the bare number so every list saved before the editions
+	 * were paired still reads; the English edition's entries are marked.
+	 */
+	function langKey( id, lang ) {
+		var code = lang || ( isEn ? 'en' : 'bn' );
+
+		return String( id ) + ( 'en' === code ? '~en' : '' );
+	}
+
 	function store( key, value ) {
 		try {
 			if ( typeof value === 'undefined' ) {
