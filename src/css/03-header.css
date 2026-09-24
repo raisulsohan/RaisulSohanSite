@@ -84,6 +84,7 @@
 }
 
 .rs-lang-switcher {
+	position: relative;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -98,6 +99,30 @@
 	text-decoration: none;
 	color: var(--rs-muted-fg);
 	transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+/*
+ * A thumb-sized area over a pill that stays small.
+ *
+ * The pill is about eighteen pixels tall — its line-height, a hair of
+ * padding and a border — which is under the twenty-four a touch target
+ * wants. The trick used on .rs-icon does not work here: that one grows its
+ * padding and takes it back with a negative margin, but this element has a
+ * border, and padding would draw the pill itself larger.
+ *
+ * So the hit area is a box of its own, centred over the pill and invisible.
+ * It changes nothing about the layout or the look, and a tap landing a few
+ * pixels above or below the border still opens the other language.
+ */
+.rs-lang-switcher::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 100%;
+	min-width: 1.5rem;
+	height: 1.5rem;
 }
 
 .rs-lang-switcher:hover {

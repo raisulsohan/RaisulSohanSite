@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.16.2-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.16.3-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -20,6 +20,7 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 - The three sans `woff2` files, their `@font-face` rules and the sans entry in the service worker's pre-cache list are all removed.
 - The size control keeps its bare `sans-serif`. Those are three Latin letters in a system font, and they cost nothing to draw.
 
+- **7.16.3:** the EN pill in the header is about eighteen pixels tall — its line-height, a hair of padding and a border — and a tap landing just outside it hit nothing. The trick used on the icons does not work here, because they grow their padding and give it back with a negative margin while this one has a border that padding would draw larger; so the hit area is an invisible box of its own, centred over the pill. Measured on the live page: the pill is still 31.3 by 17.8 and nothing moved, a tap three pixels above or below the border now opens the other language, and neither neighbour in that row is covered.
 - **7.16.2:** dropping the sans cost a point of accessibility, and it took a Lighthouse run to notice. The menu row under the header is set in `--rs-sans`, and the serif draws a short Bengali word narrower: গল্প came out 14.8px wide and বই 11.7px, against the 24px a touch target is asked for — four of the eight items failed. They now have a `min-width` of 24px rather than padding, because on a phone that row is `nowrap` with a ten-pixel gap and padding wide enough to matter would have left the targets overlapping by six pixels, so a thumb aimed at গল্প would have opened বই. Measured on the live page afterwards: every target at least 24 by 36, ten pixels clear of its neighbours, and the row still 287px inside a 375px screen.
 - **7.16.1:** the banner cut from 7.14.1 never actually happened on the live site, and said nothing about it. `rs_ensure_hero_cuts()` stamped its "done" option whether the cut had worked or not, so one failure was permanent and invisible — the likely cause being a WebP banner on a PHP without WebP support, which is now named in so many words. Only a success is remembered now; a failure is kept as a reason, retried at most hourly, and shown on the Theme Settings screen with a button to try again.
 
