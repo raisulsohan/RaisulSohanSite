@@ -27,6 +27,19 @@ function rs_setup() {
 	/* The size social cards are built from; see rs_share_image(). */
 	add_image_size( 'rs-share', 1200, 630, true );
 
+	/*
+	 * The heading banner, cut to the band it is actually shown in.
+	 *
+	 * CSS gives the banner aspect-ratio 1600/300 and object-fit: cover, so
+	 * whatever is handed to it gets cropped to that shape on screen — but
+	 * the file still arrives whole. The "large" cut was 1024 by 585 and a
+	 * hundred and twenty kilobytes, of which the reader saw a 1024 by 192
+	 * strip. Cropping on the server instead means the bytes and the picture
+	 * are the same shape. See rs_render_hero_image_html(), which falls back
+	 * to "large" for a banner uploaded before this size existed.
+	 */
+	add_image_size( 'rs-hero', 1600, 300, true );
+
 	add_theme_support(
 		'html5',
 		array( 'search-form', 'comment-form', 'comment-list', 'gallery', 'caption', 'style', 'script' )

@@ -20,16 +20,16 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Enqueue fonts, stylesheet and script.
  */
 function rs_assets() {
-	wp_enqueue_style(
-		'rs-fonts',
-		get_template_directory_uri() . '/assets/fonts.css',
-		array(),
-		RS_VERSION
-	);
-
-	/* Built from src/css by `npm run build`; style.css only carries the
-	   theme header now. */
-	wp_enqueue_style( 'rs-style', get_template_directory_uri() . '/assets/style.min.css', array( 'rs-fonts' ), RS_VERSION );
+	/*
+	 * One stylesheet, which now carries the @font-face rules too.
+	 *
+	 * They used to be a second file, assets/fonts.css, enqueued ahead of
+	 * this one. That cost a render-blocking request of its own, and it cost
+	 * more than that: a font cannot start downloading until the stylesheet
+	 * naming it has arrived, so every woff2 on the page was waiting behind
+	 * an extra round trip before it even began.
+	 */
+	wp_enqueue_style( 'rs-style', get_template_directory_uri() . '/assets/style.min.css', array(), RS_VERSION );
 
 	wp_enqueue_script(
 		'rs-app',

@@ -2,13 +2,24 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.13.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.14.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.14
+
+**Weight taken off every page.** A Lighthouse run came back at 72 on mobile. Most of that number was an artefact — the run was signed in, so it measured the admin bar's jQuery, dashicons and `Cache-Control: no-store` rather than anything a reader is sent — but reading past it turned up real freight, and this release is that freight removed.
+
+- **The About page's pictures were on every page of the site.** Its content is printed into the About modal in the footer so the panel can open without a request; the words cost little, the pictures did not. A 300×300 portrait — 112 KB — was being fetched on every visit to every story, for a panel nobody had opened, competing for bandwidth with the fonts the page was actually drawing with. Images in that content are now held back until the modal is opened.
+- **`assets/fonts.css` is gone**, its `@font-face` rules built into `assets/style.min.css`. As a file of its own it was a second render-blocking stylesheet, and worse: a font cannot begin downloading until the stylesheet naming it has arrived, so every woff2 on the page was waiting behind an extra round trip.
+- **The web app manifest was advertising a 512×512 icon and pointing at the original upload** — 312 KB of PNG that was never 512 anything. `get_site_icon_url()` answers with the full picture when the cut asked for was never made, and the old code labelled whatever came back with the size it had asked for. Icons are now listed at the size they actually are, and `purpose: maskable` is gone: claiming it of an ordinary square icon does not make it one, it just gets the edges cropped off by Android.
+- **`apple-touch-icon` was printed twice**, once by the theme and once by WordPress's own `wp_site_icon()`. The theme's copy is gone.
+- **The heading banner is cropped on the server now.** CSS shows it in a 1600×300 band, but the file arrived whole — 1024×585 and 124 KB, of which the reader saw a strip. A new `rs-hero` image size matches the band; a banner uploaded before this release keeps the old cut. The `sizes` attribute also said `100vw` on a phone, three rem more than the truth, which on a dense screen was enough to tip the browser into fetching the next cut up.
+- **Uploaded pictures are sent with no cache header at all**, so a returning reader re-checks every image on every page — 338 KB of it on the front page. The theme's own files have carried a year since 7.5, but the uploads folder is outside the theme and needs its own rule. Theme Settings now says so and offers to write it, with the block to paste in by hand underneath. It is a button rather than something the theme does on its own: a host that does not permit `Header` in a `.htaccess` answers 500 for everything in that folder, which is a thing to find out while somebody is watching.
 
 ## What's new in 7.13
 

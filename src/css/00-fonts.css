@@ -1,15 +1,23 @@
-/*
- * Self hosted Noto Bengali, replacing the Google Fonts stylesheet.
- * Generated from the css2 API response, so the unicode-range split is
- * preserved: a reader whose page has no Latin text never fetches the
- * latin subsets.
- *
- * These are variable fonts — one file covers the whole weight range, which
- * is why a single @font-face per subset replaces the five Google emitted.
- *
- * Noto Sans Bengali and Noto Serif Bengali are licensed under the SIL Open
- * Font License 1.1, which permits redistribution. See fonts/LICENSE.txt.
- */
+/* ==========================================================================
+   0. Fonts
+   ==========================================================================
+
+   Self hosted Noto Bengali, replacing the Google Fonts stylesheet. The
+   unicode-range split from the css2 API is preserved, so a page with no
+   Latin text never fetches the latin subsets.
+
+   These are variable fonts — one file covers the whole weight range, which
+   is why a single @font-face per subset replaces the five Google emitted.
+
+   Built into assets/style.min.css rather than served as assets/fonts.css,
+   which is where these used to live. As its own stylesheet it was a second
+   render-blocking request, and worse: the font files could not begin
+   downloading until it had arrived, so every one of them sat behind an
+   extra round trip. The url()s below are relative to the built stylesheet,
+   which sits in the same folder its predecessor did.
+
+   Noto Sans Bengali and Noto Serif Bengali are licensed under the SIL Open
+   Font License 1.1, which permits redistribution. See fonts/LICENSE.txt. */
 
 /* Noto Serif Bengali — bengali (187 KB) */
 @font-face {

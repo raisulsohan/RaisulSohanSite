@@ -126,7 +126,34 @@ function rs_hero_image() {
  * @param string $class Class attribute.
  * @return string Image HTML or empty string.
  */
-function rs_render_hero_image_html( $alt = '', $sizes = '(max-width: 48rem) 100vw, 720px', $class = 'rs-hero__image' ) {
+/**
+ * Which cut of the heading banner to send, and how wide it will be shown.
+ *
+ * "rs-hero" is the 1600 by 300 crop registered in rs_setup(); a banner
+ * uploaded before that size existed has no such file, and "large" is what
+ * it has always been served as.
+ *
+ * The widths matter as much as the cut. The banner sits inside .rs-hero,
+ * which is at most --rs-wrap (48rem) wide and carries a gutter of
+ * --rs-gutter on each side, so it is never wider than 720px on a desktop
+ * and is the viewport less 3rem on a phone. The old value said 100vw
+ * there, three rem more than the truth, which on a dense screen was enough
+ * to tip the browser into fetching the next cut up.
+ *
+ * @param int $id Attachment.
+ * @return array { size, sizes }
+ */
+function rs_hero_image_cut( $id ) {
+	$cropped = wp_get_attachment_image_src( $id, 'rs-hero' );
+	$size    = ( $cropped && isset( $cropped[3] ) && $cropped[3] ) ? 'rs-hero' : 'large';
+
+	return array(
+		'size'  => $size,
+		'sizes' => '(max-width: 48rem) calc(100vw - 3rem), 720px',
+	);
+}
+
+function rs_render_hero_image_html( $alt = '', $sizes = '', $class = 'rs-hero__image' ) {
 	$id          = (int) rs_option( 'rs_hero_image' );
 	$pos         = rs_option( 'rs_hero_pos' );
 	$target_blog = 0;
@@ -155,14 +182,16 @@ function rs_render_hero_image_html( $alt = '', $sizes = '(max-width: 48rem) 100v
 		$is_switched = true;
 	}
 
+	$cut = rs_hero_image_cut( $id );
+
 	$html = wp_get_attachment_image(
 		$id,
-		'large',
+		$cut['size'],
 		false,
 		array(
 			'class'         => $class,
 			'alt'           => $alt,
-			'sizes'         => $sizes,
+			'sizes'         => $sizes ? $sizes : $cut['sizes'],
 			'fetchpriority' => 'high',
 			'style'         => 'object-position: ' . esc_attr( $pos ? $pos : '50% 50%' ) . ';',
 		)
@@ -216,7 +245,7 @@ function rs_about() {
 		if ( $page && 'publish' === $page->post_status ) {
 			$cached = array(
 				'title'   => get_the_title( $page ),
-				'content' => apply_filters( 'the_content', $page->post_content ),
+				'content' => rs_defer_images( apply_filters( 'the_content', $page->post_content ) ),
 			);
 
 			return $cached;
@@ -235,7 +264,7 @@ function rs_about() {
 		if ( $page && 'publish' === $page->post_status ) {
 			$cached = array(
 				'title'   => get_the_title( $page ),
-				'content' => apply_filters( 'the_content', $page->post_content ),
+				'content' => rs_defer_images( apply_filters( 'the_content', $page->post_content ) ),
 			);
 
 			return $cached;
@@ -248,7 +277,7 @@ function rs_about() {
 		if ( $page && 'publish' === $page->post_status ) {
 			$cached = array(
 				'title'   => get_the_title( $page ),
-				'content' => apply_filters( 'the_content', $page->post_content ),
+				'content' => rs_defer_images( apply_filters( 'the_content', $page->post_content ) ),
 			);
 
 			return $cached;
@@ -500,6 +529,110 @@ function rs_settings_images() {
 	);
 }
 
+/* =========================================================================
+ * Cache headers for the uploads folder
+ * ====================================================================== */
+
+/**
+ * Where the rules would go.
+ *
+ * @return string Absolute path, or '' when the uploads folder is unreadable.
+ */
+function rs_uploads_htaccess() {
+	$dir = wp_get_upload_dir();
+
+	if ( empty( $dir['basedir'] ) || ! empty( $dir['error'] ) ) {
+		return '';
+	}
+
+	return trailingslashit( $dir['basedir'] ) . '.htaccess';
+}
+
+/**
+ * The rules themselves.
+ *
+ * The same shape as the theme's own .htaccess, and for the same reason: the
+ * server sends an ETag for an uploaded picture and nothing else, so a
+ * returning reader asks about every image on every page and is told each
+ * time that nothing changed. A year is safe because WordPress gives every
+ * upload a name of its own and never writes over one — editing a picture in
+ * the media library produces a new file, not a new version of the old one.
+ *
+ * Both blocks are wrapped in IfModule, so a server without mod_headers or
+ * mod_expires skips them rather than refusing the request.
+ *
+ * @return string[] Lines, for insert_with_markers().
+ */
+function rs_uploads_htaccess_rules() {
+	return array(
+		'<IfModule mod_headers.c>',
+		"\t" . '<FilesMatch "\.(jpe?g|png|gif|webp|avif|svg|ico|woff2?|ttf|mp4|webm)$">',
+		"\t\t" . 'Header set Cache-Control "public, max-age=31536000"',
+		"\t" . '</FilesMatch>',
+		'</IfModule>',
+		'',
+		'<IfModule mod_expires.c>',
+		"\t" . 'ExpiresActive On',
+		"\t" . '<FilesMatch "\.(jpe?g|png|gif|webp|avif|svg|ico|woff2?|ttf|mp4|webm)$">',
+		"\t\t" . 'ExpiresDefault "access plus 1 year"',
+		"\t" . '</FilesMatch>',
+		'</IfModule>',
+	);
+}
+
+/**
+ * Whether our block is already in that file.
+ *
+ * @return bool
+ */
+function rs_uploads_cache_ready() {
+	$file = rs_uploads_htaccess();
+
+	if ( ! $file || ! file_exists( $file ) ) {
+		return false;
+	}
+
+	$body = file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- One small local file, on one admin screen.
+
+	return is_string( $body ) && false !== strpos( $body, '# BEGIN Raisul Sohan cache' );
+}
+
+/**
+ * Write the block, on request.
+ *
+ * Never on its own: these rules live outside the theme, and a host that
+ * does not allow Header or ExpiresDefault in a .htaccess answers 500 for
+ * everything in the folder. That is a thing to do while somebody is
+ * watching, so it is a button.
+ */
+function rs_uploads_cache_write() {
+	if ( ! current_user_can( 'edit_theme_options' ) ) {
+		wp_die( esc_html__( 'You are not allowed to do this.', 'raisul-sohan' ) );
+	}
+
+	check_admin_referer( 'rs_uploads_cache' );
+
+	$file = rs_uploads_htaccess();
+	$done = 'failed';
+
+	if ( $file ) {
+		require_once ABSPATH . 'wp-admin/includes/misc.php';
+
+		if ( ! file_exists( $file ) ) {
+			/* insert_with_markers() will not create a file it cannot read. */
+			@file_put_contents( $file, '' ); // phpcs:ignore WordPress.WP.AlternativeFunctions, Generic.PHP.NoSilencedErrors -- Failure is reported back below.
+		}
+
+		if ( is_writable( $file ) && insert_with_markers( $file, 'Raisul Sohan cache', rs_uploads_htaccess_rules() ) ) {
+			$done = 'written';
+		}
+	}
+
+	wp_safe_redirect( admin_url( 'themes.php?page=rs-settings&rs_uploads=' . $done ) );
+	exit;
+}
+add_action( 'admin_post_rs_write_uploads_cache', 'rs_uploads_cache_write' );
+
 /**
  * Put the settings on their own screen, under Appearance.
  */
@@ -531,6 +664,44 @@ function rs_settings_page() {
 		<?php if ( isset( $_GET['updated'] ) ) : ?>
 			<div class="notice notice-success is-dismissible">
 				<p><?php esc_html_e( 'Settings saved.', 'raisul-sohan' ); ?></p>
+			</div>
+		<?php endif; ?>
+
+		<?php
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading a flag off our own redirect, acting on nothing.
+		$rs_uploads_flag = isset( $_GET['rs_uploads'] ) ? sanitize_key( wp_unslash( $_GET['rs_uploads'] ) ) : '';
+
+		if ( 'written' === $rs_uploads_flag ) :
+			?>
+			<div class="notice notice-success is-dismissible">
+				<p><?php esc_html_e( 'Cache rules written. Open a picture from the media library and check that it now answers with a Cache-Control header; if images have stopped loading, delete the .htaccess in wp-content/uploads and tell your host that Header and ExpiresDefault are not permitted there.', 'raisul-sohan' ); ?></p>
+			</div>
+		<?php elseif ( 'failed' === $rs_uploads_flag ) : ?>
+			<div class="notice notice-error is-dismissible">
+				<p><?php esc_html_e( 'Could not write to the uploads folder. Add the rules by hand instead.', 'raisul-sohan' ); ?></p>
+			</div>
+		<?php endif; ?>
+
+		<?php if ( ! rs_uploads_cache_ready() ) : ?>
+			<div class="notice notice-warning">
+				<p>
+					<strong><?php esc_html_e( 'Uploaded pictures are sent without a cache header.', 'raisul-sohan' ); ?></strong>
+					<?php esc_html_e( 'A returning reader re-checks every image on every page. The theme\'s own files already carry a year; the uploads folder is outside the theme and needs its own rule.', 'raisul-sohan' ); ?>
+				</p>
+				<p>
+					<a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=rs_write_uploads_cache' ), 'rs_uploads_cache' ) ); ?>">
+						<?php esc_html_e( 'Add the rules for me', 'raisul-sohan' ); ?>
+					</a>
+					<span class="description"><?php echo esc_html( rs_uploads_htaccess() ); ?></span>
+				</p>
+				<details>
+					<summary><?php esc_html_e( 'Or paste this in yourself', 'raisul-sohan' ); ?></summary>
+					<textarea readonly rows="12" style="width:100%;font-family:monospace;"><?php echo esc_textarea( implode( "\n", rs_uploads_htaccess_rules() ) ); ?></textarea>
+				</details>
+			</div>
+		<?php else : ?>
+			<div class="notice notice-success">
+				<p><?php esc_html_e( 'Uploaded pictures are served with a year-long cache header.', 'raisul-sohan' ); ?></p>
 			</div>
 		<?php endif; ?>
 

@@ -45,7 +45,6 @@ function rs_serve_sw() {
 		'offlineUrl' => $theme_uri . '/offline.html',
 		'shell'      => array(
 			$theme_uri . '/offline.html',
-			$theme_uri . '/assets/fonts.css?ver=' . RS_VERSION,
 			$theme_uri . '/assets/style.min.css?ver=' . RS_VERSION,
 			$theme_uri . '/assets/app.min.js?ver=' . RS_VERSION,
 			$theme_uri . '/assets/fonts/noto-serif-bengali-bengali.woff2',
@@ -82,29 +81,48 @@ function rs_serve_manifest() {
 		'icons'            => array(),
 	);
 
-	$sizes = array( 192, 512 );
+	/*
+	 * Only the cuts that exist, at the size they actually are.
+	 *
+	 * get_site_icon_url() answers with the full picture when the cut asked
+	 * for was never made, and this went on to label whatever came back
+	 * 512x512. On this site that meant the manifest advertised a 512 icon
+	 * and pointed at the original upload — three hundred kilobytes of PNG,
+	 * fetched by any browser that took the offer seriously.
+	 *
+	 * "maskable" is gone with it. A maskable icon has to keep its subject
+	 * inside a safe circle, because Android crops it to whatever shape the
+	 * launcher uses; claiming it of an ordinary square icon does not make
+	 * it one, it just gets the edges cut off.
+	 */
+	$icon_id = (int) get_option( 'site_icon' );
+	$seen    = array();
 
-	foreach ( $sizes as $px ) {
-		$url = get_site_icon_url( $px );
+	foreach ( array( 192, 512 ) as $px ) {
+		$cut = $icon_id ? wp_get_attachment_image_src( $icon_id, array( $px, $px ) ) : false;
 
-		if ( $url ) {
-			$manifest['icons'][] = array(
-				'src'     => $url,
-				'sizes'   => $px . 'x' . $px,
-				'type'    => 'image/png',
-				'purpose' => 'any maskable',
-			);
+		if ( ! $cut || empty( $cut[0] ) || isset( $seen[ $cut[0] ] ) ) {
+			continue;
 		}
-	}
 
-	if ( empty( $manifest['icons'] ) ) {
+		$seen[ $cut[0] ] = true;
+
 		$manifest['icons'][] = array(
-			'src'     => get_template_directory_uri() . '/screenshot.png',
-			'sizes'   => '512x512',
+			'src'     => $cut[0],
+			/* What the file is, not what was asked for. */
+			'sizes'   => (int) $cut[1] . 'x' . (int) $cut[2],
 			'type'    => 'image/png',
-			'purpose' => 'any maskable',
+			'purpose' => 'any',
 		);
 	}
+
+	/*
+	 * No site icon, no icons. screenshot.png used to stand in here, which
+	 * was 2560 by 1998 and half a megabyte — not an icon by shape, size or
+	 * intention. A manifest without icons simply means the browser does not
+	 * offer to install the site, which is the right answer for a site whose
+	 * owner has not given it a picture to be installed as.
+	 */
 
 	echo wp_json_encode( $manifest, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT );
 	exit;
@@ -120,10 +138,13 @@ function rs_pwa_head() {
 	echo "<meta name=\"mobile-web-app-capable\" content=\"yes\">\n";
 	echo "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">\n";
 	echo "<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"default\">\n";
-	$icon = get_site_icon_url( 180 );
-	if ( $icon ) {
-		echo '<link rel="apple-touch-icon" href="' . esc_url( $icon ) . "\">\n";
-	}
+
+	/*
+	 * No apple-touch-icon here. WordPress prints one itself from the Site
+	 * Icon, through wp_site_icon() on wp_head, and this printed a second
+	 * copy of the same address on every page — the same duplication the
+	 * font preload was quietly making before it was moved to header.php.
+	 */
 }
 add_action( 'wp_head', 'rs_pwa_head', 0 );
 

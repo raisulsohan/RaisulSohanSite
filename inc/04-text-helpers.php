@@ -306,6 +306,56 @@ function rs_match_snippet( $post, $term, $before = 30, $after = 40 ) {
 }
 
 /**
+ * Hold back the pictures in a block of HTML until something asks for them.
+ *
+ * Written for the About modal, whose content is printed into every page on
+ * the site so the modal can open without a request. The words cost little;
+ * the pictures did not. A 300 by 300 portrait on that page was being
+ * fetched on every visit to every story — a hundred and twelve kilobytes,
+ * for a panel nobody had opened, competing with the fonts the page was
+ * actually trying to draw with.
+ *
+ * loading="lazy" is enough on its own: the modal is `hidden`, so the
+ * browser sees a picture with no box and leaves it alone until the modal is
+ * opened. fetchpriority is stripped for the same reason — anything marked
+ * high would be fetched immediately, which is the thing being avoided.
+ *
+ * @param string $html Markup to go through.
+ * @return string
+ */
+function rs_defer_images( $html ) {
+	$html = (string) $html;
+
+	if ( '' === $html || false === stripos( $html, '<img' ) ) {
+		return $html;
+	}
+
+	return (string) preg_replace_callback(
+		'/<img\b[^>]*>/i',
+		function ( $found ) {
+			$tag = $found[0];
+
+			/* An eager or missing value both become lazy. */
+			if ( preg_match( '/\sloading\s*=/i', $tag ) ) {
+				$tag = preg_replace( '/\sloading\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', ' loading="lazy"', $tag, 1 );
+			} else {
+				$tag = preg_replace( '/<img\b/i', '<img loading="lazy"', $tag, 1 );
+			}
+
+			if ( ! preg_match( '/\sdecoding\s*=/i', $tag ) ) {
+				$tag = preg_replace( '/<img\b/i', '<img decoding="async"', $tag, 1 );
+			}
+
+			/* Would pull the picture down at once and undo all of the above. */
+			$tag = preg_replace( '/\sfetchpriority\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $tag );
+
+			return $tag;
+		},
+		$html
+	);
+}
+
+/**
  * Number of published posts.
  *
  * @return int
