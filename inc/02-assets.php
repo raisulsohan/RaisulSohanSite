@@ -199,3 +199,44 @@ add_action( 'wp_head', 'rs_theme_boot', 1 );
  * are fetched in CORS mode even from our own origin, which is why the tag
  * in header.php carries crossorigin — without it the file downloads twice.
  */
+
+/**
+ * The @font-face rules, written into the page rather than fetched.
+ *
+ * Two kilobytes, and where they sit decides when six font files are allowed
+ * to start downloading. As a stylesheet of their own they cost a round trip
+ * before any of them could begin; folded into style.min.css instead, they
+ * arrived only once twenty-seven kilobytes of everything else had been
+ * fetched and parsed. Inline, the browser has every font address in the
+ * same breath as the HTML, and the preload in header.php is no longer the
+ * only face with a head start.
+ *
+ * The url()s are relative to assets/, which is where the built file sits;
+ * in an inline sheet a relative url() resolves against the page instead, so
+ * they are made absolute on the way in.
+ */
+function rs_inline_fonts() {
+	static $css = null;
+
+	if ( null === $css ) {
+		$file = RS_DIR . '/assets/fonts.min.css';
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- A file in the theme's own directory.
+		$raw = is_readable( $file ) ? (string) file_get_contents( $file ) : '';
+
+		/* Built by `npm run build` from src/css/fonts.css. Missing means a
+		   half-deployed theme, and a page with no @font-face still reads —
+		   the fallbacks in --rs-serif and --rs-sans take over. */
+		$raw = (string) preg_replace( '#/\*.*?\*/#s', '', $raw );
+		$raw = str_replace( 'url(fonts/', 'url(' . RS_URI . '/assets/fonts/', $raw );
+
+		$css = trim( $raw );
+	}
+
+	if ( '' === $css ) {
+		return;
+	}
+
+	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- A built stylesheet from the theme's own directory.
+	echo '<style id="rs-fonts">' . $css . "</style>\n";
+}
+add_action( 'wp_head', 'rs_inline_fonts', 2 );

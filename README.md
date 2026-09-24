@@ -2,13 +2,21 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.14.1-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.15.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.15
+
+**The font declarations are written into the page.** Bichitro Biggan settles this the same way, and it is the better arrangement: `@font-face` is two kilobytes that decide when six font files may begin, and it had spent two releases in the wrong place.
+
+- 7.14 folded the rules into `assets/style.min.css` to save a render-blocking request, which it did — but it also put every font address behind twenty-seven kilobytes of everything else. They are now built on their own to `assets/fonts.min.css`, which nothing enqueues: `rs_inline_fonts()` reads it and writes it into `wp_head`, so the browser has all six addresses in the same breath as the HTML, and the stylesheet that blocks the first paint is smaller by the same two kilobytes.
+- The `url()`s stay relative to `assets/` in the source, because that is where the built file lives; they are made absolute on the way in, since a relative `url()` in an inline sheet resolves against the page and would find nothing.
+- The preload in `header.php` is unchanged, and still names one face: the Bengali serif the body text cannot be drawn without. A second preload would only take bandwidth from the first.
 
 ## What's new in 7.14
 

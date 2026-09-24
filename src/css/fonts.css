@@ -1,5 +1,5 @@
 /* ==========================================================================
-   0. Fonts
+   Fonts — built on their own, and inlined into the page
    ==========================================================================
 
    Self hosted Noto Bengali, replacing the Google Fonts stylesheet. The
@@ -9,12 +9,17 @@
    These are variable fonts — one file covers the whole weight range, which
    is why a single @font-face per subset replaces the five Google emitted.
 
-   Built into assets/style.min.css rather than served as assets/fonts.css,
-   which is where these used to live. As its own stylesheet it was a second
-   render-blocking request, and worse: the font files could not begin
-   downloading until it had arrived, so every one of them sat behind an
-   extra round trip. The url()s below are relative to the built stylesheet,
-   which sits in the same folder its predecessor did.
+   No numeric prefix, so the build writes this to assets/fonts.min.css on
+   its own rather than joining it into assets/style.min.css. Nothing
+   enqueues that file: rs_inline_fonts() reads it and writes it into the
+   page. Two kilobytes, and where they sit decides when six font files may
+   start downloading — as a stylesheet of their own they cost a round trip
+   first, and inside style.min.css they waited on twenty-seven kilobytes of
+   everything else.
+
+   Keep the url()s relative to assets/. rs_inline_fonts() rewrites
+   "url(fonts/" to an absolute address, because a relative url() in an
+   inline sheet resolves against the page and would find nothing.
 
    Noto Sans Bengali and Noto Serif Bengali are licensed under the SIL Open
    Font License 1.1, which permits redistribution. See fonts/LICENSE.txt. */
