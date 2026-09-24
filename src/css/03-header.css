@@ -92,7 +92,20 @@
 	font-size: 0.6875rem;
 	font-weight: 600;
 	line-height: 1;
-	padding: 0.15rem 0.4rem;
+	/*
+	 * A pixel of optical centring, not a guess.
+	 *
+	 * align-items: center centres the line box, and the line box is not
+	 * where the letters are. Noto Serif Bengali reserves two thirds of its
+	 * em above the baseline and a third below, because Bengali hangs matras
+	 * up there — and EN and BN are capitals with nothing below the baseline
+	 * at all, so that third sits empty and shoves the letters up. Measured
+	 * on the live page: ink centre 4.5px against a box centre of 5.5px.
+	 *
+	 * Taken from the bottom and given to the top, so the pill is the same
+	 * height it always was and only the letters move.
+	 */
+	padding: calc(0.15rem + 1px) 0.4rem calc(0.15rem - 1px);
 	border: 1px solid var(--rs-border);
 	border-radius: var(--rs-radius);
 	letter-spacing: 0.04em;
