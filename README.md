@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.11.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.11.1-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -17,6 +17,13 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 - **Try Lazy-Image** on its project page or in the portfolio's pop-up: log in with your own browser (no API key), pick a prompt in English or Bengali and watch it type itself, choose a ratio, press Generate, and the picture is generated, downloaded and dropped onto the timeline by itself — in After Effects or in Premiere Pro, each with its own timeline. The pictures, the coast footage and the comp are the demo animation's own drawing code, injected at build.
 - **One fitting for all of them:** `rs_project_demo_kit()` names each project's bundle, markup classes and mount, so adding the next demo is one array entry. The card's Demo menu, the case study's "Try the interactive demo" card and the project page all read from it, and the pop-up player fetches whichever bundle the trigger names, the first time it is asked for.
 - **Lazy-Image's demo animation** (7.10.5) plays from the same Demo button, in both cuts.
+- **7.11.1 — a pass over the things that were quietly wrong.** No new features; everything below was found by reading the code rather than by anything breaking in public:
+  - **Any address ending in `/portfolio` answered 200 with the portfolio page.** `/category/portfolio`, `/2019/07/portfolio` — the pattern behind the template filter was anchored only at its end, and the filter then cancelled the 404. Search engines were free to index the portfolio at endlessly many addresses, none of them carrying a canonical tag. One `rs_portfolio_path()` now answers this question for the template, the title, the header's active state and the `hreflang` pair, anchored at both ends, with a language segment the only prefix allowed.
+  - **Uploading `sunset.png` deleted `sunset.jpg`.** WordPress makes an upload's name unique against the extension it arrived with, so two different pictures both became `sunset.webp` and the second overwrote the first — leaving the first attachment pointing at somebody else's photograph. The WebP name is now run through `wp_unique_filename()`.
+  - **The English site spoke Bengali where nobody looks.** The front page's meta description, a category's description and the footer line all came from Bengali defaults on `/en/`, because a default is what `rs_option()` falls back to and there was only one of each.
+  - **The animation toggle's icon was invisible**, and had been since it was added: the `sparkles` path was written with `\"` inside a single-quoted PHP string, so the escape survived into the markup and `wp_kses()` threw the broken attribute away.
+  - **Case study text is no longer pasted into the page as markup.** A project title holding a quotation mark closed the attribute it sat in; the JSON block carrying the case studies could be closed early by a `</script>` in a project's own words. Both now escape.
+  - Dragging the portfolio into a new order busts the object cache per row rather than calling `clean_post_cache( 0 )`, which did nothing. `/wp-json/rs/v1/featured` is gone — nothing had called it since 7.4, and it ran `ORDER BY RAND()` for anyone who asked. `/timeline/` no longer parses every post in one request on a cold cache. The read-history list has a limit. The service worker's runtime assets sit in their own capped bucket, so the offline shell cannot be evicted to make room for them.
 
 ## What's new in 7.10
 
@@ -165,7 +172,7 @@ The site title (centered in the header) is pulled from **Settings -> General**, 
 - **Animations & Featured Posts:** The site features smooth fade-up animations on load. Readers can toggle this using the toggle button. The featured post is fetched via AJAX immediately after page load to prevent caching issues.
 - **Typography Controls:** The text size controls (A- A A+) save the reader's preference in the browser's local storage for future visits.
 - **Dynamic Color Themes:** Readers can choose the site's accent color. A sophisticated algorithm calculates the entire color palette based on this single choice, adjusting contrasts to guarantee a WCAG compliant 4.5:1 ratio. **No matter what color is picked, the text remains highly readable.**
-- **Read History:** Posts the reader has already opened appear faded in the list. This relies purely on local browser storage (up to 30 posts) and tracks no personal data.
+- **Read History:** Posts the reader has already opened appear faded in the list. This relies purely on local browser storage (the most recent 200 posts, oldest dropped first) and tracks no personal data.
 - **Smart Recommendations:** At the bottom of each post, three random posts from the same category are displayed, keeping content discovery fresh rather than just showing chronological next/previous posts.
 - **"Read Later" Shelf (পরে পড়ব):** A bookmark button on every list row and in every post's share bar. Saved stories appear in their own list at the top of the front page, newest first, each with a button to take it back off. Stored entirely in the reader's own browser (up to 50), so it needs no server, no account, and works on a fully cached page. This is the deliberate counterpart to the two automatic lists: "already read" and "resume reading" both watch what the reader does, while this one records what they intend to do.
 - **"Resume Reading" System:** If a reader leaves halfway through a post, a smart notification will appear at the top of the homepage (or via a toast if they close the modal) offering to resume exactly where they left off. 

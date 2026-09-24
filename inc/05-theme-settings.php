@@ -22,13 +22,18 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return array
  */
 function rs_defaults() {
+	$en = rs_is_en();
+
 	return array(
 		'rs_email'    => 'lettertosohan@gmail.com',
 		'rs_facebook' => 'https://www.facebook.com/lettertosohan/',
 		'rs_linkedin' => 'https://www.linkedin.com/in/raisulsohan/',
-		'rs_phrases'  => 'অক্ষরের আশ্রয়, এখানে গল্প থাকে',
+		/* In the language of the site being looked at. A sub site that has
+		   never had these set was serving the Bengali wording to English
+		   readers, because a default is what rs_option() falls back to. */
+		'rs_phrases'  => $en ? 'Where letters take shelter' : 'অক্ষরের আশ্রয়, এখানে গল্প থাকে',
 		'rs_brand'    => '',
-		'rs_footer'   => '© {year} রাইসুল সোহানের গল্প · সর্বস্বত্ব সংরক্ষিত',
+		'rs_footer'   => $en ? '© {year} Raisul Sohan. All rights reserved.' : '© {year} রাইসুল সোহানের গল্প · সর্বস্বত্ব সংরক্ষিত',
 		'rs_about'    => 0,
 		'rs_og_image' => 0,
 		'rs_hero_image' => 0,
@@ -176,12 +181,19 @@ function rs_render_hero_image_html( $alt = '', $sizes = '(max-width: 48rem) 100v
  * @return string
  */
 function rs_footer_text() {
-	$text = (string) rs_option( 'rs_footer' );
+	$text = trim( (string) rs_option( 'rs_footer' ) );
+
 	if ( '' === $text ) {
-		$text = rs_is_en() ? '© {year} Raisul Sohan. All rights reserved.' : '© {year} রইসুল সোহান';
+		/* The field was emptied on purpose or by accident; either way the
+		   default is the one line already written for this language. */
+		$defaults = rs_defaults();
+		$text     = $defaults['rs_footer'];
 	}
-	$year = rs_is_en() ? gmdate( 'Y' ) : rs_bn_digits( gmdate( 'Y' ) );
-	return str_replace( '{year}', $year, $text );
+
+	/* wp_date rather than gmdate: for the six hours after midnight in Dhaka
+	   the year in UTC is still the old one, and a copyright line that says
+	   last year on the first morning of January is the one day anybody looks. */
+	return str_replace( '{year}', rs_bn_digits( wp_date( 'Y' ) ), $text );
 }
 
 /**

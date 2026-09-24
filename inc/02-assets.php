@@ -190,26 +190,12 @@ function rs_theme_boot() {
 }
 add_action( 'wp_head', 'rs_theme_boot', 1 );
 
-/**
- * Start the body font downloading before the stylesheet is parsed.
- *
- * Only the Bengali serif subset: it is what nearly every glyph on the page
- * needs, and preloading more would compete with it for bandwidth. Fonts are
- * fetched in CORS mode even from our own origin, hence the crossorigin
- * attribute — without it the browser downloads the file twice.
+/*
+ * The body font is preloaded in header.php, on the line above wp_head(),
+ * where the browser's preload scanner reaches it before anything this file
+ * could print. The function that used to live here did the same job from
+ * wp_head and was unhooked when that turned out to print the tag twice; it
+ * then sat unhooked and unused for several releases, so it is gone. Fonts
+ * are fetched in CORS mode even from our own origin, which is why the tag
+ * in header.php carries crossorigin — without it the file downloads twice.
  */
-function rs_preload_font() {
-	if ( ! rs_is_en() ) {
-		printf(
-			'<link rel="preload" href="%s" as="font" type="font/woff2" crossorigin>' . "\n",
-			esc_url( get_template_directory_uri() . '/assets/fonts/noto-serif-bengali-bengali.woff2' )
-		);
-	} else {
-		printf(
-			'<link rel="preload" href="%s" as="font" type="font/woff2" crossorigin>' . "\n",
-			esc_url( get_template_directory_uri() . '/assets/fonts/noto-serif-bengali-latin.woff2' )
-		);
-	}
-}
-/* header.php already carries this preload ahead of wp_head(), where the
-   preload scanner sees it first; hooking it here too printed it twice. */

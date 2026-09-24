@@ -50,23 +50,14 @@ function rs_rest_routes() {
 		)
 	);
 
-	register_rest_route(
-		'rs/v1',
-		'/featured',
-		array(
-			'methods'             => WP_REST_Server::READABLE,
-			'callback'            => 'rs_rest_featured',
-			'permission_callback' => '__return_true',
-			'args'                => array(
-				'cat'     => array(
-					'sanitize_callback' => 'absint',
-				),
-				'exclude' => array(
-					'sanitize_callback' => 'absint',
-				),
-			),
-		)
-	);
+	/*
+	 * There is no /featured route any more. The featured block used to be
+	 * fetched from here and swapped into the page after it had painted,
+	 * which is the visible swap AGENTS.md now rules out; a pool of
+	 * candidates rendered into the page and picked by a blocking inline
+	 * script replaced it in 7.4. The route stayed behind, called by nobody,
+	 * running an ORDER BY RAND() over the posts table for anyone who asked.
+	 */
 
 	register_rest_route(
 		'rs/v1',
@@ -289,23 +280,6 @@ function rs_rest_search( $request ) {
  * @param WP_REST_Request $request Request.
  * @return WP_REST_Response|WP_Error
  */
-function rs_rest_featured( $request ) {
-	nocache_headers();
-	$cat_id     = (int) $request->get_param( 'cat' );
-	$exclude_id = (int) $request->get_param( 'exclude' );
-	
-	ob_start();
-	$post_id = rs_render_featured_post( $cat_id, $exclude_id );
-	$html    = ob_get_clean();
-	
-	return rest_ensure_response(
-		array(
-			'id'   => $post_id,
-			'html' => $html,
-		)
-	);
-}
-
 function rs_rest_random( $request ) {
 	$items = rs_random_posts( 1, 0, (int) $request->get_param( 'cat' ) );
 

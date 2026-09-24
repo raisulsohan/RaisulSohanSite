@@ -19,6 +19,17 @@
 
 	var READ_KEY = 'rs-read';
 
+	/*
+	 * How many openings are remembered. It had no limit at all, so the entry
+	 * grew by one id for every story ever opened and was never pruned — small
+	 * in bytes, but a list that only grows is a list nobody has thought about.
+	 * The other two lists hold 40 (where reading stopped) and 50 (read later);
+	 * this one is allowed more because it answers "which of these have I read"
+	 * over a whole archive, which is precisely the question a short list
+	 * cannot answer. Oldest go first, as they do in the other two.
+	 */
+	var READ_KEEP = 200;
+
 	function readList() {
 		try {
 			return window.localStorage.getItem( READ_KEY ) || '';
@@ -31,6 +42,20 @@
 
 	function hasRead( list, id ) {
 		return list.indexOf( '|' + id + '|' ) > -1;
+	}
+
+	/* The stored shape is "|3||17||8|", so an id is always surrounded by
+	   its own pair of bars and hasRead() can match on that pair alone. */
+	function trimReadList( list ) {
+		var ids = list.split( '|' ).filter( Boolean );
+
+		if ( ids.length <= READ_KEEP ) {
+			return list;
+		}
+
+		return ids.slice( ids.length - READ_KEEP ).map( function ( id ) {
+			return '|' + id + '|';
+		} ).join( '' );
 	}
 
 	/*
@@ -103,7 +128,7 @@
 				   never arrived should still be a first reading next
 				   time. */
 				try {
-					window.localStorage.setItem( READ_KEY, read + mark );
+					window.localStorage.setItem( READ_KEY, trimReadList( read + mark ) );
 				} catch ( e ) {
 					/* As above. */
 				}

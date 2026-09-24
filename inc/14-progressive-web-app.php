@@ -136,29 +136,42 @@ add_action( 'wp_head', 'rs_pwa_head', 0 );
  * even before a static page is created in wp-admin.
  */
 add_filter( 'template_include', function( $template ) {
-	$req = isset( $_SERVER['REQUEST_URI'] ) ? trim( (string) parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' ) : '';
-	if ( 'portfolio' === $req || 'en/portfolio' === $req || preg_match( '~(?:^|/)portfolio/?$~i', $req ) ) {
-		$portfolio_file = locate_template( array( 'page-portfolio.php' ) );
-		if ( $portfolio_file ) {
-			global $wp_query;
-			if ( $wp_query && $wp_query->is_404 ) {
-				$wp_query->is_404 = false;
-				status_header( 200 );
-			}
-			return $portfolio_file;
-		}
+	$here = rs_portfolio_path();
+
+	/* The portfolio itself, not a project under it: /portfolio/<slug>/ is
+	   routed to the portfolio page by a rewrite rule and needs nothing here. */
+	if ( ! $here || '' !== $here['slug'] ) {
+		return $template;
 	}
-	return $template;
+
+	$portfolio_file = locate_template( array( 'page-portfolio.php' ) );
+
+	if ( ! $portfolio_file ) {
+		return $template;
+	}
+
+	global $wp_query;
+
+	if ( $wp_query && $wp_query->is_404 ) {
+		$wp_query->is_404 = false;
+		status_header( 200 );
+	}
+
+	return $portfolio_file;
 } );
 
 /**
  * Filter document title for portfolio page if loaded virtually.
  */
 add_filter( 'pre_get_document_title', function( $title ) {
-	$req = isset( $_SERVER['REQUEST_URI'] ) ? trim( (string) parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' ) : '';
-	if ( 'portfolio' === $req || 'en/portfolio' === $req || preg_match( '~(?:^|/)portfolio/?$~i', $req ) ) {
-		$brand = function_exists( 'rs_brand' ) ? rs_brand() : get_bloginfo( 'name' );
-		return ( function_exists( 'rs_is_en' ) && rs_is_en() ? 'Portfolio' : 'পোর্টফোলিও' ) . ' — ' . $brand;
+	$here = rs_portfolio_path();
+
+	/* A project's own title is set by rs_portfolio_document_title(). */
+	if ( ! $here || '' !== $here['slug'] ) {
+		return $title;
 	}
-	return $title;
+
+	$brand = function_exists( 'rs_brand' ) ? rs_brand() : get_bloginfo( 'name' );
+
+	return ( rs_is_en() ? 'Portfolio' : 'পোর্টফোলিও' ) . ' — ' . $brand;
 } );

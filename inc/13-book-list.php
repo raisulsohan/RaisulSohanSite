@@ -314,8 +314,8 @@ function rs_book_details_html( $post ) {
  * @param int $post_id Post ID.
  */
 function rs_book_save_meta( $post_id ) {
-	if ( ! isset( $_POST['rs_book_nonce'] ) ||
-	     ! wp_verify_nonce( $_POST['rs_book_nonce'], 'rs_book_save' ) ) {
+	if ( ! isset( $_POST['rs_book_nonce'] ) || ! is_string( $_POST['rs_book_nonce'] ) ||
+	     ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['rs_book_nonce'] ) ), 'rs_book_save' ) ) {
 		return;
 	}
 
@@ -327,18 +327,27 @@ function rs_book_save_meta( $post_id ) {
 		return;
 	}
 
-	/* Author: Check the new input first, fallback to dropdown */
-	$final_author = '';
-	if ( ! empty( trim( $_POST['rs_book_author_new'] ?? '' ) ) ) {
-		$final_author = sanitize_text_field( $_POST['rs_book_author_new'] );
-	} elseif ( ! empty( trim( $_POST['rs_book_author_select'] ?? '' ) ) ) {
-		$final_author = sanitize_text_field( $_POST['rs_book_author_select'] );
-	}
+	/* One field, read the same way wherever it came from: unslashed before
+	   it is trimmed, because WordPress adds the slashes on the way in and
+	   trim() would otherwise be looking at a backslash rather than a name. */
+	$field = function ( $key ) {
+		if ( ! isset( $_POST[ $key ] ) || ! is_string( $_POST[ $key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by the caller above.
+			return '';
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- As above.
+		return sanitize_text_field( wp_unslash( $_POST[ $key ] ) );
+	};
+
+	/* Author: check the new input first, fall back to the dropdown. */
+	$new_author    = trim( $field( 'rs_book_author_new' ) );
+	$picked_author = trim( $field( 'rs_book_author_select' ) );
+	$final_author  = '' !== $new_author ? $new_author : $picked_author;
+
 	update_post_meta( $post_id, '_rs_book_author', $final_author );
 
 	if ( isset( $_POST['rs_book_translator'] ) ) {
-		update_post_meta( $post_id, '_rs_book_translator',
-			sanitize_text_field( $_POST['rs_book_translator'] ) );
+		update_post_meta( $post_id, '_rs_book_translator', $field( 'rs_book_translator' ) );
 	}
 
 	update_post_meta( $post_id, '_rs_book_read',

@@ -210,11 +210,13 @@ function rs_seo_context() {
 		$about = trim( wp_strip_all_tags( $term->description ) );
 
 		if ( '' === $about ) {
-			$about = sprintf(
-				is_category() ? '%1$s বিভাগের সব লেখা — %2$s' : '%1$s বিষয়ের সব লেখা — %2$s',
-				$term->name,
-				get_bloginfo( 'name' )
-			);
+			if ( rs_is_en() ) {
+				$pattern = is_category() ? 'Everything written in %1$s — %2$s' : 'Everything written about %1$s — %2$s';
+			} else {
+				$pattern = is_category() ? '%1$s বিভাগের সব লেখা — %2$s' : '%1$s বিষয়ের সব লেখা — %2$s';
+			}
+
+			$about = sprintf( $pattern, $term->name, get_bloginfo( 'name' ) );
 		}
 
 		return array(
@@ -231,9 +233,18 @@ function rs_seo_context() {
 	if ( is_home() || is_front_page() ) {
 		$site_name = get_bloginfo( 'name' );
 		$tagline   = get_bloginfo( 'description' );
+
+		/* The tail sentence is what a search result prints under the title, so
+		   it has to be in the language of the site it is describing. */
+		$tail = rs_is_en()
+			? '. The personal website and blog of Raisul Sohan.'
+			: '। রাইসুল সোহানের ব্যক্তিগত ওয়েবসাইট ও ব্লগ (Personal Website & Blog)।';
+
 		return array(
 			'title'       => $site_name . ' - ' . $tagline,
-			'description' => $site_name . ' - ' . $tagline . '। রাইসুল সোহানের ব্যক্তিগত ওয়েবসাইট ও ব্লগ (Personal Website & Blog)।',
+			/* Cut like every other description here: search engines show about
+			   160 characters, and a long tagline pushed the tail past that. */
+			'description' => rs_shorten( $site_name . ' - ' . $tagline . $tail, 160 ),
 			'url'         => $paged > 1 ? rs_page_url( $paged ) : home_url( '/' ),
 			'type'        => 'website',
 		);

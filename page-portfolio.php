@@ -242,7 +242,13 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 		</nav>
 	</article>
 
-	<script type="application/ld+json"><?php echo wp_json_encode( $pp_ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ); ?></script>
+	<?php
+	/* Unicode is left readable, but slashes keep their escaping: that is what
+	   stops a "</script>" inside a project's own words from closing this block
+	   early and turning the rest of the case study into markup. Same reasoning
+	   as rs_schema() in inc/10-seo-meta.php. */
+	?>
+	<script type="application/ld+json"><?php echo wp_json_encode( $pp_ld, JSON_UNESCAPED_UNICODE ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON, slash-escaped above. ?></script>
 </main>
 <?php else : ?>
 <main class="rs-pf" id="rs-content">
@@ -821,7 +827,10 @@ foreach ( $projects as $p ) {
 		'demo_tall'   => ! empty( $p['demo_tall'] ) ? esc_url_raw( $p['demo_tall'] ) : '',
 	);
 }
-echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+/* Slashes stay escaped: a "</script>" anywhere in a project's summary,
+   challenge or solution would otherwise end this block early, and whatever
+   followed it in the text would be parsed as markup. */
+echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON, slash-escaped above.
 ?>
 </script>
 
@@ -1048,13 +1057,36 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 	var lightboxImg     = document.getElementById('rs-lightbox-img');
 	var lightboxCaption = document.getElementById('rs-lightbox-caption');
 
+	/* Everything below this line is written by whoever edits the portfolio in
+	   the dashboard, and several of these values are put into markup rather
+	   than set as text. A title holding a single quotation mark used to close
+	   the attribute it sat in. */
+	function esc(value) {
+		return String(value == null ? '' : value)
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#039;');
+	}
+
 	function renderRichText(container, text) {
 		container.innerHTML = '';
 		if (!text) return;
-		var paras = text.split(/\n\n+/);
+		var paras = String(text).split(/\n\n+/);
 		paras.forEach(function(para) {
 			var p = document.createElement('p');
-			p.innerHTML = para.replace(/\n/g, '<br>');
+
+			/* Text nodes and real <br> elements, rather than pasting the
+			   paragraph in as markup: the line breaks are the only thing
+			   here that was ever meant to be HTML. */
+			para.split('\n').forEach(function(line, i) {
+				if (i > 0) {
+					p.appendChild(document.createElement('br'));
+				}
+				p.appendChild(document.createTextNode(line));
+			});
+
 			container.appendChild(p);
 		});
 	}
@@ -1191,7 +1223,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 				: '';
 
 			if (p.category === 'web') {
-				visualEl.innerHTML = '<div class="rs-case-study-web-mockup"><div class="rs-portfolio-card__browser-bar"><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-card__url">' + displayDomain + '</span></div><div class="rs-case-study-img-wrap' + fitClass + zoomClass + '"' + zoomAttrs + '><img src="' + p.image + '" alt="' + p.title + '" class="rs-case-study-img">' + zoomHint + '</div></div>';
+				visualEl.innerHTML = '<div class="rs-case-study-web-mockup"><div class="rs-portfolio-card__browser-bar"><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-card__url">' + esc(displayDomain) + '</span></div><div class="rs-case-study-img-wrap' + fitClass + zoomClass + '"' + zoomAttrs + '><img src="' + esc(p.image) + '" alt="' + esc(p.title) + '" class="rs-case-study-img">' + zoomHint + '</div></div>';
 			} else if (p.category === 'video') {
 				var videoZoomBtn = isZoomable
 					? '<button type="button" class="rs-case-study-zoom-badge is-clickable" aria-label="' + (isEn ? 'Click to view full image' : 'সম্পূর্ণ ছবি দেখতে ক্লিক করুন') + '" title="' + (isEn ? 'Click to zoom artwork' : 'আর্টওয়ার্ক বড় করে দেখুন') + '">' +
@@ -1200,14 +1232,14 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 					  '</button>'
 					: '';
 				visualEl.innerHTML = '<div class="rs-case-study-video-wrap">' +
-					'<a href="' + p.direct_url + '" target="_blank" rel="noopener noreferrer" class="rs-case-study-video-mockup" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url(' + p.image + '); background-size: cover; background-position: center;" title="' + (isEn ? 'Watch on YouTube (Opens in new tab)' : 'ইউটিউবে দেখুন (নতুন ট্যাবে খুলবে)') + '">' +
+					'<a href="' + esc(p.direct_url) + '" target="_blank" rel="noopener noreferrer" class="rs-case-study-video-mockup" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url(&quot;' + esc(p.image) + '&quot;); background-size: cover; background-position: center;" title="' + (isEn ? 'Watch on YouTube (Opens in new tab)' : 'ইউটিউবে দেখুন (নতুন ট্যাবে খুলবে)') + '">' +
 					'<div class="rs-portfolio-card__play-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div>' +
 					'<span class="rs-case-study-video-label">' + (isEn ? 'HD Video Preview • Click to Watch' : 'এইচডি ভিডিও প্রিভিউ • দেখতে ক্লিক করুন') + '</span>' +
 					'</a>' +
 					videoZoomBtn +
 					'</div>';
 			} else {
-				visualEl.innerHTML = '<div class="rs-case-study-img-wrap' + fitClass + zoomClass + '"' + zoomAttrs + '><img src="' + p.image + '" alt="' + p.title + '" class="rs-case-study-img">' + zoomHint + '</div>';
+				visualEl.innerHTML = '<div class="rs-case-study-img-wrap' + fitClass + zoomClass + '"' + zoomAttrs + '><img src="' + esc(p.image) + '" alt="' + esc(p.title) + '" class="rs-case-study-img">' + zoomHint + '</div>';
 			}
 
 			if (isZoomable) {
@@ -1230,15 +1262,15 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASH
 		} else {
 			if (p.category === 'video') {
 				visualEl.innerHTML = '<div class="rs-case-study-video-wrap">' +
-					'<a href="' + p.direct_url + '" target="_blank" rel="noopener noreferrer" class="rs-case-study-video-mockup" title="' + (isEn ? 'Watch on YouTube (Opens in new tab)' : 'ইউটিউবে দেখুন (নতুন ট্যাবে খুলবে)') + '">' +
+					'<a href="' + esc(p.direct_url) + '" target="_blank" rel="noopener noreferrer" class="rs-case-study-video-mockup" title="' + (isEn ? 'Watch on YouTube (Opens in new tab)' : 'ইউটিউবে দেখুন (নতুন ট্যাবে খুলবে)') + '">' +
 					'<div class="rs-portfolio-card__play-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div>' +
 					'<span class="rs-case-study-video-label">' + (isEn ? 'HD Video Preview • Click to Watch' : 'এইচডি ভিডিও প্রিভিউ • দেখতে ক্লিক করুন') + '</span>' +
 					'</a>' +
 					'</div>';
 			} else if (p.category === 'web') {
-				visualEl.innerHTML = '<div class="rs-case-study-web-mockup"><div class="rs-portfolio-card__browser-bar"><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-card__url">' + displayDomain + '</span></div><div class="rs-case-study-web-body"><span>⚡ ' + (isEn ? 'Fast Responsive Zero-Plugin Web Platform' : 'দ্রুতগতির জিরো-প্লাগিন রেসপনসিভ ওয়েবসাইট') + '</span></div></div>';
+				visualEl.innerHTML = '<div class="rs-case-study-web-mockup"><div class="rs-portfolio-card__browser-bar"><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-dot"></span><span class="rs-portfolio-card__url">' + esc(displayDomain) + '</span></div><div class="rs-case-study-web-body"><span>⚡ ' + (isEn ? 'Fast Responsive Zero-Plugin Web Platform' : 'দ্রুতগতির জিরো-প্লাগিন রেসপনসিভ ওয়েবসাইট') + '</span></div></div>';
 			} else {
-				visualEl.innerHTML = '<div class="rs-case-study-tool-mockup"><div class="rs-case-study-tool-badge">' + (p.icon === 'extension' ? '🧩' : (p.icon === 'terminal' ? '⌨️' : '⚙️')) + '</div><span>' + p.type + '</span></div>';
+				visualEl.innerHTML = '<div class="rs-case-study-tool-mockup"><div class="rs-case-study-tool-badge">' + (p.icon === 'extension' ? '🧩' : (p.icon === 'terminal' ? '⌨️' : '⚙️')) + '</div><span>' + esc(p.type) + '</span></div>';
 			}
 		}
 

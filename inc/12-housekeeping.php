@@ -188,7 +188,7 @@ function rs_hreflang() {
 	$here    = (int) get_current_blog_id();
 	$other   = ( $here === $en_id ) ? $main_id : $en_id;
 	$pair    = array();
-	$req     = isset( $_SERVER['REQUEST_URI'] ) ? trim( (string) wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_PATH ), '/' ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Only compared against fixed paths.
+	$on_pf   = rs_portfolio_path();
 
 	if ( is_singular( 'post' ) ) {
 		$id            = get_queried_object_id();
@@ -214,9 +214,9 @@ function rs_hreflang() {
 			$pair[ $other ] = get_category_link( $twin );
 		}
 		restore_current_blog();
-	} elseif ( preg_match( '~(?:^|/)portfolio(?:/([^/]+))?$~i', $req, $rs_pm ) ) {
+	} elseif ( $on_pf ) {
 		/* Projects live on the main site and show on both, under one slug. */
-		$rs_sub         = ! empty( $rs_pm[1] ) ? $rs_pm[1] . '/' : '';
+		$rs_sub         = '' !== $on_pf['slug'] ? $on_pf['slug'] . '/' : '';
 		$pair[ $here ]  = get_home_url( $here, '/portfolio/' . $rs_sub );
 		$pair[ $other ] = get_home_url( $other, '/portfolio/' . $rs_sub );
 	} elseif ( is_page() ) {
@@ -242,6 +242,13 @@ function rs_hreflang() {
 	);
 
 	foreach ( $pair as $blog => $url ) {
+		/* A network with a third sub site would reach here with a blog this
+		   pair knows nothing about. Saying nothing beats naming a language
+		   we have not been told. */
+		if ( ! isset( $langs[ $blog ] ) ) {
+			continue;
+		}
+
 		printf( '<link rel="alternate" hreflang="%s" href="%s">' . "\n", esc_attr( $langs[ $blog ] ), esc_url( $url ) );
 	}
 
@@ -326,18 +333,30 @@ function rs_optimize_image_upload( $upload ) {
 			
 			$image_editor->set_quality( 80 );
 			
-			$path_parts    = pathinfo( $file_path );
-			$webp_filename = $path_parts['filename'] . '.webp';
+			$path_parts = pathinfo( $file_path );
+
+			/*
+			 * A unique name, not just the original one with .webp on the end.
+			 * WordPress has already made the upload's own name unique, but it
+			 * only compared the extension it arrived with: sunset.jpg and
+			 * sunset.png are two different files to it and both land here as
+			 * sunset.webp. Saving to a fixed name meant the second upload
+			 * quietly overwrote the first, and the first attachment's URL then
+			 * pointed at somebody else's picture.
+			 */
+			$webp_filename = wp_unique_filename( $path_parts['dirname'], $path_parts['filename'] . '.webp' );
 			$webp_path     = $path_parts['dirname'] . '/' . $webp_filename;
-			
+
 			$saved = $image_editor->save( $webp_path, 'image/webp' );
 			
 			if ( ! is_wp_error( $saved ) && file_exists( $saved['path'] ) ) {
-				@unlink( $file_path );
-				
+				wp_delete_file( $file_path );
+
+				/* The name the editor actually wrote, not the one it was asked
+				   for, so the address can never name a file that is not there. */
 				$upload['file'] = $saved['path'];
 				$url_parts      = pathinfo( $upload['url'] );
-				$upload['url']  = $url_parts['dirname'] . '/' . $webp_filename;
+				$upload['url']  = $url_parts['dirname'] . '/' . wp_basename( $saved['path'] );
 				$upload['type'] = 'image/webp';
 			}
 		}

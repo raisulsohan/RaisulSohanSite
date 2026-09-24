@@ -11,9 +11,14 @@
 var CFG    = self.RS_SW_CONFIG || {};
 var VER    = CFG.version || '0';
 var SHELL  = 'rs-shell-' + VER;
+/* Stylesheets, scripts and fonts met along the way, kept apart from the
+   shell so the shell can never be evicted to make room for them: the
+   trimming below drops whatever was cached first, and in one bucket that
+   would be the six files the site needs to render offline at all. */
+var ASSETS = 'rs-assets-' + VER;
 var POSTS  = 'rs-posts-' + VER;
 var PAGES  = 'rs-pages-' + VER;
-var CACHES = [ SHELL, POSTS, PAGES ];
+var CACHES = [ SHELL, ASSETS, POSTS, PAGES ];
 
 /* -------------------------------------------------------------------
  * Install — pre-cache the app shell
@@ -67,7 +72,9 @@ function trim( bucket, max ) {
 	} );
 }
 
-function cacheFirst( request, bucket ) {
+function cacheFirst( request, bucket, max ) {
+	/* Unnamed, so a file already in the pre-cached shell is found there and
+	   is never fetched or copied into the bucket below. */
 	return caches.match( request ).then( function ( hit ) {
 		if ( hit ) {
 			return hit;
@@ -78,7 +85,11 @@ function cacheFirst( request, bucket ) {
 				var copy = res.clone();
 
 				caches.open( bucket ).then( function ( c ) {
-					c.put( request, copy );
+					c.put( request, copy ).then( function () {
+						if ( max ) {
+							trim( bucket, max );
+						}
+					} );
 				} );
 			}
 
@@ -119,9 +130,9 @@ self.addEventListener( 'fetch', function ( event ) {
 		return;
 	}
 
-	/* 1. Shell assets — cache first. */
+	/* 1. Stylesheets, scripts and fonts — cache first, capped. */
 	if ( /\.(css|js|woff2?)(?:\?|$)/i.test( url.pathname ) ) {
-		event.respondWith( cacheFirst( event.request, SHELL ) );
+		event.respondWith( cacheFirst( event.request, ASSETS, 60 ) );
 		return;
 	}
 

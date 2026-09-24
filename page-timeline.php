@@ -53,13 +53,36 @@ $rs_items   = array();
 $rs_months  = array();
 $rs_total   = 0;
 
+/*
+ * How many reading times this page is willing to work out from scratch.
+ *
+ * A clip's length is its reading time, so every story on the site needs one
+ * — and rs_reading_time() walks a whole post body and writes a row of meta
+ * the first time it is asked. On a site whose cache has just been cleared
+ * that was one request parsing every post and writing every row, which on a
+ * few hundred stories is a request nobody waits out. The first visits fill
+ * the real numbers in a batch at a time; until then the rest get an estimate
+ * from the length of the body, which is close enough to draw a clip with and
+ * costs no write at all.
+ */
+$rs_budget = 40;
+
 foreach ( $rs_posts as $rs_post ) {
 	$rs_min = (int) get_post_meta( $rs_post->ID, RS_MINUTES_KEY, true );
 
-	if ( ! $rs_min ) {
+	if ( ! $rs_min && $rs_budget > 0 ) {
+		--$rs_budget;
 		rs_reading_time( $rs_post );
-		$rs_min = max( 1, (int) get_post_meta( $rs_post->ID, RS_MINUTES_KEY, true ) );
+		$rs_min = (int) get_post_meta( $rs_post->ID, RS_MINUTES_KEY, true );
 	}
+
+	if ( ! $rs_min ) {
+		/* Seven characters to a word is about right for both scripts here,
+		   against the 180 words a minute rs_reading_time() reads at. */
+		$rs_min = (int) round( mb_strlen( wp_strip_all_tags( $rs_post->post_content ), 'UTF-8' ) / 7 / 180 );
+	}
+
+	$rs_min = max( 1, $rs_min );
 
 	$rs_term = rs_primary_category( $rs_post );
 	$rs_y    = (int) get_post_time( 'Y', false, $rs_post );

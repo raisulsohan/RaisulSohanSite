@@ -907,7 +907,11 @@ function rs_portfolio_reorder_ajax() {
 		wp_send_json_error( 'Unauthorized' );
 	}
 
-	$order = isset( $_POST['order'] ) ? array_map( 'absint', $_POST['order'] ) : array();
+	/* An array, checked rather than assumed: jQuery sends order[] so this is
+	   normally one, but array_map() on anything else is a fatal in PHP 8. */
+	$order = isset( $_POST['order'] ) && is_array( $_POST['order'] )
+		? array_values( array_filter( array_map( 'absint', wp_unslash( $_POST['order'] ) ) ) )
+		: array();
 
 	if ( empty( $order ) ) {
 		wp_send_json_error( 'Empty order' );
@@ -916,9 +920,6 @@ function rs_portfolio_reorder_ajax() {
 	global $wpdb;
 
 	foreach ( $order as $position => $post_id ) {
-		if ( ! $post_id ) {
-			continue;
-		}
 		$wpdb->update(
 			$wpdb->posts,
 			array( 'menu_order' => $position + 1 ),
@@ -926,9 +927,15 @@ function rs_portfolio_reorder_ajax() {
 			array( '%d' ),
 			array( '%d', '%s' )
 		);
+
+		/* Each row was changed behind the object cache's back, so each row is
+		   what has to be forgotten. clean_post_cache( 0 ) stood here and did
+		   nothing at all: get_post( 0 ) is null and the function returns at
+		   once, so on a site with a persistent cache the old order survived
+		   the drag until something else happened to flush it. */
+		clean_post_cache( $post_id );
 	}
 
-	clean_post_cache( 0 ); // Bust object cache for posts.
 	wp_send_json_success();
 }
 add_action( 'wp_ajax_rs_portfolio_reorder', 'rs_portfolio_reorder_ajax' );
@@ -1921,9 +1928,17 @@ function rs_add_portfolio_project_once( $slug ) {
 
 		if ( $post_id && ! is_wp_error( $post_id ) ) {
 			foreach ( array( 'category', 'type_bn', 'type_en', 'badge_bn', 'badge_en', 'title_bn', 'title_en', 'summary_bn', 'summary_en', 'role_bn', 'role_en', 'context_bn', 'context_en', 'challenge_bn', 'challenge_en', 'solution_bn', 'solution_en', 'highlights_bn', 'highlights_en', 'accent', 'icon', 'image', 'image_fit', 'action_type', 'action_bn', 'action_en', 'direct_url', 'github_url' ) as $field ) {
-				update_post_meta( $post_id, '_rs_portfolio_' . $field, $item[ $field ] );
+				/* Every default carries all of these today, but the next project
+				   added to that list will not necessarily, and a missing key is
+				   a warning printed into the page on PHP 8. */
+				if ( isset( $item[ $field ] ) ) {
+					update_post_meta( $post_id, '_rs_portfolio_' . $field, $item[ $field ] );
+				}
 			}
-			update_post_meta( $post_id, '_rs_portfolio_tags', implode( ', ', $item['tags'] ) );
+
+			if ( ! empty( $item['tags'] ) && is_array( $item['tags'] ) ) {
+				update_post_meta( $post_id, '_rs_portfolio_tags', implode( ', ', $item['tags'] ) );
+			}
 		}
 	}
 

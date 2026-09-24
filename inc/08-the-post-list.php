@@ -245,8 +245,8 @@ function rs_render_count() {
 }
 
 /**
- * The query behind the featured block, in both the shapes it is asked for:
- * the one post the REST route returns, and the handful the page carries.
+ * The query behind the featured block: the handful of candidates the page
+ * carries, of which an inline script shows one.
  */
 function rs_featured_query_args( $cat_id = 0, $count = 1 ) {
 	$args = array(
@@ -322,41 +322,6 @@ function rs_render_featured_pool( $cat_id = 0 ) {
 	?>
 	<script>(function(){try{var c=document.querySelectorAll('#rs-featured-wrap > .rs-featured__pick'),n=c.length;if(n<2){return;}var r=Math.floor(Math.random()*n);if(!r){return;}c[0].hidden=true;c[r].hidden=false;}catch(e){}})();</script>
 	<?php
-}
-
-/**
- * Featured post block — the single post the REST route serves.
- */
-function rs_render_featured_post( $cat_id = 0, $exclude_id = 0 ) {
-	if ( is_search() ) {
-		return 0;
-	}
-
-	$args = rs_featured_query_args( $cat_id, 1 );
-
-	if ( $exclude_id ) {
-		$args['post__not_in'] = array( (int) $exclude_id );
-	}
-
-	$q = new WP_Query( $args );
-
-	if ( ! $q->have_posts() && $exclude_id ) {
-		unset( $args['post__not_in'] );
-		$q = new WP_Query( $args );
-	}
-
-	if ( ! $q->have_posts() ) {
-		return 0;
-	}
-
-	$q->the_post();
-	global $post;
-	$featured_id = (int) $post->ID;
-
-	rs_featured_post_markup( $post );
-
-	wp_reset_postdata();
-	return $featured_id;
 }
 
 /**

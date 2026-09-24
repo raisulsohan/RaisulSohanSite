@@ -183,15 +183,66 @@ function rs_is_en() {
 }
 
 /**
+ * The path of the request, relative to this site's own root.
+ *
+ * The site's base is taken off the front, so a sub site at /en/ and an
+ * install in a sub directory both answer "portfolio" for their portfolio
+ * page rather than "en/portfolio" or "blog/portfolio". Everything that
+ * matches a path against a fixed one reads it through here, which is what
+ * lets those patterns be anchored at both ends.
+ *
+ * @return string Path without the slashes at either end.
+ */
+function rs_request_path() {
+	if ( ! isset( $_SERVER['REQUEST_URI'] ) ) {
+		return '';
+	}
+
+	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Only ever matched against fixed patterns below.
+	$path = trim( (string) wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_PATH ), '/' );
+	$base = trim( (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH ), '/' );
+
+	if ( '' !== $base && 0 === stripos( $path . '/', $base . '/' ) ) {
+		$path = ltrim( substr( $path, strlen( $base ) ), '/' );
+	}
+
+	return $path;
+}
+
+/**
+ * Whether a path is the portfolio, and which project it names.
+ *
+ * Anchored at both ends on purpose. The pattern this replaces was
+ * "(?:^|/)portfolio/?$", which matched the tail of *any* address —
+ * /category/portfolio, /2019/07/portfolio — and the template filter that
+ * read it then cancelled the 404 and answered 200, so the portfolio page
+ * existed at endlessly many addresses, none of them carrying a canonical
+ * tag. rs_request_path() has already taken the site's own base off the
+ * front, so nothing but the portfolio's own path can match here.
+ *
+ * @param string|null $req Path to test; the current request when null.
+ * @return array|null { slug } — slug is '' for the portfolio itself.
+ */
+function rs_portfolio_path( $req = null ) {
+	$req = null === $req ? rs_request_path() : trim( (string) $req, '/' );
+
+	if ( ! preg_match( '~^portfolio(?:/([^/]+))?$~i', $req, $found ) ) {
+		return null;
+	}
+
+	return array( 'slug' => isset( $found[1] ) ? $found[1] : '' );
+}
+
+/**
  * Language switcher data for header toggle.
  *
  * @return array
  */
 function rs_lang_switcher_data() {
-	$req          = isset( $_SERVER['REQUEST_URI'] ) ? trim( (string) parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' ) : '';
-	$is_portfolio = (bool) preg_match( '~(?:^|/)portfolio(?:/([^/]+))?/?$~i', $req, $rs_pm );
+	$here         = rs_portfolio_path();
+	$is_portfolio = null !== $here;
 	/* A project page switches to the same project in the other language. */
-	$portfolio    = '/portfolio/' . ( ! empty( $rs_pm[1] ) ? $rs_pm[1] . '/' : '' );
+	$portfolio    = '/portfolio/' . ( $is_portfolio && '' !== $here['slug'] ? $here['slug'] . '/' : '' );
 
 	if ( rs_is_en() ) {
 		$main_id = function_exists( 'get_main_site_id' ) ? get_main_site_id() : 1;
