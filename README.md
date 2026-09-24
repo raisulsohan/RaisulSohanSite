@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.16.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.16.1-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -19,6 +19,8 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 - The quote card draws its author line and watermark in the serif too; a canvas cannot fall back to a face the page never loaded.
 - The three sans `woff2` files, their `@font-face` rules and the sans entry in the service worker's pre-cache list are all removed.
 - The size control keeps its bare `sans-serif`. Those are three Latin letters in a system font, and they cost nothing to draw.
+
+- **7.16.1:** the banner cut from 7.14.1 never actually happened on the live site, and said nothing about it. `rs_ensure_hero_cuts()` stamped its "done" option whether the cut had worked or not, so one failure was permanent and invisible — the likely cause being a WebP banner on a PHP without WebP support, which is now named in so many words. Only a success is remembered now; a failure is kept as a reason, retried at most hourly, and shown on the Theme Settings screen with a button to try again.
 
 ## What's new in 7.15
 

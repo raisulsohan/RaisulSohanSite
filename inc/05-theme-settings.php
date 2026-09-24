@@ -119,14 +119,6 @@ function rs_hero_image() {
 }
 
 /**
- * Render hero image HTML, with automatic multisite fallback to main site if subsite has none set.
- *
- * @param string $alt Alt text.
- * @param string $sizes Sizes attribute.
- * @param string $class Class attribute.
- * @return string Image HTML or empty string.
- */
-/**
  * Which cut of the heading banner to send, and how wide it will be shown.
  *
  * "rs-hero" is the 1600 by 300 crop registered in rs_setup(); a banner
@@ -168,7 +160,7 @@ function rs_hero_image_cut( $id ) {
  * these exist.
  *
  * @param int $id Attachment.
- * @return bool Whether both cuts are now on disk.
+ * @return true|WP_Error True when both cuts are on disk, or why they are not.
  */
 function rs_make_hero_cuts( $id ) {
 	$id   = (int) $id;
@@ -176,7 +168,7 @@ function rs_make_hero_cuts( $id ) {
 	$meta = $id ? wp_get_attachment_metadata( $id ) : false;
 
 	if ( ! $meta || ! is_array( $meta ) ) {
-		return false;
+		return new WP_Error( 'rs_no_meta', __( 'That banner has no attachment record to add a size to.', 'raisul-sohan' ) );
 	}
 
 	$have    = isset( $meta['sizes'] ) && is_array( $meta['sizes'] ) ? $meta['sizes'] : array();
@@ -195,13 +187,32 @@ function rs_make_hero_cuts( $id ) {
 	$file = get_attached_file( $id );
 
 	if ( ! $file || ! file_exists( $file ) ) {
-		return false;
+		return new WP_Error( 'rs_no_file', __( 'The banner file is missing from the uploads folder.', 'raisul-sohan' ) );
+	}
+
+	/*
+	 * Said plainly, because this is the one that actually happens: a site
+	 * whose PHP has no WebP support cannot re-cut a WebP banner, and the
+	 * failure is otherwise invisible — the page simply goes on serving the
+	 * uncropped picture and nobody is told why.
+	 */
+	$type = wp_check_filetype( $file );
+
+	if ( ! empty( $type['type'] ) && ! wp_image_editor_supports( array( 'mime_type' => $type['type'] ) ) ) {
+		return new WP_Error(
+			'rs_no_support',
+			sprintf(
+				/* translators: %s: image MIME type, e.g. image/webp. */
+				__( 'PHP on this server cannot edit %s images, so the banner cannot be re-cut. Re-upload it as a JPEG, or ask the host to enable WebP support in GD or Imagick.', 'raisul-sohan' ),
+				$type['type']
+			)
+		);
 	}
 
 	$editor = wp_get_image_editor( $file );
 
 	if ( is_wp_error( $editor ) ) {
-		return false;
+		return $editor;
 	}
 
 	$registered = wp_get_registered_image_subsizes();
@@ -214,13 +225,13 @@ function rs_make_hero_cuts( $id ) {
 	}
 
 	if ( ! $todo ) {
-		return false;
+		return new WP_Error( 'rs_no_sizes', __( 'The banner sizes are not registered.', 'raisul-sohan' ) );
 	}
 
 	$made = $editor->multi_resize( $todo );
 
 	if ( empty( $made ) ) {
-		return false;
+		return new WP_Error( 'rs_no_cut', __( 'The image editor returned nothing. The banner may be smaller than the band it is cut to.', 'raisul-sohan' ) );
 	}
 
 	$meta['sizes'] = array_merge( $have, $made );
@@ -230,12 +241,19 @@ function rs_make_hero_cuts( $id ) {
 }
 
 /**
- * Make sure the banner on this site has them, once per theme version.
+ * Make sure the banner on this site has them.
  *
- * Also runs whenever the settings are saved, which is when a different
- * picture is most likely to have just been chosen.
+ * Only a success is remembered. The first version of this stamped the
+ * option whatever happened, so a run that failed once — a host without WebP
+ * support, a moment without the memory to open a picture — was never tried
+ * again and never mentioned. A failure is now kept as a reason the settings
+ * screen can show, and retried, but only every so often: a dashboard should
+ * not stop to resize a photograph on every page load.
+ *
+ * @param bool $force Try again now, whatever the last answer was.
+ * @return true|WP_Error|null Null when there is no banner to cut.
  */
-function rs_ensure_hero_cuts() {
+function rs_ensure_hero_cuts( $force = false ) {
 	/*
 	 * This site's own setting, not rs_hero_image(), which answers with the
 	 * main site's picture when a sub site has none of its own — and an
@@ -246,23 +264,66 @@ function rs_ensure_hero_cuts() {
 	$id = (int) rs_option( 'rs_hero_image' );
 
 	if ( ! $id || ! wp_get_attachment_image_src( $id, 'large' ) ) {
-		return;
+		return null;
 	}
 
-	/* A picture the editor cannot open would otherwise be retried on every
-	   dashboard page for ever. */
-	$stamp = get_option( 'rs_hero_cuts' );
+	$done = RS_VERSION . ':' . $id;
 
-	if ( $stamp === RS_VERSION . ':' . $id ) {
-		return;
+	if ( ! $force ) {
+		if ( get_option( 'rs_hero_cuts' ) === $done ) {
+			return true;
+		}
+
+		/* Backing off after a failure, so this is not attempted on every
+		   single dashboard page while whatever went wrong is still wrong. */
+		if ( get_transient( 'rs_hero_cuts_wait' ) ) {
+			return null;
+		}
 	}
 
-	rs_make_hero_cuts( $id );
+	$result = rs_make_hero_cuts( $id );
 
-	update_option( 'rs_hero_cuts', RS_VERSION . ':' . $id, false );
+	if ( is_wp_error( $result ) ) {
+		update_option( 'rs_hero_cuts_error', $result->get_error_message(), false );
+		set_transient( 'rs_hero_cuts_wait', 1, HOUR_IN_SECONDS );
+
+		return $result;
+	}
+
+	delete_option( 'rs_hero_cuts_error' );
+	delete_transient( 'rs_hero_cuts_wait' );
+	update_option( 'rs_hero_cuts', $done, false );
+
+	return true;
 }
 add_action( 'admin_init', 'rs_ensure_hero_cuts' );
 
+/**
+ * admin-post: cut the banner now, and say what happened.
+ */
+function rs_hero_cuts_now() {
+	if ( ! current_user_can( 'edit_theme_options' ) ) {
+		wp_die( esc_html__( 'You are not allowed to do this.', 'raisul-sohan' ) );
+	}
+
+	check_admin_referer( 'rs_hero_cuts' );
+
+	$result = rs_ensure_hero_cuts( true );
+	$flag   = is_wp_error( $result ) ? 'failed' : ( null === $result ? 'none' : 'done' );
+
+	wp_safe_redirect( admin_url( 'themes.php?page=rs-settings&rs_hero=' . $flag ) );
+	exit;
+}
+add_action( 'admin_post_rs_hero_cuts', 'rs_hero_cuts_now' );
+
+/**
+ * Render hero image HTML, with automatic multisite fallback to main site if subsite has none set.
+ *
+ * @param string $alt Alt text.
+ * @param string $sizes Sizes attribute.
+ * @param string $class Class attribute.
+ * @return string Image HTML or empty string.
+ */
 function rs_render_hero_image_html( $alt = '', $sizes = '', $class = 'rs-hero__image' ) {
 	$id          = (int) rs_option( 'rs_hero_image' );
 	$pos         = rs_option( 'rs_hero_pos' );
@@ -789,6 +850,42 @@ function rs_settings_page() {
 		<?php elseif ( 'failed' === $rs_uploads_flag ) : ?>
 			<div class="notice notice-error is-dismissible">
 				<p><?php esc_html_e( 'Could not write to the uploads folder. Add the rules by hand instead.', 'raisul-sohan' ); ?></p>
+			</div>
+		<?php endif; ?>
+
+		<?php
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading a flag off our own redirect, acting on nothing.
+		$rs_hero_flag  = isset( $_GET['rs_hero'] ) ? sanitize_key( wp_unslash( $_GET['rs_hero'] ) ) : '';
+		$rs_hero_id    = (int) rs_option( 'rs_hero_image' );
+		$rs_hero_cut   = $rs_hero_id ? wp_get_attachment_image_src( $rs_hero_id, 'rs-hero' ) : false;
+		$rs_hero_ready = $rs_hero_cut && ! empty( $rs_hero_cut[3] );
+		$rs_hero_why   = (string) get_option( 'rs_hero_cuts_error', '' );
+
+		if ( 'done' === $rs_hero_flag ) :
+			?>
+			<div class="notice notice-success is-dismissible">
+				<p><?php esc_html_e( 'The heading banner has been cut to its band.', 'raisul-sohan' ); ?></p>
+			</div>
+		<?php elseif ( 'failed' === $rs_hero_flag ) : ?>
+			<div class="notice notice-error is-dismissible">
+				<p><?php echo esc_html( $rs_hero_why ? $rs_hero_why : __( 'The banner could not be cut.', 'raisul-sohan' ) ); ?></p>
+			</div>
+		<?php endif; ?>
+
+		<?php if ( $rs_hero_id && ! $rs_hero_ready ) : ?>
+			<div class="notice notice-warning">
+				<p>
+					<strong><?php esc_html_e( 'The heading banner is sent whole.', 'raisul-sohan' ); ?></strong>
+					<?php esc_html_e( 'It is shown in a 1600 by 300 band, so most of what a reader downloads is cropped away unseen. WordPress only makes these cuts when a picture is first uploaded, and this one was uploaded before the band existed.', 'raisul-sohan' ); ?>
+				</p>
+				<?php if ( $rs_hero_why ) : ?>
+					<p><em><?php echo esc_html( $rs_hero_why ); ?></em></p>
+				<?php endif; ?>
+				<p>
+					<a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=rs_hero_cuts' ), 'rs_hero_cuts' ) ); ?>">
+						<?php esc_html_e( 'Cut the banner now', 'raisul-sohan' ); ?>
+					</a>
+				</p>
 			</div>
 		<?php endif; ?>
 
