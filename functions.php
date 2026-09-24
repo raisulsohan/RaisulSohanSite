@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /* Bump this on every CSS or JS change (after `npm run build`): it is the
    cache buster in the ?ver= query string for style.min.css and app.min.js,
    and it must match the Version in style.css and package.json. */
-define( 'RS_VERSION', '7.15.0' );
+define( 'RS_VERSION', '7.16.0' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */

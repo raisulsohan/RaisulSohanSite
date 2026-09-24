@@ -2,13 +2,23 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.15.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.16.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.16
+
+**One family, as Bichitro Biggan does.** Noto Sans Bengali is gone; the serif carries the whole site.
+
+- It was **130 KB** — a Bengali page fetched 344 KB of font and now fetches 214 KB — and it was there for the dates, the size control, the share buttons and the footer line. Noto Serif Bengali already has every glyph any of them needs, in both scripts, and it was being downloaded anyway for the prose.
+- `--rs-sans` is kept as a name and resolves to `var( --rs-serif )`. Sixty rules ask for it, the distinction is worth having back if a second face ever earns its download again, and `var()` is substituted where it is used rather than where it is written — so it follows the serif into the English block on its own.
+- The quote card draws its author line and watermark in the serif too; a canvas cannot fall back to a face the page never loaded.
+- The three sans `woff2` files, their `@font-face` rules and the sans entry in the service worker's pre-cache list are all removed.
+- The size control keeps its bare `sans-serif`. Those are three Latin letters in a system font, and they cost nothing to draw.
 
 ## What's new in 7.15
 

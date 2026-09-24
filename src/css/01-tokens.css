@@ -73,7 +73,20 @@
 	color-scheme: light;
 
 	--rs-serif: "Noto Serif Bengali", "SolaimanLipi", serif;
-	--rs-sans: "Noto Sans Bengali", sans-serif;
+	/*
+	 * One family for the whole site.
+	 *
+	 * Noto Sans Bengali was a hundred and six kilobytes — a fifth of the
+	 * page — for the dates, the size control, the share buttons and the
+	 * footer. The serif already carries every glyph any of them needs, in
+	 * both scripts. The name is kept rather than deleted because sixty
+	 * rules ask for it, and because the distinction is worth having back if
+	 * a second face ever earns its download again.
+	 *
+	 * var() is substituted where it is used, not where it is written, so
+	 * this follows --rs-serif into the English block below on its own.
+	 */
+	--rs-sans: var( --rs-serif );
 
 	--rs-radius: 0.25rem;
 	--rs-radius-lg: 0.5rem;
@@ -95,7 +108,7 @@
 /* English locale typography */
 body.rs-en {
 	--rs-serif: "Noto Serif Bengali", Georgia, Cambria, "Times New Roman", Times, serif;
-	--rs-sans: "Noto Sans Bengali", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	/* --rs-sans follows this line; see the note in :root. */
 }
 
 /*

@@ -48,7 +48,6 @@ function rs_serve_sw() {
 			$theme_uri . '/assets/style.min.css?ver=' . RS_VERSION,
 			$theme_uri . '/assets/app.min.js?ver=' . RS_VERSION,
 			$theme_uri . '/assets/fonts/noto-serif-bengali-bengali.woff2',
-			$theme_uri . '/assets/fonts/noto-sans-bengali-bengali.woff2',
 		),
 	);
 

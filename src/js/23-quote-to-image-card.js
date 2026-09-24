@@ -250,7 +250,7 @@
 			if ( authorName ) {
 				var authorY = textTop + textBlockH + 40;
 
-				ctx.font = '26px "Noto Sans Bengali", sans-serif';
+				ctx.font = '26px "Noto Serif Bengali", serif';
 				ctx.fillStyle = mutedFg;
 				ctx.fillText( '\u2014 ' + authorName, PAD, authorY );
 			}
@@ -263,7 +263,7 @@
 			ctx.fillRect( PAD, bottomY - 40, 50, 2 );
 			ctx.globalAlpha = 1;
 
-			ctx.font = '18px "Noto Sans Bengali", sans-serif';
+			ctx.font = '18px "Noto Serif Bengali", serif';
 			ctx.fillStyle = mutedFg;
 			ctx.globalAlpha = 0.5;
 			ctx.fillText( window.location.hostname, PAD, bottomY - 14 );
