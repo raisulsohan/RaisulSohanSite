@@ -153,6 +153,116 @@ function rs_hero_image_cut( $id ) {
 	);
 }
 
+/**
+ * Cut the banner to its band, for a picture uploaded before that size
+ * existed.
+ *
+ * WordPress makes the intermediate sizes once, when a picture is uploaded,
+ * and never goes back over what is already in the library — so registering
+ * rs-hero did nothing for the banner already on the site, which went on
+ * being served as "large": a 1024 by 585 file for a 1600 by 300 band.
+ *
+ * Done in the dashboard rather than while a reader waits. Resizing a
+ * picture is the one genuinely slow thing in this theme, and the front end
+ * has a perfectly good answer already — it falls back to "large" until
+ * these exist.
+ *
+ * @param int $id Attachment.
+ * @return bool Whether both cuts are now on disk.
+ */
+function rs_make_hero_cuts( $id ) {
+	$id   = (int) $id;
+	$want = array( 'rs-hero', 'rs-hero-sm' );
+	$meta = $id ? wp_get_attachment_metadata( $id ) : false;
+
+	if ( ! $meta || ! is_array( $meta ) ) {
+		return false;
+	}
+
+	$have    = isset( $meta['sizes'] ) && is_array( $meta['sizes'] ) ? $meta['sizes'] : array();
+	$missing = array();
+
+	foreach ( $want as $name ) {
+		if ( empty( $have[ $name ]['file'] ) ) {
+			$missing[] = $name;
+		}
+	}
+
+	if ( ! $missing ) {
+		return true;
+	}
+
+	$file = get_attached_file( $id );
+
+	if ( ! $file || ! file_exists( $file ) ) {
+		return false;
+	}
+
+	$editor = wp_get_image_editor( $file );
+
+	if ( is_wp_error( $editor ) ) {
+		return false;
+	}
+
+	$registered = wp_get_registered_image_subsizes();
+	$todo       = array();
+
+	foreach ( $missing as $name ) {
+		if ( isset( $registered[ $name ] ) ) {
+			$todo[ $name ] = $registered[ $name ];
+		}
+	}
+
+	if ( ! $todo ) {
+		return false;
+	}
+
+	$made = $editor->multi_resize( $todo );
+
+	if ( empty( $made ) ) {
+		return false;
+	}
+
+	$meta['sizes'] = array_merge( $have, $made );
+	wp_update_attachment_metadata( $id, $meta );
+
+	return true;
+}
+
+/**
+ * Make sure the banner on this site has them, once per theme version.
+ *
+ * Also runs whenever the settings are saved, which is when a different
+ * picture is most likely to have just been chosen.
+ */
+function rs_ensure_hero_cuts() {
+	/*
+	 * This site's own setting, not rs_hero_image(), which answers with the
+	 * main site's picture when a sub site has none of its own — and an
+	 * attachment id from another site names something else entirely here.
+	 * The site that owns the banner cuts it; the other one is served the
+	 * result through the same switch_to_blog() it already uses to show it.
+	 */
+	$id = (int) rs_option( 'rs_hero_image' );
+
+	if ( ! $id || ! wp_get_attachment_image_src( $id, 'large' ) ) {
+		return;
+	}
+
+	/* A picture the editor cannot open would otherwise be retried on every
+	   dashboard page for ever. */
+	$stamp = get_option( 'rs_hero_cuts' );
+
+	if ( $stamp === RS_VERSION . ':' . $id ) {
+		return;
+	}
+
+	rs_make_hero_cuts( $id );
+
+	update_option( 'rs_hero_cuts', RS_VERSION . ':' . $id, false );
+}
+add_action( 'admin_init', 'rs_ensure_hero_cuts' );
+
 function rs_render_hero_image_html( $alt = '', $sizes = '', $class = 'rs-hero__image' ) {
 	$id          = (int) rs_option( 'rs_hero_image' );
 	$pos         = rs_option( 'rs_hero_pos' );
@@ -853,6 +963,11 @@ function rs_settings_save() {
 
 		set_theme_mod( $image['anchor'], rs_sanitize_position( $anchor ) );
 	}
+
+	/* A banner chosen just now has no band cut yet, and this is the one
+	   moment we know the setting has changed. */
+	delete_option( 'rs_hero_cuts' );
+	rs_ensure_hero_cuts();
 
 	wp_safe_redirect( admin_url( 'themes.php?page=rs-settings&updated=1' ) );
 	exit;

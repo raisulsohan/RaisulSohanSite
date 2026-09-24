@@ -40,6 +40,14 @@ function rs_setup() {
 	 */
 	add_image_size( 'rs-hero', 1600, 300, true );
 
+	/*
+	 * And the same band for a phone. Two cuts of one shape is what gives
+	 * the browser a srcset worth choosing from: WordPress only offers
+	 * candidates that share an aspect ratio, so without this the banner
+	 * came in at its full width whatever the screen was.
+	 */
+	add_image_size( 'rs-hero-sm', 800, 150, true );
+
 	add_theme_support(
 		'html5',
 		array( 'search-form', 'comment-form', 'comment-list', 'gallery', 'caption', 'style', 'script' )

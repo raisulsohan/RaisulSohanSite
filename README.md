@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.14.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.14.1-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -19,6 +19,7 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 - **The web app manifest was advertising a 512×512 icon and pointing at the original upload** — 312 KB of PNG that was never 512 anything. `get_site_icon_url()` answers with the full picture when the cut asked for was never made, and the old code labelled whatever came back with the size it had asked for. Icons are now listed at the size they actually are, and `purpose: maskable` is gone: claiming it of an ordinary square icon does not make it one, it just gets the edges cropped off by Android.
 - **`apple-touch-icon` was printed twice**, once by the theme and once by WordPress's own `wp_site_icon()`. The theme's copy is gone.
 - **The heading banner is cropped on the server now.** CSS shows it in a 1600×300 band, but the file arrived whole — 1024×585 and 124 KB, of which the reader saw a strip. A new `rs-hero` image size matches the band; a banner uploaded before this release keeps the old cut. The `sizes` attribute also said `100vw` on a phone, three rem more than the truth, which on a dense screen was enough to tip the browser into fetching the next cut up.
+- **7.14.1:** the banner cut added above only ever applied to a picture uploaded after it existed — WordPress makes the intermediate sizes once and never revisits the library, so the banner already on the site went on being served as "large". The dashboard now cuts it, once, and a second cut at half the width gives the browser a srcset worth choosing from: WordPress only offers candidates that share an aspect ratio, so one band-shaped size on its own meant a phone still fetched the full width.
 - **Uploaded pictures are sent with no cache header at all**, so a returning reader re-checks every image on every page — 338 KB of it on the front page. The theme's own files have carried a year since 7.5, but the uploads folder is outside the theme and needs its own rule. Theme Settings now says so and offers to write it, with the block to paste in by hand underneath. It is a button rather than something the theme does on its own: a host that does not permit `Header` in a `.htaccess` answers 500 for everything in that folder, which is a thing to find out while somebody is watching.
 
 ## What's new in 7.13
