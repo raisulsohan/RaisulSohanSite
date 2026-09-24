@@ -190,15 +190,26 @@
 	}
 
 	function renderPost( data ) {
+		/*
+		 * Worked out once, because two places below depend on it and they
+		 * must agree: the markup that draws the edit buttons, and the line
+		 * further down that fills in the dashboard link's address. When only
+		 * the first was made conditional, opening a translation drew no
+		 * buttons and then went looking for one, and the exception took the
+		 * rest of renderPost() with it — the story's body never arrived.
+		 *
+		 * Only this edition's own stories. The nonce and the edit route
+		 * belong to this site, so the buttons would be there to fail on a
+		 * translation fetched from the other one.
+		 */
+		var canEdit = Boolean( cfg.editBase ) && currentPostRest === rest;
+
 		postBody.innerHTML =
 			'<div class="rs-article__meta">' +
 			'<p class="rs-article__date"></p>' +
 			( data.readingTime ? '<span class="rs-article__read"></span>' : '' ) +
 			langPillHtml( data ) +
-			/* Only this edition's own stories. The nonce and the edit route
-			   belong to this site, so the buttons would be there to fail on
-			   a translation fetched from the other one. */
-			( cfg.editBase && currentPostRest === rest ? editLinkHtml() : '' ) +
+			( canEdit ? editLinkHtml() : '' ) +
 			fontControlsHtml() +
 			'</div>' +
 			'<div class="rs-article__head">' +
@@ -210,6 +221,11 @@
 			shareHtml( data ) +
 			relatedHtml( data ) +
 			nextPrevHtml( data );
+
+		/* The writing goes in before anything else. Everything below is a
+		   trimming that may or may not be on this story, and a trimming that
+		   throws should never be able to cost the reader the piece. */
+		$( '.rs-article__body', postBody ).innerHTML = data.content;
 
 		$( '.rs-article__date', postBody ).textContent = data.date;
 
@@ -223,7 +239,7 @@
 		   post's own page. */
 		postBody.setAttribute( 'data-rs-id', data.id );
 
-		if ( cfg.editBase ) {
+		if ( canEdit ) {
 			/* href as a property, so the id never passes through innerHTML. */
 			$( '.rs-article__edit--dash', postBody ).href = cfg.editBase + data.id;
 		}
@@ -239,10 +255,6 @@
 				catEl.href = data.categoryLink;
 			}
 		}
-
-		/* Content is this site's own published HTML, already run through
-		   the_content filters on the server. */
-		$( '.rs-article__body', postBody ).innerHTML = data.content;
 
 		applyFont();
 

@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.12.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.12.1-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -19,6 +19,7 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 - **The pairing is the slug**, which is the one thing a story and its translation share — the same lookup `hreflang` has always used, now with a name (`rs_post_twin()`) so the reader is offered what the search engine was already being told about.
 - **Fixed: the two editions were writing over each other's lists.** They share one domain and therefore one `localStorage`, while each site hands out its own post ids — a story and its translation are both 190 on this network. Finishing the English piece greyed out the Bengali row in the list, one saved reading position overwrote the other, and the "read later" shelf kept whichever was saved last. Every entry is now named by its edition as well as its id; Bengali keeps the bare number, so nothing saved before this release is lost. "You were reading" and the shelf each show only their own edition's stories.
 - The edit buttons no longer appear on a translation opened in the modal: the nonce and the edit route belong to this site, so they were there to fail.
+- **7.12.1:** swapping language emptied the story for anyone signed in. Hiding the edit buttons on a translation was done in the markup but not in the line that fills in the dashboard link's address, so `renderPost()` went looking for a button it had just decided not to draw, and the exception took the rest of the function — including the writing — with it. One flag now drives both, and the story's body is put in before any of the trimmings, so a trimming that throws can never again cost the reader the piece.
 
 ## What's new in 7.11
 
