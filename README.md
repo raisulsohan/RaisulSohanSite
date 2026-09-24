@@ -2,13 +2,22 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.12.1-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.13.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.13
+
+**The language pill now finds the pair it could not.** 7.12 matched a story to its translation on the slug alone, which quietly covered only the part of the archive that was cloned into the English site: a translation published separately gets its own English address, so it matched nothing and carried no button.
+
+- **Three ways of finding the twin**, in order of how much each can be trusted — a link saved on the post; the same slug; or the same id *and* the same publish time to the second. The third is the cloned back catalogue whose English slug has since been rewritten for search, and the timestamp is what makes it safe: after the clone both sites kept numbering on their own, so ids alone would pair whatever happened to be next in each queue.
+- **A box on the post editor** for the pairs nothing can work out — a list of the other edition's stories, with the one published closest in time marked, and a line saying how the current pair was found. Saving writes the link on **both** sides, because a pairing only one of the two knows about would offer the reader the translation going and not coming back.
+- `hreflang` reads the same lookup, so a pair linked by hand is also what search engines are told about.
+- The whole subsystem moved out of `inc/01-theme-setup.php` into `inc/15-the-other-language.php`.
 
 ## What's new in 7.12
 
