@@ -2,13 +2,24 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.16.5-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.17.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.17
+
+**“Last worked on” keeps up with the work.** A push used to reach the portfolio in one to three minutes, and never reached a page that was already open. It now shows up within about twenty seconds, for someone who is already looking too.
+
+- **Two clocks instead of one.** The stars, downloads and releases still refresh every two minutes: they move slowly and cost a request or two per repository. “Last worked on” is asked about every fifteen seconds (`rs_github_latest_ttl()`), on its own (`rs_refresh_github_latest()`).
+- **Asking costs nothing until something happens.** The list of repositories is fetched with `If-None-Match`, and GitHub answers 304 whenever nothing has been pushed since the last look. A 304 on a request made with a token does not count against the rate limit, so between pushes the quick clock is free; after one, it costs two requests. The ETag only moves forward once the commit behind it has been read, so a list that came back with a commit that did not is asked for again, not lost behind a 304.
+- **The open page keeps asking.** Every twenty seconds while the tab is visible, not at all while it is hidden, and once straight away when it comes back. The endpoint's cache went from sixty seconds to ten, so a crowd on the portfolio still shares one answer between them.
+- One refresh of either kind at a time: both write the same option, and two at once would overwrite each other.
+- The `X-RS-GitHub` health header on `/wp-json/rs/v1/projects` now reports `latest_checked` alongside `fetched`.
+- Truly instant would need GitHub to call the site on every push, which on a personal account means a GitHub App installed on all repositories. Not done: twenty seconds is not something a visitor can tell from instant.
 
 ## What's new in 7.16
 

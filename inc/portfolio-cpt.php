@@ -2102,19 +2102,14 @@ function rs_github_latest_commit() {
 }
 
 /**
- * Cron: fetch every repository the portfolio links to.
+ * What every request to GitHub is sent with, token included when there is
+ * one. Without a token GitHub allows 60 requests an hour per IP address,
+ * and on shared hosting other sites use that up; a token has its own 5,000.
+ *
+ * @return array wp_remote_get() arguments.
  */
-function rs_refresh_github_stats() {
-	$slugs = array();
-
-	foreach ( rs_get_portfolio_projects() as $project ) {
-		$slug = rs_github_repo_slug( isset( $project['github_url'] ) ? $project['github_url'] : '' );
-		if ( $slug ) {
-			$slugs[ $slug ] = true;
-		}
-	}
-
-	$args  = array(
+function rs_github_request_args() {
+	$args = array(
 		'timeout' => 8,
 		'headers' => array(
 			'Accept'     => 'application/vnd.github+json',
@@ -2122,14 +2117,200 @@ function rs_refresh_github_stats() {
 		),
 	);
 
-	/* Without a token GitHub allows 60 requests an hour per IP address, and
-	   on shared hosting other sites use that up. A token has its own 5,000. */
 	$token = rs_github_token();
 
 	if ( $token ) {
 		$args['headers']['Authorization'] = 'Bearer ' . $token;
 	}
+
+	return $args;
+}
+
+/**
+ * The repositories the portfolio links to.
+ *
+ * @return array owner/repo => true.
+ */
+function rs_github_portfolio_slugs() {
+	$slugs = array();
+
+	foreach ( rs_get_portfolio_projects() as $project ) {
+		$slug = rs_github_repo_slug( isset( $project['github_url'] ) ? $project['github_url'] : '' );
+
+		if ( $slug ) {
+			$slugs[ $slug ] = true;
+		}
+	}
+
+	return $slugs;
+}
+
+/**
+ * Whose repositories "last worked on" looks through: the owner of the first
+ * one the portfolio links to.
+ *
+ * @param array|null $slugs From rs_github_portfolio_slugs(), when already to hand.
+ * @return string
+ */
+function rs_github_owner( $slugs = null ) {
+	foreach ( array_keys( null === $slugs ? rs_github_portfolio_slugs() : $slugs ) as $slug ) {
+		return (string) strtok( $slug, '/' );
+	}
+
+	return '';
+}
+
+/**
+ * How long "last worked on" may go without being asked about again.
+ *
+ * Far shorter than the stars and downloads, which move slowly and cost a
+ * request or two per repository: this is the part of the page that says
+ * what is happening now, and a push should show up while it is still news.
+ * The asking is conditional (see rs_github_fetch_latest()), so between
+ * pushes GitHub answers 304 and an authenticated 304 costs nothing against
+ * the rate limit. Without a token every request counts against sixty an
+ * hour shared with the whole server, so it stays well back.
+ *
+ * @return int Seconds.
+ */
+function rs_github_latest_ttl() {
+	return rs_github_token() ? 15 : 10 * MINUTE_IN_SECONDS;
+}
+
+/**
+ * The last commit on the repository the author pushed to most recently.
+ *
+ * Asked conditionally. The list of repositories carries an ETag, and sent
+ * back as If-None-Match it makes GitHub answer 304 whenever nothing has
+ * been pushed since — which, for a request made with a token, does not
+ * count against the rate limit. So "last worked on" can be asked about
+ * every few seconds and cost nothing until something actually happens.
+ *
+ * The new ETag is only handed back once the commit behind it has been
+ * read. Advancing it on a list that came back but a commit that did not
+ * would turn every later answer into 304, and the missed push would never
+ * be asked for again.
+ *
+ * The theme's own repository is passed over (filterable with
+ * rs_github_latest_skip), so theme releases never crowd out the actual work.
+ *
+ * @param string $owner GitHub user.
+ * @param array  $args  From rs_github_request_args().
+ * @param string $etag  The list's ETag from last time, or ''.
+ * @return array {
+ *     @type bool       $changed Whether a newer commit was read.
+ *     @type array|null $latest  { repo, message, date, url } when changed.
+ *     @type string     $etag    ETag to keep for next time.
+ * }
+ */
+function rs_github_fetch_latest( $owner, $args, $etag = '' ) {
+	$out = array(
+		'changed' => false,
+		'latest'  => null,
+		'etag'    => (string) $etag,
+	);
+
+	if ( '' === $owner ) {
+		return $out;
+	}
+
+	$list_args = $args;
+
+	if ( '' !== $out['etag'] ) {
+		$list_args['headers']['If-None-Match'] = $out['etag'];
+	}
+
+	$response = wp_remote_get( 'https://api.github.com/users/' . rawurlencode( $owner ) . '/repos?type=owner&sort=pushed&per_page=10', $list_args );
+
+	/* 304: nothing pushed since the last look. Also any failure: keep what
+	   was known and the ETag it was known by. */
+	if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+		return $out;
+	}
+
+	$new_etag = (string) wp_remote_retrieve_header( $response, 'etag' );
+
+	/**
+	 * Repositories (owner/repo) never shown as last worked on.
+	 *
+	 * @param string[] $skip Lower-case owner/repo slugs; the theme's own by default.
+	 */
+	$skip = array_map( 'strtolower', (array) apply_filters( 'rs_github_latest_skip', array( rs_github_repo_slug( wp_get_theme( get_template() )->get( 'ThemeURI' ) ) ) ) );
+	$list = json_decode( wp_remote_retrieve_body( $response ), true );
+	$pick = null;
+
+	foreach ( is_array( $list ) ? $list : array() as $repo_item ) {
+		if ( ! empty( $repo_item['full_name'] ) && ! in_array( strtolower( $repo_item['full_name'] ), $skip, true ) ) {
+			$pick = $repo_item;
+			break;
+		}
+	}
+
+	if ( ! $pick ) {
+		$out['etag'] = $new_etag;
+
+		return $out;
+	}
+
+	$response = wp_remote_get( 'https://api.github.com/repos/' . $pick['full_name'] . '/commits?per_page=1', $args );
+
+	if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+		return $out;
+	}
+
+	$commits = json_decode( wp_remote_retrieve_body( $response ), true );
+
+	if ( empty( $commits[0]['sha'] ) ) {
+		return $out;
+	}
+
+	$message = isset( $commits[0]['commit']['message'] ) ? (string) $commits[0]['commit']['message'] : '';
+	$lines   = preg_split( '/\r?\n/', $message );
+
+	$out['changed'] = true;
+	$out['etag']    = $new_etag;
+	$out['latest']  = array(
+		'repo'    => sanitize_text_field( isset( $pick['name'] ) ? $pick['name'] : '' ),
+		'message' => sanitize_text_field( (string) $lines[0] ),
+		'date'    => sanitize_text_field( isset( $commits[0]['commit']['author']['date'] ) ? $commits[0]['commit']['author']['date'] : '' ),
+		'url'     => esc_url_raw( isset( $commits[0]['html_url'] ) ? $commits[0]['html_url'] : '' ),
+	);
+
+	return $out;
+}
+
+/**
+ * Ask about "last worked on" alone, and store the answer.
+ *
+ * The quick half of a refresh: one conditional request between pushes,
+ * two after one. The stars, downloads and releases are left to
+ * rs_refresh_github_stats() and its slower clock.
+ */
+function rs_refresh_github_latest() {
+	$old = get_site_option( 'rs_github_stats', array() );
+	$old = is_array( $old ) ? $old : array();
+
+	$got = rs_github_fetch_latest( rs_github_owner(), rs_github_request_args(), isset( $old['latest_etag'] ) ? (string) $old['latest_etag'] : '' );
+
+	$old['latest_tried'] = time();
+	$old['latest_etag']  = $got['etag'];
+
+	if ( $got['changed'] && $got['latest'] ) {
+		$old['latest'] = $got['latest'];
+	}
+
+	update_site_option( 'rs_github_stats', $old );
+}
+
+/**
+ * Cron: fetch every repository the portfolio links to.
+ */
+function rs_refresh_github_stats() {
+	$slugs  = rs_github_portfolio_slugs();
+	$args   = rs_github_request_args();
+	$token  = rs_github_token();
 	$old    = get_site_option( 'rs_github_stats', array() );
+	$old    = is_array( $old ) ? $old : array();
 	$repos  = isset( $old['repos'] ) && is_array( $old['repos'] ) ? $old['repos'] : array();
 	$errors = array();
 	$fresh  = 0;
@@ -2183,68 +2364,23 @@ function rs_refresh_github_stats() {
 		$repos[ $slug ] = $data;
 	}
 
-	/* Last worked on: the last commit on the repository the author pushed
-	   to most recently, leaving out this theme's own repository, whose
-	   releases would otherwise crowd out the actual work. */
-	$latest = isset( $old['latest'] ) ? $old['latest'] : null;
-	$owner  = '';
-
-	foreach ( array_keys( $slugs ) as $slug ) {
-		$owner = strtok( $slug, '/' );
-		break;
-	}
-
-	/**
-	 * Repositories (owner/repo) never shown as last worked on.
-	 *
-	 * @param string[] $skip Lower-case owner/repo slugs; the theme's own by default.
-	 */
-	$skip = array_map( 'strtolower', (array) apply_filters( 'rs_github_latest_skip', array( rs_github_repo_slug( wp_get_theme( get_template() )->get( 'ThemeURI' ) ) ) ) );
-
-	if ( $owner ) {
-		$response = wp_remote_get( 'https://api.github.com/users/' . rawurlencode( $owner ) . '/repos?type=owner&sort=pushed&per_page=10', $args );
-
-		if ( ! is_wp_error( $response ) && 200 === (int) wp_remote_retrieve_response_code( $response ) ) {
-			$list = json_decode( wp_remote_retrieve_body( $response ), true );
-			$pick = null;
-
-			foreach ( is_array( $list ) ? $list : array() as $repo_item ) {
-				if ( ! empty( $repo_item['full_name'] ) && ! in_array( strtolower( $repo_item['full_name'] ), $skip, true ) ) {
-					$pick = $repo_item;
-					break;
-				}
-			}
-
-			if ( $pick ) {
-				$response = wp_remote_get( 'https://api.github.com/repos/' . $pick['full_name'] . '/commits?per_page=1', $args );
-
-				if ( ! is_wp_error( $response ) && 200 === (int) wp_remote_retrieve_response_code( $response ) ) {
-					$commits = json_decode( wp_remote_retrieve_body( $response ), true );
-
-					if ( ! empty( $commits[0]['sha'] ) ) {
-						$message = isset( $commits[0]['commit']['message'] ) ? (string) $commits[0]['commit']['message'] : '';
-						$latest  = array(
-							'repo'    => sanitize_text_field( isset( $pick['name'] ) ? $pick['name'] : '' ),
-							'message' => sanitize_text_field( strtok( $message, "\n" ) ),
-							'date'    => sanitize_text_field( isset( $commits[0]['commit']['author']['date'] ) ? $commits[0]['commit']['author']['date'] : '' ),
-							'url'     => esc_url_raw( isset( $commits[0]['html_url'] ) ? $commits[0]['html_url'] : '' ),
-						);
-					}
-				}
-			}
-		}
-	}
+	/* Last worked on rides along, asked the same conditional way the quick
+	   refresh asks it, so the two never disagree about what was last seen. */
+	$got    = rs_github_fetch_latest( rs_github_owner( $slugs ), $args, isset( $old['latest_etag'] ) ? (string) $old['latest_etag'] : '' );
+	$latest = ( $got['changed'] && $got['latest'] ) ? $got['latest'] : ( isset( $old['latest'] ) ? $old['latest'] : null );
 
 	update_site_option(
 		'rs_github_stats',
 		array(
 			/* fetched is the last run that worked; tried is the last run. */
-			'fetched' => $fresh ? time() : ( isset( $old['fetched'] ) ? (int) $old['fetched'] : 0 ),
-			'tried'   => time(),
-			'failed'  => ! $fresh,
-			'repos'   => $repos,
-			'latest'  => $latest,
-			'errors'  => array_slice( $errors, 0, 5 ),
+			'fetched'      => $fresh ? time() : ( isset( $old['fetched'] ) ? (int) $old['fetched'] : 0 ),
+			'tried'        => time(),
+			'failed'       => ! $fresh,
+			'repos'        => $repos,
+			'latest'       => $latest,
+			'latest_etag'  => $got['etag'],
+			'latest_tried' => time(),
+			'errors'       => array_slice( $errors, 0, 5 ),
 		)
 	);
 }
@@ -2528,8 +2664,16 @@ add_action( 'wp_enqueue_scripts', 'rs_project_demo_assets', 20 );
 
 /**
  * The portfolio page may come from the full-page cache, so after it loads
- * the browser asks here. Stale numbers are fetched from GitHub right away;
- * the page is already on screen, so nobody waits on it.
+ * the browser asks here — and keeps asking while the page is open. Stale
+ * numbers are fetched from GitHub right away; the page is already on
+ * screen, so nobody waits on it.
+ *
+ * Two clocks. The stars, downloads and releases are refreshed on
+ * rs_github_ttl(), since they move slowly and cost requests per repository.
+ * "Last worked on" is refreshed on rs_github_latest_ttl() — seconds, not
+ * minutes — and asked conditionally, so between pushes it costs nothing.
+ * One refresh of either kind at a time: both write the same option, and two
+ * at once would each overwrite what the other had just stored.
  *
  * @return WP_REST_Response
  */
@@ -2537,13 +2681,25 @@ function rs_rest_github() {
 	$all = get_site_option( 'rs_github_stats', array() );
 	$all = is_array( $all ) ? $all : array();
 
-	if ( rs_github_is_stale( $all ) && ! get_site_transient( 'rs_github_busy' ) ) {
-		set_site_transient( 'rs_github_busy', 1, MINUTE_IN_SECONDS );
-		rs_refresh_github_stats();
-		delete_site_transient( 'rs_github_busy' );
+	if ( ! get_site_transient( 'rs_github_busy' ) ) {
+		$full   = rs_github_is_stale( $all );
+		$asked  = isset( $all['latest_tried'] ) ? (int) $all['latest_tried'] : 0;
+		$latest = ! $full && ( time() - $asked ) >= rs_github_latest_ttl();
 
-		$all = get_site_option( 'rs_github_stats', array() );
-		$all = is_array( $all ) ? $all : array();
+		if ( $full || $latest ) {
+			set_site_transient( 'rs_github_busy', 1, MINUTE_IN_SECONDS );
+
+			if ( $full ) {
+				rs_refresh_github_stats();
+			} else {
+				rs_refresh_github_latest();
+			}
+
+			delete_site_transient( 'rs_github_busy' );
+
+			$all = get_site_option( 'rs_github_stats', array() );
+			$all = is_array( $all ) ? $all : array();
+		}
 	}
 
 	$is_en     = rs_is_en();
@@ -2573,7 +2729,11 @@ function rs_rest_github() {
 			'fetched'   => empty( $all['fetched'] ) ? null : gmdate( 'c', (int) $all['fetched'] ),
 		)
 	);
-	$response->header( 'Cache-Control', 'public, max-age=60, s-maxage=60' );
+
+	/* Ten seconds: long enough that a crowd on the portfolio shares one
+	   answer rather than each asking GitHub, short enough not to be the
+	   slowest step between a push and the page. */
+	$response->header( 'Cache-Control', 'public, max-age=10, s-maxage=10' );
 
 	return $response;
 }
@@ -2602,10 +2762,11 @@ function rs_rest_projects() {
 	$response->header(
 		'X-RS-GitHub',
 		sprintf(
-			'fetched=%s; repos=%d; latest=%s; errors=%s; next=%s',
+			'fetched=%s; repos=%d; latest=%s; latest_checked=%s; errors=%s; next=%s',
 			empty( $gh['fetched'] ) ? 'never' : gmdate( 'c', (int) $gh['fetched'] ),
 			isset( $gh['repos'] ) ? count( (array) $gh['repos'] ) : 0,
 			empty( $gh['latest']['repo'] ) ? 'none' : $gh['latest']['repo'],
+			empty( $gh['latest_tried'] ) ? 'never' : gmdate( 'c', (int) $gh['latest_tried'] ),
 			empty( $gh['errors'] ) ? 'none' : implode( ',', (array) $gh['errors'] ),
 			wp_next_scheduled( 'rs_refresh_github_stats' ) ? gmdate( 'c', wp_next_scheduled( 'rs_refresh_github_stats' ) ) : 'none'
 		)

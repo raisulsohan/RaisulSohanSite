@@ -2858,10 +2858,23 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 	var url = <?php echo wp_json_encode( rest_url( 'rs/v1/github' ) ); ?>;
 	var tmp = document.createElement('div');
 
+	/* Asked again this often while the page is on screen, so a push shows
+	   up for someone already looking rather than only on the next visit. */
+	var EVERY = 20000;
+	var timer = 0;
+	var asking = false;
+
 	function run() {
-		/* A minute bucket keeps any cache in front of the API from serving
-		   older numbers than that. */
-		var bucket = Math.floor(Date.now() / 60000);
+		if (asking) {
+			return;
+		}
+
+		asking = true;
+
+		/* A ten-second bucket, matching the endpoint's own cache: a crowd
+		   on the page shares one answer, and no cache in front of the API
+		   can hand back anything older than that. */
+		var bucket = Math.floor(Date.now() / 10000);
 
 		fetch(url + (url.indexOf('?') === -1 ? '?' : '&') + 't=' + bucket, { credentials: 'omit' })
 			.then(function (r) {
@@ -2903,13 +2916,40 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 					}
 				}
 			})
-			.catch(function () {});
+			.catch(function () {})
+			.then(function () {
+				asking = false;
+			});
+	}
+
+	/* Only while someone can see it. A tab left open in the background
+	   stops asking, and asks once straight away when it comes back. */
+	function schedule() {
+		window.clearInterval(timer);
+		timer = 0;
+
+		if ('hidden' !== document.visibilityState) {
+			timer = window.setInterval(run, EVERY);
+		}
+	}
+
+	function start() {
+		run();
+		schedule();
+
+		document.addEventListener('visibilitychange', function () {
+			if ('hidden' !== document.visibilityState) {
+				run();
+			}
+
+			schedule();
+		});
 	}
 
 	if (document.readyState === 'complete') {
-		run();
+		start();
 	} else {
-		window.addEventListener('load', run);
+		window.addEventListener('load', start);
 	}
 }());
 </script>
