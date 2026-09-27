@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.22.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.22.1-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -11,6 +11,8 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 ---
 
 ## What's new in 7.22
+
+**7.22.1: new documentation shows up within minutes, pictures and all.** LazyKick's docs landed in its repository after the site had last looked, and a repository without docs was only looked at again four times a day. Now the two-minute GitHub refresh notes when each repository was last pushed to, and any repository pushed to since its last look is looked at again straight away, so docs added to a project appear a couple of minutes after the push. "Fetch now" on the Portfolio screen looks at every repository's docs as well. Screenshots in the docs load as they come into view, and a click on one opens the picture itself rather than GitHub's page for the file.
 
 **Project documentation, on the site.** A project whose repository has a `docs/README.md` now has its documentation here too, at `/portfolio/<project>/documentation/` and a page under it for each file (`/en/portfolio/lazylord/documentation/manual/`). LazyLord is the first.
 

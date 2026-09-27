@@ -419,6 +419,17 @@
 	max-width: 100%;
 	height: auto;
 	border-radius: 10px;
+	vertical-align: middle;
+}
+
+/* Screenshots: a hairline to hold them against the dark, and no underline
+   from the link GitHub wraps round each one. */
+.rs-doc__body a > img {
+	border: 1px solid var(--pf-line);
+}
+
+.rs-doc__body a:has(> img) {
+	text-decoration: none;
 }
 
 /* Tables scroll sideways inside their own box on a phone. */

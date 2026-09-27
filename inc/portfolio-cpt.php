@@ -2632,6 +2632,7 @@ function rs_refresh_github_stats() {
 	$repos  = isset( $old['repos'] ) && is_array( $old['repos'] ) ? $old['repos'] : array();
 	$errors = array();
 	$fresh  = 0;
+	$pushed = array();
 
 	foreach ( array_keys( $slugs ) as $slug ) {
 		$response = wp_remote_get( 'https://api.github.com/repos/' . $slug, $args );
@@ -2651,6 +2652,11 @@ function rs_refresh_github_stats() {
 		++$fresh;
 
 		$repo = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		/* When it was last pushed to: the documentation check below looks
+		   again at once after a push, rather than on its own slow clock. */
+		$pushed[ $slug ] = ! empty( $repo['pushed_at'] ) ? (int) strtotime( $repo['pushed_at'] ) : 0;
+
 		$data = array(
 			'stars'     => isset( $repo['stargazers_count'] ) ? (int) $repo['stargazers_count'] : 0,
 			'downloads' => 0,
@@ -2692,9 +2698,10 @@ function rs_refresh_github_stats() {
 	$calendar = rs_github_fetch_calendar( $owner, $args );
 	$calendar = $calendar ? $calendar : ( isset( $old['calendar'] ) ? $old['calendar'] : null );
 
-	/* And each repository's documentation, on a clock of its own. */
+	/* And each repository's documentation, on a clock of its own, and
+	   straight away for any repository pushed to since it was last looked at. */
 	if ( function_exists( 'rs_docs_refresh_all' ) ) {
-		rs_docs_refresh_all( $slugs, $args );
+		rs_docs_refresh_all( $slugs, $args, $pushed );
 	}
 
 	update_site_option(
@@ -3293,6 +3300,12 @@ function rs_github_refresh_now() {
 
 	check_admin_referer( 'rs_refresh_github' );
 	rs_refresh_github_stats();
+
+	/* Asked for by hand: look at every repository's documentation now too,
+	   whatever its clock says. */
+	if ( function_exists( 'rs_docs_refresh_all' ) ) {
+		rs_docs_refresh_all( rs_github_portfolio_slugs(), rs_github_request_args(), array(), true );
+	}
 
 	wp_safe_redirect( admin_url( 'edit.php?post_type=rs_portfolio&rs_github=done' ) );
 	exit;

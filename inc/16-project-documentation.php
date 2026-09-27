@@ -332,23 +332,30 @@ function rs_docs_signature( $index ) {
  * Called from rs_refresh_github_stats(). A repository known to have docs is
  * looked at every five minutes, which with ETags is free until something
  * changes; one without is looked at four times a day in case it gains some.
- * When anything a reader would see has changed, the page cache is emptied,
- * so the new pages, and the links to them, are not held back for an hour.
+ * Either is looked at straight away once it has been pushed to since the
+ * last look, so documentation added to a repository shows up within a
+ * couple of minutes rather than at the end of that clock. When anything a
+ * reader would see has changed, the page cache is emptied, so the new pages,
+ * and the links to them, are not held back for an hour.
  *
- * @param array $slugs owner/repo => true.
- * @param array $args  From rs_github_request_args().
+ * @param array $slugs  owner/repo => true.
+ * @param array $args   From rs_github_request_args().
+ * @param int[] $pushed owner/repo => when it was last pushed to, where known.
+ * @param bool  $force  Look at every repository now, whatever its clock says.
  */
-function rs_docs_refresh_all( $slugs, $args ) {
+function rs_docs_refresh_all( $slugs, $args, $pushed = array(), $force = false ) {
 	$all     = rs_docs_store();
 	$changed = false;
 	$touched = false;
 
 	foreach ( array_keys( (array) $slugs ) as $slug ) {
-		$key  = strtolower( $slug );
-		$old  = isset( $all[ $key ] ) && is_array( $all[ $key ] ) ? $all[ $key ] : array();
-		$wait = empty( $old['pages'] ) ? 6 * HOUR_IN_SECONDS : 5 * MINUTE_IN_SECONDS;
+		$key    = strtolower( $slug );
+		$old    = isset( $all[ $key ] ) && is_array( $all[ $key ] ) ? $all[ $key ] : array();
+		$wait   = empty( $old['pages'] ) ? 6 * HOUR_IN_SECONDS : 5 * MINUTE_IN_SECONDS;
+		$looked = ! empty( $old['checked'] ) ? (int) $old['checked'] : 0;
+		$pushes = isset( $pushed[ $slug ] ) ? (int) $pushed[ $slug ] : 0;
 
-		if ( ! empty( $old['checked'] ) && ( time() - (int) $old['checked'] ) < $wait ) {
+		if ( ! $force && $looked && ( time() - $looked ) < $wait && $pushes <= $looked ) {
 			continue;
 		}
 
@@ -563,8 +570,10 @@ function rs_docs_prepare( $html, $page, $index, $project_id, $is_en ) {
 				return $m[0];
 			}
 
-			if ( 'src' === $m[1] ) {
-				return 'src="' . esc_url( rs_docs_resolve( $page['raw'], $url, 3 ) ) . '"';
+			/* An image, and the link GitHub wraps around one: both to the
+			   picture itself, not to GitHub's page for the file. */
+			if ( 'src' === $m[1] || preg_match( '~\.(?:png|jpe?g|gif|webp|svg)$~i', (string) strtok( $url, '#?' ) ) ) {
+				return $m[1] . '="' . esc_url( rs_docs_resolve( $page['raw'], $url, 3 ) ) . '"';
 			}
 
 			$to = rs_docs_resolve( $page['html'], $url, 4 );
@@ -592,8 +601,11 @@ function rs_docs_prepare( $html, $page, $index, $project_id, $is_en ) {
 	/* Anything leaving the site opens beside it. */
 	$home = preg_quote( untrailingslashit( network_home_url() ), '~' );
 	$html = preg_replace( '~<a href="(?!#|' . $home . ')(https?://[^"]+)"~', '<a href="$1" target="_blank" rel="noopener noreferrer"', $html );
+	$html = wp_kses_post( $html );
 
-	return wp_kses_post( $html );
+	/* Screenshots run to a few hundred kilobytes each: fetched as they come
+	   into view, not all at once with the page. */
+	return preg_replace( '~<img\b(?![^>]*\bloading=)~', '<img loading="lazy" decoding="async"', $html );
 }
 
 /**
