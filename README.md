@@ -2,13 +2,23 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.21.1-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.22.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.22
+
+**Project documentation, on the site.** A project whose repository has a `docs/README.md` now has its documentation here too, at `/portfolio/<project>/documentation/` and a page under it for each file (`/en/portfolio/lazylord/documentation/manual/`). LazyLord is the first.
+
+- **Read from GitHub, not copied.** The pages are the repository's own Markdown, rendered by GitHub's Markdown API in README mode, so an edit pushed there shows up here within minutes and reads as it does there (`inc/16-project-documentation.php`). Each file is fetched and rendered once per version of it (site transients keyed by its blob SHA). The index of pages is refreshed with the GitHub numbers: every five minutes for a repository with docs, asked with ETags so it costs nothing until something changes, and four times a day for one without, in case it gains some. When anything a reader would see changes, the page cache is purged.
+- **What counts as a page.** Every Markdown file in `docs/`, the folder's README first as the overview, and any Markdown file at the top of the repository the docs link to (the README, a publishing guide, a testing checklist). The order is the order the docs README links to them in.
+- **Links that stay put.** A link to another page of the docs stays on this site; headings keep GitHub's anchors, so a contents list written into the docs lands where it does on GitHub; any other relative link goes to the file on GitHub; images come from the repository. Each page's `lang` follows what it is written in, so a checklist kept in Bengali is marked as Bengali.
+- **The page around it.** The stage's dark theme, the pages down the side with the current page's sections under it (following the one being read), previous and next at the foot, and a link to the page on GitHub. On a phone the pages become a row of chips that starts at the current one; tables and code scroll inside their own boxes. It loads none of the portfolio's own scripts.
+- **Linked where people look.** A Documentation link sits beside the project's type on its card, beside the role on its page and in the case-study pop-up. The header's EN/BN keeps you on the same page of the docs, hreflang pairs the two editions, and every page is in the sitemap with its own title, description and canonical.
 
 ## What's new in 7.20
 

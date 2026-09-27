@@ -2692,6 +2692,11 @@ function rs_refresh_github_stats() {
 	$calendar = rs_github_fetch_calendar( $owner, $args );
 	$calendar = $calendar ? $calendar : ( isset( $old['calendar'] ) ? $old['calendar'] : null );
 
+	/* And each repository's documentation, on a clock of its own. */
+	if ( function_exists( 'rs_docs_refresh_all' ) ) {
+		rs_docs_refresh_all( $slugs, $args );
+	}
+
 	update_site_option(
 		'rs_github_stats',
 		array(
@@ -2845,6 +2850,13 @@ function rs_portfolio_sitemap_provider() {
 
 				foreach ( rs_get_portfolio_projects() as $project ) {
 					$urls[] = array( 'loc' => rs_project_url( $project['id'] ) );
+
+					/* And every page of its documentation, when it has some. */
+					$docs = function_exists( 'rs_project_docs' ) ? rs_project_docs( $project ) : null;
+
+					foreach ( $docs ? (array) $docs['order'] : array() as $key ) {
+						$urls[] = array( 'loc' => rs_project_docs_url( $project['id'], (string) $key ) );
+					}
 				}
 
 				return $urls;

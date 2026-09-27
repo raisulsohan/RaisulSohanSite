@@ -241,17 +241,46 @@ function rs_request_path() {
  * tag. rs_request_path() has already taken the site's own base off the
  * front, so nothing but the portfolio's own path can match here.
  *
+ * A project's documentation is under it, at /portfolio/<slug>/documentation/
+ * and /portfolio/<slug>/documentation/<page>/.
+ *
  * @param string|null $req Path to test; the current request when null.
- * @return array|null { slug } — slug is '' for the portfolio itself.
+ * @return array|null { slug, doc } — slug is '' for the portfolio itself;
+ *                    doc is null off the documentation, '' on its home page
+ *                    and the page's key on any other.
  */
 function rs_portfolio_path( $req = null ) {
 	$req = null === $req ? rs_request_path() : trim( (string) $req, '/' );
 
-	if ( ! preg_match( '~^portfolio(?:/([^/]+))?$~i', $req, $found ) ) {
+	if ( ! preg_match( '~^portfolio(?:/([^/]+)(?:/(documentation)(?:/([^/]+))?)?)?$~i', $req, $found ) ) {
 		return null;
 	}
 
-	return array( 'slug' => isset( $found[1] ) ? $found[1] : '' );
+	return array(
+		'slug' => isset( $found[1] ) ? $found[1] : '',
+		'doc'  => ! empty( $found[2] ) ? ( isset( $found[3] ) ? $found[3] : '' ) : null,
+	);
+}
+
+/**
+ * What follows /portfolio/ in a portfolio address, for building the same
+ * address on the other edition: "lazylord/", "lazylord/documentation/manual/".
+ *
+ * @param array|null $here From rs_portfolio_path().
+ * @return string
+ */
+function rs_portfolio_tail( $here ) {
+	if ( ! $here || '' === $here['slug'] ) {
+		return '';
+	}
+
+	$tail = $here['slug'] . '/';
+
+	if ( isset( $here['doc'] ) && null !== $here['doc'] ) {
+		$tail .= 'documentation/' . ( '' !== $here['doc'] ? $here['doc'] . '/' : '' );
+	}
+
+	return $tail;
 }
 
 /* The two editions and how a story finds its twin in the other one now live
@@ -282,8 +311,9 @@ function rs_lang_switcher_data() {
 
 	$here         = rs_portfolio_path();
 	$is_portfolio = null !== $here;
-	/* A project page switches to the same project in the other language. */
-	$portfolio    = '/portfolio/' . ( $is_portfolio && '' !== $here['slug'] ? $here['slug'] . '/' : '' );
+	/* A project page switches to the same project in the other language,
+	   and a page of its documentation to the same page. */
+	$portfolio    = '/portfolio/' . rs_portfolio_tail( $here );
 
 	if ( rs_is_en() ) {
 		$main_id = function_exists( 'get_main_site_id' ) ? get_main_site_id() : 1;

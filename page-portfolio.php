@@ -23,9 +23,9 @@ add_filter(
 		$classes[] = 'rs-stage';
 
 		/* A project page is a narrower column, which the back-to-top
-		   button lines up beside. */
+		   button lines up beside; its documentation is the full width. */
 		if ( function_exists( 'rs_current_project' ) && rs_current_project() ) {
-			$classes[] = 'rs-stage--project';
+			$classes[] = ( function_exists( 'rs_current_doc' ) && rs_current_doc() ) ? 'rs-stage--docs' : 'rs-stage--project';
 		}
 
 		return $classes;
@@ -73,6 +73,17 @@ $rs_arrow_right = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>';
 ?>
 
+<?php
+/* A page of the project's documentation, read from its repository. It
+   needs none of what the portfolio and the project pages share below (the
+   case-study pop-up, every project's data, the stage's scripts), so it
+   ends here. */
+if ( $rs_project && function_exists( 'rs_current_doc' ) && rs_current_doc() ) {
+	require get_template_directory() . '/parts/project-docs.php';
+	get_footer();
+	return;
+}
+?>
 <?php if ( $rs_project ) : ?>
 <?php
 $pp       = $rs_project;
@@ -137,6 +148,10 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 			<?php endif; ?>
 			<p class="rs-pf-project__meta">
 				<span><?php echo esc_html( $rs_is_en ? $pp['role_en'] : $pp['role_bn'] ); ?></span>
+				<?php $pp_docs = function_exists( 'rs_project_docs_link' ) ? rs_project_docs_link( $pp, $rs_is_en ) : ''; ?>
+				<?php if ( $pp_docs ) : ?>
+					<span><?php echo $pp_docs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside. ?></span>
+				<?php endif; ?>
 				<span><?php echo esc_html( $rs_is_en ? $pp['context_en'] : $pp['context_bn'] ); ?></span>
 			</p>
 			<?php if ( $pp_gh ) : ?>
@@ -795,7 +810,15 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 							<span class="rs-pf-card__flag"><?php echo esc_html( $rs_is_en ? 'Featured project' : 'ফিচার্ড প্রজেক্ট' ); ?></span>
 						<?php endif; ?>
 
-						<p class="rs-pf-card__type"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></p>
+						<?php $pf_docs = function_exists( 'rs_project_docs_link' ) ? rs_project_docs_link( $p, $rs_is_en ) : ''; ?>
+						<?php if ( $pf_docs ) : ?>
+							<div class="rs-pf-card__typerow">
+								<p class="rs-pf-card__type"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></p>
+								<?php echo $pf_docs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside. ?>
+							</div>
+						<?php else : ?>
+							<p class="rs-pf-card__type"><?php echo esc_html( $rs_is_en ? $p['type_en'] : $p['type_bn'] ); ?></p>
+						<?php endif; ?>
 
 						<h3 class="rs-pf-card__title">
 							<a class="rs-open-case-study" href="<?php echo esc_url( $pf_url ); ?>" data-project-id="<?php echo esc_attr( $p['id'] ); ?>"><?php echo esc_html( $pf_name ); ?></a>
@@ -944,6 +967,7 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 					<div class="rs-case-study-subline" id="rs-modal-subline">
 						<span class="rs-case-study-role" id="rs-modal-role"></span>
 						<span class="rs-case-study-sep">•</span>
+						<span class="rs-case-study-docs" id="rs-modal-docs" hidden><a class="rs-pf-docs-link" href=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4.5h6a4 4 0 0 1 4 4V21a3 3 0 0 0-3-3H2z"/><path d="M22 4.5h-6a4 4 0 0 0-4 4V21a3 3 0 0 1 3-3h7z"/></svg><span><?php echo esc_html( $rs_is_en ? 'Documentation' : 'ডকুমেন্টেশন' ); ?></span></a><span class="rs-case-study-sep">•</span></span>
 						<span class="rs-case-study-context" id="rs-modal-context"></span>
 					</div>
 				</header>
@@ -1090,6 +1114,7 @@ foreach ( $projects as $p ) {
 		'direct_url'  => $p['direct_url'],
 		'github_url'  => ! empty( $p['github_url'] ) ? $p['github_url'] : '',
 		'url'         => function_exists( 'rs_project_url' ) ? rs_project_url( $p['id'] ) : '',
+		'docs'        => function_exists( 'rs_project_docs' ) && rs_project_docs( $p ) ? rs_project_docs_url( $p['id'] ) : '',
 		'before'      => ! empty( $p['before'] ) ? esc_url_raw( $p['before'] ) : '',
 		'after'       => ! empty( $p['after'] ) ? esc_url_raw( $p['after'] ) : '',
 		'try'         => function_exists( 'rs_project_has_demo' ) && rs_project_has_demo( $p['id'] ) && function_exists( 'rs_project_url' ) ? rs_project_url( $p['id'] ) . '#try' : '',
@@ -1406,6 +1431,14 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE ); // phpcs:ignore Wor
 		badgeEl.textContent    = p.badge;
 		typeEl.textContent     = p.type;
 		roleEl.textContent     = p.role;
+
+		/* The documentation, beside the role, when the project has some. */
+		var docsEl = document.getElementById('rs-modal-docs');
+
+		if (docsEl) {
+			docsEl.hidden = !p.docs;
+			docsEl.querySelector('a').href = p.docs || '';
+		}
 		contextEl.textContent  = p.context;
 		summaryEl.textContent  = p.summary;
 

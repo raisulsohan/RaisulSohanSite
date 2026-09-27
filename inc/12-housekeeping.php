@@ -216,7 +216,7 @@ function rs_hreflang() {
 		restore_current_blog();
 	} elseif ( $on_pf ) {
 		/* Projects live on the main site and show on both, under one slug. */
-		$rs_sub         = '' !== $on_pf['slug'] ? $on_pf['slug'] . '/' : '';
+		$rs_sub         = rs_portfolio_tail( $on_pf );
 		$pair[ $here ]  = get_home_url( $here, '/portfolio/' . $rs_sub );
 		$pair[ $other ] = get_home_url( $other, '/portfolio/' . $rs_sub );
 	} elseif ( is_page() ) {

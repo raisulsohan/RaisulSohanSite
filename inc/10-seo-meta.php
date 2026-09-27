@@ -174,6 +174,23 @@ function rs_seo_context() {
 	/* A project's own address describes the project, not the portfolio. */
 	$project = function_exists( 'rs_current_project' ) ? rs_current_project() : null;
 
+	/* A page of its documentation describes itself: its title, and the
+	   first paragraph of what it says. */
+	$doc = ( $project && function_exists( 'rs_current_doc' ) ) ? rs_current_doc() : null;
+
+	if ( $doc && $doc['page'] ) {
+		$titles = rs_docs_titles();
+		$html   = rs_current_doc_html();
+		$first  = ( $html && preg_match( '~<p>(.*?)</p>~s', $html, $found ) ) ? rs_shorten( wp_strip_all_tags( $found[1] ), 160 ) : '';
+
+		return array(
+			'title'       => '' === $doc['key'] ? $titles['docs'] : $titles['page'] . ' — ' . $titles['docs'],
+			'description' => '' !== $first ? $first : rs_shorten( rs_is_en() ? $project['summary_en'] : $project['summary_bn'], 160 ),
+			'url'         => rs_project_docs_url( $project['id'], $doc['key'] ),
+			'type'        => 'article',
+		);
+	}
+
 	if ( $project ) {
 		$name = rs_project_name( $project );
 
