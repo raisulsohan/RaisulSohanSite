@@ -2280,6 +2280,239 @@ function rs_github_fetch_latest( $owner, $args, $etag = '' ) {
 }
 
 /**
+ * The contribution calendar GitHub draws on the profile: how much was done
+ * on every day of the last year.
+ *
+ * Only the GraphQL API has it, and GraphQL answers only a request made with
+ * a token, so without one there is no calendar and the portfolio leaves the
+ * section out. The counts are the ones the public profile shows.
+ *
+ * @param string $owner GitHub user.
+ * @param array  $args  From rs_github_request_args().
+ * @return array|null {
+ *     @type string $start  The first day, Y-m-d; the rest follow one a day.
+ *     @type int[]  $counts Contributions per day.
+ *     @type string $levels GitHub's shade per day, 0 to 4, one digit each.
+ * }
+ */
+function rs_github_fetch_calendar( $owner, $args ) {
+	if ( '' === $owner || ! rs_github_token() ) {
+		return null;
+	}
+
+	$args['headers']['Content-Type'] = 'application/json';
+	$args['body']                    = wp_json_encode(
+		array(
+			'query'     => 'query($login: String!) { user(login: $login) { contributionsCollection { contributionCalendar { weeks { contributionDays { date contributionCount contributionLevel } } } } } }',
+			'variables' => array( 'login' => $owner ),
+		)
+	);
+
+	$response = wp_remote_post( 'https://api.github.com/graphql', $args );
+
+	if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+		return null;
+	}
+
+	/* A GraphQL error still answers 200, with no data. */
+	$data  = json_decode( wp_remote_retrieve_body( $response ), true );
+	$weeks = isset( $data['data']['user']['contributionsCollection']['contributionCalendar']['weeks'] ) ? $data['data']['user']['contributionsCollection']['contributionCalendar']['weeks'] : null;
+
+	if ( ! is_array( $weeks ) ) {
+		return null;
+	}
+
+	$shades = array(
+		'FIRST_QUARTILE'  => '1',
+		'SECOND_QUARTILE' => '2',
+		'THIRD_QUARTILE'  => '3',
+		'FOURTH_QUARTILE' => '4',
+	);
+	$out    = array(
+		'start'  => '',
+		'counts' => array(),
+		'levels' => '',
+	);
+
+	foreach ( $weeks as $week ) {
+		foreach ( isset( $week['contributionDays'] ) && is_array( $week['contributionDays'] ) ? $week['contributionDays'] : array() as $day ) {
+			if ( empty( $day['date'] ) || ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $day['date'] ) ) {
+				continue;
+			}
+
+			if ( '' === $out['start'] ) {
+				$out['start'] = $day['date'];
+			}
+
+			$out['counts'][] = isset( $day['contributionCount'] ) ? max( 0, (int) $day['contributionCount'] ) : 0;
+			$out['levels']  .= isset( $day['contributionLevel'], $shades[ $day['contributionLevel'] ] ) ? $shades[ $day['contributionLevel'] ] : '0';
+		}
+	}
+
+	return $out['counts'] ? $out : null;
+}
+
+/**
+ * The stored contribution calendar, asked for on the spot the first time.
+ *
+ * The portfolio is cached for an hour at a time, so a page built before any
+ * refresh had stored a calendar would go out without the section for that
+ * whole hour. The first build asks for it directly instead, at most once
+ * every ten minutes; after that it rides along with every refresh.
+ *
+ * @return array|null See rs_github_fetch_calendar().
+ */
+function rs_github_calendar() {
+	$all   = rs_github_stats_store();
+	$asked = isset( $all['calendar_tried'] ) ? (int) $all['calendar_tried'] : 0;
+
+	if ( empty( $all['calendar']['counts'] ) && rs_github_token() && ( time() - $asked ) > 10 * MINUTE_IN_SECONDS ) {
+		$calendar = rs_github_fetch_calendar( rs_github_owner(), rs_github_request_args() );
+
+		$all['calendar_tried'] = time();
+
+		if ( $calendar ) {
+			$all['calendar'] = $calendar;
+		}
+
+		update_site_option( 'rs_github_stats', $all );
+	}
+
+	return empty( $all['calendar']['counts'] ) ? null : $all['calendar'];
+}
+
+/**
+ * The inside of the GitHub activity card: the last six months, shaded the
+ * way GitHub shades them, and what they add up to.
+ *
+ * Twenty-six weeks, Sunday to Saturday as on the profile, ending with the
+ * week that holds the last day GitHub has counted; that last column is only
+ * as long as the week so far. Six months rather than the whole year, which
+ * for work that mostly happened lately would be a long empty stretch
+ * before it.
+ *
+ * Each day carries only its count, and the tooltip works the date out from
+ * the grid's first day, which keeps the markup small enough to send again
+ * with every live refresh.
+ *
+ * @param array $calendar From rs_github_calendar().
+ * @param bool  $is_en    English site.
+ * @return string
+ */
+function rs_github_activity_html( $calendar, $is_en ) {
+	$weeks  = 26;
+	$counts = array_values( (array) $calendar['counts'] );
+	$levels = (string) $calendar['levels'];
+	$first  = strtotime( $calendar['start'] . ' 00:00:00 UTC' );
+	$last   = $first + ( count( $counts ) - 1 ) * DAY_IN_SECONDS;
+	$shown  = (int) gmdate( 'w', $last ) + ( $weeks - 1 ) * 7 + 1;
+	$from   = $last - ( $shown - 1 ) * DAY_IN_SECONDS;
+	$skip   = count( $counts ) - $shown;
+	$num    = function ( $n ) use ( $is_en ) {
+		$n = number_format_i18n( (int) $n );
+		return $is_en ? $n : rs_bn_digits( $n );
+	};
+	$months = $is_en ? array( 1 => 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ) : rs_bn_months();
+
+	$total   = 0;
+	$active  = 0;
+	$longest = 0;
+	$run     = 0;
+	$cells   = '';
+
+	for ( $i = 0; $i < $shown; $i++ ) {
+		$at    = $skip + $i;
+		$count = $at >= 0 && isset( $counts[ $at ] ) ? (int) $counts[ $at ] : 0;
+		$shade = $at >= 0 && isset( $levels[ $at ] ) ? (int) $levels[ $at ] : 0;
+
+		$total  += $count;
+		$active += $count ? 1 : 0;
+		$run     = $count ? $run + 1 : 0;
+		$longest = max( $longest, $run );
+
+		$class  = trim( ( $shade ? 'l' . $shade : '' ) . ( $i === $shown - 1 ? ' is-today' : '' ) );
+		$cells .= '<i' . ( $class ? ' class="' . $class . '"' : '' ) . ( $count ? ' data-n="' . $count . '"' : '' ) . '></i>';
+	}
+
+	/* The streak still counts when today has nothing in it yet. */
+	$current = 0;
+	for ( $i = $shown - 1; $i >= 0; $i-- ) {
+		$at    = $skip + $i;
+		$count = $at >= 0 && isset( $counts[ $at ] ) ? (int) $counts[ $at ] : 0;
+
+		if ( ! $count && $i === $shown - 1 ) {
+			continue;
+		}
+		if ( ! $count ) {
+			break;
+		}
+		++$current;
+	}
+
+	/* A month is named over the week its first day falls in, once that day
+	   has come, and the first column is named too when there is room before
+	   the next name. */
+	$labels = array();
+	for ( $w = 0; $w < $weeks; $w++ ) {
+		$saturday = $from + ( $w * 7 + 6 ) * DAY_IN_SECONDS;
+		$date     = (int) gmdate( 'j', $saturday );
+
+		if ( $date <= 7 && $saturday - ( $date - 1 ) * DAY_IN_SECONDS <= $last ) {
+			$labels[ $w ] = $months[ (int) gmdate( 'n', $saturday ) ];
+		}
+	}
+	if ( ! isset( $labels[0] ) && ( ! $labels || min( array_keys( $labels ) ) >= 3 ) ) {
+		$labels[0] = $months[ (int) gmdate( 'n', $from ) ];
+	}
+	ksort( $labels );
+
+	$days = $is_en ? array( 'Mon', 'Wed', 'Fri' ) : array( 'সোম', 'বুধ', 'শুক্র' );
+	$unit = function ( $n ) use ( $is_en, $num ) {
+		return $is_en ? $num( $n ) . ( 1 === $n ? ' day' : ' days' ) : $num( $n ) . ' দিন';
+	};
+
+	$html  = '<div class="rs-pf-gh__sum">';
+	$html .= '<p class="rs-pf-gh__total"><strong>' . esc_html( $num( $total ) ) . '</strong><span>' . esc_html( $is_en ? ( 1 === $total ? 'contribution' : 'contributions' ) . ' in the last six months' : 'কন্ট্রিবিউশন, গত ছয় মাসে' ) . '</span></p>';
+	$html .= '<dl class="rs-pf-gh__facts">';
+	$html .= '<div><dt>' . esc_html( $is_en ? 'Active days' : 'সক্রিয় দিন' ) . '</dt><dd>' . esc_html( $num( $active ) ) . '</dd></div>';
+	$html .= '<div><dt>' . esc_html( $is_en ? 'Longest streak' : 'সবচেয়ে লম্বা টানা' ) . '</dt><dd>' . esc_html( $unit( $longest ) ) . '</dd></div>';
+	$html .= '<div><dt>' . esc_html( $is_en ? 'Current streak' : 'চলতি টানা' ) . '</dt><dd>' . esc_html( $unit( $current ) ) . '</dd></div>';
+	$html .= '</dl></div>';
+
+	$html .= '<div class="rs-pf-gh__cal">';
+	$html .= '<div class="rs-pf-gh__months" aria-hidden="true">';
+	/* A name in the last two columns hangs left, so it cannot run past the card. */
+	foreach ( $labels as $w => $label ) {
+		$html .= '<span style="grid-column: ' . ( $w + 1 ) . ( $w >= $weeks - 2 ? '; justify-self: end' : '' ) . '">' . esc_html( $label ) . '</span>';
+	}
+	$html .= '</div>';
+	$html .= '<div class="rs-pf-gh__days" aria-hidden="true"><span>' . implode( '</span><span>', array_map( 'esc_html', $days ) ) . '</span></div>';
+	$html .= '<div class="rs-pf-gh__plot">';
+	$html .= '<div class="rs-pf-gh__grid" role="img" data-start="' . esc_attr( gmdate( 'Y-m-d', $from ) ) . '" aria-label="' . esc_attr(
+		$is_en
+			? sprintf( '%1$s contributions on %2$s days in the last six months', $num( $total ), $num( $active ) )
+			: sprintf( 'গত ছয় মাসে %1$s দিনে %2$s কন্ট্রিবিউশন', $num( $active ), $num( $total ) )
+	) . '">' . $cells . '</div>';
+	$html .= '<span class="rs-pf-gh__sweep" aria-hidden="true"></span>';
+	$html .= '</div>';
+	$html .= '<p class="rs-pf-gh__legend" aria-hidden="true">' . esc_html( $is_en ? 'Less' : 'কম' ) . ' <i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> ' . esc_html( $is_en ? 'More' : 'বেশি' ) . '</p>';
+	$html .= '</div>';
+
+	return $html;
+}
+
+/**
+ * A short fingerprint of the activity card, so the live refresh can tell
+ * whether it changed without comparing markup the browser has reserialised.
+ *
+ * @param string $html From rs_github_activity_html().
+ * @return string
+ */
+function rs_github_activity_sig( $html ) {
+	return substr( md5( $html ), 0, 12 );
+}
+
+/**
  * Ask about "last worked on" alone, and store the answer.
  *
  * The quick half of a refresh: one conditional request between pushes,
@@ -2366,8 +2599,13 @@ function rs_refresh_github_stats() {
 
 	/* Last worked on rides along, asked the same conditional way the quick
 	   refresh asks it, so the two never disagree about what was last seen. */
-	$got    = rs_github_fetch_latest( rs_github_owner( $slugs ), $args, isset( $old['latest_etag'] ) ? (string) $old['latest_etag'] : '' );
+	$owner  = rs_github_owner( $slugs );
+	$got    = rs_github_fetch_latest( $owner, $args, isset( $old['latest_etag'] ) ? (string) $old['latest_etag'] : '' );
 	$latest = ( $got['changed'] && $got['latest'] ) ? $got['latest'] : ( isset( $old['latest'] ) ? $old['latest'] : null );
+
+	/* So does the contribution calendar. A failed ask keeps the last one. */
+	$calendar = rs_github_fetch_calendar( $owner, $args );
+	$calendar = $calendar ? $calendar : ( isset( $old['calendar'] ) ? $old['calendar'] : null );
 
 	update_site_option(
 		'rs_github_stats',
@@ -2380,6 +2618,7 @@ function rs_refresh_github_stats() {
 			'latest'       => $latest,
 			'latest_etag'  => $got['etag'],
 			'latest_tried' => time(),
+			'calendar'     => $calendar,
 			'errors'       => array_slice( $errors, 0, 5 ),
 		)
 	);
@@ -2718,6 +2957,7 @@ function rs_rest_github() {
 	}
 
 	$total    = number_format_i18n( $downloads );
+	$activity = empty( $all['calendar']['counts'] ) ? '' : rs_github_activity_html( $all['calendar'], $is_en );
 	$response = rest_ensure_response(
 		array(
 			'repos'     => $repos,
@@ -2725,6 +2965,10 @@ function rs_rest_github() {
 			'now'       => empty( $all['latest']['repo'] ) ? null : array(
 				'url'  => $all['latest']['url'],
 				'html' => rs_github_now_html( $all['latest'], $is_en ),
+			),
+			'activity'  => '' === $activity ? null : array(
+				'sig'  => rs_github_activity_sig( $activity ),
+				'html' => $activity,
 			),
 			'fetched'   => empty( $all['fetched'] ) ? null : gmdate( 'c', (int) $all['fetched'] ),
 		)

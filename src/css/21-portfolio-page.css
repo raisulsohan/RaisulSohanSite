@@ -544,9 +544,10 @@
 	margin-top: 1.4rem;
 }
 
+/* Two even halves, six tiles to a row in each on a wide screen. */
 @media (min-width: 900px) {
 	.rs-pf-toolbox {
-		grid-template-columns: 5fr 6fr;
+		grid-template-columns: 1fr 1fr;
 	}
 }
 
@@ -569,7 +570,7 @@
 .rs-pf-tiles {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 1rem 0.9rem;
+	gap: 1rem 0.75rem;
 	margin: 0;
 	padding: 0;
 	list-style: none;
@@ -605,10 +606,344 @@
 	height: auto;
 }
 
+.rs-pf-tile--3d b svg {
+	width: 1.75rem;
+}
+
+/* Beside each other the two groups share the width, so the tiles go into
+   even columns instead of wrapping: three and three, then all six in a row
+   once there is room. Never five and one. */
+@media (min-width: 900px) {
+	.rs-pf-toolbox .rs-pf-tiles {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.rs-pf-toolbox .rs-pf-tile {
+		width: auto;
+	}
+}
+
+@media (min-width: 1100px) {
+	.rs-pf-toolbox .rs-pf-tiles {
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+	}
+}
+
 @media (hover: hover) {
 	.rs-pf-tile:hover b {
 		transform: translateY(-3px);
 		box-shadow: 0 10px 24px -10px var(--fg);
+	}
+}
+
+/* --------------------------------------------------------------------------
+   GitHub activity
+   -------------------------------------------------------------------------- */
+
+.rs-pf-gh__head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.4rem 1rem;
+}
+
+.rs-pf-gh__profile {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45rem;
+	min-height: 40px;
+	font-size: 0.86rem;
+	color: var(--pf-muted);
+	text-decoration: none;
+	transition: color 0.2s ease;
+}
+
+.rs-pf-gh__profile:hover {
+	color: var(--pf-text);
+}
+
+.rs-pf-gh__profile svg {
+	width: 1rem;
+	height: 1rem;
+}
+
+.rs-pf-gh__profile svg:last-child {
+	width: 0.8rem;
+	height: 0.8rem;
+}
+
+.rs-pf-gh {
+	--gap: 3px;
+	--l0: rgba(255, 255, 255, 0.055);
+	--l1: #33286a;
+	--l2: #5941c2;
+	--l3: #8f74ff;
+	--l4: #ea77ff;
+	position: relative;
+	margin-top: 1.4rem;
+	padding: clamp(1.1rem, 3vw, 1.7rem) clamp(1.1rem, 3vw, 1.9rem);
+	border-radius: 20px;
+	border: 1px solid var(--pf-line);
+	background: rgba(16, 13, 25, 0.72);
+}
+
+.rs-pf-gh__body {
+	display: grid;
+	gap: 1.6rem 3rem;
+	align-items: center;
+}
+
+@media (min-width: 900px) {
+	.rs-pf-gh__body {
+		grid-template-columns: minmax(0, 16rem) minmax(0, 1fr);
+	}
+
+	.rs-pf-gh__cal {
+		justify-self: end;
+	}
+}
+
+.rs-pf-gh__total {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	margin: 0;
+	font-size: 0.9rem;
+	color: var(--pf-text2);
+}
+
+.rs-pf-gh__total strong {
+	font-size: clamp(2.6rem, 6vw, 3.4rem);
+	font-weight: 700;
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+	background: linear-gradient(135deg, var(--pf-brand3), var(--pf-pink));
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
+.rs-pf-gh__facts {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem 1.75rem;
+	margin: 1.3rem 0 0;
+	padding-top: 1.1rem;
+	border-top: 1px solid var(--pf-line);
+}
+
+.rs-pf-gh__facts div {
+	display: flex;
+	flex-direction: column-reverse;
+	gap: 0.15rem;
+}
+
+.rs-pf-gh__facts dt {
+	font-size: 0.74rem;
+	color: var(--pf-muted);
+}
+
+.rs-pf-gh__facts dd {
+	margin: 0;
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: var(--pf-text);
+}
+
+/* Weekday names down the side, months along the top, and the squares
+   sized by the room there is, up to about the size GitHub draws them. */
+.rs-pf-gh__cal {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	column-gap: 0.5rem;
+	width: 100%;
+	max-width: 38rem;
+}
+
+.rs-pf-gh__months,
+.rs-pf-gh__grid {
+	display: grid;
+	grid-template-columns: repeat(26, minmax(0, 1fr));
+	gap: var(--gap);
+}
+
+.rs-pf-gh__months {
+	grid-column: 2;
+	height: 1.35rem;
+	font-size: 0.68rem;
+	line-height: 1;
+	color: var(--pf-muted);
+}
+
+.rs-pf-gh__months span {
+	grid-row: 1;
+	white-space: nowrap;
+}
+
+.rs-pf-gh__days {
+	grid-column: 1;
+	grid-row: 2;
+	display: grid;
+	grid-template-rows: repeat(7, minmax(0, 1fr));
+	row-gap: var(--gap);
+	font-size: 0.62rem;
+	color: var(--pf-muted);
+}
+
+.rs-pf-gh__days span {
+	display: flex;
+	align-items: center;
+	line-height: 1;
+}
+
+.rs-pf-gh__days span:nth-child(1) {
+	grid-row: 2;
+}
+
+.rs-pf-gh__days span:nth-child(2) {
+	grid-row: 4;
+}
+
+.rs-pf-gh__days span:nth-child(3) {
+	grid-row: 6;
+}
+
+.rs-pf-gh__plot {
+	position: relative;
+	grid-column: 2;
+	grid-row: 2;
+}
+
+.rs-pf-gh__grid {
+	grid-template-rows: repeat(7, auto);
+	grid-auto-flow: column;
+}
+
+.rs-pf-gh__grid i,
+.rs-pf-gh__legend i {
+	aspect-ratio: 1;
+	border-radius: 22%;
+	background: var(--l0);
+}
+
+.rs-pf-gh .l1 {
+	background: var(--l1);
+}
+
+.rs-pf-gh .l2 {
+	background: var(--l2);
+}
+
+.rs-pf-gh .l3 {
+	background: var(--l3);
+}
+
+.rs-pf-gh .l4 {
+	background: var(--l4);
+	box-shadow: 0 0 10px -2px rgba(234, 119, 255, 0.7);
+}
+
+/* Today, ringed in the green of "last worked on". */
+.rs-pf-gh__grid .is-today {
+	outline: 1.5px solid var(--pf-green);
+	outline-offset: 1px;
+}
+
+.rs-pf-gh__legend {
+	grid-column: 2;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 4px;
+	margin: 0.8rem 0 0;
+	font-size: 0.68rem;
+	color: var(--pf-muted);
+}
+
+.rs-pf-gh__legend i {
+	width: 0.7rem;
+}
+
+.rs-pf-gh__legend i:first-of-type {
+	margin-left: 0.3rem;
+}
+
+.rs-pf-gh__legend i:last-of-type {
+	margin-right: 0.3rem;
+}
+
+/* The first time the card comes into view the squares are uncovered left
+   to right behind a playhead. Only when a script is there to start it. */
+.rs-pf-gh.is-waiting .rs-pf-gh__grid {
+	clip-path: inset(-4px 100% -4px -4px);
+}
+
+.rs-pf-gh.is-in .rs-pf-gh__grid {
+	clip-path: inset(-4px -4px -4px -4px);
+	transition: clip-path 1.5s cubic-bezier(0.45, 0, 0.2, 1);
+}
+
+.rs-pf-gh__sweep {
+	position: absolute;
+	top: -6px;
+	bottom: -6px;
+	left: 0;
+	width: 2px;
+	border-radius: 2px;
+	background: var(--pf-pink);
+	box-shadow: 0 0 12px var(--pf-pink);
+	opacity: 0;
+	pointer-events: none;
+}
+
+.rs-pf-gh.is-in .rs-pf-gh__sweep {
+	animation: rs-pf-sweep 1.5s cubic-bezier(0.45, 0, 0.2, 1) both;
+}
+
+@keyframes rs-pf-sweep {
+	from {
+		left: 0;
+		opacity: 1;
+	}
+
+	85% {
+		opacity: 1;
+	}
+
+	to {
+		left: 100%;
+		opacity: 0;
+	}
+}
+
+.rs-pf-gh__tip {
+	position: absolute;
+	z-index: 3;
+	padding: 0.4rem 0.65rem;
+	border-radius: 8px;
+	background: var(--pf-text);
+	box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.8);
+	font-size: 0.76rem;
+	line-height: 1.3;
+	white-space: nowrap;
+	color: var(--pf-bg0);
+	pointer-events: none;
+	transform: translate(-50%, calc(-100% - 8px));
+}
+
+.rs-pf-gh__tip[hidden] {
+	display: none;
+}
+
+@media (max-width: 560px) {
+	.rs-pf-gh {
+		--gap: 2px;
+	}
+
+	.rs-pf-gh__days {
+		font-size: 0.56rem;
 	}
 }
 

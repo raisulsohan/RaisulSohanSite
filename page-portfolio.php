@@ -433,14 +433,17 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 					<li class="rs-pf-tile" style="--fg: #a259ff; --bd: #2c2642">
 						<b><svg viewBox="0 0 2 3" aria-hidden="true"><path d="M.5 0H1V1H.5A.5.5 0 0 1 .5 0Z" fill="#f24e1e"/><path d="M1 0H1.5A.5.5 0 0 1 1.5 1H1Z" fill="#ff7262"/><path d="M.5 1H1V2H.5A.5.5 0 0 1 .5 1Z" fill="#a259ff"/><circle cx="1.5" cy="1.5" r=".5" fill="#1abcfe"/><path d="M1 2V2.5A.5.5 0 1 1 .5 2Z" fill="#0acf83"/></svg></b>Figma
 					</li>
+					<li class="rs-pf-tile rs-pf-tile--3d" style="--fg: #b9a8ff; --bd: #2c2642">
+						<b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.4 7.3 12 12 3.6 7.3Z" fill="#b9a8ff"/><path d="M3.6 7.3 12 12v9.4l-8.4-4.7Z" fill="#6c4cff"/><path d="M20.4 7.3 12 12v9.4l8.4-4.7Z" fill="#ea77ff"/></svg></b>3D
+					</li>
 				</ul>
 			</div>
 			<div class="rs-pf-toolbox__group">
 				<p class="rs-pf-toolbox__label"><?php echo esc_html( $rs_is_en ? 'Code & automation' : 'কোড ও অটোমেশন' ); ?></p>
 				<ul class="rs-pf-tiles">
 					<li class="rs-pf-tile" style="--fg: #f7df1e; --bd: #2c2642"><b>JS</b>JavaScript</li>
+					<li class="rs-pf-tile" style="--fg: #5a9fe8; --bd: #2c2642"><b>TS</b>TypeScript</li>
 					<li class="rs-pf-tile" style="--fg: #6cc24a; --bd: #2c2642"><b>N</b>Node.js</li>
-					<li class="rs-pf-tile" style="--fg: #4fa3ff; --bd: #2c2642"><b>{ }</b>CEP</li>
 					<li class="rs-pf-tile" style="--fg: #b3b7f2; --bd: #2c2642"><b>php</b>PHP</li>
 					<li class="rs-pf-tile" style="--fg: #4fa9da; --bd: #2c2642"><b>W</b>WordPress</li>
 					<li class="rs-pf-tile" style="--fg: #f05032; --bd: #2c2642"><b>git</b>Git</li>
@@ -448,6 +451,138 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 			</div>
 		</div>
 	</section>
+
+	<?php
+	$rs_calendar = function_exists( 'rs_github_calendar' ) ? rs_github_calendar() : null;
+	$rs_gh_owner = $rs_calendar ? rs_github_owner() : '';
+	?>
+	<?php if ( $rs_calendar && $rs_gh_owner ) : ?>
+		<?php $rs_activity = rs_github_activity_html( $rs_calendar, $rs_is_en ); ?>
+		<section class="rs-pf__wrap rs-pf__section" aria-labelledby="rs-pf-activity">
+			<div class="rs-pf-gh__head">
+				<h2 class="rs-pf-h" id="rs-pf-activity"><?php echo esc_html( $rs_is_en ? 'GitHub activity' : 'GitHub অ্যাক্টিভিটি' ); ?></h2>
+				<a class="rs-pf-gh__profile" href="<?php echo esc_url( 'https://github.com/' . $rs_gh_owner ); ?>" target="_blank" rel="noopener noreferrer">
+					<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+					<span>@<?php echo esc_html( $rs_gh_owner ); ?></span>
+					<?php echo $rs_arrow_out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
+				</a>
+			</div>
+			<div class="rs-pf-gh">
+				<div class="rs-pf-gh__body" data-rs-gh-activity data-sig="<?php echo esc_attr( rs_github_activity_sig( $rs_activity ) ); ?>"><?php echo $rs_activity; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside. ?></div>
+				<div class="rs-pf-gh__tip" aria-hidden="true" hidden></div>
+			</div>
+		</section>
+		<script>
+		/* The activity card: drawn in left to right the first time it comes
+		   into view, the way a playhead crosses a timeline, and a day's count
+		   and date shown on hover or tap. The markup is replaced wholesale by
+		   the live refresh, so everything here listens on the card itself. */
+		(function () {
+			'use strict';
+
+			var box = document.querySelector('.rs-pf-gh');
+			var tip = box && box.querySelector('.rs-pf-gh__tip');
+
+			if (!box || !tip) {
+				return;
+			}
+
+			var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+			if (!reduce && 'IntersectionObserver' in window) {
+				box.classList.add('is-waiting');
+
+				var watch = new window.IntersectionObserver(function (entries) {
+					if (entries.some(function (entry) { return entry.isIntersecting; })) {
+						watch.disconnect();
+						box.classList.remove('is-waiting');
+						box.classList.add('is-in');
+					}
+				}, { threshold: 0.4 });
+
+				watch.observe(box);
+			}
+
+			var EN     = <?php echo $rs_is_en ? 'true' : 'false'; ?>;
+			var MONTHS = <?php echo wp_json_encode( $rs_is_en ? array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ) : array_values( rs_bn_months_full() ), JSON_UNESCAPED_UNICODE ); ?>;
+			var shown  = null;
+
+			function digits(n) {
+				var s = EN ? n.toLocaleString('en-US') : String(n);
+
+				return EN ? s : s.replace(/\d/g, function (d) {
+					return '০১২৩৪৫৬৭৮৯'.charAt(d);
+				});
+			}
+
+			function words(cell) {
+				var grid = cell.parentNode;
+				var i    = Array.prototype.indexOf.call(grid.children, cell);
+				var day  = new Date(Date.parse(grid.getAttribute('data-start') + 'T00:00:00Z') + i * 864e5);
+				var n    = parseInt(cell.getAttribute('data-n') || '0', 10);
+				var when = EN ? MONTHS[day.getUTCMonth()] + ' ' + day.getUTCDate() : digits(day.getUTCDate()) + ' ' + MONTHS[day.getUTCMonth()];
+
+				if (EN) {
+					return (n ? digits(n) + (n === 1 ? ' contribution' : ' contributions') : 'No contributions') + ' · ' + when;
+				}
+
+				return (n ? digits(n) + 'টি কন্ট্রিবিউশন' : 'কোনো কন্ট্রিবিউশন নেই') + ' · ' + when;
+			}
+
+			function show(cell) {
+				if (cell === shown) {
+					return;
+				}
+
+				shown           = cell;
+				tip.textContent = words(cell);
+				tip.hidden      = false;
+
+				var b    = box.getBoundingClientRect();
+				var c    = cell.getBoundingClientRect();
+				var half = tip.offsetWidth / 2;
+				var x    = Math.max(half + 6, Math.min(b.width - half - 6, c.left - b.left + c.width / 2));
+
+				tip.style.left = x + 'px';
+				tip.style.top  = (c.top - b.top) + 'px';
+			}
+
+			function hide() {
+				shown      = null;
+				tip.hidden = true;
+			}
+
+			function dayOf(target) {
+				return target && target.tagName === 'I' && target.parentNode && target.parentNode.classList.contains('rs-pf-gh__grid') ? target : null;
+			}
+
+			box.addEventListener('pointerover', function (e) {
+				var cell = dayOf(e.target);
+
+				if (cell) {
+					show(cell);
+				} else if (e.pointerType === 'mouse') {
+					hide();
+				}
+			});
+
+			box.addEventListener('pointerleave', function (e) {
+				if (e.pointerType === 'mouse') {
+					hide();
+				}
+			});
+
+			/* A tap elsewhere puts it away on a touch screen. */
+			document.addEventListener('pointerdown', function (e) {
+				if (!dayOf(e.target)) {
+					hide();
+				}
+			});
+
+			window.addEventListener('resize', hide);
+		}());
+		</script>
+	<?php endif; ?>
 
 	<section class="rs-pf__wrap rs-pf__section" id="rs-pf-work-section" aria-labelledby="rs-pf-work">
 		<div class="rs-pf__work-head">
@@ -2851,7 +2986,7 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 (function () {
 	'use strict';
 
-	if (!window.fetch || !document.querySelector('[data-rs-gh], [data-rs-gh-now], [data-rs-gh-downloads]')) {
+	if (!window.fetch || !document.querySelector('[data-rs-gh], [data-rs-gh-now], [data-rs-gh-downloads], [data-rs-gh-activity]')) {
 		return;
 	}
 
@@ -2914,6 +3049,15 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 						now.innerHTML = d.now.html;
 						now.href = d.now.url;
 					}
+				}
+
+				/* The activity card is the same shape every time, so swapping
+				   it only recolours squares and changes a number or two. */
+				var act = document.querySelector('[data-rs-gh-activity]');
+
+				if (act && d.activity && d.activity.sig !== act.getAttribute('data-sig')) {
+					act.innerHTML = d.activity.html;
+					act.setAttribute('data-sig', d.activity.sig);
 				}
 			})
 			.catch(function () {})

@@ -2,13 +2,23 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.17.1-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.18.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.18
+
+**GitHub activity on the portfolio.** A new card under the Toolbox shows the last six months of contributions the way GitHub shades them, with the total, the active days, the longest streak and the current one.
+
+- **Six months, not the year.** Twenty-six weeks, Sunday to Saturday as on the profile, ending with this week. Most of the work is recent, and a whole year would open with a long empty stretch.
+- **The same counts as the public profile.** They come from GitHub's GraphQL contribution calendar (`rs_github_fetch_calendar()`), which needs the token already used for the stars and downloads. Without a token the card is simply left out.
+- **Kept fresh like the rest.** The calendar is fetched with every two-minute refresh and kept if a fetch fails. The first page built after an update fetches it on the spot (`rs_github_calendar()`), so a cached page never goes out without it. An open page gets the card again with each live refresh and swaps it only when its fingerprint changed; the squares keep their size, so nothing moves.
+- **Light markup.** Each day carries only its count. The tooltip works out the date from the grid's first day and shows the count and date on hover or tap. The squares are uncovered left to right behind a playhead the first time the card comes into view, and not at all with reduced motion.
+- **Toolbox.** 3D joins Design & motion, TypeScript joins Code & automation, and CEP leaves (the projects that use it already say so). On a wide screen each group sits in one row of six, and in three and three below that, never five and one.
 
 ## What's new in 7.17
 
