@@ -53,6 +53,15 @@ $rs_about = rs_about();
 	<?php echo wp_kses( rs_icon( 'up' ), rs_svg_tags() ); ?>
 </button>
 
+<?php
+/* The story's other-language link, held above the top button once the one in
+   its meta row has scrolled away — what the reading modal does in its own
+   corner, for a story read at its own address. Shown by app.js. */
+if ( is_singular( 'post' ) && function_exists( 'rs_post_twin' ) && rs_post_twin() ) :
+	?>
+<div class="rs-page-lang" id="rs-page-lang"><?php rs_lang_pill(); ?></div>
+<?php endif; ?>
+
 <span class="rs-tooltip" id="rs-tooltip" role="tooltip" aria-hidden="true"></span>
 
 <aside class="rs-install-bar" id="rs-install-bar" hidden aria-label="<?php echo esc_attr( rs_is_en() ? 'App installation' : 'অ্যাপ ইনস্টলেশন' ); ?>">

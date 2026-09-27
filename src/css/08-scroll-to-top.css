@@ -25,3 +25,41 @@
 .rs-top:hover {
 	opacity: 0.75;
 }
+
+/*
+ * The story's other language, held above the top button once the pill in
+ * the meta row has scrolled away: what the reading modal does in its own
+ * corner, for a story read at its own address. Same glass as the modal's.
+ */
+.rs-page-lang {
+	position: fixed;
+	bottom: 5.25rem;
+	right: calc(50% - 24rem - 2rem);
+	z-index: 30;
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(4px);
+	transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+}
+
+.rs-page-lang.is-visible {
+	opacity: 1;
+	visibility: visible;
+	transform: none;
+}
+
+.rs-page-lang .rs-lang-pill {
+	min-height: 2.25rem;
+	padding: 0 0.8rem;
+	border: 0;
+	background: var(--rs-bg-blur);
+	-webkit-backdrop-filter: blur(8px);
+	backdrop-filter: blur(8px);
+	box-shadow: var(--rs-shadow-md), 0 0 0 1px var(--rs-border-50);
+}
+
+.rs-page-lang .rs-lang-pill:hover,
+.rs-page-lang .rs-lang-pill:focus-visible {
+	background: var(--rs-bg-blur);
+	box-shadow: var(--rs-shadow-md), 0 0 0 1px currentColor;
+}
