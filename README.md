@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.17.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.17.1-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -11,6 +11,8 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 ---
 
 ## What's new in 7.17
+
+**7.17.1: an update reaches readers straight away.** The host's page cache (20i StackCache, in front of the server and again at the CDN edge) keeps each page for an hour, and it clears itself when a theme is switched but not when one is updated. So for up to an hour after every release, readers were still handed pages built by the old code. The first request that runs a new version now asks StackCache for a full purge, once per site, from cron so no page view waits on it (`rs_purge_host_cache_on_update()`). On a host without StackCache it does nothing.
 
 **“Last worked on” keeps up with the work.** A push used to reach the portfolio in one to three minutes, and never reached a page that was already open. It now shows up within about twenty seconds, for someone who is already looking too.
 

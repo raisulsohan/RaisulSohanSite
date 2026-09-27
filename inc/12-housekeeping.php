@@ -372,3 +372,54 @@ function rs_image_quality( $quality ) {
 	return 80;
 }
 add_filter( 'wp_editor_set_quality', 'rs_image_quality' );
+
+/**
+ * Whether the host's page cache can be emptied from here.
+ *
+ * 20i's StackCache runs from a platform mu-plugin, and its purge method is
+ * public and static. Checked rather than assumed, so on any other host, or
+ * after a StackCache release that renames it, the theme simply leaves the
+ * cache alone.
+ *
+ * @return bool
+ */
+function rs_host_cache_purgeable() {
+	return class_exists( 'WPStackCache' ) && is_callable( array( 'WPStackCache', 'purge' ) );
+}
+
+/**
+ * Empty the host's page cache once the theme has updated itself.
+ *
+ * StackCache keeps every page for an hour, in front of the server and again
+ * at the CDN edge. It clears itself when a theme is switched, a plugin is
+ * toggled or a post is saved, but not when the theme in use is updated. So
+ * for up to an hour after a release, readers were handed pages built by the
+ * old code, still pointing at the old ?ver= files, and whatever the release
+ * fixed looked as if it had never shipped.
+ *
+ * The first request that runs a new RS_VERSION asks for a full purge, once
+ * per site. It happens in cron, because the purge is an HTTP request with no
+ * timeout of its own, and nobody's page view should wait on it.
+ */
+function rs_purge_host_cache_on_update() {
+	if ( get_option( 'rs_purged_version' ) === RS_VERSION ) {
+		return;
+	}
+
+	update_option( 'rs_purged_version', RS_VERSION, false );
+
+	if ( rs_host_cache_purgeable() && ! wp_next_scheduled( 'rs_purge_host_cache' ) ) {
+		wp_schedule_single_event( time(), 'rs_purge_host_cache' );
+	}
+}
+add_action( 'init', 'rs_purge_host_cache_on_update', 100 );
+
+/**
+ * Cron: the purge itself.
+ */
+function rs_purge_host_cache() {
+	if ( rs_host_cache_purgeable() ) {
+		WPStackCache::purge( 'all' );
+	}
+}
+add_action( 'rs_purge_host_cache', 'rs_purge_host_cache' );
