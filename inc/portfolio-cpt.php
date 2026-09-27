@@ -1468,9 +1468,9 @@ function rs_get_default_portfolio_projects() {
 			'image'       => get_template_directory_uri() . '/assets/img/lazyimage-v2.png',
 			'image_fit'   => 'cover',
 			'action_type' => 'code',
-			'action_bn'   => 'সোর্স কোড (GitHub)',
-			'action_en'   => 'View Source on GitHub',
-			'direct_url'  => 'https://github.com/raisulsohan/LazyImageGeneration',
+			'action_bn'   => 'ফ্রি ডাউনলোড',
+			'action_en'   => 'Download Free',
+			'direct_url'  => 'https://github.com/raisulsohan/LazyImageGeneration/releases/latest',
 			'github_url'  => 'https://github.com/raisulsohan/LazyImageGeneration',
 			'order'       => 80,
 		),
@@ -1943,12 +1943,13 @@ function rs_sync_portfolio_renames() {
 add_action( 'init', 'rs_sync_portfolio_renames', 21 );
 
 /**
- * Give the three renamed extensions a download button, once.
+ * Give the three renamed extensions and Lazy-Image a download button, once.
  *
  * Their entries pointed at the repository and said "View Source on GitHub";
  * each now has releases with a zip to install, so the button goes to the
  * latest release and says so, as it does for LazyLord and LazyKick. The
- * GitHub button stays, since the two addresses now differ.
+ * GitHub button stays, since the two addresses now differ. The flag moved
+ * to v2 when Lazy-Image joined, so a site that had run v1 runs it again.
  */
 function rs_sync_portfolio_downloads() {
 	$switched = false;
@@ -1957,7 +1958,7 @@ function rs_sync_portfolio_downloads() {
 		$switched = true;
 	}
 
-	if ( get_option( 'rs_portfolio_downloads_v1' ) ) {
+	if ( get_option( 'rs_portfolio_downloads_v2' ) ) {
 		if ( $switched ) {
 			restore_current_blog();
 		}
@@ -1971,7 +1972,7 @@ function rs_sync_portfolio_downloads() {
 
 	$changed = false;
 
-	foreach ( array( 'lazyscroll', 'lazysnap', 'lazyruler' ) as $slug ) {
+	foreach ( array( 'lazyscroll', 'lazysnap', 'lazyruler', 'lazy-image-ae' ) as $slug ) {
 		if ( ! isset( $defaults[ $slug ] ) ) {
 			continue;
 		}
@@ -1996,7 +1997,7 @@ function rs_sync_portfolio_downloads() {
 		$changed = true;
 	}
 
-	update_option( 'rs_portfolio_downloads_v1', 1 );
+	update_option( 'rs_portfolio_downloads_v2', 1 );
 
 	if ( $switched ) {
 		restore_current_blog();

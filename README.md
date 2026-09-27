@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.23.1-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.23.2-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -11,6 +11,8 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 ---
 
 ## What's new in 7.23
+
+**7.23.2: the same download button for Lazy-Image**, whose latest release carries the Windows zip.
 
 **7.23.1: a download button for LazyScroll, LazySnap and LazyRuler.** Each has releases with a zip to install, so the button goes to the latest release and says Download Free, as LazyLord's and LazyKick's do; the GitHub button stays beside it. The stored entries are brought up to date once (`rs_sync_portfolio_downloads()`).
 
