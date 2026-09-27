@@ -2382,25 +2382,83 @@ function rs_github_calendar() {
 }
 
 /**
- * The inside of the GitHub activity card: the last six months, shaded the
- * way GitHub shades them, and what they add up to.
+ * The spans the activity card can show, each as a number of weeks.
  *
- * Twenty-six weeks, Sunday to Saturday as on the profile, ending with the
- * week that holds the last day GitHub has counted; that last column is only
- * as long as the week so far. Six months rather than the whole year, which
- * for work that mostly happened lately would be a long empty stretch
- * before it.
+ * A year is the whole calendar GitHub hands over; a month is this week and
+ * the four before it, which lays out as a calendar page.
+ *
+ * @return int[] range => weeks.
+ */
+function rs_github_activity_ranges() {
+	return array(
+		'year'    => 53,
+		'half'    => 26,
+		'quarter' => 13,
+		'month'   => 5,
+	);
+}
+
+/**
+ * The span the author picked for the activity card, six months until one
+ * is picked. One setting for both editions.
+ *
+ * @return string A key of rs_github_activity_ranges().
+ */
+function rs_github_activity_range() {
+	$range = (string) get_site_option( 'rs_github_activity_range', 'half' );
+
+	return array_key_exists( $range, rs_github_activity_ranges() ) ? $range : 'half';
+}
+
+/**
+ * What each span is called: on the author's picker, and after the total.
+ *
+ * @param bool $is_en English site.
+ * @return array range => array( button, "in the last …" ).
+ */
+function rs_github_activity_range_names( $is_en ) {
+	return $is_en
+		? array(
+			'year'    => array( '1 year', 'in the last year' ),
+			'half'    => array( '6 months', 'in the last six months' ),
+			'quarter' => array( '3 months', 'in the last three months' ),
+			'month'   => array( '1 month', 'in the last month' ),
+		)
+		: array(
+			'year'    => array( '১ বছর', 'গত এক বছরে' ),
+			'half'    => array( '৬ মাস', 'গত ছয় মাসে' ),
+			'quarter' => array( '৩ মাস', 'গত তিন মাসে' ),
+			'month'   => array( '১ মাস', 'গত এক মাসে' ),
+		);
+}
+
+/**
+ * The inside of the GitHub activity card: the chosen span, shaded the way
+ * GitHub shades it, and what it adds up to.
+ *
+ * Weeks run Sunday to Saturday as on the profile and end with the week that
+ * holds the last day GitHub has counted. A year, six months and three months
+ * are drawn as GitHub draws them, a column to a week; the fewer the weeks,
+ * the larger the squares, up to a limit the stylesheet sets for each span.
+ * A month is too few columns for that, so it is drawn as a calendar page
+ * instead, a row to a week, with the date in every square and the rest of
+ * this week left open.
  *
  * Each day carries only its count, and the tooltip works the date out from
  * the grid's first day, which keeps the markup small enough to send again
  * with every live refresh.
  *
- * @param array $calendar From rs_github_calendar().
- * @param bool  $is_en    English site.
+ * @param array  $calendar From rs_github_calendar().
+ * @param bool   $is_en    English site.
+ * @param string $range    A key of rs_github_activity_ranges(); the saved one by default.
  * @return string
  */
-function rs_github_activity_html( $calendar, $is_en ) {
-	$weeks  = 26;
+function rs_github_activity_html( $calendar, $is_en, $range = '' ) {
+	$ranges = rs_github_activity_ranges();
+	$range  = isset( $ranges[ $range ] ) ? $range : rs_github_activity_range();
+	$names  = rs_github_activity_range_names( $is_en );
+	$weeks  = $ranges[ $range ];
+	$page   = 'month' === $range;
 	$counts = array_values( (array) $calendar['counts'] );
 	$levels = (string) $calendar['levels'];
 	$first  = strtotime( $calendar['start'] . ' 00:00:00 UTC' );
@@ -2408,11 +2466,12 @@ function rs_github_activity_html( $calendar, $is_en ) {
 	$shown  = (int) gmdate( 'w', $last ) + ( $weeks - 1 ) * 7 + 1;
 	$from   = $last - ( $shown - 1 ) * DAY_IN_SECONDS;
 	$skip   = count( $counts ) - $shown;
-	$num    = function ( $n ) use ( $is_en ) {
-		$n = number_format_i18n( (int) $n );
-		return $is_en ? $n : rs_bn_digits( $n );
+	$digits = function ( $n ) use ( $is_en ) {
+		return $is_en ? (string) $n : rs_bn_digits( (string) $n );
 	};
-	$months = $is_en ? array( 1 => 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ) : rs_bn_months();
+	$num    = function ( $n ) use ( $digits ) {
+		return $digits( number_format_i18n( (int) $n ) );
+	};
 
 	$total   = 0;
 	$active  = 0;
@@ -2431,72 +2490,98 @@ function rs_github_activity_html( $calendar, $is_en ) {
 		$longest = max( $longest, $run );
 
 		$class  = trim( ( $shade ? 'l' . $shade : '' ) . ( $i === $shown - 1 ? ' is-today' : '' ) );
-		$cells .= '<i' . ( $class ? ' class="' . $class . '"' : '' ) . ( $count ? ' data-n="' . $count . '"' : '' ) . '></i>';
+		$cells .= '<i' . ( $class ? ' class="' . $class . '"' : '' ) . ( $count ? ' data-n="' . $count . '"' : '' ) . '>';
+		$cells .= $page ? esc_html( $digits( gmdate( 'j', $from + $i * DAY_IN_SECONDS ) ) ) : '';
+		$cells .= '</i>';
 	}
 
-	/* The streak still counts when today has nothing in it yet. */
-	$current = 0;
-	for ( $i = $shown - 1; $i >= 0; $i-- ) {
-		$at    = $skip + $i;
-		$count = $at >= 0 && isset( $counts[ $at ] ) ? (int) $counts[ $at ] : 0;
+	/* The rest of this week on a calendar page: there, but not yet. */
+	for ( $i = $shown; $page && $i < $weeks * 7; $i++ ) {
+		$cells .= '<i class="is-future">' . esc_html( $digits( gmdate( 'j', $from + $i * DAY_IN_SECONDS ) ) ) . '</i>';
+	}
 
-		if ( ! $count && $i === $shown - 1 ) {
+	/* The current streak is counted back through everything GitHub sent, so
+	   a short span cannot cut it off; it still counts when today has nothing
+	   in it yet. */
+	$current = 0;
+	for ( $at = count( $counts ) - 1; $at >= 0; $at-- ) {
+		if ( ! $counts[ $at ] && count( $counts ) - 1 === $at ) {
 			continue;
 		}
-		if ( ! $count ) {
+		if ( ! $counts[ $at ] ) {
 			break;
 		}
 		++$current;
 	}
 
-	/* A month is named over the week its first day falls in, once that day
-	   has come, and the first column is named too when there is room before
-	   the next name. */
-	$labels = array();
-	for ( $w = 0; $w < $weeks; $w++ ) {
-		$saturday = $from + ( $w * 7 + 6 ) * DAY_IN_SECONDS;
-		$date     = (int) gmdate( 'j', $saturday );
-
-		if ( $date <= 7 && $saturday - ( $date - 1 ) * DAY_IN_SECONDS <= $last ) {
-			$labels[ $w ] = $months[ (int) gmdate( 'n', $saturday ) ];
-		}
-	}
-	if ( ! isset( $labels[0] ) && ( ! $labels || min( array_keys( $labels ) ) >= 3 ) ) {
-		$labels[0] = $months[ (int) gmdate( 'n', $from ) ];
-	}
-	ksort( $labels );
-
-	$days = $is_en ? array( 'Mon', 'Wed', 'Fri' ) : array( 'সোম', 'বুধ', 'শুক্র' );
 	$unit = function ( $n ) use ( $is_en, $num ) {
 		return $is_en ? $num( $n ) . ( 1 === $n ? ' day' : ' days' ) : $num( $n ) . ' দিন';
 	};
+	$date = function ( $t, $year ) use ( $is_en, $digits ) {
+		if ( $is_en ) {
+			return gmdate( $year ? 'M j, Y' : 'M j', $t );
+		}
 
-	$html  = '<div class="rs-pf-gh__sum">';
-	$html .= '<p class="rs-pf-gh__total"><strong>' . esc_html( $num( $total ) ) . '</strong><span>' . esc_html( $is_en ? ( 1 === $total ? 'contribution' : 'contributions' ) . ' in the last six months' : 'কন্ট্রিবিউশন, গত ছয় মাসে' ) . '</span></p>';
+		$months = rs_bn_months_full();
+
+		return $digits( gmdate( 'j', $t ) ) . ' ' . $months[ (int) gmdate( 'n', $t ) ] . ( $year ? ' ' . $digits( gmdate( 'Y', $t ) ) : '' );
+	};
+	$years = gmdate( 'Y', $from ) !== gmdate( 'Y', $last );
+
+	$html  = '<div class="rs-pf-gh__view is-' . $range . '" style="--cols: ' . ( $page ? 7 : $weeks ) . '">';
+	$html .= '<div class="rs-pf-gh__sum">';
+	$html .= '<p class="rs-pf-gh__total"><strong>' . esc_html( $num( $total ) ) . '</strong><span>' . esc_html( ( $is_en ? ( 1 === $total ? 'contribution ' : 'contributions ' ) : 'কন্ট্রিবিউশন, ' ) . $names[ $range ][1] ) . '</span></p>';
 	$html .= '<dl class="rs-pf-gh__facts">';
 	$html .= '<div><dt>' . esc_html( $is_en ? 'Active days' : 'সক্রিয় দিন' ) . '</dt><dd>' . esc_html( $num( $active ) ) . '</dd></div>';
 	$html .= '<div><dt>' . esc_html( $is_en ? 'Longest streak' : 'সবচেয়ে লম্বা টানা' ) . '</dt><dd>' . esc_html( $unit( $longest ) ) . '</dd></div>';
 	$html .= '<div><dt>' . esc_html( $is_en ? 'Current streak' : 'চলতি টানা' ) . '</dt><dd>' . esc_html( $unit( $current ) ) . '</dd></div>';
 	$html .= '</dl></div>';
 
-	$html .= '<div class="rs-pf-gh__cal">';
-	$html .= '<div class="rs-pf-gh__months" aria-hidden="true">';
-	/* A name in the last two columns hangs left, so it cannot run past the card. */
-	foreach ( $labels as $w => $label ) {
-		$html .= '<span style="grid-column: ' . ( $w + 1 ) . ( $w >= $weeks - 2 ? '; justify-self: end' : '' ) . '">' . esc_html( $label ) . '</span>';
+	$html .= '<div class="rs-pf-gh__cal"><div class="rs-pf-gh__scroll"><div class="rs-pf-gh__chart">';
+
+	if ( $page ) {
+		$html .= '<div class="rs-pf-gh__weekdays" aria-hidden="true"><span>' . implode( '</span><span>', array_map( 'esc_html', $is_en ? array( 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ) : array( 'রবি', 'সোম', 'মঙ্গল', 'বুধ', 'বৃহ', 'শুক্র', 'শনি' ) ) ) . '</span></div>';
+	} else {
+		/* A month is named over the week its first day falls in, once that
+		   day has come, and the first column is named too when there is room
+		   before the next name. A name in the last two columns hangs left,
+		   so it cannot run past the card. */
+		$months = $is_en ? array( 1 => 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ) : rs_bn_months();
+		$labels = array();
+
+		for ( $w = 0; $w < $weeks; $w++ ) {
+			$saturday = $from + ( $w * 7 + 6 ) * DAY_IN_SECONDS;
+			$day      = (int) gmdate( 'j', $saturday );
+
+			if ( $day <= 7 && $saturday - ( $day - 1 ) * DAY_IN_SECONDS <= $last ) {
+				$labels[ $w ] = $months[ (int) gmdate( 'n', $saturday ) ];
+			}
+		}
+		if ( ! isset( $labels[0] ) && ( ! $labels || min( array_keys( $labels ) ) >= 3 ) ) {
+			$labels[0] = $months[ (int) gmdate( 'n', $from ) ];
+		}
+		ksort( $labels );
+
+		$html .= '<div class="rs-pf-gh__months" aria-hidden="true">';
+		foreach ( $labels as $w => $label ) {
+			$html .= '<span style="grid-column: ' . ( $w + 1 ) . ( $w >= $weeks - 2 ? '; justify-self: end' : '' ) . '">' . esc_html( $label ) . '</span>';
+		}
+		$html .= '</div>';
+		$html .= '<div class="rs-pf-gh__days" aria-hidden="true"><span>' . implode( '</span><span>', array_map( 'esc_html', $is_en ? array( 'Mon', 'Wed', 'Fri' ) : array( 'সোম', 'বুধ', 'শুক্র' ) ) ) . '</span></div>';
 	}
-	$html .= '</div>';
-	$html .= '<div class="rs-pf-gh__days" aria-hidden="true"><span>' . implode( '</span><span>', array_map( 'esc_html', $days ) ) . '</span></div>';
+
 	$html .= '<div class="rs-pf-gh__plot">';
 	$html .= '<div class="rs-pf-gh__grid" role="img" data-start="' . esc_attr( gmdate( 'Y-m-d', $from ) ) . '" aria-label="' . esc_attr(
 		$is_en
-			? sprintf( '%1$s contributions on %2$s days in the last six months', $num( $total ), $num( $active ) )
-			: sprintf( 'গত ছয় মাসে %1$s দিনে %2$s কন্ট্রিবিউশন', $num( $active ), $num( $total ) )
+			? sprintf( '%1$s contributions on %2$s days %3$s', $num( $total ), $num( $active ), $names[ $range ][1] )
+			: sprintf( '%1$s %2$s দিনে %3$s কন্ট্রিবিউশন', $names[ $range ][1], $num( $active ), $num( $total ) )
 	) . '">' . $cells . '</div>';
 	$html .= '<span class="rs-pf-gh__sweep" aria-hidden="true"></span>';
-	$html .= '</div>';
-	$html .= '<p class="rs-pf-gh__legend" aria-hidden="true">' . esc_html( $is_en ? 'Less' : 'কম' ) . ' <i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> ' . esc_html( $is_en ? 'More' : 'বেশি' ) . '</p>';
-	$html .= '</div>';
+	$html .= '</div></div></div>';
+
+	$html .= '<p class="rs-pf-gh__legend"><span>' . esc_html( $date( $from, $years ) . ' – ' . $date( $last, $years ) ) . '</span>';
+	$html .= '<span class="rs-pf-gh__scale" aria-hidden="true">' . esc_html( $is_en ? 'Less' : 'কম' ) . ' <i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> ' . esc_html( $is_en ? 'More' : 'বেশি' ) . '</span></p>';
+	$html .= '</div></div>';
 
 	return $html;
 }
@@ -2806,6 +2891,67 @@ function rs_rest_github_route() {
 	);
 }
 add_action( 'rest_api_init', 'rs_rest_github_route' );
+
+/**
+ * REST: the author picks the span the activity card shows. Only someone
+ * who can manage the site may, which the picker on the page also checks
+ * before it is ever drawn.
+ */
+function rs_rest_github_range_route() {
+	register_rest_route(
+		'rs/v1',
+		'/github-range',
+		array(
+			'methods'             => WP_REST_Server::CREATABLE,
+			'callback'            => 'rs_rest_github_range',
+			'permission_callback' => function () {
+				return current_user_can( 'manage_options' );
+			},
+			'args'                => array(
+				'range' => array(
+					'type'     => 'string',
+					'required' => true,
+					'enum'     => array_keys( rs_github_activity_ranges() ),
+				),
+			),
+		)
+	);
+}
+add_action( 'rest_api_init', 'rs_rest_github_range_route' );
+
+/**
+ * Save the span, empty the page cache so readers are handed the new card
+ * rather than the one cached before it, and send the card back so the
+ * author sees it straight away.
+ *
+ * @param WP_REST_Request $request Request.
+ * @return WP_REST_Response
+ */
+function rs_rest_github_range( $request ) {
+	$range = (string) $request['range'];
+
+	update_site_option( 'rs_github_activity_range', $range );
+
+	if ( function_exists( 'rs_purge_host_cache_soon' ) && rs_purge_host_cache_soon() ) {
+		spawn_cron();
+	}
+
+	$all      = get_site_option( 'rs_github_stats', array() );
+	$activity = empty( $all['calendar']['counts'] ) ? '' : rs_github_activity_html( $all['calendar'], rs_is_en(), $range );
+	$response = rest_ensure_response(
+		array(
+			'range'    => $range,
+			'activity' => '' === $activity ? null : array(
+				'sig'  => rs_github_activity_sig( $activity ),
+				'html' => $activity,
+			),
+		)
+	);
+
+	$response->header( 'Cache-Control', 'no-store' );
+
+	return $response;
+}
 
 /**
  * Whether a project's page carries the interactive demo.

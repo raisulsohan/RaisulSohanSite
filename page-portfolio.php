@@ -467,6 +467,25 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 					<?php echo $rs_arrow_out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
 				</a>
 			</div>
+			<?php
+			/* The span picker, for the author alone. A signed-in page is never
+			   served from the cache, so no reader is ever handed it. */
+			?>
+			<?php if ( current_user_can( 'manage_options' ) ) : ?>
+				<?php $rs_range = rs_github_activity_range(); ?>
+				<div class="rs-pf-gh__pick" data-url="<?php echo esc_url( rest_url( 'rs/v1/github-range' ) ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>">
+					<div class="rs-pf-gh__pick-set" role="group" aria-label="<?php echo esc_attr( $rs_is_en ? 'How much activity to show' : 'কতটা সময়ের অ্যাক্টিভিটি দেখাবে' ); ?>">
+						<?php foreach ( rs_github_activity_range_names( $rs_is_en ) as $rs_key => $rs_name ) : ?>
+							<button type="button" data-range="<?php echo esc_attr( $rs_key ); ?>" aria-pressed="<?php echo $rs_key === $rs_range ? 'true' : 'false'; ?>"><?php echo esc_html( $rs_name[0] ); ?></button>
+						<?php endforeach; ?>
+					</div>
+					<span class="rs-pf-gh__pick-note">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+						<span data-ok><?php echo esc_html( $rs_is_en ? 'Only you can see this' : 'এটা শুধু আপনি দেখছেন' ); ?></span>
+						<span data-failed hidden><?php echo esc_html( $rs_is_en ? 'Not saved, try again' : 'সেভ হয়নি, আবার চেষ্টা করুন' ); ?></span>
+					</span>
+				</div>
+			<?php endif; ?>
 			<div class="rs-pf-gh">
 				<div class="rs-pf-gh__body" data-rs-gh-activity data-sig="<?php echo esc_attr( rs_github_activity_sig( $rs_activity ) ); ?>"><?php echo $rs_activity; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside. ?></div>
 				<div class="rs-pf-gh__tip" aria-hidden="true" hidden></div>
@@ -476,7 +495,9 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 		/* The activity card: drawn in left to right the first time it comes
 		   into view, the way a playhead crosses a timeline, and a day's count
 		   and date shown on hover or tap. The markup is replaced wholesale by
-		   the live refresh, so everything here listens on the card itself. */
+		   the live refresh and by the author's picker, so everything here
+		   listens on the card itself, and each swap announces itself with an
+		   rs-gh-swap event on the card's body. */
 		(function () {
 			'use strict';
 
@@ -487,20 +508,58 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 				return;
 			}
 
-			var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+			/* A year is wider than a phone and scrolls sideways; it opens on
+			   the latest weeks, not the oldest. */
+			function settle() {
+				var scroll = box.querySelector('.rs-pf-gh__scroll');
 
-			if (!reduce && 'IntersectionObserver' in window) {
+				if (scroll && scroll.scrollWidth > scroll.clientWidth) {
+					scroll.scrollLeft = scroll.scrollWidth;
+				}
+			}
+
+			settle();
+			box.addEventListener('rs-gh-swap', function () {
+				hide();
+				settle();
+			});
+
+			var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+			var done   = 0;
+
+			/* Not with reduced motion, and not on a year that scrolls: the
+			   playhead would uncover the weeks on screen last, and leave them
+			   blank until it got there. */
+			function sweeps() {
+				var scroll = box.querySelector('.rs-pf-gh__scroll');
+
+				return !reduce && !(scroll && scroll.scrollWidth > scroll.clientWidth);
+			}
+
+			/* Uncover the squares behind the playhead. Once it has crossed,
+			   is-done stops a later swap from sending it across again. */
+			function reveal() {
+				box.classList.remove('is-waiting');
+				box.classList.add('is-in');
+				window.clearTimeout(done);
+				done = window.setTimeout(function () {
+					box.classList.add('is-done');
+				}, 1600);
+			}
+
+			if (sweeps() && 'IntersectionObserver' in window) {
 				box.classList.add('is-waiting');
 
 				var watch = new window.IntersectionObserver(function (entries) {
 					if (entries.some(function (entry) { return entry.isIntersecting; })) {
 						watch.disconnect();
-						box.classList.remove('is-waiting');
-						box.classList.add('is-in');
+						reveal();
 					}
 				}, { threshold: 0.4 });
 
 				watch.observe(box);
+			} else {
+				box.classList.add('is-done');
 			}
 
 			var EN     = <?php echo $rs_is_en ? 'true' : 'false'; ?>;
@@ -553,7 +612,7 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 			}
 
 			function dayOf(target) {
-				return target && target.tagName === 'I' && target.parentNode && target.parentNode.classList.contains('rs-pf-gh__grid') ? target : null;
+				return target && target.tagName === 'I' && !target.classList.contains('is-future') && target.parentNode && target.parentNode.classList.contains('rs-pf-gh__grid') ? target : null;
 			}
 
 			box.addEventListener('pointerover', function (e) {
@@ -580,6 +639,82 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 			});
 
 			window.addEventListener('resize', hide);
+
+			/* The author's picker. The new card is shown the moment it comes
+			   back; the live refresh is held off for half a minute meanwhile,
+			   since the cache in front of it can still be holding the old one. */
+			var pick = document.querySelector('.rs-pf-gh__pick');
+
+			if (!pick || !window.fetch) {
+				return;
+			}
+
+			function press(button) {
+				Array.prototype.forEach.call(pick.querySelectorAll('button[data-range]'), function (b) {
+					b.setAttribute('aria-pressed', b === button ? 'true' : 'false');
+				});
+			}
+
+			function failed(on) {
+				pick.querySelector('[data-ok]').hidden     = on;
+				pick.querySelector('[data-failed]').hidden = !on;
+				pick.classList.toggle('is-failed', on);
+			}
+
+			pick.addEventListener('click', function (e) {
+				var button = e.target.closest ? e.target.closest('button[data-range]') : null;
+				var before = pick.querySelector('button[aria-pressed="true"]');
+
+				if (!button || button === before || pick.getAttribute('aria-busy') === 'true') {
+					return;
+				}
+
+				press(button);
+				failed(false);
+				pick.setAttribute('aria-busy', 'true');
+
+				fetch(pick.getAttribute('data-url'), {
+					method: 'POST',
+					credentials: 'same-origin',
+					headers: {
+						'Content-Type': 'application/json',
+						'X-WP-Nonce': pick.getAttribute('data-nonce')
+					},
+					body: JSON.stringify({ range: button.getAttribute('data-range') })
+				})
+					.then(function (r) {
+						if (!r.ok) {
+							throw new Error(r.status);
+						}
+						return r.json();
+					})
+					.then(function (d) {
+						var act = box.querySelector('[data-rs-gh-activity]');
+
+						if (act && d.activity) {
+							act.innerHTML = d.activity.html;
+							act.setAttribute('data-sig', d.activity.sig);
+							act.setAttribute('data-hold', String(Date.now() + 30000));
+							act.dispatchEvent(new window.CustomEvent('rs-gh-swap', { bubbles: true }));
+
+							/* A new span is drawn in the way the first one was. */
+							if (sweeps()) {
+								box.classList.remove('is-in', 'is-done');
+								box.classList.add('is-waiting');
+								window.requestAnimationFrame(function () {
+									window.requestAnimationFrame(reveal);
+								});
+							}
+						}
+					})
+					.catch(function () {
+						press(before);
+						failed(true);
+					})
+					.then(function () {
+						pick.removeAttribute('aria-busy');
+					});
+			});
 		}());
 		</script>
 	<?php endif; ?>
@@ -3055,9 +3190,10 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 				   it only recolours squares and changes a number or two. */
 				var act = document.querySelector('[data-rs-gh-activity]');
 
-				if (act && d.activity && d.activity.sig !== act.getAttribute('data-sig')) {
+				if (act && d.activity && d.activity.sig !== act.getAttribute('data-sig') && !(Number(act.getAttribute('data-hold')) > Date.now())) {
 					act.innerHTML = d.activity.html;
 					act.setAttribute('data-sig', d.activity.sig);
+					act.dispatchEvent(new window.CustomEvent('rs-gh-swap', { bubbles: true }));
 				}
 			})
 			.catch(function () {})

@@ -2,13 +2,22 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.18.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.19.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.19
+
+**The activity card's span is the author's to pick.** One year, six months, three months or one month, chosen on the portfolio itself with a picker only a signed-in administrator is shown. One setting (`rs_github_activity_range`) for both editions; six months until something is picked.
+
+- **Each span laid out for itself.** A year takes the whole width with its numbers in a row above it, and on a phone it scrolls sideways, opening on the latest weeks with the weekday names held in place, rather than shrinking to specks. Six and three months sit beside the numbers, the squares growing as the weeks get fewer, up to a size set for each. A month is a calendar page: weekday names across the top, the date in every square, and the rest of this week left open.
+- **Picked, shown, served.** The picker saves through `rs/v1/github-range` (administrators only, nonce-checked) and gets the new card straight back, drawn in behind the playhead. The host's page cache is purged at once (`rs_purge_host_cache_soon()`, now shared with the update purge), so readers are handed the new span rather than the one cached before it; the page's own live refresh is held off for half a minute meanwhile, since the cache in front of it may still hold the old card.
+- The totals, active days and longest streak count the chosen span; the current streak counts back through everything GitHub sent, so a short span cannot cut it off. Under the card, the dates the span covers.
+- The playhead crosses once, on the first view and on a new pick, not on every live refresh.
 
 ## What's new in 7.18
 

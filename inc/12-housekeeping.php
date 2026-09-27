@@ -408,11 +408,27 @@ function rs_purge_host_cache_on_update() {
 
 	update_option( 'rs_purged_version', RS_VERSION, false );
 
-	if ( rs_host_cache_purgeable() && ! wp_next_scheduled( 'rs_purge_host_cache' ) ) {
-		wp_schedule_single_event( time(), 'rs_purge_host_cache' );
-	}
+	rs_purge_host_cache_soon();
 }
 add_action( 'init', 'rs_purge_host_cache_on_update', 100 );
+
+/**
+ * Queue a full purge of the host's page cache, to run from cron straight
+ * away. Also used when a setting changes what every cached page shows.
+ *
+ * @return bool Whether a purge is on its way.
+ */
+function rs_purge_host_cache_soon() {
+	if ( ! rs_host_cache_purgeable() ) {
+		return false;
+	}
+
+	if ( ! wp_next_scheduled( 'rs_purge_host_cache' ) ) {
+		wp_schedule_single_event( time(), 'rs_purge_host_cache' );
+	}
+
+	return true;
+}
 
 /**
  * Cron: the purge itself.

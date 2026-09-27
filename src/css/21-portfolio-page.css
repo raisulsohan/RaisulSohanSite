@@ -675,7 +675,6 @@
 }
 
 .rs-pf-gh {
-	--gap: 3px;
 	--l0: rgba(255, 255, 255, 0.055);
 	--l1: #33286a;
 	--l2: #5941c2;
@@ -689,19 +688,124 @@
 	background: rgba(16, 13, 25, 0.72);
 }
 
-.rs-pf-gh__body {
+/* The author's span picker, drawn only for them. */
+.rs-pf-gh__pick {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.6rem 1rem;
+	margin-top: 1rem;
+}
+
+.rs-pf-gh__pick-set {
+	display: inline-flex;
+	flex-wrap: wrap;
+	padding: 3px;
+	border-radius: 999px;
+	border: 1px dashed rgba(185, 168, 255, 0.45);
+	background: rgba(16, 13, 25, 0.6);
+}
+
+.rs-pf-gh__pick-set button {
+	min-height: 34px;
+	padding: 0 0.9rem;
+	border: 0;
+	border-radius: 999px;
+	background: transparent;
+	font: inherit;
+	font-size: 0.82rem;
+	color: var(--pf-muted);
+	cursor: pointer;
+	transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.rs-pf-gh__pick-set button:hover {
+	color: var(--pf-text);
+}
+
+.rs-pf-gh__pick-set button[aria-pressed="true"] {
+	background: var(--pf-brand);
+	box-shadow: 0 6px 18px -8px var(--pf-brand);
+	color: #fff;
+}
+
+.rs-pf-gh__pick-set button:focus-visible {
+	outline: 2px solid var(--pf-brand3);
+	outline-offset: 2px;
+}
+
+.rs-pf-gh__pick[aria-busy="true"] .rs-pf-gh__pick-set {
+	opacity: 0.65;
+}
+
+.rs-pf-gh__pick-note {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	font-size: 0.76rem;
+	color: var(--pf-muted);
+}
+
+.rs-pf-gh__pick-note svg {
+	width: 0.85rem;
+	height: 0.85rem;
+}
+
+.rs-pf-gh__pick.is-failed .rs-pf-gh__pick-note {
+	color: var(--pf-orange);
+}
+
+/* The card. Four spans, each laid out for itself:
+   - a year needs the whole width, so its numbers sit in a row above it,
+     and on a phone it scrolls sideways rather than shrink to specks;
+   - six and three months sit beside the numbers, the squares growing as
+     the weeks get fewer, up to a size set for each;
+   - a month is a calendar page with the date in every square. */
+.rs-pf-gh__view {
+	--gap: 3px;
 	display: grid;
+	grid-template-columns: minmax(0, 1fr);
 	gap: 1.6rem 3rem;
 	align-items: center;
 }
 
+.rs-pf-gh__view.is-quarter {
+	--gap: 4px;
+}
+
+.rs-pf-gh__view.is-month {
+	--gap: 6px;
+}
+
 @media (min-width: 900px) {
-	.rs-pf-gh__body {
+	.rs-pf-gh__view {
 		grid-template-columns: minmax(0, 16rem) minmax(0, 1fr);
 	}
 
 	.rs-pf-gh__cal {
 		justify-self: end;
+	}
+
+	.rs-pf-gh__view.is-year {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.is-year .rs-pf-gh__sum {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 1rem 3rem;
+	}
+
+	.is-year .rs-pf-gh__facts {
+		margin: 0;
+		padding-top: 0;
+		border-top: 0;
+	}
+
+	.is-year .rs-pf-gh__cal {
+		justify-self: stretch;
 	}
 }
 
@@ -752,25 +856,61 @@
 	color: var(--pf-text);
 }
 
-/* Weekday names down the side, months along the top, and the squares
-   sized by the room there is, up to about the size GitHub draws them. */
 .rs-pf-gh__cal {
+	width: 100%;
+	min-width: 0;
+	max-width: 38rem;
+}
+
+.is-year .rs-pf-gh__cal {
+	max-width: none;
+}
+
+.is-quarter .rs-pf-gh__cal {
+	max-width: 27rem;
+}
+
+.is-month .rs-pf-gh__cal {
+	max-width: 24rem;
+}
+
+/* Room around the squares for today's ring and the playhead, which the
+   scrolling box would otherwise cut off. */
+.rs-pf-gh__scroll {
+	margin: -6px -4px;
+	padding: 6px 4px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	overscroll-behavior-x: contain;
+	scrollbar-width: thin;
+	scrollbar-color: var(--pf-line) transparent;
+}
+
+/* Weekday names down the side, months along the top. */
+.rs-pf-gh__chart {
 	display: grid;
 	grid-template-columns: auto minmax(0, 1fr);
 	column-gap: 0.5rem;
-	width: 100%;
-	max-width: 38rem;
+}
+
+.is-year .rs-pf-gh__chart {
+	min-width: 44rem;
+}
+
+.is-month .rs-pf-gh__chart {
+	grid-template-columns: minmax(0, 1fr);
 }
 
 .rs-pf-gh__months,
 .rs-pf-gh__grid {
 	display: grid;
-	grid-template-columns: repeat(26, minmax(0, 1fr));
+	grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
 	gap: var(--gap);
 }
 
 .rs-pf-gh__months {
 	grid-column: 2;
+	grid-row: 1;
 	height: 1.35rem;
 	font-size: 0.68rem;
 	line-height: 1;
@@ -792,6 +932,16 @@
 	color: var(--pf-muted);
 }
 
+/* On a year that scrolls, the weekday names stay put over the squares. */
+.is-year .rs-pf-gh__days {
+	position: sticky;
+	left: 0;
+	z-index: 1;
+	padding-right: 0.25rem;
+	background: #0f0c17;
+	box-shadow: 6px 0 8px -4px #0f0c17;
+}
+
 .rs-pf-gh__days span {
 	display: flex;
 	align-items: center;
@@ -810,10 +960,26 @@
 	grid-row: 6;
 }
 
+.rs-pf-gh__weekdays {
+	grid-column: 1;
+	grid-row: 1;
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	gap: var(--gap);
+	margin-bottom: 0.5rem;
+	font-size: 0.7rem;
+	text-align: center;
+	color: var(--pf-muted);
+}
+
 .rs-pf-gh__plot {
 	position: relative;
 	grid-column: 2;
 	grid-row: 2;
+}
+
+.is-month .rs-pf-gh__plot {
+	grid-column: 1;
 }
 
 .rs-pf-gh__grid {
@@ -821,8 +987,13 @@
 	grid-auto-flow: column;
 }
 
+.is-month .rs-pf-gh__grid {
+	grid-template-rows: none;
+	grid-auto-flow: row;
+}
+
 .rs-pf-gh__grid i,
-.rs-pf-gh__legend i {
+.rs-pf-gh__scale i {
 	aspect-ratio: 1;
 	border-radius: 22%;
 	background: var(--l0);
@@ -845,32 +1016,71 @@
 	box-shadow: 0 0 10px -2px rgba(234, 119, 255, 0.7);
 }
 
+/* A calendar page: the date in each square, dark on the light shades. */
+.is-month .rs-pf-gh__grid i {
+	display: grid;
+	place-items: center;
+	border-radius: 16%;
+	font-size: 0.82rem;
+	font-style: normal;
+	font-variant-numeric: tabular-nums;
+	color: var(--pf-text2);
+}
+
+.is-month .rs-pf-gh__grid .l1,
+.is-month .rs-pf-gh__grid .l2 {
+	color: #fff;
+}
+
+.is-month .rs-pf-gh__grid .l3,
+.is-month .rs-pf-gh__grid .l4 {
+	font-weight: 700;
+	color: var(--pf-bg0);
+}
+
+.is-month .rs-pf-gh__grid .is-future {
+	background: none;
+	box-shadow: inset 0 0 0 1px var(--pf-line);
+	color: var(--pf-muted);
+}
+
 /* Today, ringed in the green of "last worked on". */
 .rs-pf-gh__grid .is-today {
 	outline: 1.5px solid var(--pf-green);
 	outline-offset: 1px;
 }
 
+.is-month .rs-pf-gh__grid .is-today {
+	outline-width: 2px;
+	outline-offset: 2px;
+}
+
 .rs-pf-gh__legend {
-	grid-column: 2;
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
-	justify-content: flex-end;
-	gap: 4px;
-	margin: 0.8rem 0 0;
-	font-size: 0.68rem;
+	justify-content: space-between;
+	gap: 0.4rem 1rem;
+	margin: 0.9rem 0 0;
+	font-size: 0.7rem;
 	color: var(--pf-muted);
 }
 
-.rs-pf-gh__legend i {
+.rs-pf-gh__scale {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.rs-pf-gh__scale i {
 	width: 0.7rem;
 }
 
-.rs-pf-gh__legend i:first-of-type {
+.rs-pf-gh__scale i:first-of-type {
 	margin-left: 0.3rem;
 }
 
-.rs-pf-gh__legend i:last-of-type {
+.rs-pf-gh__scale i:last-of-type {
 	margin-right: 0.3rem;
 }
 
@@ -880,7 +1090,7 @@
 	clip-path: inset(-4px 100% -4px -4px);
 }
 
-.rs-pf-gh.is-in .rs-pf-gh__grid {
+.rs-pf-gh.is-in:not(.is-done) .rs-pf-gh__grid {
 	clip-path: inset(-4px -4px -4px -4px);
 	transition: clip-path 1.5s cubic-bezier(0.45, 0, 0.2, 1);
 }
@@ -898,7 +1108,7 @@
 	pointer-events: none;
 }
 
-.rs-pf-gh.is-in .rs-pf-gh__sweep {
+.rs-pf-gh.is-in:not(.is-done) .rs-pf-gh__sweep {
 	animation: rs-pf-sweep 1.5s cubic-bezier(0.45, 0, 0.2, 1) both;
 }
 
@@ -938,8 +1148,17 @@
 }
 
 @media (max-width: 560px) {
-	.rs-pf-gh {
+	.rs-pf-gh__view.is-year,
+	.rs-pf-gh__view.is-half {
 		--gap: 2px;
+	}
+
+	.rs-pf-gh__view.is-quarter {
+		--gap: 3px;
+	}
+
+	.rs-pf-gh__view.is-month {
+		--gap: 4px;
 	}
 
 	.rs-pf-gh__days {
