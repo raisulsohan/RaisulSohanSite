@@ -1311,9 +1311,9 @@ function rs_get_default_portfolio_projects() {
 			'image'       => get_template_directory_uri() . '/assets/img/quietscroll.png',
 			'image_fit'   => 'contain',
 			'action_type' => 'code',
-			'action_bn'   => 'সোর্স কোড (GitHub)',
-			'action_en'   => 'View Source on GitHub',
-			'direct_url'  => 'https://github.com/raisulsohan/LazyScroll',
+			'action_bn'   => 'ফ্রি ডাউনলোড',
+			'action_en'   => 'Download Free',
+			'direct_url'  => 'https://github.com/raisulsohan/LazyScroll/releases/latest',
 			'github_url'  => 'https://github.com/raisulsohan/LazyScroll',
 			'order'       => 50,
 		),
@@ -1360,9 +1360,9 @@ function rs_get_default_portfolio_projects() {
 			'image'       => get_template_directory_uri() . '/assets/img/tickersnap.png',
 			'image_fit'   => 'contain',
 			'action_type' => 'code',
-			'action_bn'   => 'সোর্স কোড (GitHub)',
-			'action_en'   => 'View Source on GitHub',
-			'direct_url'  => 'https://github.com/raisulsohan/LazySnap',
+			'action_bn'   => 'ফ্রি ডাউনলোড',
+			'action_en'   => 'Download Free',
+			'direct_url'  => 'https://github.com/raisulsohan/LazySnap/releases/latest',
 			'github_url'  => 'https://github.com/raisulsohan/LazySnap',
 			'order'       => 60,
 		),
@@ -1409,9 +1409,9 @@ function rs_get_default_portfolio_projects() {
 			'image'       => get_template_directory_uri() . '/assets/img/rulerforbrowser.png',
 			'image_fit'   => 'contain',
 			'action_type' => 'code',
-			'action_bn'   => 'সোর্স কোড (GitHub)',
-			'action_en'   => 'View Source on GitHub',
-			'direct_url'  => 'https://github.com/raisulsohan/LazyRuler',
+			'action_bn'   => 'ফ্রি ডাউনলোড',
+			'action_en'   => 'Download Free',
+			'direct_url'  => 'https://github.com/raisulsohan/LazyRuler/releases/latest',
 			'github_url'  => 'https://github.com/raisulsohan/LazyRuler',
 			'order'       => 70,
 		),
@@ -1941,6 +1941,72 @@ function rs_sync_portfolio_renames() {
 	}
 }
 add_action( 'init', 'rs_sync_portfolio_renames', 21 );
+
+/**
+ * Give the three renamed extensions a download button, once.
+ *
+ * Their entries pointed at the repository and said "View Source on GitHub";
+ * each now has releases with a zip to install, so the button goes to the
+ * latest release and says so, as it does for LazyLord and LazyKick. The
+ * GitHub button stays, since the two addresses now differ.
+ */
+function rs_sync_portfolio_downloads() {
+	$switched = false;
+	if ( is_multisite() && ! is_main_site() ) {
+		switch_to_blog( get_main_site_id() );
+		$switched = true;
+	}
+
+	if ( get_option( 'rs_portfolio_downloads_v1' ) ) {
+		if ( $switched ) {
+			restore_current_blog();
+		}
+		return;
+	}
+
+	$defaults = array();
+	foreach ( rs_get_default_portfolio_projects() as $item ) {
+		$defaults[ $item['id'] ] = $item;
+	}
+
+	$changed = false;
+
+	foreach ( array( 'lazyscroll', 'lazysnap', 'lazyruler' ) as $slug ) {
+		if ( ! isset( $defaults[ $slug ] ) ) {
+			continue;
+		}
+
+		$posts = get_posts(
+			array(
+				'post_type'      => 'rs_portfolio',
+				'name'           => $slug,
+				'posts_per_page' => 1,
+				'post_status'    => 'any',
+			)
+		);
+
+		if ( empty( $posts ) ) {
+			continue;
+		}
+
+		foreach ( array( 'action_bn', 'action_en', 'direct_url' ) as $field ) {
+			update_post_meta( $posts[0]->ID, '_rs_portfolio_' . $field, $defaults[ $slug ][ $field ] );
+		}
+
+		$changed = true;
+	}
+
+	update_option( 'rs_portfolio_downloads_v1', 1 );
+
+	if ( $switched ) {
+		restore_current_blog();
+	}
+
+	if ( $changed && function_exists( 'rs_purge_host_cache_soon' ) ) {
+		rs_purge_host_cache_soon();
+	}
+}
+add_action( 'init', 'rs_sync_portfolio_downloads', 22 );
 
 /**
  * Give an existing project the demo that ships with the theme, once, and
