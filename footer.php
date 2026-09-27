@@ -73,6 +73,8 @@ $rs_about = rs_about();
 		<button class="rs-modal__close" type="button" data-rs-close aria-label="<?php echo esc_attr( rs_is_en() ? 'Close' : 'বন্ধ করুন' ); ?>">
 			<?php echo wp_kses( rs_icon( 'close', 18 ), rs_svg_tags() ); ?>
 		</button>
+		<?php /* The story's other-language link, held in the corner once the one in its meta row has scrolled away. Filled by the modal script. */ ?>
+		<div class="rs-modal__lang" id="rs-modal-lang"></div>
 		<div class="rs-modal__scroll">
 			<div class="rs-article" id="rs-post-body"></div>
 		</div>

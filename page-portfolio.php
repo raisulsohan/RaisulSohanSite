@@ -21,6 +21,13 @@ add_filter(
 	'body_class',
 	function ( $classes ) {
 		$classes[] = 'rs-stage';
+
+		/* A project page is a narrower column, which the back-to-top
+		   button lines up beside. */
+		if ( function_exists( 'rs_current_project' ) && rs_current_project() ) {
+			$classes[] = 'rs-stage--project';
+		}
+
 		return $classes;
 	}
 );

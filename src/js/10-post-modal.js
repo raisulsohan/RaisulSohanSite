@@ -227,6 +227,15 @@
 		   throws should never be able to cost the reader the piece. */
 		$( '.rs-article__body', postBody ).innerHTML = data.content;
 
+		/* The same link again, for the corner of the modal: shown by the
+		   scroll handler once the one above has gone off the top. */
+		var cornerLang = $( '#rs-modal-lang' );
+
+		if ( cornerLang ) {
+			cornerLang.innerHTML = langPillHtml( data );
+			cornerLang.classList.remove( 'is-visible' );
+		}
+
 		$( '.rs-article__date', postBody ).textContent = data.date;
 
 		if ( data.readingTime ) {

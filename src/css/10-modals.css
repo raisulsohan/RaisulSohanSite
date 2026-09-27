@@ -202,6 +202,46 @@
 	box-shadow: 0 0 0 1px var(--rs-border);
 }
 
+/*
+ * The other language, facing the close button across the top of the modal.
+ * It comes in only once the link in the story's meta row has scrolled away,
+ * so a reader deep in a piece can switch without going back to the top,
+ * and the two are never on screen together. Same height and glass as the
+ * close button beside it.
+ */
+.rs-modal__lang {
+	position: absolute;
+	top: 0.75rem;
+	left: 0.75rem;
+	z-index: 2;
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(-4px);
+	transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+}
+
+.rs-modal__lang.is-visible {
+	opacity: 1;
+	visibility: visible;
+	transform: none;
+}
+
+.rs-modal__lang .rs-lang-pill {
+	min-height: 2.25rem;
+	padding: 0 0.8rem;
+	border: 0;
+	background: var(--rs-bg-blur);
+	-webkit-backdrop-filter: blur(8px);
+	backdrop-filter: blur(8px);
+	box-shadow: 0 0 0 1px var(--rs-border-50);
+}
+
+.rs-modal__lang .rs-lang-pill:hover,
+.rs-modal__lang .rs-lang-pill:focus-visible {
+	background: var(--rs-bg-blur);
+	box-shadow: 0 0 0 1px currentColor;
+}
+
 /* Same control as .rs-top, but bound to the modal's own scroller. */
 .rs-modal__top {
 	position: absolute;

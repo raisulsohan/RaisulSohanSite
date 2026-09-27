@@ -14,9 +14,23 @@
 			return;
 		}
 
+		var cornerLang = $( '#rs-modal-lang' );
+
 		function update() {
 			if ( btn ) {
 				btn.classList.toggle( 'is-visible', scroller.scrollTop > 300 );
+			}
+
+			/* The other language, in the corner, only while the link in the
+			   story's own meta row is out of sight above: never two at once,
+			   and never a trip back to the top to change language. */
+			if ( cornerLang ) {
+				var metaLang = $( '.rs-article__meta .rs-lang-pill', scroller );
+
+				cornerLang.classList.toggle(
+					'is-visible',
+					Boolean( metaLang ) && metaLang.getBoundingClientRect().bottom < scroller.getBoundingClientRect().top + 4
+				);
 			}
 
 			if ( bar ) {

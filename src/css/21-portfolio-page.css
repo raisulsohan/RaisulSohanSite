@@ -1890,10 +1890,13 @@ body.rs-stage {
 	display: none !important;
 }
 
-/* Pinned to the window's corner, not to the reading column this page does
-   not have. */
+/* Beside the content, as on the rest of the site: a gap of 24px out from
+   the column's right edge (1180px wide less its 32px padding, 880px on a
+   project page), and back to the window's corner once the window is too
+   narrow to leave room out there. */
 .rs-stage .rs-top {
-	right: clamp(16px, 2.5vw, 32px);
+	--rs-top-edge: calc(1180px / 2 - 32px + 24px + 46px);
+	right: max(clamp(16px, 2.5vw, 32px), calc(50% - var(--rs-top-edge)));
 	bottom: clamp(16px, 2.5vw, 28px);
 	display: grid;
 	place-items: center;
@@ -1907,6 +1910,10 @@ body.rs-stage {
 	-webkit-backdrop-filter: blur(10px);
 	backdrop-filter: blur(10px);
 	box-shadow: 0 14px 34px -14px rgba(108, 76, 255, 0.8);
+}
+
+.rs-stage--project .rs-top {
+	--rs-top-edge: calc(880px / 2 - 32px + 24px + 46px);
 }
 
 .rs-stage .rs-top:hover {

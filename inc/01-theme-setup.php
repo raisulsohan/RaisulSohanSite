@@ -264,6 +264,22 @@ function rs_portfolio_path( $req = null ) {
  * @return array
  */
 function rs_lang_switcher_data() {
+	/* A story's own page switches to the same story in the other language,
+	   when it has one, rather than to the other edition's front page. The
+	   header is sticky, so this is the link a reader deep in the piece can
+	   still reach. */
+	if ( is_singular( 'post' ) && function_exists( 'rs_post_twin' ) ) {
+		$twin = rs_post_twin( get_queried_object_id() );
+
+		if ( $twin && ! empty( $twin['url'] ) ) {
+			return array(
+				'url'   => esc_url( $twin['url'] ),
+				'label' => rs_is_en() ? 'BN' : 'EN',
+				'title' => rs_is_en() ? 'এই লেখাটি বাংলায় পড়ুন' : 'Read this story in English',
+			);
+		}
+	}
+
 	$here         = rs_portfolio_path();
 	$is_portfolio = null !== $here;
 	/* A project page switches to the same project in the other language. */

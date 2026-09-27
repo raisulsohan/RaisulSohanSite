@@ -2,13 +2,22 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.19.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.20.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.20
+
+**The other language is always within reach.** The header already stuck to the top of every page with EN/BN in it; the one place it went missing was a story, where the link sits in the meta row and scrolls away with it.
+
+- **In the reading modal** the story's other-language link comes back in the top-left corner, facing the close button, once the one in the meta row has gone off the top. It is the same link, so it swaps the translation in place exactly as the first one does, and the two are never on screen together.
+- **On a story's own page** the header's EN/BN now opens the same story in the other language when it has one (`rs_lang_switcher_data()`), rather than the other edition's front page.
+- **Back to top on the portfolio** sits beside the content, as it does on the rest of the site: 24px out from the column's right edge (1180px, or 880px on a project page, which gets a `rs-stage--project` body class), and back in the window's corner when the window is too narrow to leave room out there.
+- **Book list on a phone.** The filter bar was held to one row since 7.4.2, and with a 200px search box that row ran past the right edge and dragged the whole page sideways. On a phone the search now takes a row of its own; on a wider screen nothing changed.
 
 ## What's new in 7.19
 
