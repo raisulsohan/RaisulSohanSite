@@ -22,8 +22,7 @@
 		z-index: 40;
 	}
 
-	.rs-top,
-	.rs-page-lang {
+	.rs-top {
 		right: 1.5rem;
 	}
 }

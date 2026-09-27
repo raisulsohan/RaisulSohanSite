@@ -7,7 +7,8 @@
 	 * with the date and stayed there. Same rule here, against the window
 	 * and under the sticky header: never two on screen at once, and never
 	 * a trip back to the top to change language. The link itself is the
-	 * ordinary one, printed by PHP; this only decides when it shows.
+	 * ordinary one, printed by PHP; this decides when it shows and keeps
+	 * it just under the header, whatever height the header has.
 	 * ------------------------------------------------------------ */
 
 	( function () {
@@ -31,6 +32,8 @@
 
 			var edge = header ? header.getBoundingClientRect().bottom : 0;
 
+			/* Just under the header, wherever it ends on this screen. */
+			corner.style.top = Math.round( Math.max( 0, edge ) + 12 ) + 'px';
 			corner.classList.toggle( 'is-visible', pill.getBoundingClientRect().bottom < edge + 4 );
 		}
 

@@ -54,9 +54,10 @@ $rs_about = rs_about();
 </button>
 
 <?php
-/* The story's other-language link, held above the top button once the one in
-   its meta row has scrolled away — what the reading modal does in its own
-   corner, for a story read at its own address. Shown by app.js. */
+/* The story's other-language link, held at the top left under the header
+   once the one in its meta row has scrolled away: what the reading modal
+   does in its own corner, for a story read at its own address. Placed and
+   shown by app.js. */
 if ( is_singular( 'post' ) && function_exists( 'rs_post_twin' ) && rs_post_twin() ) :
 	?>
 <div class="rs-page-lang" id="rs-page-lang"><?php rs_lang_pill(); ?></div>

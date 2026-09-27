@@ -27,18 +27,19 @@
 }
 
 /*
- * The story's other language, held above the top button once the pill in
- * the meta row has scrolled away: what the reading modal does in its own
- * corner, for a story read at its own address. Same glass as the modal's.
+ * The story's other language, held at the top left of the text column just
+ * under the header once the pill in the meta row has scrolled away: what the
+ * reading modal does in its own corner, for a story read at its own address.
+ * app.js sets top to where the header really ends. Same glass as the modal's.
  */
 .rs-page-lang {
 	position: fixed;
-	bottom: 5.25rem;
-	right: calc(50% - 24rem - 2rem);
+	top: 4.5rem;
+	left: max(var(--rs-gutter, 1rem), calc(50% - var(--rs-wrap, 48rem) / 2 + var(--rs-gutter, 1rem)));
 	z-index: 30;
 	opacity: 0;
 	visibility: hidden;
-	transform: translateY(4px);
+	transform: translateY(-4px);
 	transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
 }
 
