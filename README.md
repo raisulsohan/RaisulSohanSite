@@ -2,13 +2,22 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.23.2-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.24.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.24
+
+**LazyKick can be tried, and watched.** The LazyKick project page carries an interactive demo, and its demo animation joins the others in both cuts.
+
+- **Try LazyKick** on its project page or in the portfolio's pop-up: the panel docked in a mock Premiere Pro or After Effects. Paste a script (English or Bengali) into the note, press Time to Audio and every line is stamped with the moment it is spoken, press Subtitles and the lines land on a caption track (text layers in After Effects), press play and the note follows the voice word by word while the subtitles show in the monitor; click the ruler to jump. Paste Image drops a screenshot at the playhead (a guide layer in After Effects, an overwrite onto a free track in Premiere Pro, and "no free track" when the playhead already sits on a still), and the Watch Bins tab links a folder to a bin, syncs it, and shows a file dropped into the folder being imported once it has stopped copying, by Auto-Sync or by the next Sync. Tasks, timecodes, note tabs, the text size and the panel's own dialogs work too. Nothing is read, saved or imported.
+- **The timing is real.** The demo runs LazyKick's own script-timing code (`client/align.js`, injected unchanged at build) over a voiceover drawn for the demo, so the timecodes, the word highlights and the subtitle cuts are worked out, not typed in. The demo's sources live beside the animation in `LazyKick Visuals/Demo/interactive/`; its `build.mjs` writes the standalone page and this theme's `src/js/lazykick-demo.js` and `src/css/lazykick-demo.css`.
+- **The same fitting:** one entry in `rs_project_demo_kit()`, a page bundle (`assets/lazykick-demo.min.*`) loaded only where it is shown, the card's Demo menu, the case study's "Try the interactive demo" card and the pop-up player. That card's second line now describes each project's own demo (the kit's `sub_en`/`sub_bn`) instead of LazyLord's.
+- **LazyKick's demo animation** plays from the same Demo button, in both cuts, filled in once on update (`rs_seed_portfolio_demo()`). The 9:16 cut stacks the viewer, the timeline and the panel, with the panel's content enlarged.
 
 ## What's new in 7.23
 

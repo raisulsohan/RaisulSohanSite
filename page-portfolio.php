@@ -1124,6 +1124,7 @@ foreach ( $projects as $p ) {
 			'mount' => rs_project_demo_kit( $p['id'] )['mount'],
 			'wrap'  => rs_project_demo_kit( $p['id'] )['wrap'],
 			'root'  => rs_project_demo_kit( $p['id'] )['root'],
+			'sub'   => $rs_is_en ? rs_project_demo_kit( $p['id'] )['sub_en'] : rs_project_demo_kit( $p['id'] )['sub_bn'],
 		) : null,
 		'demo'        => ! empty( $p['demo'] ) ? esc_url_raw( $p['demo'] ) : '',
 		'demo_tall'   => ! empty( $p['demo_tall'] ) ? esc_url_raw( $p['demo_tall'] ) : '',
@@ -1454,6 +1455,14 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE ); // phpcs:ignore Wor
 					tryLink.setAttribute('data-rs-mount', p.kit.mount);
 					tryLink.setAttribute('data-rs-wrap', p.kit.wrap);
 					tryLink.setAttribute('data-rs-root', p.kit.root);
+				}
+				// The card's second line describes this project's own demo.
+				var trySmall = tryLink.querySelector('small');
+				if (trySmall) {
+					if (!trySmall.getAttribute('data-rs-default')) {
+						trySmall.setAttribute('data-rs-default', trySmall.textContent);
+					}
+					trySmall.textContent = (p.kit && p.kit.sub) || trySmall.getAttribute('data-rs-default');
 				}
 				tryLink.hidden = false;
 			} else {

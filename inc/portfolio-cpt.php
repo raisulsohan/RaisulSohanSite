@@ -1838,6 +1838,7 @@ function rs_sync_new_portfolio_projects() {
 	rs_seed_portfolio_demo( 'lazylord', 'lazylord-demo.html', 'lazylord-demo-vertical.html' );
 	rs_seed_portfolio_demo( 'lazymotiontoolkit', 'lazymotiontoolkit-demo.html', 'lazymotiontoolkit-demo-vertical.html' );
 	rs_seed_portfolio_demo( 'lazy-image-ae', 'lazy-image-demo.html', 'lazy-image-demo-vertical.html' );
+	rs_seed_portfolio_demo( 'lazykick', 'lazykick-demo.html', 'lazykick-demo-vertical.html' );
 
 	if ( $switched ) {
 		restore_current_blog();
@@ -3202,6 +3203,15 @@ function rs_project_demo_kit( $slug ) {
 			'mount'  => 'LazyImageDemo',
 			'sub_en' => 'Write a prompt in any language, generate, and watch the picture land on the timeline.',
 			'sub_bn' => 'যেকোনো ভাষায় প্রম্পট লিখে ছবি বানান, দেখুন সেটা নিজে থেকেই টাইমলাইনে বসে।',
+		),
+		'lazykick'      => array(
+			'bundle' => 'lazykick-demo',
+			'wrap'   => 'lkd-wrap',
+			'root'   => 'lkd',
+			'attr'   => 'data-lazykick-demo',
+			'mount'  => 'LazyKickDemo',
+			'sub_en' => 'Paste a script, time it to the voiceover, make subtitles and play along; paste an image, link a folder to a bin.',
+			'sub_bn' => 'স্ক্রিপ্ট পেস্ট করুন, ভয়েসওভারের সাথে টাইম করুন, সাবটাইটেল বানান, চালিয়ে দেখুন নোট সাথে চলছে; ছবি পেস্ট করুন, ফোল্ডার বিনে যুক্ত করুন।',
 		),
 	) );
 
