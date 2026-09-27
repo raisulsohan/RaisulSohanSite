@@ -495,6 +495,47 @@
 	color: #7cc4ff;
 }
 
+/* The list of pages on a home page made for a docs folder without one. */
+.rs-doc__body .rs-doc__index {
+	display: grid;
+	gap: 0.75rem;
+	margin: 1.75rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.rs-doc__index li {
+	margin: 0;
+}
+
+.rs-doc__body .rs-doc__index a {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	padding: 1rem 1.15rem;
+	border: 1px solid var(--pf-line);
+	border-radius: 14px;
+	background: rgba(16, 13, 25, 0.6);
+	text-decoration: none;
+	transition: border-color 0.2s ease;
+}
+
+.rs-doc__body .rs-doc__index a:hover {
+	border-color: var(--pf-brand2);
+}
+
+.rs-doc__index strong {
+	font-family: var(--rs-sans);
+	font-size: 1.05rem;
+	color: var(--pf-text);
+}
+
+.rs-doc__index span {
+	font-size: 0.9rem;
+	line-height: 1.55;
+	color: var(--pf-muted);
+}
+
 /* The way on: the previous page and the next. */
 .rs-doc__steps {
 	display: grid;

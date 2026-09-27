@@ -2,13 +2,21 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.22.1-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.23.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.23
+
+**Three extensions under their new names, and docs for every project that has any.**
+
+- **LazyScroll, LazySnap, LazyRuler.** QuietScroll, TickerSnap and Ruler for Browser were renamed on GitHub; the portfolio now uses the new names, addresses (`/portfolio/lazyscroll/` and so on) and repositories, and shows their current versions. The stored entries are brought up to date once (`rs_sync_portfolio_renames()`), touching only the fields that carry the name. The old addresses answer with a 301 to the new ones, documentation pages included (`rs_portfolio_redirect_renamed()`).
+- **A docs folder without a README of its own** now counts too. Its home page is made by the site: the project's summary, then every page with its first paragraph (`rs_docs_made_html()`). The repository's README joins as the tour the folder is missing, and the pages fall into a reader's order when no README has set one, the user guide before the developer guide (`rs_docs_weight()`). This gives the three renamed extensions their documentation on the site.
+- Documentation kept for a repository the portfolio no longer links to is forgotten.
 
 ## What's new in 7.22
 

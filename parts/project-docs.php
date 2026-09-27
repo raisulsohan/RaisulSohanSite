@@ -73,7 +73,11 @@ $pd_arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 					</ol>
 				</nav>
 				<a class="rs-doc__source" href="<?php echo esc_url( $pd['page']['html'] ); ?>" target="_blank" rel="noopener noreferrer">
-					<?php echo esc_html( $rs_is_en ? 'This page on GitHub' : 'এই পাতা GitHub-এ' ); ?>
+					<?php if ( ! empty( $pd['page']['made'] ) ) : ?>
+						<?php echo esc_html( $rs_is_en ? 'These docs on GitHub' : 'ডকুমেন্টেশন GitHub-এ' ); ?>
+					<?php else : ?>
+						<?php echo esc_html( $rs_is_en ? 'This page on GitHub' : 'এই পাতা GitHub-এ' ); ?>
+					<?php endif; ?>
 					<?php echo $rs_arrow_out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
 				</a>
 			</aside>

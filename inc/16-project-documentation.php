@@ -226,13 +226,22 @@ function rs_docs_refresh( $slug, $args, $old ) {
 	$in_docs = 200 === $docs['status'] ? $docs['files'] : ( isset( $old['files_docs'] ) ? (array) $old['files_docs'] : array() );
 	$in_root = 200 === $root['status'] ? $root['files'] : ( isset( $old['files_root'] ) ? (array) $old['files_root'] : array() );
 
-	if ( empty( $in_docs['README.md'] ) ) {
+	if ( empty( $in_docs ) ) {
 		return array( 'checked' => time() );
 	}
 
+	/* A docs folder with no README of its own still gets a home page: one
+	   made here, listing the pages (see rs_docs_made_html()). The
+	   repository's README joins them, as the tour the folder is missing. */
+	$made   = empty( $in_docs['README.md'] );
+	$folder = '';
 	$pages  = array();
 	$linked = array();
 	$order  = array();
+
+	if ( $made && isset( $in_root['README.md'] ) ) {
+		$linked['README.md'] = true;
+	}
 
 	foreach ( $in_docs as $name => $file ) {
 		$home = 'README.md' === $name;
@@ -242,6 +251,10 @@ function rs_docs_refresh( $slug, $args, $old ) {
 		$file['title'] = rs_docs_title( (string) $md, $home ? 'Documentation' : ucfirst( str_replace( '-', ' ', $key ) ) );
 		$file['lang']  = rs_docs_lang( $md );
 		$pages[ $key ] = $file;
+
+		if ( '' === $folder && ! empty( $file['html'] ) ) {
+			$folder = preg_replace( '~/blob/([^/]+)/.*$~', '/tree/$1/docs', $file['html'] );
+		}
 
 		/* What the page links to: docs pages and top-level Markdown files. */
 		if ( null !== $md && preg_match_all( '/\]\(\s*<?([^)\s>]+)/', $md, $found ) ) {
@@ -283,7 +296,20 @@ function rs_docs_refresh( $slug, $args, $old ) {
 		$pages[ $key ] = $file;
 	}
 
-	/* The home page first, then the README's own order, then the rest. */
+	if ( $made ) {
+		$pages[''] = array(
+			'made'  => true,
+			'path'  => 'docs',
+			'sha'   => 'made',
+			'html'  => $folder,
+			'raw'   => '',
+			'title' => (string) substr( $slug, strpos( $slug, '/' ) + 1 ) . ' documentation',
+			'lang'  => 'en',
+		);
+	}
+
+	/* The home page first, then the README's own order, then the rest: in
+	   the order a reader would want when no README has set one, or by name. */
 	$keys = array( '' );
 	foreach ( $order as $target ) {
 		$key = 0 === strpos( $target, 'top:' ) ? rs_docs_key( substr( $target, 4 ) ) : $target;
@@ -292,11 +318,24 @@ function rs_docs_refresh( $slug, $args, $old ) {
 			$keys[] = $key;
 		}
 	}
+
+	$rest = array();
 	foreach ( array_keys( $pages ) as $key ) {
 		if ( ! in_array( (string) $key, $keys, true ) ) {
-			$keys[] = (string) $key;
+			$rest[] = (string) $key;
 		}
 	}
+	if ( $made ) {
+		usort(
+			$rest,
+			function ( $a, $b ) {
+				$d = rs_docs_weight( $a ) - rs_docs_weight( $b );
+
+				return $d ? ( $d < 0 ? -1 : 1 ) : strcmp( $a, $b );
+			}
+		);
+	}
+	$keys = array_merge( $keys, $rest );
 
 	$new['pages']      = $pages;
 	$new['order']      = $keys;
@@ -306,6 +345,32 @@ function rs_docs_refresh( $slug, $args, $old ) {
 	$new['etag_root']  = $root['etag'];
 
 	return $new;
+}
+
+/**
+ * Where a page goes in a list nobody has ordered: what gets someone
+ * started first, what is for someone changing the code last.
+ *
+ * @param string $key Page key.
+ * @return int
+ */
+function rs_docs_weight( $key ) {
+	$tests = array(
+		'~^readme$~'                                                 => 0,
+		'~develop|contribut|build|architect|scripting|internal~'     => 5,
+		'~changelog|history|release|publish|testing|listing~'        => 6,
+		'~troubleshoot|faq|problem|wrong~'                           => 4,
+		'~user|manual|getting|start|quick|install|guide~'            => 1,
+		'~how|work|timing|transfer|feature|reference~'               => 2,
+	);
+
+	foreach ( $tests as $pattern => $weight ) {
+		if ( preg_match( $pattern, $key ) ) {
+			return $weight;
+		}
+	}
+
+	return 3;
 }
 
 /**
@@ -365,6 +430,16 @@ function rs_docs_refresh_all( $slugs, $args, $pushed = array(), $force = false )
 
 		if ( rs_docs_signature( $old ) !== rs_docs_signature( $new ) ) {
 			$changed = true;
+		}
+	}
+
+	/* A repository the portfolio no longer links to, under a name it no
+	   longer has for instance, is forgotten. */
+	$keep = array_map( 'strtolower', array_keys( (array) $slugs ) );
+	foreach ( array_keys( $all ) as $key ) {
+		if ( ! in_array( $key, $keep, true ) ) {
+			unset( $all[ $key ] );
+			$touched = true;
 		}
 	}
 
@@ -776,6 +851,82 @@ function rs_docs_canonical( $url ) {
 add_filter( 'get_canonical_url', 'rs_docs_canonical', 20 );
 
 /**
+ * The first paragraph of a page, as plain text, for a list of pages.
+ *
+ * @param array $page The page { sha, raw }.
+ * @return string '' when there is none to be had.
+ */
+function rs_docs_lead( $page ) {
+	$md = rs_docs_markdown( $page );
+
+	if ( null === $md ) {
+		return '';
+	}
+
+	$lead = array();
+
+	foreach ( preg_split( '/\r?\n/', $md ) as $line ) {
+		$line = trim( $line );
+
+		if ( $lead && '' === $line ) {
+			break;
+		}
+
+		/* Not a heading, picture, tag, table row, list item, quote, rule,
+		   fence or a line that is only an aside in italics. */
+		if ( '' === $line || preg_match( '~^(#|!\[|<|\||[-*+]\s|\d+\.\s|>|---|```|\*[^*]+\*$|_[^_]+_$)~', $line ) ) {
+			if ( $lead ) {
+				break;
+			}
+			continue;
+		}
+
+		$lead[] = $line;
+	}
+
+	$text = implode( ' ', $lead );
+	$text = preg_replace( '~!?\[([^\]]*)\]\([^)]*\)~', '$1', $text );
+	$text = str_replace( array( '**', '__', '`' ), '', $text );
+
+	return function_exists( 'rs_shorten' ) ? rs_shorten( $text, 160 ) : $text;
+}
+
+/**
+ * The home page made for a docs folder that has no README of its own: the
+ * project's summary, then every page with its first paragraph.
+ *
+ * @param array $doc From rs_current_doc().
+ * @return string
+ */
+function rs_docs_made_html( $doc ) {
+	$is_en   = rs_is_en();
+	$project = $doc['project'];
+	$index   = $doc['index'];
+	$name    = rs_project_name( $project );
+
+	$html  = '<h1>' . esc_html( $name[0] . ( $is_en ? ' documentation' : ' ডকুমেন্টেশন' ) ) . '</h1>';
+	$html .= '<p>' . esc_html( $is_en ? $project['summary_en'] : $project['summary_bn'] ) . '</p>';
+	$html .= '<p>' . esc_html( $is_en ? "The pages below are the project's own documentation, read from its repository on GitHub." : 'নিচের পাতাগুলো প্রজেক্টের নিজের ডকুমেন্টেশন, GitHub-এর রিপোজিটরি থেকে পড়া।' ) . '</p>';
+	$html .= '<ul class="rs-doc__index">';
+
+	foreach ( (array) $index['order'] as $key ) {
+		if ( '' === $key || ! isset( $index['pages'][ $key ] ) ) {
+			continue;
+		}
+
+		$page = $index['pages'][ $key ];
+		$lead = rs_docs_lead( $page );
+
+		$html .= '<li><a href="' . esc_url( rs_project_docs_url( $project['id'], $key ) ) . '">';
+		$html .= '<strong>' . esc_html( ! empty( $page['label'] ) ? $page['label'] : $page['title'] ) . '</strong>';
+		$html .= '' !== $lead ? '<span>' . esc_html( $lead ) . '</span>' : '';
+		$html .= '</a></li>';
+	}
+
+	return $html . '</ul>';
+}
+
+/**
  * The prepared HTML of the page this request is for, made once.
  *
  * @return string|null Null when GitHub could not be reached for a page that
@@ -791,7 +942,9 @@ function rs_current_doc_html() {
 	$html = null;
 	$doc  = rs_current_doc();
 
-	if ( $doc && $doc['page'] ) {
+	if ( $doc && $doc['page'] && ! empty( $doc['page']['made'] ) ) {
+		$html = rs_docs_made_html( $doc );
+	} elseif ( $doc && $doc['page'] ) {
 		$raw = rs_docs_rendered( $doc['page'] );
 
 		if ( null !== $raw ) {

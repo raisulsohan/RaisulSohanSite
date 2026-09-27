@@ -1269,20 +1269,20 @@ function rs_get_default_portfolio_projects() {
 			'order'       => 40,
 		),
 		array(
-			'id'          => 'quiet-scroll',
+			'id'          => 'lazyscroll',
 			'category'    => 'tools',
 			'type_bn'     => 'ক্রোম ও এজ এক্সটেনশন',
 			'type_en'     => 'Chrome & Edge Extension',
 			'badge_bn'    => 'Manifest V3 • ওপেন সোর্স',
 			'badge_en'    => 'Manifest V3 • Open Source',
-			'title_bn'    => 'QuietScroll — স্মার্ট পার-সাইট মিডিয়া ভলিউম কন্ট্রোল',
-			'title_en'    => 'QuietScroll — Smart Per-Site Media Volume Control',
+			'title_bn'    => 'LazyScroll — স্মার্ট পার-সাইট মিডিয়া ভলিউম কন্ট্রোল',
+			'title_en'    => 'LazyScroll — Smart Per-Site Media Volume Control',
 			'summary_bn'  => 'যেকোনো ভিডিও বা অডিও প্লেয়ারে Alt + মাউস হুইল ঘুরিয়ে নিরবচ্ছিন্ন সাউন্ড নিয়ন্ত্রণ, অটোপ্লে থেকে রক্ষা করতে ভলিউম গার্ড এবং প্রতিটি সাইটের জন্য আলাদা ভলিউম মেমোরি মনে রাখার হালকা ক্রোম এক্সটেনশন।',
 			'summary_en'  => 'Lightweight Chromium extension for controlling any media volume using Alt + Mouse Wheel. Features per-site volume memory, MAIN-world Volume Guard, ultra-low presets, and instant Night Mode.',
 			'role_bn'     => 'একক এক্সটেনশন আর্কিটেক্ট ও ডেভেলপার',
 			'role_en'     => 'Solo Extension Architect & Developer',
-			'context_bn'  => 'ক্রোমিয়াম ব্রাউজার এক্সটেনশন • Manifest V3 • v1.7',
-			'context_en'  => 'Chromium Browser Extension • Manifest V3 • v1.7',
+			'context_bn'  => 'ক্রোমিয়াম ব্রাউজার এক্সটেনশন • Manifest V3 • v2.3',
+			'context_en'  => 'Chromium Browser Extension • Manifest V3 • v2.3',
 			'challenge_bn'=> "ইউটিউব, ফেসবুক, টুইটার কিংবা বিভিন্ন নিউজ পোর্টালে ভিডিওর অডিও লেভেল একেক সাইটে একেক রকম থাকে। অনেক সাইট স্বয়ংক্রিয়ভাবে ভিডিও অটোপ্লে করে বা ইউজারের নিজস্ব সাউন্ড প্রেফারেন্স ওভাররাইড করে অতিরিক্ত উচ্চ শব্দে বাজতে শুরু করে। তাছাড়া গভীর রাতে হেডফোন দিয়ে শোনার সময় সাধারণ ব্রাউজার স্লাইডারের ১% ভলিউমও অনেক বেশি উচ্চকিত মনে হয়।\n\nকারিগরি দিক থেকে প্রধান চ্যালেঞ্জ ছিল: পেজের স্বাভাবিক স্ক্রলে কোনো প্রকার ব্যাঘাত না ঘটিয়ে কিংবা ফুলস্ক্রিন প্লেয়ার নষ্ট না করে যেকোনো HTML5 ভিডিও/অডিও প্লেয়ারের অডিও স্ট্রিম ইন্টারসেপ্ট করা, অটোপ্লে প্লেয়ারের জোরপূর্বক সাউন্ড পরিবর্তন প্রতিহত করা এবং কোনো ট্র্যাকিং ছাড়াই সম্পূর্ণ লোকাল স্টোরেজে ডোমেইন ভিত্তিক ভলিউম মেমোরি ধরে রাখা।",
 			'challenge_en'=> "Web video and audio players across platforms (YouTube, Twitter/X, news portals) suffer from wildly inconsistent mixing levels and aggressive autoplay volume resets. Furthermore, standard volume ladders lack the granular resolution needed for ultra-sensitive in-ear monitors (IEMs) during late-night listening.\n\nThe engineering challenge was intercepting mousewheel gestures strictly over media elements without disrupting normal vertical scrolling or breaking fullscreen APIs, neutralizing third-party player script overrides in the browser's MAIN world, and maintaining persistent per-origin state with zero telemetry under Manifest V3 restrictions.",
 			'solution_bn' => "১. Alt + মাউস হুইল জেসচার ইন্টারসেপশন: পেজের সাধারণ স্ক্রলে কোনো ব্যাঘাত না ঘটিয়ে শুধুমাত্র Alt কি চেপে মাউস হুইল ঘুরালে নিখুঁত ভলিউম পরিবর্তন হয় এবং স্ক্রিনে একটি আধুনিক অন-স্ক্রিন ওএসডি (HUD) ভেসে ওঠে।\n\n২. পার-সাইট স্বয়ংক্রিয় ভলিউম মেমোরি: প্রতিটি ওয়েবসাইটের জন্য আলাদা আলাদা ভলিউম লেভেল স্বয়ংক্রিয়ভাবে Chrome Storage API-তে সংরক্ষিত থাকে। পরবর্তীতে সেই সাইটে প্রবেশ করলে ভিডিও নিজে থেকেই কাঙ্ক্ষিত সাউন্ডে প্লে হয়।\n\n৩. আর্কিটেকচারাল ভলিউম গার্ড (MAIN-World Script): কিছু আগ্রাসী প্লেয়ার যাতে জোরপূর্বক ইউজারের ভলিউম রিসেট করতে না পারে, সেজন্য Chrome 111+ এর document_start MAIN-ওয়ার্ল্ড কনটেন্ট স্ক্রিপ্ট দিয়ে HTMLMediaElement.prototype.volume প্রোপার্টি ডিসক্রিপ্টর ইন্টারসেপ্ট করে কাঙ্ক্ষিত লেভেল অবিচল লক রাখা হয়।\n\n৪. আল্ট্রা-লো প্রিসেটস (০.১২৫% পর্যন্ত): সূক্ষ্ম ও শান্ত শোনার জন্য পপ-আপে ৬টি কুইক ওয়ান-ক্লিক প্রিসেট: ০.১২৫%, ০.১৮৭৫%, ০.২৫%, ০.৩৭৫%, ০.৫% এবং ১%।\n\n৫. গ্লোবাল ওয়ান-ক্লিক নাইট মোড: পপ-আপ থেকে নাইট মোড অন করলেই সমস্ত ওয়েবসাইটের ভলিউম এক নিমেষে নির্ধারিত শান্ত স্তরে নেমে আসে। অফ করলে প্রতিটি সাইট তার নিজস্ব আগের মেমোরি ফিরে পায়।\n\n৬. শতভাগ প্রাইভেট ও অফলাইন: এক্সটেনশনটি কোনো অ্যানালিটিক্স বা ট্র্যাকিং স্ক্রিপ্ট ব্যবহার করে না। সমস্ত ডাটা ইউজারের নিজস্ব ব্রাউজারে সম্পূর্ণ বিচ্ছিন্ন ও সুরক্ষিত থাকে।",
@@ -1313,25 +1313,25 @@ function rs_get_default_portfolio_projects() {
 			'action_type' => 'code',
 			'action_bn'   => 'সোর্স কোড (GitHub)',
 			'action_en'   => 'View Source on GitHub',
-			'direct_url'  => 'https://github.com/raisulsohan/QuietScroll',
-			'github_url'  => 'https://github.com/raisulsohan/QuietScroll',
+			'direct_url'  => 'https://github.com/raisulsohan/LazyScroll',
+			'github_url'  => 'https://github.com/raisulsohan/LazyScroll',
 			'order'       => 50,
 		),
 		array(
-			'id'          => 'tickersnap',
+			'id'          => 'lazysnap',
 			'category'    => 'tools',
 			'type_bn'     => 'ক্রোম এক্সটেনশন',
 			'type_en'     => 'Chrome Extension',
 			'badge_bn'    => 'Manifest V3 • ডুয়েল এক্সট্র্যাক্টর',
 			'badge_en'    => 'Manifest V3 • Dual Extractor',
-			'title_bn'    => 'TickerSnap — ফুটবল কমেন্টারি ও আর্টিকেল টেক্সট এক্সট্র্যাক্টর',
-			'title_en'    => 'TickerSnap — Match Commentary & Article Text Extractor',
+			'title_bn'    => 'LazySnap — ফুটবল কমেন্টারি ও আর্টিকেল টেক্সট এক্সট্র্যাক্টর',
+			'title_en'    => 'LazySnap — Match Commentary & Article Text Extractor',
 			'summary_bn'  => 'ফুটবল ম্যাচ চলাকালীন লাইভ টেক্সট কমেন্টারি (FotMob ও Sofascore) এবং মোজিলা রিড্যাবিলিটি ইঞ্জিনের সাহায্যে যেকোনো নিউজ আর্টিকেল, পিডিএফ ও গুগল ডক্স থেকে বিজ্ঞাপনমুক্ত ক্লিন টেক্সট এক ক্লিকে এক্সট্র্যাক্ট করার ব্রাউজার এক্সটেনশন।',
 			'summary_en'  => 'A high-performance Chrome extension featuring two one-click extractors: automated live football match commentary from FotMob/Sofascore and distraction-free article text powered by Mozilla\'s Readability.js engine.',
 			'role_bn'     => 'একক এক্সটেনশন ডিজাইনার ও ডেভেলপার',
 			'role_en'     => 'Solo Extension Architect & Developer',
-			'context_bn'  => 'ক্রোমিয়াম ব্রাউজার এক্সটেনশন • Manifest V3',
-			'context_en'  => 'Chromium Browser Extension • Manifest V3',
+			'context_bn'  => 'ক্রোমিয়াম ব্রাউজার এক্সটেনশন • Manifest V3 • v1.3',
+			'context_en'  => 'Chromium Browser Extension • Manifest V3 • v1.3',
 			'challenge_bn'=> "ফুটবল ম্যাচ চলাকালীন লাইভ টেক্সট কমেন্টারি সাধারণত লেজি-লোড (Lazy-load) হয়ে ধাপে ধাপে আসে এবং বিভিন্ন সাইটে (FotMob, Sofascore) ডম স্ট্রাকচার ও ক্লাসনেম ঘন ঘন পরিবর্তিত হয়। ফলে সাধারণ সাইট-স্পেসিফিক সিএসএস সিলেক্টর দিয়ে কমেন্টারি স্ক্র্যাপ করতে গেলে কোড ভেঙে যায়।\n\nঅন্য দিকে, আধুনিক ওয়েব আর্টিকেল, ব্লগ এবং অনলাইন পিডিএফগুলোতে বিজ্ঞাপন, সাইডবার, ট্র্যাকিং ব্যানার ও জটিল নেভিগেশনের ভিড়ে মূল টেক্সট আলাদা করা দুরূহ। একই সাথে ব্যবহারকারীর ব্রাউজিং প্রাইভেসি রক্ষা করে কোনো সাইট-ওয়াইড পারমিশন ছাড়া এবং কোনো দূরবর্তী সার্ভারে ডেটা না পাঠিয়ে সম্পূর্ণ ব্রাউজারের ভেতর টেক্সট এক্সট্র্যাক্ট করা ছিল প্রধান চ্যালেঞ্জ।",
 			'challenge_en'=> "Live football commentary feeds on platforms like FotMob and Sofascore are continuously lazy-loaded, dynamically rendered, and frequently change their DOM class signatures. Hardcoded, site-specific CSS selectors break easily and fail to capture full match timelines.\n\nSimultaneously, extracting clean prose from articles, blogs, Google Docs, and web PDFs is heavily obstructed by aggressive ad banners, paywall overlays, navigation clutter, and custom pagination. The challenge was building an adaptive dual-mode extraction engine that operates strictly client-side under Chromium's activeTab privacy sandbox without full-host permissions.",
 			'solution_bn' => "১. ক্লাস্টার-হিওরিস্টিক কমেন্টারি অ্যালগরিদম: কোনো নির্দিষ্ট ক্লাস বা হার্ডকোডেড সিলেক্টরের ওপর নির্ভর না করে পেজের রিয়েল সেন্টেন্স ব্লকগুলোকে কার্ডে গ্রুপ করে এবং সবচেয়ে ঘন ক্লাস্টারটিকে স্বয়ংক্রিয়ভাবে কমেন্টারি ফিড হিসেবে শনাক্ত করে। সাথে স্বয়ংক্রিয় পেজ স্ক্রলিংয়ের মাধ্যমে লেজি-লোডেড পুরনো এন্ট্রিগুলোও নিখুঁতভাবে সংগ্রহ করে।\n\n২. মোজিলা রিড্যাবিলিটি (Readability.js) ইন্টিগ্রেশন: ফায়ারফক্স রিডার ভিউয়ের শক্তিশালী ইঞ্জিন ব্যবহার করে যেকোনো নিউজ সাইট, ব্লগ, স্টোরি পোর্টাল কিংবা অনলাইন পিডিএফ ও গুগল ডক্স থেকে সব জঞ্জাল দূর করে শুধুমাত্র মূল কনটেন্ট নিষ্কাশন।\n\n৩. মিনিট স্ট্যাম্প ও ফরম্যাটিং প্রিজারভেশন: ম্যাচের মিনিট স্ট্যাম্প (যেমন: ৪৫', ৯০+৩') এবং হাফ-টাইম বুলেট সামারি হুবহু ফরম্যাট বজায় রেখে সাজিয়ে দেয়।\n\n৪. রিয়েল-টাইম প্রিভিউ ও সেশন পারসিস্টেন্স: পপ-আপে স্ক্রলেবল লাইভ প্রিভিউ, ওয়ার্ড ও ক্যারেক্টার কাউন্টার প্রদর্শন। পপ-আপ বন্ধ করে দিলেও ক্যাপচার করা টেক্সট ব্রাউজার সেশন জুড়ে মেমোরিতে অক্ষুণ্ণ থাকে।\n\n৫. ওয়ান-ক্লিক কপি ও .txt ডাউনলোড: সংগৃহীত টেক্সট নিমেষেই ক্লিপবোর্ডে কপি করা কিংবা ফাইল আকারে ডাউনলোড করার সুবিধা।\n\n৬. activeTab সিকিউরিটি মডেল: ব্রাউজারের কোনো সাইট-ওয়াইড পারমিশন ওয়ার্নিং নেই; ব্যবহারকারী ক্লিক করলেই কেবল নির্দিষ্ট ট্যাবে এক্সটেনশন কাজ করে এবং সমস্ত টেক্সট ১০০% ইউজারের ডিভাইসেই প্রসেস হয়।",
@@ -1362,25 +1362,25 @@ function rs_get_default_portfolio_projects() {
 			'action_type' => 'code',
 			'action_bn'   => 'সোর্স কোড (GitHub)',
 			'action_en'   => 'View Source on GitHub',
-			'direct_url'  => 'https://github.com/raisulsohan/Tickersnap',
-			'github_url'  => 'https://github.com/raisulsohan/Tickersnap',
+			'direct_url'  => 'https://github.com/raisulsohan/LazySnap',
+			'github_url'  => 'https://github.com/raisulsohan/LazySnap',
 			'order'       => 60,
 		),
 		array(
-			'id'          => 'ruler-for-browser',
+			'id'          => 'lazyruler',
 			'category'    => 'tools',
 			'type_bn'     => 'ক্রোম ও এজ এক্সটেনশন',
 			'type_en'     => 'Chrome & Edge Extension',
 			'badge_bn'    => 'Manifest V3 • ডিজাইন ও মেজারমেন্ট',
 			'badge_en'    => 'Manifest V3 • Precision Ruler & Snapping',
-			'title_bn'    => 'Ruler for Browser — ফটোশপ স্টাইল রুলার, স্ন্যাপিং গাইড ও মেজারমেন্ট',
-			'title_en'    => 'Ruler for Browser — Photoshop-Style Rulers, Draggable Guides & On-Page Measurement',
+			'title_bn'    => 'LazyRuler — ফটোশপ স্টাইল রুলার, স্ন্যাপিং গাইড ও মেজারমেন্ট',
+			'title_en'    => 'LazyRuler — Photoshop-Style Rulers, Draggable Guides & On-Page Measurement',
 			'summary_bn'  => 'যেকোনো ওয়েব পেজের ওপর ফটোশপ ধাঁচের অনুভূমিক ও উল্লম্ব রুলার, ড্র্যাগ-অ্যান্ড-ড্রপ গাইডলাইন, রিয়েল ডম এলিমেন্ট স্ন্যাপিং এবং নিখুঁত ডিস্ট্যান্স মেজারমেন্টের লাইটওয়েট ক্রোম এক্সটেনশন।',
 			'summary_en'  => 'Lightweight Chromium extension projecting Photoshop-style rulers, draggable guide overlays, smart element-edge snapping, and real-time pixel distance measurement directly over any webpage.',
 			'role_bn'     => 'একক এক্সটেনশন ডিজাইনার ও ডেভেলপার',
 			'role_en'     => 'Solo Extension Architect & Developer',
-			'context_bn'  => 'ক্রোমিয়াম ব্রাউজার এক্সটেনশন • Manifest V3 • v1.0',
-			'context_en'  => 'Chromium Browser Extension • Manifest V3 • v1.0',
+			'context_bn'  => 'ক্রোমিয়াম ব্রাউজার এক্সটেনশন • Manifest V3 • v1.0.1',
+			'context_en'  => 'Chromium Browser Extension • Manifest V3 • v1.0.1',
 			'challenge_bn'=> "ওয়েব UI ডেভেলপমেন্ট এবং ডিজাইন কিউএ (QA) অডিটের সময় বিভিন্ন উপাদানের মার্জিন, প্যাডিং কিংবা অ্যালাইনমেন্ট নিখুঁত আছে কি না তা যাচাই করা বেশ কঠিন। সাধারণত এজন্য ফুল-পেজ স্ক্রিনশট নিয়ে ফিগমা বা ফটোশপে নিয়ে মাপতে হয়, যা কাজের গতি নষ্ট করে।\n\nব্রাউজারের ভেতর সরাসরি রুলার ও গাইডলাইন যুক্ত করার ক্ষেত্রে প্রধান চ্যালেঞ্জ ছিল: মূল ওয়েবসাইটের নিজস্ব সিএসএস স্টাইল বা স্ক্রিপ্ট যাতে এক্সটেনশনের রুলারকে বিকৃত করতে না পারে, পেজ স্ক্রল করার সময় গাইডলাইনগুলো যাতে তাদের আসল ডম এলিমেন্টের সাথে নির্ভুলভাবে পিন্ড থাকে, এলিমেন্টগুলোর এজ (ধার) ও সেন্টারে ৬ পিক্সেলের ম্যাগনেটিক স্ন্যাপিং নিশ্চিত করা, এবং ব্রাউজার রিলোড করলেও ডোমেনভেদে গাইডগুলো স্বয়ংক্রিয়ভাবে রিকল করা।",
 			'challenge_en'=> "During web UI development and design QA audits, verifying visual alignment, margin balances, and relative spacing across components conventionally requires capturing screenshots and measuring in Figma or Photoshop, breaking the developer flow.\n\nInjecting measurement overlays directly into arbitrary third-party pages poses significant technical hurdles: host page CSS resets and aggressive stylesheet inheritance bleed into the overlay, arbitrary z-indexes occlude ruler bars, vertical page scrolling displaces coordinates, and DOM shifts disrupt alignment. The challenge was building an isolated, zero-leak measurement overlay with magnetic edge-snapping and persistent document-space guides under Manifest V3.",
 			'solution_bn' => "১. শ্যাডো ডম (Shadow DOM) আইসোলেশন: হোস্ট পেজের সিএসএস বা স্ক্রিপ্ট যাতে কোনোভাবেই এক্সটেনশনের স্টাইলকে প্রভাবিত করতে না পারে, সেজন্য সম্পূর্ণ রুলার ইন্টারফেস Shadow Root-এর ভেতরে সম্পূর্ণ বিচ্ছিন্নভাবে রেন্ডার করা হয়েছে।\n\n২. ফটোশপ স্টাইল ড্র্যাগ-অ্যান্ড-ড্রপ গাইড: ওপরের বা বামের রুলার থেকে মাউস ড্র্যাগ করে টানলেই তাত্ক্ষণিক অনুভূমিক বা উল্লম্ব গাইড তৈরি হয়। ড্র্যাগ করে সরানো, ডাবল ক্লিকে বা রুলারে ফেরত নিয়ে ডিলিট করা এবং হটকি (Alt+R, Ctrl+;, Ctrl+Alt+;) দিয়ে সহজে পরিচালনা করা যায়।\n\n৩. ম্যাগনেটিক স্ন্যাপিং ইঞ্জিন (Snap Engine): মাউস ড্র্যাগ করার সময় নিকটবর্তী ডম উপাদানের বাম, ডান, কেন্দ্র কিংবা শীর্ষ, তলদেশ ও মধ্যবিন্দুর ৬ পিক্সেলের মধ্যে ম্যাগনেটিক স্ন্যাপ করে (Shift কি চেপে স্ন্যাপ সাময়িক অফও রাখা যায়)।\n\n৪. Alt-কি ডাইমেনশন ও ডিস্ট্যান্স মেজারমেন্ট: Alt চেপে মাউস হোভার করলেই উপাদানের সাইজ ব্যাজ দেখা যায় এবং ড্র্যাগ করলে উপাদানগুলোর মধ্যকার রিয়েল-টাইম পিক্সেল দূরত্ব নিঁখুতভাবে ডিসপ্লে হয়।\n\n৫. ৩টি অ্যাডাপ্টিভ ডিসপ্লে মোড: ফ্লোটিং Overlay মোড ছাড়াও Push মোডে পেজ কনটেন্ট ২২ পিক্সেল নিচে নেমে আসে যাতে কোনো হেডার ঢাকা না পড়ে। আর Auto-hide মোডে মাউস স্ক্রিনের প্রান্তে গেলে রুলার মসৃণভাবে ভেসে ওঠে।\n\n৬. স্ক্রল-রেসিলিয়েন্ট পার-অরিজিন লোকাল স্টোরেজ: গাইডগুলো ডকুমেন্ট কোঅর্ডিনেটে কাজ করায় পেজ স্ক্রল করলেও উপাদানগুলোর সাথে আটকে থাকে। এছাড়া প্রতিটি ওয়েবসাইটের গাইড লোকাল মেমরিতে সংরক্ষিত থাকে, ফলে পেজ রিলোড করলেও গাইড অক্ষত থাকে।",
@@ -1411,8 +1411,8 @@ function rs_get_default_portfolio_projects() {
 			'action_type' => 'code',
 			'action_bn'   => 'সোর্স কোড (GitHub)',
 			'action_en'   => 'View Source on GitHub',
-			'direct_url'  => 'https://github.com/raisulsohan/RulerForBrowser',
-			'github_url'  => 'https://github.com/raisulsohan/RulerForBrowser',
+			'direct_url'  => 'https://github.com/raisulsohan/LazyRuler',
+			'github_url'  => 'https://github.com/raisulsohan/LazyRuler',
 			'order'       => 70,
 		),
 		array(
@@ -1844,6 +1844,103 @@ function rs_sync_new_portfolio_projects() {
 	}
 }
 add_action( 'init', 'rs_sync_new_portfolio_projects', 20 );
+
+/**
+ * Projects that have been renamed: the address they had => the one they have.
+ *
+ * Three browser extensions took Lazy names in September 2026, along with
+ * their repositories (QuietScroll became LazyScroll, TickerSnap LazySnap,
+ * Ruler for Browser LazyRuler). The old addresses answer with a redirect to
+ * the new ones, so nothing anyone linked or indexed breaks.
+ *
+ * @return string[] old slug => new slug.
+ */
+function rs_portfolio_renamed_projects() {
+	return array(
+		'quiet-scroll'      => 'lazyscroll',
+		'tickersnap'        => 'lazysnap',
+		'ruler-for-browser' => 'lazyruler',
+	);
+}
+
+/**
+ * Bring a renamed project's stored entry up to date, once.
+ *
+ * The entries live in the database, seeded from the defaults, so a rename
+ * in the defaults reaches nothing by itself. This gives each renamed entry
+ * its new address and the fields that carry the name: the titles, the
+ * context line with its version, and the two GitHub addresses. Everything
+ * else about the entry is left as it is on the site.
+ */
+function rs_sync_portfolio_renames() {
+	$switched = false;
+	if ( is_multisite() && ! is_main_site() ) {
+		switch_to_blog( get_main_site_id() );
+		$switched = true;
+	}
+
+	if ( get_option( 'rs_portfolio_renamed_v1' ) ) {
+		if ( $switched ) {
+			restore_current_blog();
+		}
+		return;
+	}
+
+	$defaults = array();
+	foreach ( rs_get_default_portfolio_projects() as $item ) {
+		$defaults[ $item['id'] ] = $item;
+	}
+
+	$changed = false;
+
+	foreach ( rs_portfolio_renamed_projects() as $old => $new ) {
+		if ( ! isset( $defaults[ $new ] ) ) {
+			continue;
+		}
+
+		$posts = get_posts(
+			array(
+				'post_type'      => 'rs_portfolio',
+				'name'           => $old,
+				'posts_per_page' => 1,
+				'post_status'    => 'any',
+			)
+		);
+
+		if ( empty( $posts ) ) {
+			continue;
+		}
+
+		$item = $defaults[ $new ];
+
+		wp_update_post(
+			array(
+				'ID'         => $posts[0]->ID,
+				'post_name'  => $new,
+				'post_title' => $item['title_en'],
+			)
+		);
+
+		foreach ( array( 'title_bn', 'title_en', 'context_bn', 'context_en', 'direct_url', 'github_url' ) as $field ) {
+			update_post_meta( $posts[0]->ID, '_rs_portfolio_' . $field, $item[ $field ] );
+		}
+
+		$changed = true;
+	}
+
+	update_option( 'rs_portfolio_renamed_v1', 1 );
+
+	if ( $switched ) {
+		restore_current_blog();
+	}
+
+	/* The cards, the pop-up's data and every page that names these live in
+	   cached pages; readers should not be handed the old names for an hour. */
+	if ( $changed && function_exists( 'rs_purge_host_cache_soon' ) ) {
+		rs_purge_host_cache_soon();
+	}
+}
+add_action( 'init', 'rs_sync_portfolio_renames', 21 );
 
 /**
  * Give an existing project the demo that ships with the theme, once, and
@@ -2793,6 +2890,30 @@ function rs_project_name( $project ) {
 
 	return array( $parts[0], isset( $parts[1] ) ? $parts[1] : '' );
 }
+
+/**
+ * A renamed project's old address goes to its new one, documentation and
+ * all: /portfolio/quiet-scroll/documentation/manual/ lands on
+ * /portfolio/lazyscroll/documentation/manual/. Before the 404 check below,
+ * which would otherwise turn the old address away.
+ */
+function rs_portfolio_redirect_renamed() {
+	$old = sanitize_title( (string) get_query_var( 'rs_project' ) );
+	$map = rs_portfolio_renamed_projects();
+
+	if ( '' === $old || ! isset( $map[ $old ] ) ) {
+		return;
+	}
+
+	$doc = (string) get_query_var( 'rs_doc' );
+	$to  = ( '' !== $doc && function_exists( 'rs_project_docs_url' ) )
+		? rs_project_docs_url( $map[ $old ], 'index' === $doc ? '' : sanitize_title( $doc ) )
+		: rs_project_url( $map[ $old ] );
+
+	wp_safe_redirect( $to, 301 );
+	exit;
+}
+add_action( 'template_redirect', 'rs_portfolio_redirect_renamed', 0 );
 
 /**
  * An address under /portfolio/ that names no project is a 404.
