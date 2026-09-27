@@ -3213,6 +3213,15 @@ function rs_project_demo_kit( $slug ) {
 			'sub_en' => 'Paste a script, time it to the voiceover, make subtitles and play along; paste an image, link a folder to a bin.',
 			'sub_bn' => 'স্ক্রিপ্ট পেস্ট করুন, ভয়েসওভারের সাথে টাইম করুন, সাবটাইটেল বানান, চালিয়ে দেখুন নোট সাথে চলছে; ছবি পেস্ট করুন, ফোল্ডার বিনে যুক্ত করুন।',
 		),
+		'lazymotiontoolkit' => array(
+			'bundle' => 'lazymotion-demo',
+			'wrap'   => 'lmt-wrap',
+			'root'   => 'lmt',
+			'attr'   => 'data-lazymotion-demo',
+			'mount'  => 'LazyMotionDemo',
+			'sub_en' => 'Select layers in a small comp and run the ten tools: anchor, head to line, auto box, fade, stagger, lightning and the rest, one undo step each.',
+			'sub_bn' => 'ছোট একটা কম্পে লেয়ার সিলেক্ট করে দশটা টুল চালিয়ে দেখুন: অ্যাঙ্কর, হেড টু লাইন, অটো বক্স, ফেড, স্ট্যাগার, বজ্রপাত আর বাকিগুলো; প্রতিটি এক ধাপে আনডু হয়।',
+		),
 	) );
 
 	return isset( $kits[ $slug ] ) ? $kits[ $slug ] : null;

@@ -2,13 +2,21 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.24.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.25.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.25
+
+**LazyMotionToolkit can be tried.** Its project page carries an interactive demo: the panel docked in a mock After Effects with a small comp to work on.
+
+- **Ten tools on a real layer stack.** Click layer bars in the timeline to select them, then run the panel: the **anchor pad** moves the anchor and compensates the position with the layer's scale and rotation, so nothing moves on screen (a rotated Badge is there to prove it); **Head to Line** puts any of the eight auto-orienting heads on a Bézier path and, with Anim, rides the trim; **Auto Box** measures the text as it types on and grows the box, caret and settle animations included; **Fade** applies the seven easing curves with markers; **Stagger** (layers or keyframes only), **Null + Parent**, **Grid Maker** with its guard rails, **Precomp (1:1)** and **(Group)** with their refusals, the **Swatch**, and **LazyPreview Render**. The comp has the traps the manual describes: a locked layer, a layer with its own opacity expression, an animated rotation, a parented tagline. Every tool is one undo step, and Undo (or Ctrl+Z) takes it back.
+- **What is drawn, not run.** LazyStrike FX draws its own bolts, flashes and sky flickers (After Effects' Advanced Lightning is not in a browser), the audio-driven style following the peaks of the comp's music, and the preview render is simulated. Nothing is written anywhere.
+- **The same fitting:** one entry in `rs_project_demo_kit()`, a page bundle (`assets/lazymotion-demo.min.*`) loaded only where it is shown, the card's Demo menu, the case study's "Try the interactive demo" card and the pop-up player. The demo's sources live beside the animation in `LazyMotionToolkit Visuals/Demo/interactive/`; its `build.mjs` writes the standalone page and this theme's `src/js/lazymotion-demo.js` and `src/css/lazymotion-demo.css`.
 
 ## What's new in 7.24
 
