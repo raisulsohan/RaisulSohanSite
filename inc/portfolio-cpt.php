@@ -1648,24 +1648,25 @@ function rs_get_default_portfolio_projects() {
 		array(
 			'id'          => 'nomolos-prohibition',
 			'category'    => 'video',
-			'type_bn'     => 'ক্যানভাস অ্যানিমেশন ও কোডেড ডকুমেন্টারি ফিল্ম',
-			'type_en'     => 'JavaScript Canvas Animation Film',
-			'badge_bn'    => 'ওপেন সোর্স অ্যানিমেশন • ৯:৪০ মিনিট',
-			'badge_en'    => 'Open Source Animation • 9:40 Mins',
-			'title_bn'    => 'Nomolos 01: Prohibition — জাভাস্ক্রিপ্ট ক্যানভাসে নির্মিত পূর্ণাঙ্গ অ্যানিমেশন ফিল্ম',
-			'title_en'    => 'Nomolos 01: Prohibition — An Animated Documentary Drawn Frame-by-Frame in JavaScript',
-			'summary_bn'  => 'আমেরিকান প্রহিবিশন (মদ নিষিদ্ধকরণ) ইতিহাসের ওপর নির্মিত নোমোলোস সিরিজের প্রথম অ্যানিমেশন ডকুমেন্টারি। কোনো পূর্ব-রেন্ডার করা ভিডিও বা রাস্টার ইমেজ ফাইল ছাড়াই সম্পূর্ণ ভ্যানিলা জাভাস্ক্রিপ্ট ও গাণিতিক ভেক্টর ক্যালকুলেশনে HTML5 ক্যানভাসে রিয়েল-টাইমে ফ্রেম-বাই-ফ্রেম আঁকা ৯ মিনিট ৪০ সেকেন্ডের এক অনন্য সিনেমাটিক অভিজ্ঞতা।',
-			'summary_en'  => 'An animated documentary on the American Prohibition era, the first film in the Nomolos series. Every single frame is computed and drawn in real time on an HTML5 canvas using pure vanilla JavaScript vector math, rendering 9 minutes and 40 seconds of motion with zero video files and zero raster images.',
-			'role_bn'     => 'একক অ্যানিমেটর, চিত্রনাট্যকার ও ক্রিয়েটিভ কোডার',
-			'role_en'     => 'Solo Animator, Writer & Creative Coder',
-			'context_bn'  => 'নোমোলোস অ্যানিমেশন ডকুমেন্টারি • ৯:৪০ মিনিট • ১৬:৯ ও ৪:৫ • পিওর ক্যানভাস ইঞ্জিন',
-			'context_en'  => 'Nomolos Animated Documentary • 9:40 Mins • 16:9 & 4:5 • Pure Canvas Engine',
-			'challenge_bn'=> "প্রচলিত অ্যানিমেশন বা মোশন ডকুমেন্টারি তৈরি করতে আফটার ইফেক্টস কিংবা থ্রিডি সফটওয়্যার থেকে গিগাবাইট আকারের ভিডিও (MP4/WebM) রেন্ডার করতে হয় অথবা শত শত রাস্টার ইমেজ ও স্প্রাইট শিট লোড করতে হয়। এতে ব্যান্ডউইথ খরচ বিপুল বেড়ে যায় এবং ব্রাউজারে ফ্রেম-বাই-ফ্রেম স্বাধীন নিয়ন্ত্রণ ও টাইম-স্ক্রাবিং অসম্ভব হয়ে পড়ে।\n\nআমাদের মূল প্রযুক্তিগত ও নান্দনিক চ্যালেঞ্জসমূহ:\n১. জিরো ভিডিও ও জিরো ইমেজ ডিপেনডেন্সি: পুরো ৯ মিনিট ৪০ সেকেন্ডের ফিল্মটিতে কোনো MP4, GIF বা PNG/JPG ফাইল ছাড়া কেবল বিশুদ্ধ কোড ও ভেক্টর জ্যামিতির সাহায্যে ঐতিহাসিক দৃশ্যপট, মানচিত্র, স্ট্যাম্প, ল্যাম্পপোস্ট, মেকানিকাল গিয়ার এবং টাইপোগ্রাফি ফুটিয়ে তোলা।\n২. বিশুদ্ধ গাণিতিক সময়-ফাংশন (Deterministic Time Function): প্রতিটি ফ্রেমকে পরম সময়ের (t) একটি বিশুদ্ধ গাণিতিক ফাংশনে রূপ দেওয়া, যেন বাফারিং ছাড়াই যেকোনো মুহূর্তে নির্দিষ্ট ফ্রেম (যেমন ?t=12.5) বা সিনে তাৎক্ষণিক জাম্প ও স্ক্রাব করা যায়।\n৩. ডুয়েল অ্যাসপেক্ট রেশিও (১৬:৯ ও ৪:৫): ফিল্মটিকে একই সাথে ওয়াইডস্ক্রিন ডেস্কটপ (১৯২০×১০৮০) এবং মোবাইল ডিভাইসের পোর্ট্রেট (১০৮০×১৩৫০) উভয় ফরম্যাটে নিখুঁত ফোকাস, ক্যামেরা স্কেলিং ও কম্পোজিশন লেআউটে অভিযোজিত করা।\n৪. ৬০ FPS ক্যানভাস পারফরম্যান্স: ৫১টি জটিল সিকোয়েন্স জুড়ে মসৃণ পারফরম্যান্স নিশ্চিত করা যাতে কোনো মেমরি লিক বা ফ্রেম ড্রপ না ঘটে।",
-			'challenge_en'=> "Traditional animated documentaries rely on massive multi-gigabyte video renders (MP4, WebM) or pre-rendered raster image sequences and sprite sheets. This introduces heavy bandwidth overhead, buffer latency, and eliminates programmatic runtime control over individual animation parameters.\n\nTechnical & Aesthetic Challenges:\n1. Zero Video and Zero Image Dependencies: Crafting a continuous 9-minute, 40-second historical documentary without a single MP4, GIF, PNG, or JPG asset—relying purely on mathematical code, procedural vectors, and canvas primitives to draw street scenes, map projections, animated gears, typography stamps, and night atmospheres.\n2. Pure Deterministic Time-Based Architecture: Every visual frame is a pure mathematical function of absolute time (t). Any millisecond of the film can be rendered independently without sequential video decoding, enabling zero-latency random seeking, single-frame stepping, and URL time freezing (e.g. ?t=12.5).\n3. Dual-Format Responsive Layouts: Orchestrating the entire production in two distinct spatial aspect ratios—widescreen 16:9 (1920×1080) for desktop monitors and 4:5 (1080×1350) for mobile feeds—with dynamic camera framing, visual asset repositioning, and typographic reflow per format.\n4. Rock-Solid 60 FPS Performance: Maintaining fluid 60 frames per second rendering across 51 intricate sequence compositions without memory leaks or canvas context thrashing.",
-			'solution_bn' => "১. প্রসিডিউরাল ভেক্টর ড্রয়িং পাইপলাইন (HTML5 Canvas 2D): একটি হালকা অথচ শক্তিশালী মডুলার আর্কিটেকচার (lib/core.js, looks.js, props.js, usmap.js, hand.js) তৈরি করা হয়েছে, যা বেজিয়ের কার্ভ, প্রসিডিউরাল নয়েজ, ড্রাফটিং গ্রিড এবং ভৌগোলিক ইউএস মানচিত্র সরাসরি কোডে রেন্ডার করে।\n\n২. পরম সময়-ভিত্তিক রেন্ডার ইঞ্জিন: ফিল্মের প্রতিটি সিকোয়েন্সের render(ctx, time) ফাংশন বর্তমান প্লেহেড সময়ের ভিত্তিতে ক্যামেরা জুম, ইজিং কার্ভস (easeOut, easeOutBack) ও এলিমেন্ট ট্রান্সফর্মেশন নির্ধারণ করে। কোনো প্রি-রেকর্ডেড ভিডিওর বাফারিং ছাড়াই নিখুঁত ফ্রেম রেন্ডারিং নিশ্চিত হয়।\n\n৩. অ্যাডাপ্টিভ ডুয়েল ফরম্যাট অর্কেস্ট্রেশন: কোডের ভেতর প্রতিটি শটের জন্য আলাদা কোঅর্ডিনেট লেআউট (FMT === '4x5' বনাম ১৬:৯) নির্ধারণ করা হয়েছে। ফলে মোবাইল স্ক্রিনে গুরুত্বপূর্ণ ভিজ্যুয়াল ফোকাস স্বয়ংক্রিয়ভাবে সেন্টারে রিকম্পোজ হয়।\n\n৪. ৫১টি মডুলার সিকোয়েন্স ও সিন ইনডেক্সিং: পুরো ডকুমেন্টারিকে ৫১টি স্বতন্ত্র সিকোয়েন্সে ভাগ করে সুনির্দিষ্ট শট টাইমিং (timing.js) দিয়ে সিনক্রোনাইজ করা হয়েছে। দর্শক পুরো ফিল্ম ছাড়াও প্রতিটি দৃশ্য আলাদাভাবে ব্রাউজ করতে পারেন।\n\n৫. কাস্টম ব্রাউজার কন্ট্রোল ও কীবোর্ড নেভিগেশন: নিজস্ব লাইটওয়েট প্লেয়ার তৈরি করা হয়েছে যাতে রয়েছে স্পেসবারে প্লে/পজ, তীরচিহ্নে ফ্রেম-বাই-ফ্রেম ও সেকেন্ড-বাই-সেকেন্ড স্ক্রাব, হোম কি ও ফুলস্ক্রিন (F) শর্টকাট।\n\n৬. জিরো বিল্ড ও অফলাইন রেডি: কোনো ভারী নোড প্যাকেজ বা বান্ডলার ছাড়াই পিওর ES6 মডিউলে লেখা, যা সরাসরি যেকোনো ব্রাউজারে অফলাইনে কিংবা স্ট্যাটিক হোস্টিংয়ে নিখুঁতভাবে চলে।",
-			'solution_en' => "1. Procedural Vector Canvas Architecture: Developed a modular rendering library (lib/core.js, looks.js, props.js, usmap.js, hand.js) capable of rendering Bézier curves, procedural noise, dynamic ink blots, and US state geographic boundaries on the fly.\n\n2. Deterministic Pure Time-Function Rendering: Every sequence defines a render(ctx, time) loop where camera positioning, ease curves (easeOut, easeOutBack), and spatial envelopes are mathematically derived from time (t), eliminating video buffer lag entirely.\n\n3. Adaptive Dual-Aspect Geometry: Embedded format-aware coordinate systems (FMT === '4x5' vs 16:9 Desktop) within each sequence to automatically recompose shots, shift camera focal points, and re-anchor typography between desktop and vertical mobile screens.\n\n4. 51 Modular Sequences with Granular Shot Timings: Architected the 9:40 production into 51 discrete sequences driven by declarative shot timing maps (timing.js), allowing seamless end-to-end playback as well as individual scene inspection.\n\n5. Ergonomic In-Browser Player & Hotkeys: Engineered a native keyboard-driven playback interface featuring Space for play/pause, Left/Right arrow keys for single-frame stepping, Shift+Arrow for 1-second leaps, Home to reset, and F for fullscreen.\n\n6. Zero Build & Frictionless Offline Portability: Written entirely in standard vanilla JavaScript without build steps, compilers, or server dependencies—running instantly in any modern browser offline or from static CDN hosting.",
+			'type_bn'     => 'রাইসুল সোহানের ক্যানভাস অ্যানিমেশন ও কোডেড ফিল্ম',
+			'type_en'     => 'Original Canvas Animation Film by Raisul Sohan',
+			'badge_bn'    => 'রাইসুল সোহানের অ্যানিমেশন • ৯:৪০ মিনিট',
+			'badge_en'    => 'Animated by Raisul Sohan • 9:40 Mins',
+			'title_bn'    => 'Nomolos 01: Prohibition — রাইসুল সোহানের চিত্রনাট্য, পরিচালনা ও কোডে নির্মিত অ্যানিমেশন ফিল্ম',
+			'title_en'    => 'Nomolos 01: Prohibition — An Animated Documentary Film Created & Directed by Raisul Sohan',
+			'summary_bn'  => 'আমেরিকান প্রহিবিশন (মদ নিষিদ্ধকরণ) ইতিহাসের ওপর নোমোলোস (Nomolos) সিরিজের প্রথম পূর্ণাঙ্গ অ্যানিমেশন ডকুমেন্টারি ফিল্ম, যা এককভাবে সম্পূর্ণ তৈরি, চিত্রনাট্য রচনা, পরিচালনা ও কোড করেছেন রাইসুল সোহান। কোনো পূর্ব-রেন্ডার করা ভিডিও বা রাস্টার ইমেজ ফাইল ব্যবহার না করে রাইসুল সোহান সম্পূর্ণ ভ্যানিলা জাভাস্ক্রিপ্ট ও গাণিতিক ভেক্টর জ্যামিতিতে HTML5 ক্যানভাসে রিয়েল-টাইমে ফ্রেম-বাই-ফ্রেম ৯ মিনিট ৪০ সেকেন্ডের এই সিনেমাটিক ভিজ্যুয়াল আর্ট ও মোশন ফুটিয়ে তুলেছেন।',
+			'summary_en'  => 'The first animated documentary film in the Nomolos series, exploring the history of American Prohibition—entirely written, directed, animated, and coded by Raisul Sohan. Without relying on any pre-rendered video files or raster images, Raisul Sohan mathematically engineered and drew every single frame in real time on HTML5 canvas using pure vanilla JavaScript vector math, delivering a 9-minute, 40-second cinematic storytelling experience.',
+			'role_bn'     => 'রাইসুল সোহান — চিত্রনাট্যকার, পরিচালক, একক অ্যানিমেটর ও সফটওয়্যার আর্কিটেক্ট',
+			'role_en'     => 'Raisul Sohan — Creator, Director, Screenwriter, Solo Animator & Creative Coder',
+			'context_bn'  => 'রাইসুল সোহানের নোমোলোস সিরিজ • ৯:৪০ মিনিট অ্যানিমেশন ফিল্ম • ১৬:৯ ও ৪:৫ • পিওর ক্যানভাস ইঞ্জিন',
+			'context_en'  => 'Nomolos Film Series by Raisul Sohan • 9:40 Mins • 16:9 & 4:5 • Pure Canvas Engine',
+			'challenge_bn'=> "প্রচলিত অ্যানিমেশন বা মোশন ডকুমেন্টারি তৈরি করতে আফটার ইফেক্টস কিংবা থ্রিডি সফটওয়্যার থেকে গিগাবাইট আকারের ভিডিও (MP4/WebM) রেন্ডার করতে হয় অথবা শত শত রাস্টার ইমেজ ও স্প্রাইট শিট লোড করতে হয়। এতে ব্যান্ডউইথ খরচ বিপুল বেড়ে যায় এবং ব্রাউজারে ফ্রেম-বাই-ফ্রেম স্বাধীন নিয়ন্ত্রণ ও টাইম-স্ক্রাবিং অসম্ভব হয়ে পড়ে।\n\nরাইসুল সোহানের সামনে মূল প্রযুক্তিগত ও নান্দনিক চ্যালেঞ্জসমূহ:\n১. জিরো ভিডিও ও জিরো ইমেজ ডিপেনডেন্সি: কোনো MP4, GIF বা PNG/JPG ফাইল ছাড়া কেবল রাইসুল সোহানের বিশুদ্ধ কোড ও ভেক্টর জ্যামিতির সাহায্যে ঐতিহাসিক দৃশ্যপট, মানচিত্র, স্ট্যাম্প, ল্যাম্পপোস্ট, মেকানিকাল গিয়ার এবং টাইপোগ্রাফি ফুটিয়ে তোলা।\n২. বিশুদ্ধ গাণিতিক সময়-ফাংশন (Deterministic Time Function): প্রতিটি ফ্রেমকে পরম সময়ের (t) একটি বিশুদ্ধ গাণিতিক ফাংশনে রূপ দেওয়া, যেন বাফারিং ছাড়াই যেকোনো মুহূর্তে নির্দিষ্ট ফ্রেম (যেমন ?t=12.5) বা সিনে তাৎক্ষণিক জাম্প ও স্ক্রাব করা যায়।\n৩. ডুয়েল অ্যাসপেক্ট রেশিও (১৬:৯ ও ৪:৫): ফিল্মটিকে একই সাথে ওয়াইডস্ক্রিন ডেস্কটপ (১৯২০×১০৮০) এবং মোবাইল ডিভাইসের পোর্ট্রেট (১০৮০×১৩৫০) উভয় ফরম্যাটে নিখুঁত ফোকাস, ক্যামেরা স্কেলিং ও কম্পোজিশন লেআউটে অভিযোজিত করা।\n৪. ৬০ FPS ক্যানভাস পারফরম্যান্স: রাইসুল সোহানের পরিচালিত ৫১টি জটিল সিকোয়েন্স জুড়ে মসৃণ পারফরম্যান্স নিশ্চিত করা যাতে কোনো মেমরি লিক বা ফ্রেম ড্রপ না ঘটে।",
+			'challenge_en'=> "Traditional animated documentaries rely on massive multi-gigabyte video renders (MP4, WebM) or pre-rendered raster image sequences and sprite sheets. This introduces heavy bandwidth overhead, buffer latency, and eliminates programmatic runtime control over individual animation parameters.\n\nKey Creative & Technical Challenges Solved by Raisul Sohan:\n1. Zero Video and Zero Image Dependencies: Crafting a continuous 9-minute, 40-second historical documentary without a single MP4, GIF, PNG, or JPG asset—relying purely on Raisul Sohan's procedural vectors, custom vector math, and canvas drawing routines to render street scenes, map projections, animated gears, typography stamps, and night atmospheres.\n2. Pure Deterministic Time-Based Architecture: Every visual frame is a pure mathematical function of absolute time (t). Any millisecond of the film can be rendered independently without sequential video decoding, enabling zero-latency random seeking, single-frame stepping, and URL time freezing (e.g. ?t=12.5).\n3. Dual-Format Responsive Layouts: Orchestrating the entire production in two distinct spatial aspect ratios—widescreen 16:9 (1920×1080) for desktop monitors and 4:5 (1080×1350) for mobile feeds—with dynamic camera framing, visual asset repositioning, and typographic reflow per format.\n4. Rock-Solid 60 FPS Performance: Maintaining fluid 60 frames per second rendering across 51 intricate sequence compositions designed and animated by Raisul Sohan without memory leaks or canvas context thrashing.",
+			'solution_bn' => "১. প্রসিডিউরাল ভেক্টর ড্রয়িং পাইপলাইন (HTML5 Canvas 2D): রাইসুল সোহান তৈরি করেছেন একটি হালকা অথচ শক্তিশালী মডুলার আর্কিটেকচার (lib/core.js, looks.js, props.js, usmap.js, hand.js), যা বেজিয়ের কার্ভ, প্রসিডিউরাল নয়েজ, ড্রাফটিং গ্রিড এবং ভৌগোলিক ইউএস মানচিত্র সরাসরি কোডে রেন্ডার করে।\n\n২. পরম সময়-ভিত্তিক রেন্ডার ইঞ্জিন: ফিল্মের প্রতিটি সিকোয়েন্সের render(ctx, time) ফাংশন বর্তমান প্লেহেড সময়ের ভিত্তিতে ক্যামেরা জুম, ইজিং কার্ভস (easeOut, easeOutBack) ও এলিমেন্ট ট্রান্সফর্মেশন নির্ধারণ করে। কোনো প্রি-রেকর্ডেড ভিডিওর বাফারিং ছাড়াই নিখুঁত ফ্রেম রেন্ডারিং নিশ্চিত হয়।\n\n৩. অ্যাডাপ্টিভ ডুয়েল ফরম্যাট অর্কেস্ট্রেশন: কোডের ভেতর প্রতিটি শটের জন্য আলাদা কোঅর্ডিনেট লেআউট (FMT === '4x5' বনাম ১৬:৯) নির্ধারণ করা হয়েছে। ফলে মোবাইল স্ক্রিনে গুরুত্বপূর্ণ ভিজ্যুয়াল ফোকাস স্বয়ংক্রিয়ভাবে সেন্টারে রিকম্পোজ হয়।\n\n৪. ৫১টি মডুলার সিকোয়েন্স ও সিন ইনডেক্সিং: পুরো ডকুমেন্টারিকে ৫১টি স্বতন্ত্র সিকোয়েন্সে ভাগ করে সুনির্দিষ্ট শট টাইমিং (timing.js) দিয়ে সিনক্রোনাইজ করেছেন রাইসুল সোহান। দর্শক পুরো ফিল্ম ছাড়াও প্রতিটি দৃশ্য আলাদাভাবে ব্রাউজ করতে পারেন।\n\n৫. কাস্টম ব্রাউজার কন্ট্রোল ও কীবোর্ড নেভিগেশন: নিজস্ব লাইটওয়েট প্লেয়ার তৈরি করা হয়েছে যাতে রয়েছে স্পেসবারে প্লে/পজ, তীরচিহ্নে ফ্রেম-বাই-ফ্রেম ও সেকেন্ড-বাই-সেকেন্ড স্ক্রাব, হোম কি ও ফুলস্ক্রিন (F) শর্টকাট।\n\n৬. জিরো বিল্ড ও অফলাইন রেডি: কোনো ভারী নোড প্যাকেজ বা বান্ডলার ছাড়াই পিওর ES6 মডিউলে লেখা, যা সরাসরি যেকোনো ব্রাউজারে অফলাইনে কিংবা স্ট্যাটিক হোস্টিংয়ে নিখুঁতভাবে চলে।",
+			'solution_en' => "1. Procedural Vector Canvas Architecture: Raisul Sohan developed a modular rendering library (lib/core.js, looks.js, props.js, usmap.js, hand.js) capable of rendering Bézier curves, procedural noise, dynamic ink blots, and US state geographic boundaries on the fly.\n\n2. Deterministic Pure Time-Function Rendering: Every sequence defines a render(ctx, time) loop where camera positioning, ease curves (easeOut, easeOutBack), and spatial envelopes are mathematically derived from time (t), eliminating video buffer lag entirely.\n\n3. Adaptive Dual-Aspect Geometry: Embedded format-aware coordinate systems (FMT === '4x5' vs 16:9 Desktop) within each sequence to automatically recompose shots, shift camera focal points, and re-anchor typography between desktop and vertical mobile screens.\n\n4. 51 Modular Sequences with Granular Shot Timings: Architected the 9:40 production into 51 discrete sequences driven by declarative shot timing maps (timing.js), allowing seamless end-to-end playback as well as individual scene inspection choreographed by Raisul Sohan.\n\n5. Ergonomic In-Browser Player & Hotkeys: Engineered a native keyboard-driven playback interface featuring Space for play/pause, Left/Right arrow keys for single-frame stepping, Shift+Arrow for 1-second leaps, Home to reset, and F for fullscreen.\n\n6. Zero Build & Frictionless Offline Portability: Written entirely in standard vanilla JavaScript without build steps, compilers, or server dependencies—running instantly in any modern browser offline or from static CDN hosting.",
 			'highlights_bn'=> array(
-				'৯ মিনিট ৪০ সেকেন্ডের পূর্ণাঙ্গ অ্যানিমেশন ডকুমেন্টারি — ০টি ভিডিও বা ইমেজ ফাইল',
+				'রাইসুল সোহানের ৯ মিনিট ৪০ সেকেন্ডের পূর্ণাঙ্গ অ্যানিমেশন ফিল্ম — ০টি ভিডিও বা ইমেজ ফাইল',
+				'রাইসুল সোহান রচিত, পরিচালিত, চিত্রায়িত ও কোডকৃত মৌলিক ঐতিহাসিক ডকুমেন্টারি',
 				'১০০% পিওর ভ্যানিলা জাভাস্ক্রিপ্ট ও HTML5 Canvas ভেক্টর রেন্ডারিং ইঞ্জিন',
 				'পরম সময়ভিত্তিক ফ্রেম আর্কিটেকচার — যেকোনো ফ্রেম বা মুহূর্তে নিখুঁত স্ক্রাবিং ও জাম্প',
 				'ডুয়েল অ্যাসপেক্ট রেশিও সাপোর্ট: ১৬:৯ ডেক্সটপ ও ৪:৫ মোবাইল ডিসপ্লে',
@@ -1674,7 +1675,8 @@ function rs_get_default_portfolio_projects() {
 				'কোনো বান্ডলার বা বিল্ড স্টেপ ছাড়া ১০০% ওপেন সোর্স ও অফলাইন সক্ষম',
 			),
 			'highlights_en'=> array(
-				'Complete 9:40 animated documentary rendered with zero video and zero image files',
+				'Complete 9:40 animated film written, directed, animated, and coded by Raisul Sohan',
+				'Zero video and zero raster image dependencies — drawn entirely via procedural code',
 				'100% pure vanilla JavaScript and HTML5 Canvas 2D procedural vector rendering',
 				'Deterministic time-based architecture: every frame is an exact mathematical function of time',
 				'Full dual aspect ratio support: 16:9 widescreen Desktop and 4:5 vertical Mobile',
@@ -1860,6 +1862,75 @@ function rs_sync_lazy_image_portfolio_v2() {
 	}
 }
 add_action( 'init', 'rs_sync_lazy_image_portfolio_v2' );
+
+/**
+ * 10b. Sync Nomolos Prohibition project credits and copy in the database.
+ *
+ * Ensures Raisul Sohan's authorship, direction, and animation credits
+ * are properly updated in existing database posts if previously seeded.
+ */
+function rs_sync_nomolos_prohibition_credits() {
+	$switched = false;
+	if ( is_multisite() && ! is_main_site() ) {
+		switch_to_blog( get_main_site_id() );
+		$switched = true;
+	}
+
+	if ( get_option( 'rs_portfolio_synced_nomolos_credits_v1' ) ) {
+		if ( $switched ) {
+			restore_current_blog();
+		}
+		return;
+	}
+
+	$posts = get_posts( array(
+		'post_type'      => 'rs_portfolio',
+		'name'           => 'nomolos-prohibition',
+		'posts_per_page' => 1,
+		'post_status'    => 'any',
+	) );
+
+	if ( ! empty( $posts ) ) {
+		$post_id  = $posts[0]->ID;
+		$defaults = rs_get_default_portfolio_projects();
+		$item     = null;
+		foreach ( $defaults as $d ) {
+			if ( 'nomolos-prohibition' === $d['id'] ) {
+				$item = $d;
+				break;
+			}
+		}
+
+		if ( $item ) {
+			wp_update_post( array(
+				'ID'         => $post_id,
+				'post_title' => $item['title_en'],
+			) );
+
+			foreach ( array( 'category', 'type_bn', 'type_en', 'badge_bn', 'badge_en', 'title_bn', 'title_en', 'summary_bn', 'summary_en', 'role_bn', 'role_en', 'context_bn', 'context_en', 'challenge_bn', 'challenge_en', 'solution_bn', 'solution_en', 'highlights_bn', 'highlights_en', 'accent', 'icon', 'image', 'image_fit', 'action_type', 'action_bn', 'action_en', 'direct_url', 'github_url' ) as $field ) {
+				if ( isset( $item[ $field ] ) ) {
+					update_post_meta( $post_id, '_rs_portfolio_' . $field, $item[ $field ] );
+				}
+			}
+
+			if ( ! empty( $item['tags'] ) && is_array( $item['tags'] ) ) {
+				update_post_meta( $post_id, '_rs_portfolio_tags', implode( ', ', $item['tags'] ) );
+			}
+		}
+	}
+
+	update_option( 'rs_portfolio_synced_nomolos_credits_v1', 1 );
+
+	if ( $switched ) {
+		restore_current_blog();
+	}
+
+	if ( function_exists( 'rs_purge_host_cache_soon' ) ) {
+		rs_purge_host_cache_soon();
+	}
+}
+add_action( 'init', 'rs_sync_nomolos_prohibition_credits', 22 );
+
 
 /**
  * 11. Add projects that joined the defaults after the portfolio was seeded.
