@@ -979,6 +979,10 @@ function rs_portfolio_theme_asset( $url ) {
  * @return array
  */
 function rs_get_portfolio_projects() {
+	if ( ! get_option( 'rs_portfolio_removed_thrivedesk_v1' ) && function_exists( 'rs_remove_thrivedesk_project' ) ) {
+		rs_remove_thrivedesk_project();
+	}
+
 	if ( ! get_option( 'rs_portfolio_synced_lazyimage_v2_2' ) && function_exists( 'rs_sync_lazy_image_portfolio_v2' ) ) {
 		rs_sync_lazy_image_portfolio_v2();
 	}
@@ -1000,6 +1004,9 @@ function rs_get_portfolio_projects() {
 
 	if ( ! empty( $posts ) ) {
 		foreach ( $posts as $p ) {
+			if ( 'thrivedesk-explainer' === $p->post_name ) {
+				continue;
+			}
 			$tags_raw = get_post_meta( $p->ID, '_rs_portfolio_tags', true );
 			$tags = array();
 			if ( ! empty( $tags_raw ) ) {
@@ -1220,53 +1227,6 @@ function rs_get_default_portfolio_projects() {
 			'action_en'   => 'Watch Showreel on YouTube',
 			'direct_url'  => 'https://youtu.be/4RUm_kR_wgA',
 			'order'       => 30,
-		),
-		array(
-			'id'          => 'thrivedesk-explainer',
-			'category'    => 'video',
-			'type_bn'     => 'সাস প্রডাক্ট এক্সপ্লেইনার ও মোশন অ্যানিমেশন',
-			'type_en'     => 'SaaS Product Explainer & Motion Animation',
-			'badge_bn'    => 'সাস অ্যানিমেশন • ৩ মিনিট',
-			'badge_en'    => 'SaaS Explainer • 3 Mins',
-			'title_bn'    => 'ThriveDesk Overview — ৩ মিনিটের সাস মোশন অ্যানিমেশন ও প্রোডাক্ট ওয়াকথ্রু',
-			'title_en'    => 'ThriveDesk Overview — 3-Minute SaaS Motion Animation & Product Walkthrough',
-			'summary_bn'  => 'গ্রোয়িং বিজনেসের কাস্টমার সাপোর্ট সহজ করতে থ্রাইভডেস্কের সেন্ট্রালাইজড ইনবক্স, টিকেট ডেলিগেশন, এআই রেসপন্স ড্রাফটিং, অটোমেশন রুলস, লাইভ চ্যাট অ্যাসিস্ট্যান্ট ও নলেজবেস ফিচারগুলোর আকর্ষণীয় ২ডি মোশন গ্রাফিক্স ওয়াকথ্রু।',
-			'summary_en'  => 'Dynamic 2D SaaS motion explainer visualizing ThriveDesk\'s all-in-one customer support suite—shared inboxes, AI drafting, ticket delegation, automated workflows, live chat widgets, and self-service knowledge base in 3 minutes.',
-			'role_bn'     => 'মোশন ডিজাইনার ও এক্সপ্লেইনার অ্যানিমেটর',
-			'role_en'     => 'Motion Designer & Explainer Animator',
-			'context_bn'  => 'অফিসিয়াল SaaS ওভারভিউ ভিডিও • ৩ মিনিট • ১৬:৯',
-			'context_en'  => 'Official SaaS Overview Video • 3 Mins • 16:9',
-			'challenge_bn'=> "থ্রাইভডেস্কের মতো একটি পরিপূর্ণ মাল্টি-ফাংশনাল কাস্টমার সাপোর্ট স্যুট—যাতে রয়েছে সেন্ট্রালাইজড ইনবক্স (Gmail, Outlook, Zoho), টিকেট ডেলিগেশন, ট্যাগ ও কালার কোডিং, ক্যানড রিপ্লাই, এআই ড্রাফটিং, প্রাইভেট নোটস ও টিম @মেনশন, ডুপ্লিকেট টিকেট মার্জিং, অটোমেশন রুলস ও স্প্যাম ফিল্টারিং, লাইভ চ্যাট অ্যাসিস্ট্যান্ট, রিয়েল-টাইম ভিজিটর ট্র্যাকিং, নলেজবেস পোর্টাল এবং ওয়ার্ডপ্রেস, WooCommerce ও Shopify-এর গভীর ইন্টিগ্রেশন—এই বিশাল জটিল প্ল্যাটফর্মকে মাত্র ৩ মিনিটের ভেতর সাধারণ ব্যবসা পরিচালকদের কাছে আকর্ষণীয় ও সাবলীলভাবে ফুটিয়ে তোলা ছিল মূল চ্যালেঞ্জ।\n\nসাধারণ স্ক্রিন রেকর্ডিং দিয়ে দেখালে ভিডিওটি একঘেয়ে ও ধীরগতির হয়ে পড়ে। তাই সফটওয়্যারটির প্রতিটি ইউআই এলিমেন্টকে স্ক্রিন থেকে আলাদা করে স্কেলেবল ভেক্টর গ্রাফিক্সে রূপান্তর করা, স্ন্যাপি ট্রানজিশনের মাধ্যমে জটিল ওয়ার্কফ্লোকে সহজ ভিজ্যুয়াল মেটাফোরে উপস্থাপন করা এবং প্রফেশনাল ভয়েসওভারের রিদমের সাথে নিখুঁত সিঙ্ক বজায় রাখা ছিল প্রধান কারিগরি ও ক্রিয়েটিভ চ্যালেঞ্জ।",
-			'challenge_en'=> "ThriveDesk encompasses a comprehensive customer support ecosystem: unified email syncing (Gmail, Outlook, Zoho), team ticket delegation, color-coded tagging, canned replies, AI drafting, internal private notes, team @mentions, conversation history, ticket deduplication, automated routing & spam filtering, live website chat assistants, real-time visitor tracking, self-service knowledge bases, and deep e-commerce integrations (WordPress, WooCommerce, Shopify). Distilling this sprawling platform into a concise, engaging 3-minute visual walkthrough without overwhelming business owners was a profound communication challenge.\n\nTraditional desktop screencasts feel static, cluttered, and sluggish. The creative and technical challenge was deconstructing the product's UI into modular vector compositions, orchestrating fluid camera choreographies and snappy transition curves across 15+ feature states, and establishing rhythmic kinetic motion tightly locked to voiceover cadence.",
-			'solution_bn' => "১. ৩-অ্যাক্ট ভিজ্যুয়াল আর্কিটেকচার: ভিডিওটিকে তিনটি স্পষ্ট অধ্যায়ে বিন্যস্ত করা হয়েছে— (ক) ইনবক্স সেটআপ, টিম অনবোর্ডিং ও টিকেট ডেলিগেশন; (খ) অটোমেশন রুলস, এআই ড্রাফটিং, ক্যানড রিপ্লাই ও ইন্টারনাল কোলাবোরেশন; এবং (গ) লাইভ চ্যাট অ্যাসিস্ট্যান্ট, রিয়েল-টাইম ভিজিটর এনগেজমেন্ট, নলেজবেস ও ই-কমার্স ইন্টিগ্রেশন।\n\n২. মডুলার ভেক্টর ইউআই রিকনস্ট্রাকশন: প্রতিটি স্ক্রিন, বাটন, ড্রপডাউন এবং চ্যাট বাবলকে ইলাস্ট্রেটরে স্কেলেবল ভেক্টর লেয়ারে নিখুঁতভাবে তৈরি করা হয়েছে, যাতে আল্ট্রা-এইচডি ডিসপ্লেতেও প্রতিটি টেক্সট ও আইকন ক্রিস্টাল ক্লিয়ার থাকে।\n\n৩. স্ন্যাপি কিফ্রেম ও ভেলোসিটি কার্ভস: আফটার ইফেক্টসের গ্রাফ এডিটর ব্যবহার করে অর্গানিক ইলাস্টিক বাউন্স, স্মুথ ইজিং ও স্ন্যাপি ট্রানজিশন তৈরি করা হয়েছে, যা দর্শকদের দৃষ্টিকে স্বাভাবিকভাবে এক ফিচার থেকে অন্য ফিচারে প্রবাহিত করে।\n\n৪. ভিজ্যুয়াল মেটাফোর ও আইকনোগ্রাফি: ইমেল প্রোভাইডার কানেকশন, ডুপ্লিকেট মার্জিং এবং এআই রেসপন্স তৈরির ক্ষেত্রে জটিল টেকনিক্যাল ধারণাকে সহজ ও উপভোগ্য অ্যানিমেশনে রূপান্তর করা হয়েছে।\n\n৫. সাউন্ড ডিজাইন ও অডিও সিঙ্ক: প্রতিটি বাটন ক্লিক, পপ-আপ, কার্ড সোয়াইপ এবং ট্রানজিশনের জন্য নিখুঁত সাউন্ড এফেক্টস (foley, whooshes, UI pops) লেয়ারিং করা হয়েছে, যা ভয়েসওভারের গতি ও মেজাজের সাথে নিখুঁতভাবে সিঙ্ক হয়ে সর্বোচ্চ রিটেনশন নিশ্চিত করে।",
-			'solution_en' => "1. Three-Act Narrative Architecture: Segmented the 3-minute script into a structured narrative arc: (a) Shared Inbox foundation, team onboarding, and ticket delegation; (b) Workflow automation, canned responses, spam filtering, private notes, and AI drafting; (c) Live chat assistants, real-time visitor monitoring, self-service knowledge bases, and WordPress/e-commerce integrations.\n\n2. Modular Vector UI Reconstruction: Vectorized every screen, ticket row, dropdown modal, and widget icon in Adobe Illustrator, ensuring razor-sharp high-DPI rendering and clean layout hierarchy without visual clutter.\n\n3. Velocity Curves & Fluid Transitions: Rigged dynamic motion inside Adobe After Effects using custom speed graph curves, kinetic pops, and camera pans that guide viewer eye tracking effortlessly across dense interface workflows.\n\n4. Visual Metaphor Orchestration: Translated technical concepts—such as multi-provider email synchronization, internal notes/@mentions, ticket deduplication, and automated routing rules—into engaging kinetic sequences.\n\n5. Layered UI Sound Design: Engineered bespoke micro-audio cues (clicks, whooshes, notification chimes, and swooshes) synchronized with screen transformations, elevating brand polish and auditory immersion.",
-			'highlights_bn'=> array(
-				'৩ মিনিটে থ্রাইভডেস্কের সম্পূর্ণ কাস্টমার সাপোর্ট প্ল্যাটফর্মের আকর্ষণীয় উপস্থাপন',
-				'শেয়ার্ড ইনবক্স, টিকেট ডেলিগেশন ও টিম কোলাবোরেশনের স্ন্যাপি মোশন',
-				'এআই রেসপন্স ড্রাফটিং, ক্যানড রিপ্লাই ও অটোমেশন রুলসের ভিজ্যুয়াল ওয়াকথ্রু',
-				'লাইভ চ্যাট উইজেট, রিয়েল-টাইম ভিজিটর ট্র্যাকিং ও নলেজবেস অ্যানিমেশন',
-				'ওয়ার্ডপ্রেস, WooCommerce ও Shopify ই-কমার্স ইন্টিগ্রেশনের পরিষ্কার চিত্রায়ন',
-				'কাস্টম ভেক্টর ইউআই ডিজাইন ও আফটার ইফেক্টস গ্রাফ এডিটর ভেলোসিটি স্মুথিং',
-				'প্রফেশনাল সাউন্ড ডিজাইন ও ভয়েসওভারের সাথে নিখুঁত বিট-সিঙ্ক'
-			),
-			'highlights_en'=> array(
-				'Comprehensive 3-minute SaaS overview animating ThriveDesk’s complete support suite',
-				'Dynamic visualization of shared inboxes, ticket assignment, and team collaboration',
-				'Kinetic walkthrough of AI drafting, canned responses, and workflow automations',
-				'Animated presentation of live chat assistant widgets, visitor monitoring, and knowledge bases',
-				'Clear depiction of WordPress, WooCommerce, and Shopify native integrations',
-				'Full vector UI reconstruction with After Effects velocity curve smoothing',
-				'Precision UI sound design synchronized with motion transitions and voiceover cadence'
-			),
-			'tags'        => array( 'After Effects', 'Illustrator', 'SaaS Explainer', 'Motion Graphics', '2D Animation', 'Sound Design' ),
-			'accent'      => '#6c5ce7',
-			'icon'        => 'video',
-			'image'       => get_template_directory_uri() . '/assets/img/thrivedesk.png',
-			'action_type' => 'video',
-			'action_bn'   => 'ইউটিউবে ভিডিওটি দেখুন',
-			'action_en'   => 'Watch Video on YouTube',
-			'direct_url'  => 'https://youtu.be/ff0j6OYG4Ms',
-			'order'       => 40,
 		),
 		array(
 			'id'          => 'lazyscroll',
@@ -1930,6 +1890,51 @@ function rs_sync_nomolos_prohibition_credits() {
 	}
 }
 add_action( 'init', 'rs_sync_nomolos_prohibition_credits', 22 );
+
+/**
+ * 10c. Permanently remove ThriveDesk project from the database.
+ */
+function rs_remove_thrivedesk_project() {
+	$switched = false;
+	if ( is_multisite() && ! is_main_site() ) {
+		switch_to_blog( get_main_site_id() );
+		$switched = true;
+	}
+
+	if ( get_option( 'rs_portfolio_removed_thrivedesk_v1' ) ) {
+		if ( $switched ) {
+			restore_current_blog();
+		}
+		return;
+	}
+
+	$posts = get_posts( array(
+		'post_type'      => 'rs_portfolio',
+		'name'           => 'thrivedesk-explainer',
+		'posts_per_page' => -1,
+		'post_status'    => 'any',
+	) );
+
+	$deleted = false;
+	if ( ! empty( $posts ) ) {
+		foreach ( $posts as $p ) {
+			wp_delete_post( $p->ID, true );
+			$deleted = true;
+		}
+	}
+
+	update_option( 'rs_portfolio_removed_thrivedesk_v1', 1 );
+
+	if ( $switched ) {
+		restore_current_blog();
+	}
+
+	if ( $deleted && function_exists( 'rs_purge_host_cache_soon' ) ) {
+		rs_purge_host_cache_soon();
+	}
+}
+add_action( 'init', 'rs_remove_thrivedesk_project', 21 );
+
 
 
 /**
