@@ -2476,7 +2476,15 @@ function rs_github_latest_ttl() {
 }
 
 /**
- * The last commit on the repository the author pushed to most recently.
+ * The author's newest commit, across the repositories pushed to most recently.
+ *
+ * A repository's pushed_at moves with a push to any branch, including one a
+ * workflow writes to (the profile repository's daily activity card goes to
+ * an `output` branch), while the commit shown is the newest one the author
+ * made on the default branch. So the repository at the top of the list is
+ * not always where the latest work is: the repositories are read in pushed
+ * order, and the look stops once one was last pushed before the newest
+ * commit already found, since nothing in it can be newer.
  *
  * Asked conditionally. The list of repositories carries an ETag, and sent
  * back as If-None-Match it makes GitHub answer 304 whenever nothing has
@@ -2534,44 +2542,75 @@ function rs_github_fetch_latest( $owner, $args, $etag = '' ) {
 	 * @param string[] $skip Lower-case owner/repo slugs; the theme's own by default.
 	 */
 	$skip = array_map( 'strtolower', (array) apply_filters( 'rs_github_latest_skip', array( rs_github_repo_slug( wp_get_theme( get_template() )->get( 'ThemeURI' ) ) ) ) );
-	$list = json_decode( wp_remote_retrieve_body( $response ), true );
-	$pick = null;
+	$list      = json_decode( wp_remote_retrieve_body( $response ), true );
+	$best      = null;
+	$best_repo = null;
+	$best_time = 0;
+	$looked    = 0;
 
 	foreach ( is_array( $list ) ? $list : array() as $repo_item ) {
-		if ( ! empty( $repo_item['full_name'] ) && ! in_array( strtolower( $repo_item['full_name'] ), $skip, true ) ) {
-			$pick = $repo_item;
+		if ( empty( $repo_item['full_name'] ) || in_array( strtolower( $repo_item['full_name'] ), $skip, true ) ) {
+			continue;
+		}
+
+		/* Sorted by push: once a repository was pushed before the newest
+		   commit found, none further down can hold a newer one. */
+		$pushed = ! empty( $repo_item['pushed_at'] ) ? (int) strtotime( $repo_item['pushed_at'] ) : 0;
+
+		if ( $best && $pushed <= $best_time ) {
 			break;
+		}
+
+		/* A bound on the requests one refresh can make. */
+		if ( ++$looked > 5 ) {
+			break;
+		}
+
+		/* The author's own commits only, so a workflow's commits on the
+		   default branch never count as work. */
+		$response = wp_remote_get( 'https://api.github.com/repos/' . $repo_item['full_name'] . '/commits?per_page=1&author=' . rawurlencode( $owner ), $args );
+
+		/* 409: a repository with no commits yet. */
+		if ( ! is_wp_error( $response ) && 409 === (int) wp_remote_retrieve_response_code( $response ) ) {
+			continue;
+		}
+
+		/* Keep the old ETag, so the push is asked about again next time. */
+		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+			return $out;
+		}
+
+		$commits = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( empty( $commits[0]['sha'] ) ) {
+			continue;
+		}
+
+		$when = isset( $commits[0]['commit']['committer']['date'] ) ? (int) strtotime( $commits[0]['commit']['committer']['date'] ) : 0;
+
+		if ( ! $best || $when > $best_time ) {
+			$best      = $commits[0];
+			$best_repo = $repo_item;
+			$best_time = $when;
 		}
 	}
 
-	if ( ! $pick ) {
+	if ( ! $best ) {
 		$out['etag'] = $new_etag;
 
 		return $out;
 	}
 
-	$response = wp_remote_get( 'https://api.github.com/repos/' . $pick['full_name'] . '/commits?per_page=1', $args );
-
-	if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
-		return $out;
-	}
-
-	$commits = json_decode( wp_remote_retrieve_body( $response ), true );
-
-	if ( empty( $commits[0]['sha'] ) ) {
-		return $out;
-	}
-
-	$message = isset( $commits[0]['commit']['message'] ) ? (string) $commits[0]['commit']['message'] : '';
+	$message = isset( $best['commit']['message'] ) ? (string) $best['commit']['message'] : '';
 	$lines   = preg_split( '/\r?\n/', $message );
 
 	$out['changed'] = true;
 	$out['etag']    = $new_etag;
 	$out['latest']  = array(
-		'repo'    => sanitize_text_field( isset( $pick['name'] ) ? $pick['name'] : '' ),
+		'repo'    => sanitize_text_field( isset( $best_repo['name'] ) ? $best_repo['name'] : '' ),
 		'message' => sanitize_text_field( (string) $lines[0] ),
-		'date'    => sanitize_text_field( isset( $commits[0]['commit']['author']['date'] ) ? $commits[0]['commit']['author']['date'] : '' ),
-		'url'     => esc_url_raw( isset( $commits[0]['html_url'] ) ? $commits[0]['html_url'] : '' ),
+		'date'    => sanitize_text_field( isset( $best['commit']['author']['date'] ) ? $best['commit']['author']['date'] : '' ),
+		'url'     => esc_url_raw( isset( $best['html_url'] ) ? $best['html_url'] : '' ),
 	);
 
 	return $out;
@@ -2899,17 +2938,22 @@ function rs_github_activity_sig( $html ) {
  * Ask about "last worked on" alone, and store the answer.
  *
  * The quick half of a refresh: one conditional request between pushes,
- * two after one. The stars, downloads and releases are left to
+ * a few after one. The stars, downloads and releases are left to
  * rs_refresh_github_stats() and its slower clock.
  */
 function rs_refresh_github_latest() {
 	$old = get_site_option( 'rs_github_stats', array() );
 	$old = is_array( $old ) ? $old : array();
 
-	$got = rs_github_fetch_latest( rs_github_owner(), rs_github_request_args(), isset( $old['latest_etag'] ) ? (string) $old['latest_etag'] : '' );
+	$got = rs_github_fetch_latest( rs_github_owner(), rs_github_request_args(), isset( $old['latest_list_etag'] ) ? (string) $old['latest_list_etag'] : '' );
 
-	$old['latest_tried'] = time();
-	$old['latest_etag']  = $got['etag'];
+	/* Stored under a new name since the pick became the newest commit
+	   across repositories: an ETag kept by the old pick would answer 304
+	   and hold its answer until the next push. */
+	unset( $old['latest_etag'] );
+
+	$old['latest_tried']     = time();
+	$old['latest_list_etag'] = $got['etag'];
 
 	if ( $got['changed'] && $got['latest'] ) {
 		$old['latest'] = $got['latest'];
@@ -2989,7 +3033,7 @@ function rs_refresh_github_stats() {
 	/* Last worked on rides along, asked the same conditional way the quick
 	   refresh asks it, so the two never disagree about what was last seen. */
 	$owner  = rs_github_owner( $slugs );
-	$got    = rs_github_fetch_latest( $owner, $args, isset( $old['latest_etag'] ) ? (string) $old['latest_etag'] : '' );
+	$got    = rs_github_fetch_latest( $owner, $args, isset( $old['latest_list_etag'] ) ? (string) $old['latest_list_etag'] : '' );
 	$latest = ( $got['changed'] && $got['latest'] ) ? $got['latest'] : ( isset( $old['latest'] ) ? $old['latest'] : null );
 
 	/* So does the contribution calendar. A failed ask keeps the last one. */
@@ -3006,15 +3050,15 @@ function rs_refresh_github_stats() {
 		'rs_github_stats',
 		array(
 			/* fetched is the last run that worked; tried is the last run. */
-			'fetched'      => $fresh ? time() : ( isset( $old['fetched'] ) ? (int) $old['fetched'] : 0 ),
-			'tried'        => time(),
-			'failed'       => ! $fresh,
-			'repos'        => $repos,
-			'latest'       => $latest,
-			'latest_etag'  => $got['etag'],
-			'latest_tried' => time(),
-			'calendar'     => $calendar,
-			'errors'       => array_slice( $errors, 0, 5 ),
+			'fetched'          => $fresh ? time() : ( isset( $old['fetched'] ) ? (int) $old['fetched'] : 0 ),
+			'tried'            => time(),
+			'failed'           => ! $fresh,
+			'repos'            => $repos,
+			'latest'           => $latest,
+			'latest_list_etag' => $got['etag'],
+			'latest_tried'     => time(),
+			'calendar'         => $calendar,
+			'errors'           => array_slice( $errors, 0, 5 ),
 		)
 	);
 }
