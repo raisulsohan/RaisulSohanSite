@@ -1,6 +1,14 @@
 # Development & Architecture Guidelines for Raisul Sohan Site
 
-This document defines the core architectural principles, performance standards, and coding conventions for the **Raisul Sohan** personal WordPress theme. Any AI agent or developer working on this codebase must strictly follow these rules.
+This document defines the core architectural principles, performance standards, and coding conventions for the **Raisul Sohan** personal WordPress theme, the plugin-less Bengali and English site at raisulsohan.com. Any AI agent or developer working on this codebase must strictly follow these rules.
+
+## Read first
+
+1. This file.
+2. The router for the task under **Project map** below, then only the files it links.
+3. `git status` and `git log --oneline -10`.
+
+When documents disagree: the code, then this file, then the README (whose *What's new* sections are history).
 
 ---
 
@@ -29,11 +37,7 @@ This document defines the core architectural principles, performance standards, 
   2. The first candidate renders normally; all remaining candidates render with the `hidden` attribute.
   3. An immediate, lightweight, synchronous inline `<script>` is placed directly after the container.
   4. The inline script picks a random candidate from the pool and toggles `hidden` **before the browser engine paints the region**.
-- **Benefits:**
-  - **Zero CLS (Cumulative Layout Shift):** The browser lays out only one active element from the start.
-  - **Zero Visual Flash:** The chosen post is already set before the initial paint.
-  - **Zero Network Delay:** No extra HTTP or REST API round-trip required on load.
-  - **100% Cache Friendly:** Every visitor and every page reload gets a fresh random item even when served the exact same cached HTML.
+- Why this works, point by point: [docs/guides/dynamic-content-on-cached-pages.md](docs/guides/dynamic-content-on-cached-pages.md).
 
 ---
 
@@ -76,3 +80,25 @@ This document defines the core architectural principles, performance standards, 
   v<version>: <Clear, high-level summary of what and why>
   ```
   *Example:* `v7.4.69: Pre-render featured post candidate pool and pick randomly via inline script to eliminate layout shift and visible swapping`
+- Commits are Raisul Sohan's alone. Never add an AI or co-author line to a commit, pull request or release. Do the work yourself; no subagents or workflows. Reply in Bengali; code, comments, docs and commit messages are English.
+
+---
+
+## Commands
+
+```
+npm run build    # src/css and src/js into assets/*.min.*
+npm run check    # exit 1 if the committed build is stale (CI runs this)
+```
+
+## Project map
+
+Before opening files, read the router for the task, then only the files it points to:
+
+- [docs/map/PRODUCT.md](docs/map/PRODUCT.md): the templates, every `inc/` file, the build, the service worker
+- [docs/map/FRONTEND.md](docs/map/FRONTEND.md): every `src/css` and `src/js` part in build order, and the page bundles
+- [docs/map/OPERATIONS.md](docs/map/OPERATIONS.md): build, CI, the version bump, deploy through the updater, rollback, the PWA, runtime data
+
+The map guides what to read first. It never replaces the rules above or a release gate.
+
+**Keep the map true.** A change that adds, moves or removes a file a router names updates that router in the same change. The whole repository is the theme the live site pulls, so routers live only in `docs/map/`, never inside `inc/`, `src/` or `assets/`, and hold nothing private. Routers stay about 15–35 lines (the front-end list is longer, on purpose), link only to files that exist, and never hold secrets. Reference material goes in `docs/`, not here; keep this file under 8 KB.

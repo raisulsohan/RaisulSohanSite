@@ -1650,8 +1650,8 @@ function rs_get_default_portfolio_projects() {
 			'action_type' => 'video',
 			'action_bn'   => 'ফিল্মটি দেখুন',
 			'action_en'   => 'Watch Film',
-			'direct_url'  => 'https://raisulsohan.github.io/Nomolos_01_Prohibition-animation/',
-			'github_url'  => 'https://github.com/raisulsohan/Nomolos_01_Prohibition-animation',
+			'direct_url'  => 'https://raisulsohan.github.io/Nomolos_01_Prohibition_animation/',
+			'github_url'  => 'https://github.com/raisulsohan/Nomolos_01_Prohibition_animation',
 			'order'       => 2,
 		),
 		array(
@@ -1988,14 +1988,14 @@ add_action( 'init', 'rs_remove_thrivedesk_project', 21 );
  * Ensures Raisul Sohan's After Effects animation, custom illustration, 3D parallax,
  * atmospheric glow, and curated sound design credits are synced to database posts.
  */
-function rs_sync_nomolos_ae_rebrand_v1() {
+function rs_sync_nomolos_ae_rebrand_v2() {
 	$switched = false;
 	if ( is_multisite() && ! is_main_site() ) {
 		switch_to_blog( get_main_site_id() );
 		$switched = true;
 	}
 
-	if ( get_option( 'rs_portfolio_synced_nomolos_ae_v1' ) ) {
+	if ( get_option( 'rs_portfolio_synced_nomolos_ae_v2' ) ) {
 		if ( $switched ) {
 			restore_current_blog();
 		}
@@ -2041,7 +2041,7 @@ function rs_sync_nomolos_ae_rebrand_v1() {
 		}
 	}
 
-	update_option( 'rs_portfolio_synced_nomolos_ae_v1', 1 );
+	update_option( 'rs_portfolio_synced_nomolos_ae_v2', 1 );
 
 	if ( $switched ) {
 		restore_current_blog();
@@ -2051,7 +2051,7 @@ function rs_sync_nomolos_ae_rebrand_v1() {
 		rs_purge_host_cache_soon();
 	}
 }
-add_action( 'init', 'rs_sync_nomolos_ae_rebrand_v1', 23 );
+add_action( 'init', 'rs_sync_nomolos_ae_rebrand_v2', 23 );
 
 /**
  * 11. Add projects that joined the defaults after the portfolio was seeded.
