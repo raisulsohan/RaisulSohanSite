@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.27.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.27.1-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -12,10 +12,11 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 
 ## What's new in 7.27
 
-**Nomolos 02 · The Cobra Effect joins the portfolio.** The second animated documentary film in the Nomolos series is added to the portfolio showcase: an 8-minute 49-second animated documentary film conceived, written, directed, and animated by Raisul Sohan, rendered frame-by-frame on an HTML5 canvas in pure JavaScript.
+**Nomolos 01 & 02: After Effects, custom illustrations, 3D parallax, and original sound design.** Both documentary films in the Nomolos series showcase their complete production craft: animated and composited in Adobe After Effects, built with handcrafted vector illustrations, choreographed with cinematic 3D parallax and atmospheric glow, and scored with curated SFX, BGM, and underscores composed from free audio resources.
 
-- **Zero video, zero raster images:** All 23 scenes of the animated documentary are calculated deterministically from time (`t`), enabling instant seeking, single-frame stepping, and dual 16:9 Desktop and 4:5 Mobile layouts without video buffering.
-- **Full portfolio integration:** Dedicated case study page at `/portfolio/nomolos-cobra-effect/`, animated WebP card preview, live GitHub repository tracking, and outbound link to watch the documentary online.
+- **7.27.1: Production craft rebrand & database sync.** Update Nomolos 01 (Prohibition) and Nomolos 02 (The Cobra Effect) across portfolio case studies, metadata, and database posts (`rs_sync_nomolos_ae_rebrand_v1()`) to document the complete Adobe After Effects animation pipeline, bespoke vector illustration assets, multiplane 3D parallax depth, signature lighting/glows, and frame-synchronized sound design.
+- **7.27.0: Nomolos 02 · The Cobra Effect joins the portfolio.** The second animated documentary film in the Nomolos series is added to the portfolio showcase: an 8-minute 49-second animated documentary film created, written, directed, and solo-animated by Raisul Sohan across 23 complete scenes.
+- **Full portfolio integration:** Dedicated case study pages at `/portfolio/nomolos-cobra-effect/` and `/portfolio/nomolos-prohibition/`, animated WebP card previews, live GitHub repository tracking, and outbound viewing links.
 
 ## What's new in 7.26
 

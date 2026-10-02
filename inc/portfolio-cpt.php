@@ -1608,50 +1608,48 @@ function rs_get_default_portfolio_projects() {
 		array(
 			'id'          => 'nomolos-prohibition',
 			'category'    => 'video',
-			'type_bn'     => 'রাইসুল সোহানের ক্যানভাস অ্যানিমেশন ও কোডেড ফিল্ম',
-			'type_en'     => 'Original Canvas Animation Film by Raisul Sohan',
-			'badge_bn'    => 'রাইসুল সোহানের অ্যানিমেশন • ৯:৪০ মিনিট',
-			'badge_en'    => 'Animated by Raisul Sohan • 9:40 Mins',
-			'title_bn'    => 'Nomolos 01: Prohibition — রাইসুল সোহানের চিত্রনাট্য, পরিচালনা ও কোডে নির্মিত অ্যানিমেশন ফিল্ম',
-			'title_en'    => 'Nomolos 01: Prohibition — An Animated Documentary Film Created & Directed by Raisul Sohan',
-			'summary_bn'  => 'আমেরিকান প্রহিবিশন (মদ নিষিদ্ধকরণ) ইতিহাসের ওপর নোমোলোস (Nomolos) সিরিজের প্রথম পূর্ণাঙ্গ অ্যানিমেশন ডকুমেন্টারি ফিল্ম, যা এককভাবে সম্পূর্ণ তৈরি, চিত্রনাট্য রচনা, পরিচালনা ও কোড করেছেন রাইসুল সোহান। কোনো পূর্ব-রেন্ডার করা ভিডিও বা রাস্টার ইমেজ ফাইল ব্যবহার না করে রাইসুল সোহান সম্পূর্ণ ভ্যানিলা জাভাস্ক্রিপ্ট ও গাণিতিক ভেক্টর জ্যামিতিতে HTML5 ক্যানভাসে রিয়েল-টাইমে ফ্রেম-বাই-ফ্রেম ৯ মিনিট ৪০ সেকেন্ডের এই সিনেমাটিক ভিজ্যুয়াল আর্ট ও মোশন ফুটিয়ে তুলেছেন।',
-			'summary_en'  => 'The first animated documentary film in the Nomolos series, exploring the history of American Prohibition—entirely written, directed, animated, and coded by Raisul Sohan. Without relying on any pre-rendered video files or raster images, Raisul Sohan mathematically engineered and drew every single frame in real time on HTML5 canvas using pure vanilla JavaScript vector math, delivering a 9-minute, 40-second cinematic storytelling experience.',
-			'role_bn'     => 'রাইসুল সোহান — চিত্রনাট্যকার, পরিচালক, একক অ্যানিমেটর ও সফটওয়্যার আর্কিটেক্ট',
-			'role_en'     => 'Raisul Sohan — Creator, Director, Screenwriter, Solo Animator & Creative Coder',
-			'context_bn'  => 'রাইসুল সোহানের নোমোলোস সিরিজ • ৯:৪০ মিনিট অ্যানিমেশন ফিল্ম • ১৬:৯ ও ৪:৫ • পিওর ক্যানভাস ইঞ্জিন',
-			'context_en'  => 'Nomolos Film Series by Raisul Sohan • 9:40 Mins • 16:9 & 4:5 • Pure Canvas Engine',
-			'challenge_bn'=> "প্রচলিত অ্যানিমেশন বা মোশন ডকুমেন্টারি তৈরি করতে আফটার ইফেক্টস কিংবা থ্রিডি সফটওয়্যার থেকে গিগাবাইট আকারের ভিডিও (MP4/WebM) রেন্ডার করতে হয় অথবা শত শত রাস্টার ইমেজ ও স্প্রাইট শিট লোড করতে হয়। এতে ব্যান্ডউইথ খরচ বিপুল বেড়ে যায় এবং ব্রাউজারে ফ্রেম-বাই-ফ্রেম স্বাধীন নিয়ন্ত্রণ ও টাইম-স্ক্রাবিং অসম্ভব হয়ে পড়ে।\n\nরাইসুল সোহানের সামনে মূল প্রযুক্তিগত ও নান্দনিক চ্যালেঞ্জসমূহ:\n১. জিরো ভিডিও ও জিরো ইমেজ ডিপেনডেন্সি: কোনো MP4, GIF বা PNG/JPG ফাইল ছাড়া কেবল রাইসুল সোহানের বিশুদ্ধ কোড ও ভেক্টর জ্যামিতির সাহায্যে ঐতিহাসিক দৃশ্যপট, মানচিত্র, স্ট্যাম্প, ল্যাম্পপোস্ট, মেকানিকাল গিয়ার এবং টাইপোগ্রাফি ফুটিয়ে তোলা।\n২. বিশুদ্ধ গাণিতিক সময়-ফাংশন (Deterministic Time Function): প্রতিটি ফ্রেমকে পরম সময়ের (t) একটি বিশুদ্ধ গাণিতিক ফাংশনে রূপ দেওয়া, যেন বাফারিং ছাড়াই যেকোনো মুহূর্তে নির্দিষ্ট ফ্রেম (যেমন ?t=12.5) বা সিনে তাৎক্ষণিক জাম্প ও স্ক্রাব করা যায়।\n৩. ডুয়েল অ্যাসপেক্ট রেশিও (১৬:৯ ও ৪:৫): ফিল্মটিকে একই সাথে ওয়াইডস্ক্রিন ডেস্কটপ (১৯২০×১০৮০) এবং মোবাইল ডিভাইসের পোর্ট্রেট (১০৮০×১৩৫০) উভয় ফরম্যাটে নিখুঁত ফোকাস, ক্যামেরা স্কেলিং ও কম্পোজিশন লেআউটে অভিযোজিত করা।\n৪. ৬০ FPS ক্যানভাস পারফরম্যান্স: রাইসুল সোহানের পরিচালিত ৫১টি জটিল সিকোয়েন্স জুড়ে মসৃণ পারফরম্যান্স নিশ্চিত করা যাতে কোনো মেমরি লিক বা ফ্রেম ড্রপ না ঘটে।",
-			'challenge_en'=> "Traditional animated documentaries rely on massive multi-gigabyte video renders (MP4, WebM) or pre-rendered raster image sequences and sprite sheets. This introduces heavy bandwidth overhead, buffer latency, and eliminates programmatic runtime control over individual animation parameters.\n\nKey Creative & Technical Challenges Solved by Raisul Sohan:\n1. Zero Video and Zero Image Dependencies: Crafting a continuous 9-minute, 40-second historical documentary without a single MP4, GIF, PNG, or JPG asset—relying purely on Raisul Sohan's procedural vectors, custom vector math, and canvas drawing routines to render street scenes, map projections, animated gears, typography stamps, and night atmospheres.\n2. Pure Deterministic Time-Based Architecture: Every visual frame is a pure mathematical function of absolute time (t). Any millisecond of the film can be rendered independently without sequential video decoding, enabling zero-latency random seeking, single-frame stepping, and URL time freezing (e.g. ?t=12.5).\n3. Dual-Format Responsive Layouts: Orchestrating the entire production in two distinct spatial aspect ratios—widescreen 16:9 (1920×1080) for desktop monitors and 4:5 (1080×1350) for mobile feeds—with dynamic camera framing, visual asset repositioning, and typographic reflow per format.\n4. Rock-Solid 60 FPS Performance: Maintaining fluid 60 frames per second rendering across 51 intricate sequence compositions designed and animated by Raisul Sohan without memory leaks or canvas context thrashing.",
-			'solution_bn' => "১. প্রসিডিউরাল ভেক্টর ড্রয়িং পাইপলাইন (HTML5 Canvas 2D): রাইসুল সোহান তৈরি করেছেন একটি হালকা অথচ শক্তিশালী মডুলার আর্কিটেকচার (lib/core.js, looks.js, props.js, usmap.js, hand.js), যা বেজিয়ের কার্ভ, প্রসিডিউরাল নয়েজ, ড্রাফটিং গ্রিড এবং ভৌগোলিক ইউএস মানচিত্র সরাসরি কোডে রেন্ডার করে।\n\n২. পরম সময়-ভিত্তিক রেন্ডার ইঞ্জিন: ফিল্মের প্রতিটি সিকোয়েন্সের render(ctx, time) ফাংশন বর্তমান প্লেহেড সময়ের ভিত্তিতে ক্যামেরা জুম, ইজিং কার্ভস (easeOut, easeOutBack) ও এলিমেন্ট ট্রান্সফর্মেশন নির্ধারণ করে। কোনো প্রি-রেকর্ডেড ভিডিওর বাফারিং ছাড়াই নিখুঁত ফ্রেম রেন্ডারিং নিশ্চিত হয়।\n\n৩. অ্যাডাপ্টিভ ডুয়েল ফরম্যাট অর্কেস্ট্রেশন: কোডের ভেতর প্রতিটি শটের জন্য আলাদা কোঅর্ডিনেট লেআউট (FMT === '4x5' বনাম ১৬:৯) নির্ধারণ করা হয়েছে। ফলে মোবাইল স্ক্রিনে গুরুত্বপূর্ণ ভিজ্যুয়াল ফোকাস স্বয়ংক্রিয়ভাবে সেন্টারে রিকম্পোজ হয়।\n\n৪. ৫১টি মডুলার সিকোয়েন্স ও সিন ইনডেক্সিং: পুরো ডকুমেন্টারিকে ৫১টি স্বতন্ত্র সিকোয়েন্সে ভাগ করে সুনির্দিষ্ট শট টাইমিং (timing.js) দিয়ে সিনক্রোনাইজ করেছেন রাইসুল সোহান। দর্শক পুরো ফিল্ম ছাড়াও প্রতিটি দৃশ্য আলাদাভাবে ব্রাউজ করতে পারেন।\n\n৫. কাস্টম ব্রাউজার কন্ট্রোল ও কীবোর্ড নেভিগেশন: নিজস্ব লাইটওয়েট প্লেয়ার তৈরি করা হয়েছে যাতে রয়েছে স্পেসবারে প্লে/পজ, তীরচিহ্নে ফ্রেম-বাই-ফ্রেম ও সেকেন্ড-বাই-সেকেন্ড স্ক্রাব, হোম কি ও ফুলস্ক্রিন (F) শর্টকাট।\n\n৬. জিরো বিল্ড ও অফলাইন রেডি: কোনো ভারী নোড প্যাকেজ বা বান্ডলার ছাড়াই পিওর ES6 মডিউলে লেখা, যা সরাসরি যেকোনো ব্রাউজারে অফলাইনে কিংবা স্ট্যাটিক হোস্টিংয়ে নিখুঁতভাবে চলে।",
-			'solution_en' => "1. Procedural Vector Canvas Architecture: Raisul Sohan developed a modular rendering library (lib/core.js, looks.js, props.js, usmap.js, hand.js) capable of rendering Bézier curves, procedural noise, dynamic ink blots, and US state geographic boundaries on the fly.\n\n2. Deterministic Pure Time-Function Rendering: Every sequence defines a render(ctx, time) loop where camera positioning, ease curves (easeOut, easeOutBack), and spatial envelopes are mathematically derived from time (t), eliminating video buffer lag entirely.\n\n3. Adaptive Dual-Aspect Geometry: Embedded format-aware coordinate systems (FMT === '4x5' vs 16:9 Desktop) within each sequence to automatically recompose shots, shift camera focal points, and re-anchor typography between desktop and vertical mobile screens.\n\n4. 51 Modular Sequences with Granular Shot Timings: Architected the 9:40 production into 51 discrete sequences driven by declarative shot timing maps (timing.js), allowing seamless end-to-end playback as well as individual scene inspection choreographed by Raisul Sohan.\n\n5. Ergonomic In-Browser Player & Hotkeys: Engineered a native keyboard-driven playback interface featuring Space for play/pause, Left/Right arrow keys for single-frame stepping, Shift+Arrow for 1-second leaps, Home to reset, and F for fullscreen.\n\n6. Zero Build & Frictionless Offline Portability: Written entirely in standard vanilla JavaScript without build steps, compilers, or server dependencies—running instantly in any modern browser offline or from static CDN hosting.",
+			'type_bn'     => 'আফটার ইফেক্টস মোশন অ্যানিমেশন ও অরিজিনাল ফিল্ম',
+			'type_en'     => 'After Effects Motion Animation & Original Documentary Film',
+			'badge_bn'    => 'আফটার ইফেক্টস অ্যানিমেশন • ৯:৪০ মিনিট',
+			'badge_en'    => 'After Effects Animation • 9:40 Mins',
+			'title_bn'    => 'Nomolos 01: Prohibition — আফটার ইফেক্টস, নিজস্ব ইলাস্ট্রেশন ও কাস্টম সাউন্ডট্র্যাকে নির্মিত অ্যানিমেশন ফিল্ম',
+			'title_en'    => 'Nomolos 01: Prohibition — An Animated Documentary Film Crafted in After Effects by Raisul Sohan',
+			'summary_bn'  => 'আমেরিকান প্রহিবিশন (মদ নিষিদ্ধকরণ) ইতিহাসের ওপর নোমোলোস (Nomolos) সিরিজের প্রথম পূর্ণাঙ্গ সিনেমাটিক অ্যানিমেশন ডকুমেন্টারি ফিল্ম। সম্পূর্ণ কনসেপ্ট, চিত্রনাট্য রচনা, প্রতিটি দৃশ্যের জন্য নিজস্ব ভেক্টর ইলাস্ট্রেশন আর্টওয়ার্ক তৈরি, অ্যাডোবি আফটার ইফেক্টসে (Adobe After Effects) মাল্টি-লেয়ার ৩ডি প্যারালাক্স ও সিনেমাটিক গ্লো অ্যানিমেশন এবং বিভিন্ন উন্মুক্ত ফ্রি রিসোর্স থেকে খুঁজে নিজস্ব সাউন্ড কম্পোজিশন (SFX, BGM, Underscore) দিয়ে ফিল্মটি এককভাবে তৈরি করেছেন রাইসুল সোহান। ৯ মিনিট ৪০ সেকেন্ডের এই সিনেমাটিক আর্টপিস ঐতিহাসিক আবহ ও আধুনিক মোশন ডিজাইনের এক অনন্য যুগলবন্দী।',
+			'summary_en'  => 'The debut animated documentary film in the Nomolos series, exploring the complex history of American Prohibition—entirely written, illustrated, animated in Adobe After Effects, and sound-composed by Raisul Sohan. Featuring custom handcrafted vector artwork for every asset, multiplane 2.5D/3D parallax spatial staging, atmospheric cinematic glow and volumetric lighting, and an original audio soundscape of SFX, BGM, and underscores curated and composed from free open resources, this 9-minute 40-second production delivers a gripping cinematic visual narrative.',
+			'role_bn'     => 'রাইসুল সোহান — চিত্রনাট্যকার, পরিচালক, ভেক্টর ইলাস্ট্রেটর, আফটার ইফেক্টস অ্যানিমেটর ও সাউন্ড কম্পোজার',
+			'role_en'     => 'Raisul Sohan — Screenwriter, Director, Vector Illustrator, After Effects Animator & Sound Designer',
+			'context_bn'  => 'আফটার ইফেক্টস মোশন • কাস্টম ইলাস্ট্রেশন • ৩ডি প্যারালাক্স ও গ্লো • অরিজিনাল সাউন্ডস্কেপ • ৯:৪০ মিনিট',
+			'context_en'  => 'After Effects Motion • Custom Illustration • 3D Parallax & Glow • Original Soundscape • 9:40 Mins',
+			'challenge_bn'=> "একটি ৯ মিনিট ৪০ সেকেন্ডের পূর্ণাঙ্গ ঐতিহাসিক অ্যানিমেশন ডকুমেন্টারি স্ক্র্যাচ থেকে এককভাবে নির্মাণ করার পেছনে ছিল বহুমুখী নান্দনিক ও কারিগরি চ্যালেঞ্জ:\n\n১. কাস্টম ইলাস্ট্রেশন ও আর্ট ডিরেকশন: ১৯২০-এর দশকের আমেরিকার অন্ধকার গলিপথ, বার, পুরোনো শহরের ড্রাফটিং, মদ চোরাচালানের ট্রাক, মানচিত্র এবং ঐতিহাসিক চরিত্রসমূহের কোনো রেডিমেড স্টক ফাইল ব্যবহার না করে সম্পূর্ণ নিজস্ব শৈলীতে প্রতিটি দৃশ্য ও অবজেক্ট ভেক্টর আর্টওয়ার্কে ফুটিয়ে তোলা।\n২. আফটার ইফেক্টসে ২.৫ডি/৩ডি প্যারালাক্স গভীরতা: সাধারণ ফ্ল্যাট টুডি অ্যানিমেশনের একঘেয়েমি ভেঙে দৃশ্যগুলোতে জীবন্ত গতি আনতে প্রতিটা দৃশ্যকে ২০ থেকে ৫০টি আলাদা ভেক্টর লেয়ারে ভাগ করে আফটার ইফেক্টসের ৩ডি স্পেসে মাল্টিপ্লেন ক্যামেরায় রিগিং করা—যেখানে ফোরগ্রাউন্ড, মিডলগ্রাউন্ড ও ব্যাকগ্রাউন্ড ক্যামেরার মুভমেন্টের সাথে আলাদা গতিতে প্রবাহিত হয়ে সত্যিকারের ডেপথ ও প্যারালাক্স তৈরি করে।\n৩. সিনেমাটিক গ্লো ও এটমোস্ফেরিক লাইটিং: রাতের শহরের গ্যাসবাতি, নিয়ন আলো, ল্যাম্পপোস্ট এবং মদের ড্রামের রিফ্লেকশনে ন্যাচারাল ও ড্রামাটিক ডেপথ আনতে কাস্টম গ্লো (Deep Atmospheric Glow), অপটিক্যাল ডিফিউশন এবং লাইট রে তৈরি করা।\n৪. কাস্টম সাউন্ড ডিজাইন ও আন্ডারস্কোর কম্পোজিশন: কোনো বাণিজ্যিক স্টুডিও বা লাইসেন্সড সাউন্ড প্যাক ছাড়া কেবল পাবলিক ডোমেন ও ফ্রি অডিও লাইব্রেরি থেকে শত শত সাউন্ড ইফেক্টস (SFX)—যেমন কাচ ভাঙার শব্দ, গাড়ির ইঞ্জিনের গর্জন, হুইস্কি ঢালার শব্দ, পুরোনো মুদ্রার আওয়াজ এবং পিরিয়ড জ্যাজ ও মেলোড্রামাটিক বিজিএম (BGM/Underscore) খুঁজে বের করে নিখুঁত ফ্রেম-বাই-ফ্রেম টাইমিংয়ে ট্র্যাক মিক্স ও কম্পোজ করা।",
+			'challenge_en'=> "Creating a comprehensive 9-minute 40-second historical documentary film as a solo creator presented demanding creative, technical, and acoustic challenges:\n\n1. Bespoke Illustration & Art Direction: Rather than leaning on generic stock vector packs, every 1920s speakeasy, cobblestone alleyway, bootlegging truck, cartographic projection, and historical figure had to be hand-illustrated from scratch to maintain an authentic, atmospheric graphic novel visual identity.\n2. After Effects 2.5D/3D Parallax Architecture: To transcend the visual monotony of flat 2D motion graphics, each composition was decomposed into dozens of isolated vector layers and choreographed in After Effects 3D space with virtual camera rigs—producing realistic parallax depth where foreground silhouettes, midground subjects, and background horizons drift with spatial depth of field.\n3. Atmospheric Glow & Volumetric Illumination: Infusing moody period streetlamps, neon signage, and underground cellar lighting with rich organic glows, optical light falloffs, and filmic grain to ground the historical drama.\n4. Independent Audio Scoring & Sound Design: With zero budget for commercial production music or paid foley libraries, hundreds of raw sound effects (glass clinks, engine revs, footsteps, rain, police whistles) and ambient background music (BGM/Underscore) had to be discovered across free and open-source audio archives, meticulously re-timed, audio-edited, pitch-shifted, and layered to synchronize seamlessly with every keyframe.",
+			'solution_bn' => "১. সম্পূর্ণ নিজস্ব ভেক্টর ইলাস্ট্রেশন পাইপলাইন: প্রতিটি দৃশ্যপটের চরিত্র, স্থাপত্য, ভেহিকেল ও প্রপস নিজে ইলাস্ট্রেশন করে আফটার ইফেক্টসের মোশন সুবিধার জন্য আলাদা আলাদা কম্পোনেন্টে (হেড, আর্মস, শ্যাডো, ব্যাকড্রপ) লেয়ার্ড আর্টওয়ার্ক হিসেবে প্রস্তুত করা হয়েছে।\n\n২. অ্যাডোবি আফটার ইফেক্টসে মাল্টি-লেয়ার ৩ডি ক্যামেরা রিগ: প্রতিটি সিকোয়েন্সে ৩ডি লেয়ারিং, ওয়াইড ফোকাল লেন্থের ক্যামেরা, অপটিক্যাল ডেপথ অফ ফিল্ড এবং কাস্টম নাল অবজেক্ট কন্ট্রোলারের সাহায্যে মসৃণ ক্যামেরা ট্রাভেলিং ও গভীর প্যারালাক্স ভাইব সৃষ্টি করা হয়েছে।\n\n৩. সিনেমাটিক গ্লো, টেক্সচার ও পোস্ট-প্রসেসিং: একাধিক স্তরের সফট ও হাইলাইট গ্লো, এম্বিয়েন্ট লাইট র‍্যাম্প, ভিনটেজ টেক্সচার এবং পারফেক্ট কালার গ্রেডিংয়ের সমন্বয়ে ফিল্মটিকে দেওয়া হয়েছে ক্লাসিক সিনেমাটিক ডকুমেন্টারি ফিল।\n\n৪. নিখুঁত কিফ্রেম ইজিং ও টাইমিং অর্কেস্ট্রেশন: আফটার ইফেক্টসের গ্রাফ এডিটরে প্রতিটি মোশন পাথের বেজিয়ার কার্ভ (Bézier curves) এবং ইজিং প্যারামিটার সূক্ষ্মভাবে টিউন করে অর্গানিক ও ডায়নামিক মুভমেন্ট আনা হয়েছে।\n\n৫. ফ্রি রিসোর্স থেকে কিউরেটেড সাউন্ড ডিজাইন ও অরিজিনাল অডিও স্কোরিং: পাবলিক ডোমেন ও ক্রিয়েটিভ কমন্স সাউন্ড লাইব্রেরি তন্ন তন্ন করে খুঁজে শত শত সাউন্ড ইফেক্টস (SFX) নির্বাচন করে প্রতিটি অ্যাকশনের সাথে নিখুঁতভাবে সিঙ্ক করা হয়েছে এবং ব্যাকগ্রাউন্ড মিউজিক (BGM) ও মেলোডিক আন্ডারস্কোর কাস্টম এডিটিংয়ের মাধ্যমে দৃশ্যের আবেগকে সর্বোচ্চ পর্যায়ে নিয়ে যাওয়া হয়েছে।",
+			'solution_en' => "1. Handcrafted Vector Illustration Pipeline: Every architectural facade, character asset, vintage vehicle, and typographic title was illustrated from scratch and organized into cleanly segmented, motion-ready vector assets optimized for After Effects manipulation.\n\n2. Multiplane 2.5D/3D Camera Rigging in After Effects: Deployed multi-layered composition spaces with virtual wide-angle camera rigs, subtle camera shakes, rotational drifts, and depth-of-field blurring to craft an immersive spatial parallax experience.\n\n3. Atmospheric Glow, Light Bleeds & Post-Compositing: Engineered layered luminous glows, warm volumetric highlights, ambient vignettes, and subtle analog grit to establish an authentic 1920s visual tone.\n\n4. Graph Editor Keyframe Choreography: Hand-tuned velocity curves, spatial Bézier handles, and easing envelopes in the After Effects Graph Editor to achieve natural, organic acceleration and deceleration without robotic linearity.\n\n5. Curated Sound Design & Custom Underscore Scoring: Systematically sourced, cleaned, and layered hundreds of free and public domain foley clips, ambient room tones, and evocative musical scores—painstakingly timed to the exact frame of visual beats to deliver full-bodied auditory impact.",
 			'highlights_bn'=> array(
-				'রাইসুল সোহানের ৯ মিনিট ৪০ সেকেন্ডের পূর্ণাঙ্গ অ্যানিমেশন ফিল্ম — ০টি ভিডিও বা ইমেজ ফাইল',
-				'রাইসুল সোহান রচিত, পরিচালিত, চিত্রায়িত ও কোডকৃত মৌলিক ঐতিহাসিক ডকুমেন্টারি',
-				'১০০% পিওর ভ্যানিলা জাভাস্ক্রিপ্ট ও HTML5 Canvas ভেক্টর রেন্ডারিং ইঞ্জিন',
-				'পরম সময়ভিত্তিক ফ্রেম আর্কিটেকচার — যেকোনো ফ্রেম বা মুহূর্তে নিখুঁত স্ক্রাবিং ও জাম্প',
-				'ডুয়েল অ্যাসপেক্ট রেশিও সাপোর্ট: ১৬:৯ ডেক্সটপ ও ৪:৫ মোবাইল ডিসপ্লে',
-				'৫১টি মডুলার অ্যানিমেশন সিকোয়েন্স এবং নিখুঁত শট টাইমিং কোঅর্ডিনেশন',
-				'কীবোর্ড শর্টকাট সমৃদ্ধ নেটিভ ওয়েব প্লেয়ার (ফ্রেম স্টেপিং, পজ ও ফুলস্ক্রিন)',
-				'কোনো বান্ডলার বা বিল্ড স্টেপ ছাড়া ১০০% ওপেন সোর্স ও অফলাইন সক্ষম',
+				'রাইসুল সোহানের ৯ মিনিট ৪০ সেকেন্ডের পূর্ণাঙ্গ সিনেমাটিক অ্যানিমেশন ফিল্ম',
+				'অ্যাডোবি আফটার ইফেক্টসে (Adobe After Effects) সম্পূর্ণ অ্যানিমেশন ও কম্পোজিটিং',
+				'প্রতিটি দৃশ্যের ব্যাকগ্রাউন্ড, চরিত্র ও প্রপসের সম্পূর্ণ নিজস্ব ভেক্টর ইলাস্ট্রেশন',
+				'মাল্টি-লেয়ার ৩ডি প্যারালাক্স ক্যামেরা ও সিনেমাটিক ডেপথ অফ ফিল্ড',
+				'সিগনেচার এটমোস্ফেরিক গ্লো, অর্গানিক লাইটিং এবং ভিনটেজ টেক্সচার ইফেক্টস',
+				'ফ্রি অডিও রিসোর্স খুঁজে প্রতিটি সিনের সাথে নিজে কম্পোজ করা অরিজিনাল SFX ও BGM',
+				'কোনো থার্ড-পার্টি টেমপ্লেট ছাড়া ১০০% হ্যান্ডক্রাফটেড মোশন গ্রাফিক্স স্টোরিটেলিং',
 			),
 			'highlights_en'=> array(
-				'Complete 9:40 animated film written, directed, animated, and coded by Raisul Sohan',
-				'Zero video and zero raster image dependencies — drawn entirely via procedural code',
-				'100% pure vanilla JavaScript and HTML5 Canvas 2D procedural vector rendering',
-				'Deterministic time-based architecture: every frame is an exact mathematical function of time',
-				'Full dual aspect ratio support: 16:9 widescreen Desktop and 4:5 vertical Mobile',
-				'51 modular animation sequences choreographed with precise shot timing maps',
-				'Native keyboard-controlled web player with single-frame stepping and fullscreen',
-				'Zero build steps and zero dependencies: runs entirely offline and open source under MIT',
+				'Complete 9:40 animated documentary film written, directed, and animated by Raisul Sohan',
+				'100% animated and composited in Adobe After Effects with custom camera rigs',
+				'Handcrafted vector illustration artwork for every scene, environment, and character',
+				'Immersive multiplane 3D parallax depth and cinematic depth-of-field staging',
+				'Atmospheric signature glow, volumetric lighting spills, and period color grading',
+				'Curated sound design: original SFX, BGM, and underscore composed from free audio resources',
+				'Zero pre-made animation templates: bespoke keyframing and art direction throughout',
 			),
-			'tags'        => array( 'Creative Coding', 'JavaScript (Canvas)', 'Motion Animation', 'Documentary', 'Vector Math', 'Open Source' ),
+			'tags'        => array( 'Adobe After Effects', 'Motion Design', 'Illustration', '3D Parallax', 'Sound Design (SFX/BGM)', 'Documentary' ),
 			'accent'      => '#f2a33a',
 			'icon'        => 'video',
 			'image'       => get_template_directory_uri() . '/assets/img/nomolos-prohibition.webp',
 			'image_fit'   => 'cover',
 			'action_type' => 'video',
-			'action_bn'   => 'ব্রাউজারে ফিল্মটি দেখুন',
-			'action_en'   => 'Watch Film in Browser',
+			'action_bn'   => 'ফিল্মটি দেখুন',
+			'action_en'   => 'Watch Film',
 			'direct_url'  => 'https://raisulsohan.github.io/Nomolos_01_Prohibition-animation/',
 			'github_url'  => 'https://github.com/raisulsohan/Nomolos_01_Prohibition-animation',
 			'order'       => 2,
@@ -1659,50 +1657,48 @@ function rs_get_default_portfolio_projects() {
 		array(
 			'id'          => 'nomolos-cobra-effect',
 			'category'    => 'video',
-			'type_bn'     => 'রাইসুল সোহানের ক্যানভাস অ্যানিমেশন ও কোডেড ফিল্ম',
-			'type_en'     => 'Original Canvas Animation Film by Raisul Sohan',
-			'badge_bn'    => 'রাইসুল সোহানের অ্যানিমেশন • ৮:৪৯ মিনিট',
-			'badge_en'    => 'Animated by Raisul Sohan • 8:49 Mins',
-			'title_bn'    => 'Nomolos 02: Cobra Effect — রাইসুল সোহানের চিত্রনাট্য, পরিচালনা ও কোডে নির্মিত অ্যানিমেশন ফিল্ম',
-			'title_en'    => 'Nomolos 02: Cobra Effect — An Animated Documentary Film Created & Directed by Raisul Sohan',
-			'summary_bn'  => 'ব্রিটিশ শাসনামলে দিল্লিতে সাপের উপদ্রব কমাতে সাপের মাথার ওপর পুরস্কার ঘোষণা এবং তার মারাত্মক বিপরীতমুখী প্রতিক্রিয়া নিয়ে "কোবরা ইফেক্ট" (Cobra Effect) ইতিহাসের ওপর নোমোলোস (Nomolos) সিরিজের দ্বিতীয় পূর্ণাঙ্গ অ্যানিমেশন ডকুমেন্টারি ফিল্ম, যা সম্পূর্ণ পরিকল্পনা, চিত্রনাট্য রচনা, পরিচালনা, ভিজ্যুয়াল ডিজাইন ও কোড করেছেন রাইসুল সোহান। কোনো পূর্ব-রেন্ডার করা ভিডিও বা রাস্টার ইমেজ ফাইল ব্যবহার না করে রাইসুল সোহান সম্পূর্ণ ভ্যানিলা জাভাস্ক্রিপ্ট ও গাণিতিক ভেক্টর জ্যামিতিতে HTML5 ক্যানভাসে রিয়েল-টাইমে ফ্রেম-বাই-ফ্রেম ৮ মিনিট ৪৯ সেকেন্ডের (২৩টি পূর্ণাঙ্গ সিন) এই সিনেমাটিক ভিজ্যুয়াল আর্ট ও মোশন ফুটিয়ে তুলেছেন।',
-			'summary_en'  => 'The second animated documentary film in the Nomolos series, exploring the paradoxical history and psychology of "The Cobra Effect: How a Bounty on Snakes Bred More Snakes"—entirely conceived, written, directed, animated, and coded by Raisul Sohan. Without relying on any pre-rendered video files or raster images, Raisul Sohan mathematically engineered and drew every single frame live in the browser on HTML5 canvas using pure vanilla JavaScript vector math, delivering an 8-minute, 49-second (23 complete scenes) cinematic storytelling experience.',
-			'role_bn'     => 'রাইসুল সোহান — চিত্রনাট্যকার, পরিচালক, একক অ্যানিমেটর ও সফটওয়্যার আর্কিটেক্ট',
-			'role_en'     => 'Raisul Sohan — Creator, Director, Screenwriter, Solo Animator & Creative Coder',
-			'context_bn'  => 'রাইসুল সোহানের নোমোলোস সিরিজ • ৮:৪৯ মিনিট অ্যানিমেশন ফিল্ম • ১৬:৯ ও ৪:৫ • পিওর ক্যানভাস ইঞ্জিন',
-			'context_en'  => 'Nomolos Film Series by Raisul Sohan • 8:49 Mins • 16:9 & 4:5 • Pure Canvas Engine',
-			'challenge_bn'=> "প্রচলিত অ্যানিমেশন বা ঐতিহাসিক মোশন ডকুমেন্টারি তৈরি করতে সাধারণত আফটার ইফেক্টস কিংবা থ্রিডি সফটওয়্যার থেকে গিগাবাইট আকারের ভিডিও (MP4/WebM) রেন্ডার করতে হয় অথবা শত শত রাস্টার ইমেজ ও স্প্রাইট শিট লোড করতে হয়। এতে ব্যান্ডউইথ খরচ বিপুল বেড়ে যায় এবং ব্রাউজারে ফ্রেম-বাই-ফ্রেম স্বাধীন নিয়ন্ত্রণ ও টাইম-স্ক্রাবিং অসম্ভব হয়ে পড়ে।\n\nরাইসুল সোহানের সামনে মূল প্রযুক্তিগত ও নান্দনিক চ্যালেঞ্জসমূহ:\n১. জিরো ভিডিও ও জিরো ইমেজ ডিপেনডেন্সি: কোনো MP4, GIF বা PNG/JPG ফাইল ছাড়া কেবল রাইসুল সোহানের বিশুদ্ধ কোড ও ভেক্টর জ্যামিতির সাহায্যে পুরনো দিল্লির রাজপথ, ব্রিটিশ কর্মকর্তার অফিস, সাপের খাঁচা, প্যারামেট্রিক ক্যালিগ্রাফি ও হ্যানয়ের ইঁদুর শিকারের দৃশ্য ফুটিয়ে তোলা।\n২. বিশুদ্ধ গাণিতিক সময়-ফাংশন (Deterministic Time Function): প্রতিটি ফ্রেমকে পরম সময়ের (t) একটি বিশুদ্ধ গাণিতিক ফাংশনে রূপ দেওয়া, যেন বাফারিং ছাড়াই যেকোনো মুহূর্তে নির্দিষ্ট ফ্রেম (যেমন ?t=12.5) বা সিনে তাৎক্ষণিক জাম্প ও স্ক্রাব করা যায়।\n৩. ডুয়েল অ্যাসপেক্ট রেশিও (১৬:৯ ও ৪:৫): ফিল্মটিকে একই সাথে ওয়াইডস্ক্রিন ডেস্কটপ (১৯২০×১০৮০) এবং মোবাইল ডিভাইসের পোর্ট্রেট (১০৮০×১৩৫০) উভয় ফরম্যাটে নিখুঁত ফোকাস, ক্যামেরা স্কেলিং ও কম্পোজিশন লেআউটে অভিযোজিত করা।\n৪. ৬০ FPS ক্যানভাস পারফরম্যান্স: ২৩টি জটিল দৃশ্য জুড়ে কোনো মেমরি লিক বা ফ্রেম ড্রপ ছাড়া রিয়েল-টাইমে মসৃণ ৬০ FPS ক্যানভাস রেন্ডারিং বজায় রাখা।",
-			'challenge_en'=> "Traditional animated documentaries rely on massive multi-gigabyte video renders (MP4, WebM) or pre-rendered raster image sequences and sprite sheets. This introduces heavy bandwidth overhead, buffer latency, and eliminates programmatic runtime control over individual animation parameters.\n\nKey Creative & Technical Challenges Solved by Raisul Sohan:\n1. Zero Video and Zero Image Dependencies: Crafting a continuous 8-minute, 49-second historical documentary without a single MP4, GIF, PNG, or JPG asset—relying purely on Raisul Sohan's procedural vectors, custom vector math, and canvas drawing routines to render Delhi streets, bounty offices, breeding cages, animated statistical curves, and imperial courts.\n2. Pure Deterministic Time-Based Architecture: Every visual frame across all 23 scenes is a pure mathematical function of absolute time (t). Any millisecond of the film can be rendered independently without sequential video decoding, enabling zero-latency random seeking, single-frame stepping, and URL time freezing (e.g. ?t=12.5).\n3. Dual-Format Responsive Layouts: Orchestrating the entire production in two distinct spatial aspect ratios—widescreen 16:9 (1920×1080) for desktop monitors and 4:5 (1080×1350) for mobile feeds—with dynamic camera framing, visual asset repositioning, and typographic reflow per format.\n4. Rock-Solid 60 FPS Performance: Maintaining fluid 60 frames per second rendering across 23 intricate scene compositions designed and animated by Raisul Sohan without memory leaks or canvas context thrashing.",
-			'solution_bn' => "১. প্রসিডিউরাল ভেক্টর আর্কিটেকচার (HTML5 Canvas 2D): রাইসুল সোহান তৈরি করেছেন নিজস্ব ইঞ্জিন (lib/engine.min.js), যা বেজিয়ের কার্ভ, প্রসিডিউরাল নয়েজ, ড্রাফটিং গ্রিড ও প্যারামেট্রিক ক্যালিগ্রাফি সরাসরি কোডে রেন্ডার করে।\n\n২. পরম সময়-ভিত্তিক রেন্ডার ইঞ্জিন: ফিল্মের প্রতিটি সিকোয়েন্সের render(ctx, time) ফাংশন বর্তমান প্লেহেড সময়ের ভিত্তিতে ক্যামেরা জুম, ইজিং কার্ভস (easeOut, easeOutBack) ও এলিমেন্ট ট্রান্সফর্মেশন নির্ধারণ করে। কোনো প্রি-রেকর্ডেড ভিডিওর বাফারিং ছাড়াই নিখুঁত ফ্রেম রেন্ডারিং নিশ্চিত হয়।\n\n৩. অ্যাডাপ্টিভ ডুয়েল ফরম্যাট অর্কেস্ট্রেশন: কোডের ভেতর প্রতিটি শটের জন্য আলাদা কোঅর্ডিনেট লেআউট (Desktop বনাম Mobile) নির্ধারণ করা হয়েছে। ফলে মোবাইল স্ক্রিনে গুরুত্বপূর্ণ ভিজ্যুয়াল ফোকাস স্বয়ংক্রিয়ভাবে সেন্টারে রিকম্পোজ হয়।\n\n৪. ২৩টি মডুলার সিন ও নিখুঁত শট টাইমিং: পুরো ৮:৪৯ দৈর্ঘ্যের ডকুমেন্টারিকে ২৩টি স্বতন্ত্র দৃশ্যে ভাগ করে সুনির্দিষ্ট শট টাইমিং (timing.js) দিয়ে সিনক্রোনাইজ করেছেন রাইসুল সোহান। দর্শক পুরো ফিল্ম ছাড়াও প্রতিটি দৃশ্য আলাদাভাবে ব্রাউজ করতে পারেন।\n\n৫. কাস্টম ব্রাউজার কন্ট্রোল ও কীবোর্ড নেভিগেশন: নিজস্ব লাইটওয়েট প্লেয়ার তৈরি করা হয়েছে যাতে রয়েছে স্পেসবারে প্লে/পজ, তীরচিহ্নে ফ্রেম-বাই-ফ্রেম ও সেকেন্ড-বাই-সেকেন্ড স্ক্রাব, হোম কি ও ফুলস্ক্রিন (F) শর্টকাট।\n\n৬. জিরো বিল্ড ও অফলাইন রেডি: কোনো ভারী প্যাকেজ বা ডিপেনডেন্সি ছাড়া সরাসরি যেকোনো ব্রাউজারে অফলাইনে কিংবা স্ট্যাটিক হোস্টিংয়ে নিখুঁতভাবে চলে।",
-			'solution_en' => "1. Procedural Vector Canvas Architecture: Raisul Sohan engineered a lightweight procedural vector engine (lib/engine.min.js) capable of rendering Bézier curves, procedural noise, drafting grids, and parametric forms on the fly.\n\n2. Deterministic Pure Time-Function Rendering: Every sequence defines a render(ctx, time) loop where camera positioning, ease curves (easeOut, easeOutBack), and spatial envelopes are mathematically derived from time (t), eliminating video buffer lag entirely.\n\n3. Adaptive Dual-Aspect Geometry: Embedded format-aware coordinate systems (Desktop 16:9 vs Mobile 4:5) within each sequence to automatically recompose shots, shift camera focal points, and re-anchor typography between desktop and vertical mobile screens.\n\n4. 23 Modular Scenes with Granular Shot Timings: Architected the 8:49 production into 23 discrete scenes driven by declarative shot timing maps (timing.js), allowing seamless end-to-end playback as well as individual scene inspection choreographed by Raisul Sohan.\n\n5. Ergonomic In-Browser Player & Hotkeys: Engineered a native keyboard-driven playback interface featuring Space for play/pause, Left/Right arrow keys for single-frame stepping, Shift+Arrow for 1-second leaps, Home to reset, and F for fullscreen.\n\n6. Zero Build & Frictionless Offline Portability: Written entirely in standard vanilla JavaScript without build steps, compilers, or server dependencies—running instantly in any modern browser offline or from static CDN hosting under MIT.",
+			'type_bn'     => 'আফটার ইফেক্টস মোশন অ্যানিমেশন ও অরিজিনাল ফিল্ম',
+			'type_en'     => 'After Effects Motion Animation & Original Documentary Film',
+			'badge_bn'    => 'আফটার ইফেক্টস অ্যানিমেশন • ৮:৪৯ মিনিট',
+			'badge_en'    => 'After Effects Animation • 8:49 Mins',
+			'title_bn'    => 'Nomolos 02: Cobra Effect — আফটার ইফেক্টস, নিজস্ব ইলাস্ট্রেশন ও কাস্টম সাউন্ডট্র্যাকে নির্মিত অ্যানিমেশন ফিল্ম',
+			'title_en'    => 'Nomolos 02: Cobra Effect — An Animated Documentary Film Crafted in After Effects by Raisul Sohan',
+			'summary_bn'  => 'দিল্লির সাপের উপদ্রব কমাতে ব্রিটিশ সরকারের সাপের মাথার ওপর পুরস্কার ঘোষণা এবং তার মারাত্মক বিপরীতমুখী প্রতিক্রিয়া নিয়ে "কোবরা ইফেক্ট" (Cobra Effect) ইতিহাসের ওপর নোমোলোস (Nomolos) সিরিজের দ্বিতীয় পূর্ণাঙ্গ অ্যানিমেশন ডকুমেন্টারি ফিল্ম। সম্পূর্ণ কনসেপ্ট, চিত্রনাট্য রচনা, প্রতিটি দৃশ্যের জন্য নিজস্ব ভেক্টর ইলাস্ট্রেশন আর্টওয়ার্ক তৈরি, অ্যাডোবি আফটার ইফেক্টসে (Adobe After Effects) সিনেমাটিক ৩ডি প্যারালাক্স ও সিগনেচার গ্লো অ্যানিমেশন এবং বিভিন্ন উন্মুক্ত ফ্রি রিসোর্স থেকে খুঁজে ২৩টি সিনের জন্য নিজস্ব সাউন্ড কম্পোজিশন (SFX, BGM, Underscore) দিয়ে ফিল্মটি এককভাবে তৈরি করেছেন রাইসুল সোহান। ৮ মিনিট ৪৯ সেকেন্ডের এই সিনেমাটিক অ্যানিমেশন মোশন ডিজাইনের এক দুর্দান্ত ভিজ্যুয়াল অভিজ্ঞতা।',
+			'summary_en'  => 'The second animated documentary film in the Nomolos series, exploring the paradoxical history and psychology of "The Cobra Effect: How a Bounty on Snakes Bred More Snakes"—entirely conceived, illustrated, animated in Adobe After Effects, and sound-composed by Raisul Sohan. Featuring handcrafted vector artwork for 23 complete scenes, multiplane 3D parallax cameras, atmospheric glow and volumetric lighting, and an original audio score of SFX, BGM, and underscores curated from free open archives, this 8-minute 49-second film delivers a masterclass in independent motion graphics storytelling.',
+			'role_bn'     => 'রাইসুল সোহান — চিত্রনাট্যকার, পরিচালক, ভেক্টর ইলাস্ট্রেটর, আফটার ইফেক্টস অ্যানিমেটর ও সাউন্ড কম্পোজার',
+			'role_en'     => 'Raisul Sohan — Screenwriter, Director, Vector Illustrator, After Effects Animator & Sound Designer',
+			'context_bn'  => 'আফটার ইফেক্টস মোশন • কাস্টম ইলাস্ট্রেশন • ৩ডি প্যারালাক্স ও গ্লো • অরিজিনাল সাউন্ডস্কেপ • ৮:৪৯ মিনিট',
+			'context_en'  => 'After Effects Motion • Custom Illustration • 3D Parallax & Glow • Original Soundscape • 8:49 Mins',
+			'challenge_bn'=> "২৩টি পৃথক দৃশ্যে ৮ মিনিট ৪৯ সেকেন্ডের একটি জটিল ঐতিহাসিক প্যারাডক্সকে এককভাবে অ্যানিমেশনের মাধ্যমে ফুটিয়ে তুলতে গিয়ে নানা সৃজনশীল ও কারিগরি চ্যালেঞ্জ মোকাবিলা করতে হয়:\n\n১. জটিল ঐতিহাসিক প্রেক্ষাপট ও কাস্টম ভেক্টর ইলাস্ট্রেশন: ঔপনিবেশিক দিল্লি শহরের কোলাহলপূর্ণ রাজপথ, ব্রিটিশ প্রশাসনিক দপ্তর, সাপ শিকারীদের আস্তানা, সাপের প্রজনন খাঁচা, হ্যানয়ের ইঁদুর শিকারের অভিযান এবং প্রাচীন চীনের সম্রাটের দরবার—প্রতিটি দৃশ্যপটকে নিখুঁত ডিটেইলিংসহ সম্পূর্ণ নিজে ইলাস্ট্রেশন করা।\n২. আফটার ইফেক্টসে ডাইনামিক ৩ডি প্যারালাক্স ও গভীরতা: সাধারণ দ্বিমাত্রিক অ্যানিমেশনের বদলে দৃশ্যের ভেতর দর্শকের উপস্থিতির অনুভূতি জাগাতে প্রতিটি আর্টওয়ার্ককে বহুস্তরের ৩ডি লেয়ারে ভাগ করে আফটার ইফেক্টসে সিনেমাটিক ক্যামেরা মুভমেন্ট রিগ করা, যার ফলে ফোরগ্রাউন্ড অবজেক্ট ও ব্যাকগ্রাউন্ড এনভায়রনমেন্টের মধ্যে বাস্তবসম্মত প্যারালাক্স শিফট ও ফোকাস ডেপথ তৈরি হয়।\n৩. সিনেমাটিক গ্লো ও এটমোস্ফেরিক লাইট ডিজাইন: রহস্যময় অন্ধকার ঘর, সাপের ফণা, সোনার কয়েনের চকচকে আভা এবং ঐতিহাসিক চার্ট ও গ্রাফের রূপান্তরমূলক মুহূর্তে আফটার ইফেক্টসের ডিপ গ্লো (Deep Glow) এবং আলো-ছায়ার সিনেমাটিক কন্ট্রাস্ট স্থাপন করা।\n৪. কাস্টম সাউন্ডস্কেপ ও আন্ডারস্কোর কম্পোজিশন: কোনো বাণিজ্যিক স্টুডিওর সাহায্য ছাড়া কেবল উন্মুক্ত ফ্রি রিসোর্স থেকে শত শত প্রাকৃতিক সাউন্ড ইফেক্টস (SFX)—যেমন সাপের হিসহিস শব্দ, খাঁচার লোহার ঘর্ষণ, মেঝের ওপর ইঁদুরের দৌড়াদৌড়ি, ধাতব কয়েনের টুংটাং এবং প্রতিটি সিনের ক্লাইম্যাক্সের সাথে মেলানো ব্যাকগ্রাউন্ড মিউজিক (BGM) ও আন্ডারস্কোর খুঁজে নিয়ে ফ্রেম ধরে ধরে নিজে সাউন্ডট্র্যাক ডিজাইন করা।",
+			'challenge_en'=> "Translating an intricate historical economic paradox across 23 distinct scenes into an 8:49 animated film as a solo creator presented formidable artistic, technical, and auditory hurdles:\n\n1. Authentic Worldbuilding & Custom Vector Illustration: Hand-illustrating every bustling Delhi street market, colonial administrative bureau, covert snake breeding farm, Hanoi sewer expedition, and ancient Chinese imperial palace without external template shortcuts.\n2. Dynamic 3D Parallax & Spatial Camera Choreography in After Effects: Escaping flat 2D presentations by breaking each illustrated scene into dozens of independent depth planes inside After Effects 3D space—animating virtual cameras to glide past foreground silhouettes, midground characters, and distant architectural vistas with fluid spatial parallax.\n3. Signature Glow & Dramatic Lighting Envelopes: Employing multi-pass atmospheric glows, volumetric lighting rays, dramatic chiaroscuro contrasts, and golden-hour luminescence to dramatize the rearing cobra graphics, coin transactions, and shadowy incentive traps.\n4. Curating & Custom-Scoring SFX, BGM, and Underscores from Free Archives: With no commercial audio budget, every sound effect (foley, reptile hisses, rattling metal cages, scurrying claws, stamp thuds) and atmospheric musical underscore had to be individually mined from free public domain repositories, edited, EQ'd, time-stretched, and mixed to frame-level perfection.",
+			'solution_bn' => "১. দৃশ্যভিত্তিক ভেক্টর ইলাস্ট্রেশন আর্ট ডিরেকশন: ২৩টি সিনের জন্য প্রয়োজনীয় শত শত আর্ট এসেট নিজে ভেক্টরে ড্রয়িং ও কালারিং করে আফটার ইফেক্টসের কম্পোজিশনের উপযোগী মডুলার লেয়ারে ভাগ করে নেওয়া হয়েছে।\n\n২. অ্যাডোবি আফটার ইফেক্টসে ৩ডি প্যারালাক্স ক্যামেরা রিগ: একাধিক ফোকাল লেন্থের ৩ডি ক্যামেরা, নাল কন্ট্রোলার ও স্মুথ প্যান/জুমের সমন্বয়ে প্রতিটি দৃশ্যে তৈরি করা হয়েছে অসাধারণ সিনেমাটিক গভীরতা ও ভিজ্যুয়াল গতিশীলতা।\n\n৩. ড্রামাটিক গ্লো, লাইট ফল-অফ ও সিনেমাটিক গ্রেডিং: আফটার ইফেক্টসের অ্যাডভান্সড লাইটিং ইফেক্টস ও গ্লো মাস্কিং ব্যবহারের মাধ্যমে সাপের গ্রাফিক্স, ঐতিহাসিক মানচিত্র ও দৃশ্যপটকে দেওয়া হয়েছে জীবন্ত সিনেমাটিক রূপ।\n\n৪. গ্রাফ এডিটর নির্ভর অর্গানিক মোশন ও কিফ্রেমিং: ক্যারেক্টার মুভমেন্ট ও ক্যামেরার গতিতে কোনো যান্ত্রিকতা না রেখে আফটার ইফেক্টসের গ্রাফ এডিটরে প্রতিটি কিফ্রেমের স্পিড ও ইনফ্লুয়েন্স কার্ভ নিখুঁতভাবে টিউন করা হয়েছে।\n\n৫. ফ্রি সাউন্ড রিসোর্স থেকে স্বতন্ত্র অডিও কম্পোজিশন: পাবলিক ডোমেন ও ক্রিয়েটিভ কমন্স অডিও লাইব্রেরি থেকে নিখুঁত সাউন্ড ইফেক্টস (SFX), অরিজিনাল ব্যাকগ্রাউন্ড স্কোর (BGM) ও আন্ডারস্কোর সংগ্রহ করে সিনের আবেগ ও গল্পের গতি অনুযায়ী ফ্রেম-বাই-ফ্রেম কাস্টম অডিও মিক্স ও মাস্টার করা হয়েছে।",
+			'solution_en' => "1. Scene-by-Scene Vector Illustration Art Direction: Handcrafted hundreds of vector assets across 23 narrative beats, structuring every character, backdrop, and prop into modular, motion-optimized layers for After Effects rigging.\n\n2. Multiplane 3D Parallax Camera Rigging in After Effects: Constructed dynamic 3D multiplane sets utilizing virtual cameras with depth of field, gentle handheld drifters, and sweeping cranes to achieve rich spatial perspective.\n\n3. Volumetric Glow, Lighting & Vignette Treatments: Designed multi-pass glow falloffs, directional light beams, and stylized color grading to emphasize pivotal turning points—such as the rising population graph transforming into a towering cobra hood.\n\n4. Fine-Tuned Graph Editor Motion Typography & Animation: Crafted organic character pacing, elastic reactions, and buttery-smooth camera movements using fine-tuned velocity curves in the After Effects Graph Editor.\n\n5. Curated Sound Design & Original Underscore Composition: Researched and harvested high-quality open-source and free sound effects (SFX) and evocative background music (BGM/Underscores), hand-assembling a dynamic multi-track audio landscape that drives the narrative tension.",
 			'highlights_bn'=> array(
-				'রাইসুল সোহানের ৮ মিনিট ৪৯ সেকেন্ডের পূর্ণাঙ্গ অ্যানিমেশন ফিল্ম — ০টি ভিডিও বা ইমেজ ফাইল',
-				'রাইসুল সোহান রচিত, পরিচালিত, চিত্রায়িত ও কোডকৃত মৌলিক ঐতিহাসিক ডকুমেন্টারি',
-				'১০০% পিওর ভ্যানিলা জাভাস্ক্রিপ্ট ও HTML5 Canvas ভেক্টর রেন্ডারিং ইঞ্জিন',
-				'পরম সময়ভিত্তিক ফ্রেম আর্কিটেকচার — যেকোনো ফ্রেম বা মুহূর্তে নিখুঁত স্ক্রাবিং ও জাম্প',
-				'ডুয়েল অ্যাসপেক্ট রেশিও সাপোর্ট: ১৬:৯ ডেক্সটপ ও ৪:৫ মোবাইল ডিসপ্লে',
-				'২৩টি সম্পূর্ণ সমাপ্ত সিন এবং নিখুঁত শট টাইমিং কোঅর্ডিনেশন',
-				'কীবোর্ড শর্টকাট সমৃদ্ধ নেটিভ ওয়েব প্লেয়ার (ফ্রেম স্টেপিং, পজ ও ফুলস্ক্রিন)',
-				'কোনো বান্ডলার বা বিল্ড স্টেপ ছাড়া ১০০% ওপেন সোর্স ও অফলাইন সক্ষম',
+				'রাইসুল সোহানের ৮ মিনিট ৪৯ সেকেন্ডের পূর্ণাঙ্গ সিনেমাটিক অ্যানিমেশন ফিল্ম',
+				'অ্যাডোবি আফটার ইফেক্টসে (Adobe After Effects) সম্পূর্ণ অ্যানিমেশন ও কম্পোজিটিং',
+				'২৩টি সম্পূর্ণ দৃশ্যের জন্য প্রতিটি ক্যারেক্টার ও লোকেশনের নিজস্ব ভেক্টর ইলাস্ট্রেশন',
+				'মাল্টি-লেয়ার ৩ডি প্যারালাক্স ক্যামেরা মুভমেন্ট ও সিনেমাটিক স্পেশিয়াল ডেপথ',
+				'সিগনেচার এটমোস্ফেরিক গ্লো, ডায়নামিক শ্যাডো ও সিনেমাটিক লাইটিং ফ্লেয়ার',
+				'ফ্রি সাউন্ড রিসোর্স থেকে তন্ন তন্ন করে খুঁজে নিজে কম্পোজ করা অরিজিনাল SFX ও BGM',
+				'কোনো প্রি-মেড অ্যানিমেশন টেমপ্লেট ছাড়া ১০০% হ্যান্ডক্রাফটেড মোশন গ্রাফিক্স',
 			),
 			'highlights_en'=> array(
-				'Complete 8:49 animated film written, directed, animated, and coded by Raisul Sohan',
-				'Zero video and zero raster image dependencies — drawn entirely via procedural code',
-				'100% pure vanilla JavaScript and HTML5 Canvas 2D procedural vector rendering',
-				'Deterministic time-based architecture: every frame is an exact mathematical function of time',
-				'Full dual aspect ratio support: 16:9 widescreen Desktop and 4:5 vertical Mobile',
-				'23 completed animation scenes choreographed with precise shot timing maps',
-				'Native keyboard-controlled web player with single-frame stepping and fullscreen',
-				'Zero build steps and zero dependencies: runs entirely offline and open source under MIT',
+				'Complete 8:49 animated documentary film written, directed, and animated by Raisul Sohan',
+				'100% animated and composited in Adobe After Effects across 23 finished scenes',
+				'Handcrafted vector illustrations for every Delhi street, snake cage, and historical asset',
+				'Immersive multiplane 3D parallax camera choreography with cinematic focal depth',
+				'Atmospheric signature glow, procedural volumetrics, and dynamic light spills',
+				'Curated sound design: original SFX, BGM, and underscore composed from free audio archives',
+				'Zero third-party animation templates: bespoke keyframing and motion staging throughout',
 			),
-			'tags'        => array( 'Creative Coding', 'JavaScript (Canvas)', 'Motion Animation', 'Documentary', 'Vector Math', 'Open Source' ),
+			'tags'        => array( 'Adobe After Effects', 'Motion Design', 'Illustration', '3D Parallax', 'Sound Design (SFX/BGM)', 'Documentary' ),
 			'accent'      => '#f2a33a',
 			'icon'        => 'video',
 			'image'       => get_template_directory_uri() . '/assets/img/nomolos-cobra-effect.webp',
 			'image_fit'   => 'cover',
 			'action_type' => 'video',
-			'action_bn'   => 'ব্রাউজারে ফিল্মটি দেখুন',
-			'action_en'   => 'Watch Film in Browser',
+			'action_bn'   => 'ফিল্মটি দেখুন',
+			'action_en'   => 'Watch Film',
 			'direct_url'  => 'https://raisulsohan.github.io/Nomolos_02_Cobra_Effect_animation/',
 			'github_url'  => 'https://github.com/raisulsohan/Nomolos_02_Cobra_Effect_animation',
 			'order'       => 1,
@@ -1986,7 +1982,76 @@ function rs_remove_thrivedesk_project() {
 }
 add_action( 'init', 'rs_remove_thrivedesk_project', 21 );
 
+/**
+ * 10d. Sync Nomolos 01 and 02 After Effects rebrand copy and meta in the database.
+ *
+ * Ensures Raisul Sohan's After Effects animation, custom illustration, 3D parallax,
+ * atmospheric glow, and curated sound design credits are synced to database posts.
+ */
+function rs_sync_nomolos_ae_rebrand_v1() {
+	$switched = false;
+	if ( is_multisite() && ! is_main_site() ) {
+		switch_to_blog( get_main_site_id() );
+		$switched = true;
+	}
 
+	if ( get_option( 'rs_portfolio_synced_nomolos_ae_v1' ) ) {
+		if ( $switched ) {
+			restore_current_blog();
+		}
+		return;
+	}
+
+	$defaults = array();
+	foreach ( rs_get_default_portfolio_projects() as $d ) {
+		if ( in_array( $d['id'], array( 'nomolos-prohibition', 'nomolos-cobra-effect' ), true ) ) {
+			$defaults[ $d['id'] ] = $d;
+		}
+	}
+
+	foreach ( array( 'nomolos-prohibition', 'nomolos-cobra-effect' ) as $slug ) {
+		if ( ! isset( $defaults[ $slug ] ) ) {
+			continue;
+		}
+
+		$item  = $defaults[ $slug ];
+		$posts = get_posts( array(
+			'post_type'      => 'rs_portfolio',
+			'name'           => $slug,
+			'posts_per_page' => 1,
+			'post_status'    => 'any',
+		) );
+
+		if ( ! empty( $posts ) ) {
+			$post_id = $posts[0]->ID;
+			wp_update_post( array(
+				'ID'         => $post_id,
+				'post_title' => $item['title_en'],
+			) );
+
+			foreach ( array( 'category', 'type_bn', 'type_en', 'badge_bn', 'badge_en', 'title_bn', 'title_en', 'summary_bn', 'summary_en', 'role_bn', 'role_en', 'context_bn', 'context_en', 'challenge_bn', 'challenge_en', 'solution_bn', 'solution_en', 'highlights_bn', 'highlights_en', 'accent', 'icon', 'image', 'image_fit', 'action_type', 'action_bn', 'action_en', 'direct_url', 'github_url' ) as $field ) {
+				if ( isset( $item[ $field ] ) ) {
+					update_post_meta( $post_id, '_rs_portfolio_' . $field, $item[ $field ] );
+				}
+			}
+
+			if ( ! empty( $item['tags'] ) && is_array( $item['tags'] ) ) {
+				update_post_meta( $post_id, '_rs_portfolio_tags', implode( ', ', $item['tags'] ) );
+			}
+		}
+	}
+
+	update_option( 'rs_portfolio_synced_nomolos_ae_v1', 1 );
+
+	if ( $switched ) {
+		restore_current_blog();
+	}
+
+	if ( function_exists( 'rs_purge_host_cache_soon' ) ) {
+		rs_purge_host_cache_soon();
+	}
+}
+add_action( 'init', 'rs_sync_nomolos_ae_rebrand_v1', 23 );
 
 /**
  * 11. Add projects that joined the defaults after the portfolio was seeded.
