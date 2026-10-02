@@ -1656,6 +1656,57 @@ function rs_get_default_portfolio_projects() {
 			'github_url'  => 'https://github.com/raisulsohan/Nomolos_01_Prohibition-animation',
 			'order'       => 2,
 		),
+		array(
+			'id'          => 'nomolos-cobra-effect',
+			'category'    => 'video',
+			'type_bn'     => 'রাইসুল সোহানের ক্যানভাস অ্যানিমেশন ও কোডেড ফিল্ম',
+			'type_en'     => 'Original Canvas Animation Film by Raisul Sohan',
+			'badge_bn'    => 'রাইসুল সোহানের অ্যানিমেশন • ৮:৪৯ মিনিট',
+			'badge_en'    => 'Animated by Raisul Sohan • 8:49 Mins',
+			'title_bn'    => 'Nomolos 02: Cobra Effect — রাইসুল সোহানের চিত্রনাট্য, পরিচালনা ও কোডে নির্মিত অ্যানিমেশন ফিল্ম',
+			'title_en'    => 'Nomolos 02: Cobra Effect — An Animated Documentary Film Created & Directed by Raisul Sohan',
+			'summary_bn'  => 'ব্রিটিশ শাসনামলে দিল্লিতে সাপের উপদ্রব কমাতে সাপের মাথার ওপর পুরস্কার ঘোষণা এবং তার মারাত্মক বিপরীতমুখী প্রতিক্রিয়া নিয়ে "কোবরা ইফেক্ট" (Cobra Effect) ইতিহাসের ওপর নোমোলোস (Nomolos) সিরিজের দ্বিতীয় পূর্ণাঙ্গ অ্যানিমেশন ডকুমেন্টারি ফিল্ম, যা সম্পূর্ণ পরিকল্পনা, চিত্রনাট্য রচনা, পরিচালনা, ভিজ্যুয়াল ডিজাইন ও কোড করেছেন রাইসুল সোহান। কোনো পূর্ব-রেন্ডার করা ভিডিও বা রাস্টার ইমেজ ফাইল ব্যবহার না করে রাইসুল সোহান সম্পূর্ণ ভ্যানিলা জাভাস্ক্রিপ্ট ও গাণিতিক ভেক্টর জ্যামিতিতে HTML5 ক্যানভাসে রিয়েল-টাইমে ফ্রেম-বাই-ফ্রেম ৮ মিনিট ৪৯ সেকেন্ডের (২৩টি পূর্ণাঙ্গ সিন) এই সিনেমাটিক ভিজ্যুয়াল আর্ট ও মোশন ফুটিয়ে তুলেছেন।',
+			'summary_en'  => 'The second animated documentary film in the Nomolos series, exploring the paradoxical history and psychology of "The Cobra Effect: How a Bounty on Snakes Bred More Snakes"—entirely conceived, written, directed, animated, and coded by Raisul Sohan. Without relying on any pre-rendered video files or raster images, Raisul Sohan mathematically engineered and drew every single frame live in the browser on HTML5 canvas using pure vanilla JavaScript vector math, delivering an 8-minute, 49-second (23 complete scenes) cinematic storytelling experience.',
+			'role_bn'     => 'রাইসুল সোহান — চিত্রনাট্যকার, পরিচালক, একক অ্যানিমেটর ও সফটওয়্যার আর্কিটেক্ট',
+			'role_en'     => 'Raisul Sohan — Creator, Director, Screenwriter, Solo Animator & Creative Coder',
+			'context_bn'  => 'রাইসুল সোহানের নোমোলোস সিরিজ • ৮:৪৯ মিনিট অ্যানিমেশন ফিল্ম • ১৬:৯ ও ৪:৫ • পিওর ক্যানভাস ইঞ্জিন',
+			'context_en'  => 'Nomolos Film Series by Raisul Sohan • 8:49 Mins • 16:9 & 4:5 • Pure Canvas Engine',
+			'challenge_bn'=> "প্রচলিত অ্যানিমেশন বা ঐতিহাসিক মোশন ডকুমেন্টারি তৈরি করতে সাধারণত আফটার ইফেক্টস কিংবা থ্রিডি সফটওয়্যার থেকে গিগাবাইট আকারের ভিডিও (MP4/WebM) রেন্ডার করতে হয় অথবা শত শত রাস্টার ইমেজ ও স্প্রাইট শিট লোড করতে হয়। এতে ব্যান্ডউইথ খরচ বিপুল বেড়ে যায় এবং ব্রাউজারে ফ্রেম-বাই-ফ্রেম স্বাধীন নিয়ন্ত্রণ ও টাইম-স্ক্রাবিং অসম্ভব হয়ে পড়ে।\n\nরাইসুল সোহানের সামনে মূল প্রযুক্তিগত ও নান্দনিক চ্যালেঞ্জসমূহ:\n১. জিরো ভিডিও ও জিরো ইমেজ ডিপেনডেন্সি: কোনো MP4, GIF বা PNG/JPG ফাইল ছাড়া কেবল রাইসুল সোহানের বিশুদ্ধ কোড ও ভেক্টর জ্যামিতির সাহায্যে পুরনো দিল্লির রাজপথ, ব্রিটিশ কর্মকর্তার অফিস, সাপের খাঁচা, প্যারামেট্রিক ক্যালিগ্রাফি ও হ্যানয়ের ইঁদুর শিকারের দৃশ্য ফুটিয়ে তোলা।\n২. বিশুদ্ধ গাণিতিক সময়-ফাংশন (Deterministic Time Function): প্রতিটি ফ্রেমকে পরম সময়ের (t) একটি বিশুদ্ধ গাণিতিক ফাংশনে রূপ দেওয়া, যেন বাফারিং ছাড়াই যেকোনো মুহূর্তে নির্দিষ্ট ফ্রেম (যেমন ?t=12.5) বা সিনে তাৎক্ষণিক জাম্প ও স্ক্রাব করা যায়।\n৩. ডুয়েল অ্যাসপেক্ট রেশিও (১৬:৯ ও ৪:৫): ফিল্মটিকে একই সাথে ওয়াইডস্ক্রিন ডেস্কটপ (১৯২০×১০৮০) এবং মোবাইল ডিভাইসের পোর্ট্রেট (১০৮০×১৩৫০) উভয় ফরম্যাটে নিখুঁত ফোকাস, ক্যামেরা স্কেলিং ও কম্পোজিশন লেআউটে অভিযোজিত করা।\n৪. ৬০ FPS ক্যানভাস পারফরম্যান্স: ২৩টি জটিল দৃশ্য জুড়ে কোনো মেমরি লিক বা ফ্রেম ড্রপ ছাড়া রিয়েল-টাইমে মসৃণ ৬০ FPS ক্যানভাস রেন্ডারিং বজায় রাখা।",
+			'challenge_en'=> "Traditional animated documentaries rely on massive multi-gigabyte video renders (MP4, WebM) or pre-rendered raster image sequences and sprite sheets. This introduces heavy bandwidth overhead, buffer latency, and eliminates programmatic runtime control over individual animation parameters.\n\nKey Creative & Technical Challenges Solved by Raisul Sohan:\n1. Zero Video and Zero Image Dependencies: Crafting a continuous 8-minute, 49-second historical documentary without a single MP4, GIF, PNG, or JPG asset—relying purely on Raisul Sohan's procedural vectors, custom vector math, and canvas drawing routines to render Delhi streets, bounty offices, breeding cages, animated statistical curves, and imperial courts.\n2. Pure Deterministic Time-Based Architecture: Every visual frame across all 23 scenes is a pure mathematical function of absolute time (t). Any millisecond of the film can be rendered independently without sequential video decoding, enabling zero-latency random seeking, single-frame stepping, and URL time freezing (e.g. ?t=12.5).\n3. Dual-Format Responsive Layouts: Orchestrating the entire production in two distinct spatial aspect ratios—widescreen 16:9 (1920×1080) for desktop monitors and 4:5 (1080×1350) for mobile feeds—with dynamic camera framing, visual asset repositioning, and typographic reflow per format.\n4. Rock-Solid 60 FPS Performance: Maintaining fluid 60 frames per second rendering across 23 intricate scene compositions designed and animated by Raisul Sohan without memory leaks or canvas context thrashing.",
+			'solution_bn' => "১. প্রসিডিউরাল ভেক্টর আর্কিটেকচার (HTML5 Canvas 2D): রাইসুল সোহান তৈরি করেছেন নিজস্ব ইঞ্জিন (lib/engine.min.js), যা বেজিয়ের কার্ভ, প্রসিডিউরাল নয়েজ, ড্রাফটিং গ্রিড ও প্যারামেট্রিক ক্যালিগ্রাফি সরাসরি কোডে রেন্ডার করে।\n\n২. পরম সময়-ভিত্তিক রেন্ডার ইঞ্জিন: ফিল্মের প্রতিটি সিকোয়েন্সের render(ctx, time) ফাংশন বর্তমান প্লেহেড সময়ের ভিত্তিতে ক্যামেরা জুম, ইজিং কার্ভস (easeOut, easeOutBack) ও এলিমেন্ট ট্রান্সফর্মেশন নির্ধারণ করে। কোনো প্রি-রেকর্ডেড ভিডিওর বাফারিং ছাড়াই নিখুঁত ফ্রেম রেন্ডারিং নিশ্চিত হয়।\n\n৩. অ্যাডাপ্টিভ ডুয়েল ফরম্যাট অর্কেস্ট্রেশন: কোডের ভেতর প্রতিটি শটের জন্য আলাদা কোঅর্ডিনেট লেআউট (Desktop বনাম Mobile) নির্ধারণ করা হয়েছে। ফলে মোবাইল স্ক্রিনে গুরুত্বপূর্ণ ভিজ্যুয়াল ফোকাস স্বয়ংক্রিয়ভাবে সেন্টারে রিকম্পোজ হয়।\n\n৪. ২৩টি মডুলার সিন ও নিখুঁত শট টাইমিং: পুরো ৮:৪৯ দৈর্ঘ্যের ডকুমেন্টারিকে ২৩টি স্বতন্ত্র দৃশ্যে ভাগ করে সুনির্দিষ্ট শট টাইমিং (timing.js) দিয়ে সিনক্রোনাইজ করেছেন রাইসুল সোহান। দর্শক পুরো ফিল্ম ছাড়াও প্রতিটি দৃশ্য আলাদাভাবে ব্রাউজ করতে পারেন।\n\n৫. কাস্টম ব্রাউজার কন্ট্রোল ও কীবোর্ড নেভিগেশন: নিজস্ব লাইটওয়েট প্লেয়ার তৈরি করা হয়েছে যাতে রয়েছে স্পেসবারে প্লে/পজ, তীরচিহ্নে ফ্রেম-বাই-ফ্রেম ও সেকেন্ড-বাই-সেকেন্ড স্ক্রাব, হোম কি ও ফুলস্ক্রিন (F) শর্টকাট।\n\n৬. জিরো বিল্ড ও অফলাইন রেডি: কোনো ভারী প্যাকেজ বা ডিপেনডেন্সি ছাড়া সরাসরি যেকোনো ব্রাউজারে অফলাইনে কিংবা স্ট্যাটিক হোস্টিংয়ে নিখুঁতভাবে চলে।",
+			'solution_en' => "1. Procedural Vector Canvas Architecture: Raisul Sohan engineered a lightweight procedural vector engine (lib/engine.min.js) capable of rendering Bézier curves, procedural noise, drafting grids, and parametric forms on the fly.\n\n2. Deterministic Pure Time-Function Rendering: Every sequence defines a render(ctx, time) loop where camera positioning, ease curves (easeOut, easeOutBack), and spatial envelopes are mathematically derived from time (t), eliminating video buffer lag entirely.\n\n3. Adaptive Dual-Aspect Geometry: Embedded format-aware coordinate systems (Desktop 16:9 vs Mobile 4:5) within each sequence to automatically recompose shots, shift camera focal points, and re-anchor typography between desktop and vertical mobile screens.\n\n4. 23 Modular Scenes with Granular Shot Timings: Architected the 8:49 production into 23 discrete scenes driven by declarative shot timing maps (timing.js), allowing seamless end-to-end playback as well as individual scene inspection choreographed by Raisul Sohan.\n\n5. Ergonomic In-Browser Player & Hotkeys: Engineered a native keyboard-driven playback interface featuring Space for play/pause, Left/Right arrow keys for single-frame stepping, Shift+Arrow for 1-second leaps, Home to reset, and F for fullscreen.\n\n6. Zero Build & Frictionless Offline Portability: Written entirely in standard vanilla JavaScript without build steps, compilers, or server dependencies—running instantly in any modern browser offline or from static CDN hosting under MIT.",
+			'highlights_bn'=> array(
+				'রাইসুল সোহানের ৮ মিনিট ৪৯ সেকেন্ডের পূর্ণাঙ্গ অ্যানিমেশন ফিল্ম — ০টি ভিডিও বা ইমেজ ফাইল',
+				'রাইসুল সোহান রচিত, পরিচালিত, চিত্রায়িত ও কোডকৃত মৌলিক ঐতিহাসিক ডকুমেন্টারি',
+				'১০০% পিওর ভ্যানিলা জাভাস্ক্রিপ্ট ও HTML5 Canvas ভেক্টর রেন্ডারিং ইঞ্জিন',
+				'পরম সময়ভিত্তিক ফ্রেম আর্কিটেকচার — যেকোনো ফ্রেম বা মুহূর্তে নিখুঁত স্ক্রাবিং ও জাম্প',
+				'ডুয়েল অ্যাসপেক্ট রেশিও সাপোর্ট: ১৬:৯ ডেক্সটপ ও ৪:৫ মোবাইল ডিসপ্লে',
+				'২৩টি সম্পূর্ণ সমাপ্ত সিন এবং নিখুঁত শট টাইমিং কোঅর্ডিনেশন',
+				'কীবোর্ড শর্টকাট সমৃদ্ধ নেটিভ ওয়েব প্লেয়ার (ফ্রেম স্টেপিং, পজ ও ফুলস্ক্রিন)',
+				'কোনো বান্ডলার বা বিল্ড স্টেপ ছাড়া ১০০% ওপেন সোর্স ও অফলাইন সক্ষম',
+			),
+			'highlights_en'=> array(
+				'Complete 8:49 animated film written, directed, animated, and coded by Raisul Sohan',
+				'Zero video and zero raster image dependencies — drawn entirely via procedural code',
+				'100% pure vanilla JavaScript and HTML5 Canvas 2D procedural vector rendering',
+				'Deterministic time-based architecture: every frame is an exact mathematical function of time',
+				'Full dual aspect ratio support: 16:9 widescreen Desktop and 4:5 vertical Mobile',
+				'23 completed animation scenes choreographed with precise shot timing maps',
+				'Native keyboard-controlled web player with single-frame stepping and fullscreen',
+				'Zero build steps and zero dependencies: runs entirely offline and open source under MIT',
+			),
+			'tags'        => array( 'Creative Coding', 'JavaScript (Canvas)', 'Motion Animation', 'Documentary', 'Vector Math', 'Open Source' ),
+			'accent'      => '#f2a33a',
+			'icon'        => 'video',
+			'image'       => get_template_directory_uri() . '/assets/img/nomolos-cobra-effect.webp',
+			'image_fit'   => 'cover',
+			'action_type' => 'video',
+			'action_bn'   => 'ব্রাউজারে ফিল্মটি দেখুন',
+			'action_en'   => 'Watch Film in Browser',
+			'direct_url'  => 'https://raisulsohan.github.io/Nomolos_02_Cobra_Effect_animation/',
+			'github_url'  => 'https://github.com/raisulsohan/Nomolos_02_Cobra_Effect_animation',
+			'order'       => 1,
+		),
 	);
 }
 
@@ -1956,7 +2007,7 @@ function rs_sync_new_portfolio_projects() {
 
 	$added = false;
 	if ( get_option( 'rs_portfolio_seeded_v1' ) ) {
-		foreach ( array( 'lazylord', 'lazykick', 'lazymotiontoolkit', 'nomolos-prohibition' ) as $slug ) {
+		foreach ( array( 'lazylord', 'lazykick', 'lazymotiontoolkit', 'nomolos-prohibition', 'nomolos-cobra-effect' ) as $slug ) {
 			if ( ! get_option( 'rs_portfolio_added_' . $slug ) ) {
 				$added = true;
 			}
