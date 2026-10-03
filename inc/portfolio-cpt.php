@@ -1703,6 +1703,51 @@ function rs_get_default_portfolio_projects() {
 			'github_url'  => 'https://github.com/raisulsohan/Nomolos_02_Cobra_Effect_animation',
 			'order'       => 1,
 		),
+		array(
+			'id'          => 'consciousness-animation',
+			'category'    => 'web',
+			'type_bn'     => 'জাভাস্ক্রিপ্ট ক্যানভাস অ্যানিমেশন ও ডকুমেন্টারি ফিল্ম',
+			'type_en'     => 'JavaScript Canvas Animation & Documentary Film',
+			'badge_bn'    => 'প্রসিডিউরাল অ্যানিমেশন • ৪:০৮ মিনিট',
+			'badge_en'    => 'Procedural Animation • 4:08 Mins',
+			'title_bn'    => 'Consciousness (চেতনা) — সম্পূর্ণ জাভাস্ক্রিপ্টে কোড করা প্রসিডিউরাল সায়েন্স ডকুমেন্টারি',
+			'title_en'    => 'Consciousness — A Procedural Science Documentary Animated Entirely in JavaScript',
+			'summary_bn'  => 'বিচিত্র বিজ্ঞানের (Bichitro Biggan) জন্য নির্মিত প্রথম বিজ্ঞান ডকুমেন্টারি। ৪ মিনিট ৮ সেকেন্ডের পুরো অ্যানিমেশনটি কোনো ভিডিও বা ইমেজ ফাইল ছাড়াই সম্পূর্ণ জাভাস্ক্রিপ্ট এবং HTML5 Canvas দিয়ে গাণিতিকভাবে আঁকা হয়েছে।',
+			'summary_en'  => 'The first science documentary for Bichitro Biggan. Every frame of this 4-minute 8-second film is mathematically composed and drawn in JavaScript on an HTML5 canvas using bespoke procedural code, utilizing zero video or image files.',
+			'role_bn'     => 'রাইসুল সোহান — ক্রিয়েটর, লেখক, পরিচালক ও প্রসিডিউরাল অ্যানিমেটর',
+			'role_en'     => 'Raisul Sohan — Creator, Writer, Director & Procedural Animator',
+			'context_bn'  => 'জাভাস্ক্রিপ্ট অ্যানিমেশন • জিরো ইমেজ • গাণিতিক আর্ট • ৪:০৮ মিনিট',
+			'context_en'  => 'JavaScript Animation • Zero Images • Procedural Art • 4:08 Mins',
+			'challenge_bn'=> "একটি ডকুমেন্টারি অ্যানিমেশন তৈরি করার প্রচলিত উপায় হলো অ্যাডোবি আফটার ইফেক্টস (Adobe After Effects) বা অন্য কোনো ভিডিও এডিটিং সফটওয়্যার ব্যবহার করা। কিন্তু এই প্রজেক্টের চ্যালেঞ্জ ছিল পুরো ৪ মিনিট ৮ সেকেন্ডের ডকুমেন্টারিটি কোনো এক্সটার্নাল ভিডিও বা ছবি ছাড়াই শুধুমাত্র কোডের মাধ্যমে ব্রাউজারে রিয়েল-টাইমে রেন্ডার করা।\n\nপ্রযুক্তিগত চ্যালেঞ্জ:\n১. জিরো ইমেজ ও প্রসিডিউরাল ড্রইং: নিউরন, মাইক্রোটিবিউল, কোয়ান্টাম সুপারপজিশন এবং হসপিটাল মনিটরের মতো জটিল বিজ্ঞানভিত্তিক ভিজ্যুয়ালগুলো শুধুমাত্র জাভাস্ক্রিপ্ট ফাংশন ও HTML5 Canvas API ব্যবহার করে গাণিতিকভাবে আঁকতে হবে।\n২. পারফরম্যান্স অপ্টিমাইজেশন: ব্রাউজারে প্রতি সেকেন্ডে ৬০ ফ্রেম (60 FPS) রেন্ডার করার জন্য রিকুইয়েস্ট অ্যানিমেশন ফ্রেম (requestAnimationFrame) ও মেমরি ম্যানেজমেন্ট নিখুঁত হতে হবে যেন অ্যানিমেশন ল্যাগ না করে।\n৩. টাইমিং ও অডিও সিঙ্ক: প্রতিটি দৃশ্য ও ট্রানজিশনকে সময় ও গাণিতিক ফাংশনের (easing curves) সাহায্যে ফ্রেম-পারফেক্টভাবে সিঙ্ক করতে হবে।",
+			'challenge_en'=> "The conventional approach to producing an animated documentary involves compositing video and image assets in software like Adobe After Effects. The central challenge of this project was engineering a complete 4-minute 8-second documentary rendered entirely in real-time within the browser using only code, with zero external media files.\n\nTechnical challenges:\n1. Zero-Asset Procedural Generation: Complex scientific visualizations—such as neural forests, microtubules, quantum superposition states, and hospital heart monitors—had to be mathematically drafted and painted frame-by-frame using pure JavaScript and the HTML5 Canvas API.\n2. Performance & Memory Management: Maintaining a flawless 60 FPS rendering pipeline in the browser required highly optimized mathematical algorithms and memory-efficient canvas clearing routines.\n3. Synchronized State Management: Every transition, camera pan, and object morph had to be strictly driven by continuous time functions (pure functions of time) rather than timeline keyframes.",
+			'solution_bn' => "১. বিশুদ্ধ গাণিতিক রেন্ডারিং: প্রতিটি ফ্রেম হলো সময়ের একটি বিশুদ্ধ ফাংশন (pure function of time)। Canvas API-এর arc, bezierCurveTo, lineTo ইত্যাদি ফাংশন দিয়ে নিউরন, স্কেল, ও কোয়ান্টাম ওয়েভের ভিজ্যুয়াল তৈরি করা হয়েছে।\n\n২. নিজস্ব প্রসিডিউরাল ড্রইং ইঞ্জিন: কোনো থার্ড-পার্টি অ্যানিমেশন লাইব্রেরি (যেমন GSAP বা Three.js) ব্যবহার না করে সম্পূর্ণ নিজস্ব কাস্টম রেন্ডার লুপ ও ইজিং ফাংশন (Easing functions) লেখা হয়েছে।\n\n৩. স্বয়ংসম্পূর্ণ দৃশ্য (Standalone Scenes): প্রজেক্টটিকে আলাদা আলাদা ফোল্ডারে দৃশ্য (Scenes) অনুযায়ী ভাগ করা হয়েছে, যা ব্রাউজারে স্বাধীনভাবে চলতে পারে। ফলে যেকোনো দৃশ্য আলাদাভাবে প্লে বা পজ করা যায়।",
+			'solution_en' => "1. Pure Mathematical Rendering: Every frame is computed as a pure mathematical function of time. Intricate shapes—from hospital monitors to quantum waveforms and golden scales—were procedurally generated using raw Canvas API primitives like arc(), bezierCurveTo(), and lineTo().\n\n2. Custom Procedural Animation Engine: Built a bespoke, lightweight rendering loop and custom easing functions (elastic, bounce, smoothstep) entirely from scratch, explicitly avoiding bloated third-party libraries like GSAP or Three.js.\n\n3. Modular Scene Architecture: The documentary is architected into independent, self-contained scene modules. Because the state is a pure function of elapsed time, scenes can be rendered autonomously, allowing instant seeking and zero-buffer playback.",
+			'highlights_bn'=> array(
+				'কোনো ভিডিও বা ইমেজ ফাইল ছাড়া সম্পূর্ণ কোডে নির্মিত ৪:০৮ মিনিটের অ্যানিমেশন',
+				'HTML5 Canvas ও বিশুদ্ধ জাভাস্ক্রিপ্ট দিয়ে প্রতিটি ফ্রেম গাণিতিকভাবে রেন্ডার করা',
+				'কোনো থার্ড-পার্টি লাইব্রেরি (GSAP/Three.js) ছাড়াই নিজস্ব ড্রইং ইঞ্জিন',
+				'নিউরাল নেটওয়ার্ক, কোয়ান্টাম ওয়েব এবং ব্রেইন মাসের প্রসিডিউরাল ভিজ্যুয়ালাইজেশন',
+				'প্রতিটি ফ্রেম সময়ের একটি বিশুদ্ধ ফাংশন, তাই যেকোনো ফ্রেমে সরাসরি যাওয়া যায়'
+			),
+			'highlights_en'=> array(
+				'Complete 4:08 minute animation built with zero video or image assets',
+				'Procedurally rendered frame-by-frame using pure JavaScript and HTML5 Canvas API',
+				'Zero third-party animation libraries—built entirely on a bespoke rendering engine',
+				'Mathematical visualizations of neural forests, quantum states, and brain mass',
+				'Stateless architecture: every frame is a pure function of time allowing instant seeking'
+			),
+			'tags'        => array( 'JavaScript', 'HTML5 Canvas', 'Procedural Animation', 'Math', 'Science' ),
+			'accent'      => '#e056fd',
+			'icon'        => 'code',
+			'image'       => 'https://raw.githubusercontent.com/raisulsohan/Consciousness-animation/main/media/peek-4-scale.webp',
+			'image_fit'   => 'cover',
+			'action_type' => 'web',
+			'action_bn'   => 'অ্যানিমেশনটি দেখুন',
+			'action_en'   => 'Watch Animation',
+			'direct_url'  => 'https://raisulsohan.github.io/Consciousness-animation/',
+			'github_url'  => 'https://github.com/raisulsohan/Consciousness-animation',
+			'order'       => 5,
+		),
 	);
 }
 
@@ -2072,7 +2117,7 @@ function rs_sync_new_portfolio_projects() {
 
 	$added = false;
 	if ( get_option( 'rs_portfolio_seeded_v1' ) ) {
-		foreach ( array( 'lazylord', 'lazykick', 'lazymotiontoolkit', 'nomolos-prohibition', 'nomolos-cobra-effect' ) as $slug ) {
+		foreach ( array( 'lazylord', 'lazykick', 'lazymotiontoolkit', 'nomolos-prohibition', 'nomolos-cobra-effect', 'consciousness-animation' ) as $slug ) {
 			if ( ! get_option( 'rs_portfolio_added_' . $slug ) ) {
 				$added = true;
 			}
