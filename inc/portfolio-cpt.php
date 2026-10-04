@@ -1705,45 +1705,49 @@ function rs_get_default_portfolio_projects() {
 		),
 		array(
 			'id'          => 'consciousness-animation',
-			'category'    => 'web',
-			'type_bn'     => 'জাভাস্ক্রিপ্ট ক্যানভাস অ্যানিমেশন ও ডকুমেন্টারি ফিল্ম',
-			'type_en'     => 'JavaScript Canvas Animation & Documentary Film',
-			'badge_bn'    => 'প্রসিডিউরাল অ্যানিমেশন • ৪:০৮ মিনিট',
-			'badge_en'    => 'Procedural Animation • 4:08 Mins',
-			'title_bn'    => 'Consciousness (চেতনা) — সম্পূর্ণ জাভাস্ক্রিপ্টে কোড করা প্রসিডিউরাল সায়েন্স ডকুমেন্টারি',
-			'title_en'    => 'Consciousness — A Procedural Science Documentary Animated Entirely in JavaScript',
-			'summary_bn'  => 'বিচিত্র বিজ্ঞানের (Bichitro Biggan) জন্য নির্মিত প্রথম বিজ্ঞান ডকুমেন্টারি। ৪ মিনিট ৮ সেকেন্ডের পুরো অ্যানিমেশনটি কোনো ভিডিও বা ইমেজ ফাইল ছাড়াই সম্পূর্ণ জাভাস্ক্রিপ্ট এবং HTML5 Canvas দিয়ে গাণিতিকভাবে আঁকা হয়েছে।',
-			'summary_en'  => 'The first science documentary for Bichitro Biggan. Every frame of this 4-minute 8-second film is mathematically composed and drawn in JavaScript on an HTML5 canvas using bespoke procedural code, utilizing zero video or image files.',
-			'role_bn'     => 'রাইসুল সোহান — ক্রিয়েটর, লেখক, পরিচালক ও প্রসিডিউরাল অ্যানিমেটর',
-			'role_en'     => 'Raisul Sohan — Creator, Writer, Director & Procedural Animator',
-			'context_bn'  => 'জাভাস্ক্রিপ্ট অ্যানিমেশন • জিরো ইমেজ • গাণিতিক আর্ট • ৪:০৮ মিনিট',
-			'context_en'  => 'JavaScript Animation • Zero Images • Procedural Art • 4:08 Mins',
-			'challenge_bn'=> "একটি ডকুমেন্টারি অ্যানিমেশন তৈরি করার প্রচলিত উপায় হলো অ্যাডোবি আফটার ইফেক্টস (Adobe After Effects) বা অন্য কোনো ভিডিও এডিটিং সফটওয়্যার ব্যবহার করা। কিন্তু এই প্রজেক্টের চ্যালেঞ্জ ছিল পুরো ৪ মিনিট ৮ সেকেন্ডের ডকুমেন্টারিটি কোনো এক্সটার্নাল ভিডিও বা ছবি ছাড়াই শুধুমাত্র কোডের মাধ্যমে ব্রাউজারে রিয়েল-টাইমে রেন্ডার করা।\n\nপ্রযুক্তিগত চ্যালেঞ্জ:\n১. জিরো ইমেজ ও প্রসিডিউরাল ড্রইং: নিউরন, মাইক্রোটিবিউল, কোয়ান্টাম সুপারপজিশন এবং হসপিটাল মনিটরের মতো জটিল বিজ্ঞানভিত্তিক ভিজ্যুয়ালগুলো শুধুমাত্র জাভাস্ক্রিপ্ট ফাংশন ও HTML5 Canvas API ব্যবহার করে গাণিতিকভাবে আঁকতে হবে।\n২. পারফরম্যান্স অপ্টিমাইজেশন: ব্রাউজারে প্রতি সেকেন্ডে ৬০ ফ্রেম (60 FPS) রেন্ডার করার জন্য রিকুইয়েস্ট অ্যানিমেশন ফ্রেম (requestAnimationFrame) ও মেমরি ম্যানেজমেন্ট নিখুঁত হতে হবে যেন অ্যানিমেশন ল্যাগ না করে।\n৩. টাইমিং ও অডিও সিঙ্ক: প্রতিটি দৃশ্য ও ট্রানজিশনকে সময় ও গাণিতিক ফাংশনের (easing curves) সাহায্যে ফ্রেম-পারফেক্টভাবে সিঙ্ক করতে হবে।",
-			'challenge_en'=> "The conventional approach to producing an animated documentary involves compositing video and image assets in software like Adobe After Effects. The central challenge of this project was engineering a complete 4-minute 8-second documentary rendered entirely in real-time within the browser using only code, with zero external media files.\n\nTechnical challenges:\n1. Zero-Asset Procedural Generation: Complex scientific visualizations—such as neural forests, microtubules, quantum superposition states, and hospital heart monitors—had to be mathematically drafted and painted frame-by-frame using pure JavaScript and the HTML5 Canvas API.\n2. Performance & Memory Management: Maintaining a flawless 60 FPS rendering pipeline in the browser required highly optimized mathematical algorithms and memory-efficient canvas clearing routines.\n3. Synchronized State Management: Every transition, camera pan, and object morph had to be strictly driven by continuous time functions (pure functions of time) rather than timeline keyframes.",
-			'solution_bn' => "১. বিশুদ্ধ গাণিতিক রেন্ডারিং: প্রতিটি ফ্রেম হলো সময়ের একটি বিশুদ্ধ ফাংশন (pure function of time)। Canvas API-এর arc, bezierCurveTo, lineTo ইত্যাদি ফাংশন দিয়ে নিউরন, স্কেল, ও কোয়ান্টাম ওয়েভের ভিজ্যুয়াল তৈরি করা হয়েছে।\n\n২. নিজস্ব প্রসিডিউরাল ড্রইং ইঞ্জিন: কোনো থার্ড-পার্টি অ্যানিমেশন লাইব্রেরি (যেমন GSAP বা Three.js) ব্যবহার না করে সম্পূর্ণ নিজস্ব কাস্টম রেন্ডার লুপ ও ইজিং ফাংশন (Easing functions) লেখা হয়েছে।\n\n৩. স্বয়ংসম্পূর্ণ দৃশ্য (Standalone Scenes): প্রজেক্টটিকে আলাদা আলাদা ফোল্ডারে দৃশ্য (Scenes) অনুযায়ী ভাগ করা হয়েছে, যা ব্রাউজারে স্বাধীনভাবে চলতে পারে। ফলে যেকোনো দৃশ্য আলাদাভাবে প্লে বা পজ করা যায়।",
-			'solution_en' => "1. Pure Mathematical Rendering: Every frame is computed as a pure mathematical function of time. Intricate shapes—from hospital monitors to quantum waveforms and golden scales—were procedurally generated using raw Canvas API primitives like arc(), bezierCurveTo(), and lineTo().\n\n2. Custom Procedural Animation Engine: Built a bespoke, lightweight rendering loop and custom easing functions (elastic, bounce, smoothstep) entirely from scratch, explicitly avoiding bloated third-party libraries like GSAP or Three.js.\n\n3. Modular Scene Architecture: The documentary is architected into independent, self-contained scene modules. Because the state is a pure function of elapsed time, scenes can be rendered autonomously, allowing instant seeking and zero-buffer playback.",
+			'category'    => 'video',
+			'type_bn'     => 'আফটার ইফেক্টস মোশন অ্যানিমেশন ও অরিজিনাল ফিল্ম',
+			'type_en'     => 'After Effects Motion Animation & Original Documentary Film',
+			'badge_bn'    => 'আফটার ইফেক্টস অ্যানিমেশন • ৪:০৮ মিনিট',
+			'badge_en'    => 'After Effects Animation • 4:08 Mins',
+			'title_bn'    => 'Consciousness (চেতনা) — আফটার ইফেক্টস, নিজস্ব ইলাস্ট্রেশন ও কাস্টম সাউন্ডট্র্যাকে নির্মিত অ্যানিমেশন ফিল্ম',
+			'title_en'    => 'Consciousness — An Animated Science Documentary Crafted in After Effects',
+			'summary_bn'  => 'চেতনা বা কনশাসনেস (Consciousness) কীভাবে কাজ করে এবং নিউরনের জটিল বিন্যাস নিয়ে বিচিত্র বিজ্ঞানের (Bichitro Biggan) জন্য নির্মিত পূর্ণাঙ্গ অ্যানিমেশন ডকুমেন্টারি ফিল্ম। সম্পূর্ণ কনসেপ্ট, চিত্রনাট্য রচনা, প্রতিটি দৃশ্যের জন্য নিজস্ব ভেক্টর ইলাস্ট্রেশন আর্টওয়ার্ক তৈরি, অ্যাডোবি আফটার ইফেক্টসে (Adobe After Effects) সিনেমাটিক ৩ডি প্যারালাক্স ও সিগনেচার গ্লো অ্যানিমেশন এবং বিভিন্ন উন্মুক্ত ফ্রি রিসোর্স থেকে খুঁজে ৯টি সিনের জন্য নিজস্ব সাউন্ড কম্পোজিশন (SFX, BGM, Underscore) দিয়ে ফিল্মটি এককভাবে তৈরি করেছেন রাইসুল সোহান। ৪ মিনিট ৮ সেকেন্ডের এই সিনেমাটিক অ্যানিমেশন মোশন ডিজাইনের এক দুর্দান্ত ভিজ্যুয়াল অভিজ্ঞতা।',
+			'summary_en'  => 'An animated documentary film for Bichitro Biggan exploring the complex nature of human consciousness and neural networks—entirely conceived, illustrated, animated in Adobe After Effects, and sound-composed by Raisul Sohan. Featuring handcrafted vector artwork for 9 complete scenes, multiplane 3D parallax cameras, atmospheric glow and volumetric lighting, and an original audio score of SFX, BGM, and underscores curated from free open archives, this 4-minute 8-second film delivers a masterclass in independent motion graphics storytelling.',
+			'role_bn'     => 'রাইসুল সোহান — চিত্রনাট্যকার, পরিচালক, ভেক্টর ইলাস্ট্রেটর, আফটার ইফেক্টস অ্যানিমেটর ও সাউন্ড কম্পোজার',
+			'role_en'     => 'Raisul Sohan — Screenwriter, Director, Vector Illustrator, After Effects Animator & Sound Designer',
+			'context_bn'  => 'আফটার ইফেক্টস মোশন • কাস্টম ইলাস্ট্রেশন • ৩ডি প্যারালাক্স ও গ্লো • অরিজিনাল সাউন্ডস্কেপ • ৪:০৮ মিনিট',
+			'context_en'  => 'After Effects Motion • Custom Illustration • 3D Parallax & Glow • Original Soundscape • 4:08 Mins',
+			'challenge_bn'=> "৯টি পৃথক দৃশ্যে ৪ মিনিট ৮ সেকেন্ডের একটি জটিল বৈজ্ঞানিক বিষয়কে এককভাবে অ্যানিমেশনের মাধ্যমে ফুটিয়ে তুলতে গিয়ে নানা সৃজনশীল ও কারিগরি চ্যালেঞ্জ মোকাবিলা করতে হয়:\n\n১. জটিল বৈজ্ঞানিক প্রেক্ষাপট ও কাস্টম ভেক্টর ইলাস্ট্রেশন: মানব মস্তিষ্ক, নিউরন, কোয়ান্টাম ওয়েভ এবং হসপিটাল মনিটরের মতো জটিল দৃশ্যপটকে নিখুঁত ডিটেইলিংসহ সম্পূর্ণ নিজে ইলাস্ট্রেশন করা।\n২. আফটার ইফেক্টসে ডাইনামিক ৩ডি প্যারালাক্স ও গভীরতা: সাধারণ দ্বিমাত্রিক অ্যানিমেশনের বদলে দৃশ্যের ভেতর দর্শকের উপস্থিতির অনুভূতি জাগাতে প্রতিটি আর্টওয়ার্ককে বহুস্তরের ৩ডি লেয়ারে ভাগ করে আফটার ইফেক্টসে সিনেমাটিক ক্যামেরা মুভমেন্ট রিগ করা, যার ফলে ফোরগ্রাউন্ড অবজেক্ট ও ব্যাকগ্রাউন্ড এনভায়রনমেন্টের মধ্যে বাস্তবসম্মত প্যারালাক্স শিফট ও ফোকাস ডেপথ তৈরি হয়।\n৩. সিনেমাটিক গ্লো ও এটমোস্ফেরিক লাইট ডিজাইন: নিউরনের ফায়ারিং, কোয়ান্টাম সুপারপজিশন এবং সাইফাই পরিবেশের রূপান্তরমূলক মুহূর্তে আফটার ইফেক্টসের ডিপ গ্লো (Deep Glow) এবং আলো-ছায়ার সিনেমাটিক কন্ট্রাস্ট স্থাপন করা।\n৪. কাস্টম সাউন্ডস্কেপ ও আন্ডারস্কোর কম্পোজিশন: কোনো বাণিজ্যিক স্টুডিওর সাহায্য ছাড়া কেবল উন্মুক্ত ফ্রি রিসোর্স থেকে শত শত প্রাকৃতিক সাউন্ড ইফেক্টস (SFX)—যেমন হার্টবিট মনিটর, ইলেকট্রিক স্পার্ক এবং প্রতিটি সিনের ক্লাইম্যাক্সের সাথে মেলানো ব্যাকগ্রাউন্ড মিউজিক (BGM) ও আন্ডারস্কোর খুঁজে নিয়ে ফ্রেম ধরে ধরে নিজে সাউন্ডট্র্যাক ডিজাইন করা।",
+			'challenge_en'=> "Translating an intricate scientific concept across 9 distinct scenes into an 4:08 animated film as a solo creator presented formidable artistic, technical, and auditory hurdles:\n\n1. Authentic Worldbuilding & Custom Vector Illustration: Hand-illustrating every neural network, quantum state, hospital monitor, and brain structure without external template shortcuts.\n2. Dynamic 3D Parallax & Spatial Camera Choreography in After Effects: Escaping flat 2D presentations by breaking each illustrated scene into dozens of independent depth planes inside After Effects 3D space—animating virtual cameras to glide past foreground silhouettes, midground structures, and distant vistas with fluid spatial parallax.\n3. Signature Glow & Dramatic Lighting Envelopes: Employing multi-pass atmospheric glows, volumetric lighting rays, dramatic chiaroscuro contrasts, and luminescence to dramatize neural firings and quantum waveform collapses.\n4. Curating & Custom-Scoring SFX, BGM, and Underscores from Free Archives: With no commercial audio budget, every sound effect (foley, electric sparks, heart monitors, ambient hums) and atmospheric musical underscore had to be individually mined from free public domain repositories, edited, EQ'd, time-stretched, and mixed to frame-level perfection.",
+			'solution_bn' => "১. দৃশ্যভিত্তিক ভেক্টর ইলাস্ট্রেশন আর্ট ডিরেকশন: ৯টি সিনের জন্য প্রয়োজনীয় শত শত আর্ট এসেট নিজে ভেক্টরে ড্রয়িং ও কালারিং করে আফটার ইফেক্টসের কম্পোজিশনের উপযোগী মডুলার লেয়ারে ভাগ করে নেওয়া হয়েছে।\n\n২. অ্যাডোবি আফটার ইফেক্টসে ৩ডি প্যারালাক্স ক্যামেরা রিগ: একাধিক ফোকাল লেন্থের ৩ডি ক্যামেরা, নাল কন্ট্রোলার ও স্মুথ প্যান/জুমের সমন্বয়ে প্রতিটি দৃশ্যে তৈরি করা হয়েছে অসাধারণ সিনেমাটিক গভীরতা ও ভিজ্যুয়াল গতিশীলতা।\n\n৩. ড্রামাটিক গ্লো, লাইট ফল-অফ ও সিনেমাটিক গ্রেডিং: আফটার ইফেক্টসের অ্যাডভান্সড লাইটিং ইফেক্টস ও গ্লো মাস্কিং ব্যবহারের মাধ্যমে নিউরন ও সাইফাই পরিবেশকে দেওয়া হয়েছে জীবন্ত সিনেমাটিক রূপ।\n\n৪. গ্রাফ এডিটর নির্ভর অর্গানিক মোশন ও কিফ্রেমিং: মুভমেন্ট ও ক্যামেরার গতিতে কোনো যান্ত্রিকতা না রেখে আফটার ইফেক্টসের গ্রাফ এডিটরে প্রতিটি কিফ্রেমের স্পিড ও ইনফ্লুয়েন্স কার্ভ নিখুঁতভাবে টিউন করা হয়েছে।\n\n৫. ফ্রি সাউন্ড রিসোর্স থেকে স্বতন্ত্র অডিও কম্পোজিশন: পাবলিক ডোমেন ও ক্রিয়েটিভ কমন্স অডিও লাইব্রেরি থেকে নিখুঁত সাউন্ড ইফেক্টস (SFX), অরিজিনাল ব্যাকগ্রাউন্ড স্কোর (BGM) ও আন্ডারস্কোর সংগ্রহ করে সিনের আবেগ ও গল্পের গতি অনুযায়ী ফ্রেম-বাই-ফ্রেম কাস্টম অডিও মিক্স ও মাস্টার করা হয়েছে।",
+			'solution_en' => "1. Scene-by-Scene Vector Illustration Art Direction: Handcrafted hundreds of vector assets across 9 narrative beats, structuring every element into modular, motion-optimized layers for After Effects rigging.\n\n2. Multiplane 3D Parallax Camera Rigging in After Effects: Constructed dynamic 3D multiplane sets utilizing virtual cameras with depth of field, gentle handheld drifters, and sweeping cranes to achieve rich spatial perspective.\n\n3. Volumetric Glow, Lighting & Vignette Treatments: Designed multi-pass glow falloffs, directional light beams, and stylized color grading to emphasize pivotal turning points—such as the neural forest firing.\n\n4. Fine-Tuned Graph Editor Motion & Animation: Crafted organic pacing, elastic reactions, and buttery-smooth camera movements using fine-tuned velocity curves in the After Effects Graph Editor.\n\n5. Curated Sound Design & Original Underscore Composition: Researched and harvested high-quality open-source and free sound effects (SFX) and evocative background music (BGM/Underscores), hand-assembling a dynamic multi-track audio landscape that drives the narrative tension.",
 			'highlights_bn'=> array(
-				'কোনো ভিডিও বা ইমেজ ফাইল ছাড়া সম্পূর্ণ কোডে নির্মিত ৪:০৮ মিনিটের অ্যানিমেশন',
-				'HTML5 Canvas ও বিশুদ্ধ জাভাস্ক্রিপ্ট দিয়ে প্রতিটি ফ্রেম গাণিতিকভাবে রেন্ডার করা',
-				'কোনো থার্ড-পার্টি লাইব্রেরি (GSAP/Three.js) ছাড়াই নিজস্ব ড্রইং ইঞ্জিন',
-				'নিউরাল নেটওয়ার্ক, কোয়ান্টাম ওয়েব এবং ব্রেইন মাসের প্রসিডিউরাল ভিজ্যুয়ালাইজেশন',
-				'প্রতিটি ফ্রেম সময়ের একটি বিশুদ্ধ ফাংশন, তাই যেকোনো ফ্রেমে সরাসরি যাওয়া যায়'
+				'রাইসুল সোহানের ৪ মিনিট ৮ সেকেন্ডের পূর্ণাঙ্গ সিনেমাটিক অ্যানিমেশন ফিল্ম',
+				'অ্যাডোবি আফটার ইফেক্টসে (Adobe After Effects) সম্পূর্ণ অ্যানিমেশন ও কম্পোজিটিং',
+				'৯টি সম্পূর্ণ দৃশ্যের জন্য নিজস্ব ভেক্টর ইলাস্ট্রেশন',
+				'মাল্টি-লেয়ার ৩ডি প্যারালাক্স ক্যামেরা মুভমেন্ট ও সিনেমাটিক স্পেশিয়াল ডেপথ',
+				'সিগনেচার এটমোস্ফেরিক গ্লো, ডায়নামিক শ্যাডো ও সিনেমাটিক লাইটিং ফ্লেয়ার',
+				'ফ্রি সাউন্ড রিসোর্স থেকে তন্ন তন্ন করে খুঁজে নিজে কম্পোজ করা অরিজিনাল SFX ও BGM',
+				'কোনো প্রি-মেড অ্যানিমেশন টেমপ্লেট ছাড়া ১০০% হ্যান্ডক্রাফটেড মোশন গ্রাফিক্স'
 			),
 			'highlights_en'=> array(
-				'Complete 4:08 minute animation built with zero video or image assets',
-				'Procedurally rendered frame-by-frame using pure JavaScript and HTML5 Canvas API',
-				'Zero third-party animation libraries—built entirely on a bespoke rendering engine',
-				'Mathematical visualizations of neural forests, quantum states, and brain mass',
-				'Stateless architecture: every frame is a pure function of time allowing instant seeking'
+				'Complete 4:08 animated documentary film written, directed, and animated by Raisul Sohan',
+				'100% animated and composited in Adobe After Effects across 9 finished scenes',
+				'Handcrafted vector illustrations for every scene and scientific asset',
+				'Immersive multiplane 3D parallax camera choreography with cinematic focal depth',
+				'Atmospheric signature glow, procedural volumetrics, and dynamic light spills',
+				'Curated sound design: original SFX, BGM, and underscore composed from free audio archives',
+				'Zero third-party animation templates: bespoke keyframing and motion staging throughout'
 			),
-			'tags'        => array( 'JavaScript', 'HTML5 Canvas', 'Procedural Animation', 'Math', 'Science' ),
+			'tags'        => array( 'Adobe After Effects', 'Motion Design', 'Illustration', '3D Parallax', 'Sound Design', 'Documentary' ),
 			'accent'      => '#e056fd',
-			'icon'        => 'code',
+			'icon'        => 'video',
 			'image'       => 'https://raw.githubusercontent.com/raisulsohan/Consciousness-animation/main/media/peek-4-scale.webp',
 			'image_fit'   => 'cover',
-			'action_type' => 'web',
-			'action_bn'   => 'অ্যানিমেশনটি দেখুন',
-			'action_en'   => 'Watch Animation',
+			'action_type' => 'video',
+			'action_bn'   => 'ফিল্মটি দেখুন',
+			'action_en'   => 'Watch Film',
 			'direct_url'  => 'https://raisulsohan.github.io/Consciousness-animation/',
 			'github_url'  => 'https://github.com/raisulsohan/Consciousness-animation',
 			'order'       => 5,
@@ -2097,6 +2101,73 @@ function rs_sync_nomolos_ae_rebrand_v2() {
 	}
 }
 add_action( 'init', 'rs_sync_nomolos_ae_rebrand_v2', 23 );
+
+/**
+ * 10e. Sync Consciousness After Effects rebrand copy and meta in the database.
+ *
+ * Ensures the project is correctly labeled as an After Effects film instead of JS canvas.
+ */
+function rs_sync_consciousness_ae_rebrand_v1() {
+	$switched = false;
+	if ( is_multisite() && ! is_main_site() ) {
+		switch_to_blog( get_main_site_id() );
+		$switched = true;
+	}
+
+	if ( get_option( 'rs_portfolio_synced_consciousness_ae_v1' ) ) {
+		if ( $switched ) {
+			restore_current_blog();
+		}
+		return;
+	}
+
+	$defaults = array();
+	foreach ( rs_get_default_portfolio_projects() as $d ) {
+		if ( 'consciousness-animation' === $d['id'] ) {
+			$defaults[ $d['id'] ] = $d;
+		}
+	}
+
+	$slug = 'consciousness-animation';
+	if ( isset( $defaults[ $slug ] ) ) {
+		$item  = $defaults[ $slug ];
+		$posts = get_posts( array(
+			'post_type'      => 'rs_portfolio',
+			'name'           => $slug,
+			'posts_per_page' => 1,
+			'post_status'    => 'any',
+		) );
+
+		if ( ! empty( $posts ) ) {
+			$post_id = $posts[0]->ID;
+			wp_update_post( array(
+				'ID'         => $post_id,
+				'post_title' => $item['title_en'],
+			) );
+
+			foreach ( array( 'category', 'type_bn', 'type_en', 'badge_bn', 'badge_en', 'title_bn', 'title_en', 'summary_bn', 'summary_en', 'role_bn', 'role_en', 'context_bn', 'context_en', 'challenge_bn', 'challenge_en', 'solution_bn', 'solution_en', 'highlights_bn', 'highlights_en', 'accent', 'icon', 'image', 'image_fit', 'action_type', 'action_bn', 'action_en', 'direct_url', 'github_url' ) as $field ) {
+				if ( isset( $item[ $field ] ) ) {
+					update_post_meta( $post_id, '_rs_portfolio_' . $field, $item[ $field ] );
+				}
+			}
+
+			if ( ! empty( $item['tags'] ) && is_array( $item['tags'] ) ) {
+				update_post_meta( $post_id, '_rs_portfolio_tags', implode( ', ', $item['tags'] ) );
+			}
+		}
+	}
+
+	update_option( 'rs_portfolio_synced_consciousness_ae_v1', 1 );
+
+	if ( $switched ) {
+		restore_current_blog();
+	}
+
+	if ( function_exists( 'rs_purge_host_cache_soon' ) ) {
+		rs_purge_host_cache_soon();
+	}
+}
+add_action( 'init', 'rs_sync_consciousness_ae_rebrand_v1', 24 );
 
 /**
  * 11. Add projects that joined the defaults after the portfolio was seeded.
