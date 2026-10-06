@@ -2597,16 +2597,18 @@ function rs_github_stats_html( $slug, $stats, $is_en ) {
 }
 
 /**
- * The inside of the "now building" strip.
+ * The inside of the "now building" strip. A private repository is named
+ * only as that, so the work in progress is not given away.
  *
- * @param array $latest { repo, message, date, url }.
+ * @param array $latest { repo, private, message, date, url }.
  * @param bool  $is_en  English site.
  * @return string
  */
 function rs_github_now_html( $latest, $is_en ) {
+	$name  = empty( $latest['private'] ) ? $latest['repo'] : ( $is_en ? 'A private project' : 'একটি প্রাইভেট প্রজেক্ট' );
 	$html  = '<span class="rs-pf-now__dot" aria-hidden="true"></span>';
 	$html .= '<span class="rs-pf-now__label">' . esc_html( $is_en ? 'Last worked on' : 'সর্বশেষ কাজ' ) . '</span>';
-	$html .= '<strong>' . esc_html( $latest['repo'] ) . '</strong>';
+	$html .= '<strong>' . esc_html( $name ) . '</strong>';
 
 	if ( ! empty( $latest['date'] ) && strtotime( $latest['date'] ) ) {
 		$ago   = human_time_diff( strtotime( $latest['date'] ), time() );
@@ -2732,6 +2734,12 @@ function rs_github_latest_ttl() {
  * The theme's own repository is passed over (filterable with
  * rs_github_latest_skip), so theme releases never crowd out the actual work.
  *
+ * With a token the list is the author's own, which also holds the private
+ * repositories the token can read; the public list never does, so work
+ * pushed to a private repository never showed. A private one is shown
+ * without its name or message (see rs_github_now_html()) and links to the
+ * profile, since its own address is a 404 to everyone else.
+ *
  * @param string $owner GitHub user.
  * @param array  $args  From rs_github_request_args().
  * @param string $etag  The list's ETag from last time, or ''.
@@ -2758,7 +2766,10 @@ function rs_github_fetch_latest( $owner, $args, $etag = '' ) {
 		$list_args['headers']['If-None-Match'] = $out['etag'];
 	}
 
-	$response = wp_remote_get( 'https://api.github.com/users/' . rawurlencode( $owner ) . '/repos?type=owner&sort=pushed&per_page=10', $list_args );
+	$list_url = empty( $args['headers']['Authorization'] )
+		? 'https://api.github.com/users/' . rawurlencode( $owner ) . '/repos?type=owner&sort=pushed&per_page=10'
+		: 'https://api.github.com/user/repos?affiliation=owner&sort=pushed&per_page=10';
+	$response = wp_remote_get( $list_url, $list_args );
 
 	/* 304: nothing pushed since the last look. Also any failure: keep what
 	   was known and the ETag it was known by. */
@@ -2781,7 +2792,9 @@ function rs_github_fetch_latest( $owner, $args, $etag = '' ) {
 	$looked    = 0;
 
 	foreach ( is_array( $list ) ? $list : array() as $repo_item ) {
-		if ( empty( $repo_item['full_name'] ) || in_array( strtolower( $repo_item['full_name'] ), $skip, true ) ) {
+		/* The token's own list belongs to whoever made the token; only the
+		   portfolio owner's repositories count. */
+		if ( empty( $repo_item['full_name'] ) || in_array( strtolower( $repo_item['full_name'] ), $skip, true ) || 0 !== stripos( $repo_item['full_name'], $owner . '/' ) ) {
 			continue;
 		}
 
@@ -2801,14 +2814,18 @@ function rs_github_fetch_latest( $owner, $args, $etag = '' ) {
 		/* The author's own commits only, so a workflow's commits on the
 		   default branch never count as work. */
 		$response = wp_remote_get( 'https://api.github.com/repos/' . $repo_item['full_name'] . '/commits?per_page=1&author=' . rawurlencode( $owner ), $args );
+		$code     = is_wp_error( $response ) ? 0 : (int) wp_remote_retrieve_response_code( $response );
 
-		/* 409: a repository with no commits yet. */
-		if ( ! is_wp_error( $response ) && 409 === (int) wp_remote_retrieve_response_code( $response ) ) {
+		/* 409: a repository with no commits yet. 404, or 403 with requests
+		   to spare: a private one the token may list but not read. Asking
+		   again will not change either, and giving up here would hold the
+		   old answer for good, so look past it. */
+		if ( 409 === $code || 404 === $code || ( 403 === $code && '0' !== (string) wp_remote_retrieve_header( $response, 'x-ratelimit-remaining' ) ) ) {
 			continue;
 		}
 
 		/* Keep the old ETag, so the push is asked about again next time. */
-		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+		if ( 200 !== $code ) {
 			return $out;
 		}
 
@@ -2835,14 +2852,18 @@ function rs_github_fetch_latest( $owner, $args, $etag = '' ) {
 
 	$message = isset( $best['commit']['message'] ) ? (string) $best['commit']['message'] : '';
 	$lines   = preg_split( '/\r?\n/', $message );
+	$private = ! empty( $best_repo['private'] );
 
+	/* A private repository's name is kept for the dashboard only; its
+	   message is never stored. */
 	$out['changed'] = true;
 	$out['etag']    = $new_etag;
 	$out['latest']  = array(
 		'repo'    => sanitize_text_field( isset( $best_repo['name'] ) ? $best_repo['name'] : '' ),
-		'message' => sanitize_text_field( (string) $lines[0] ),
+		'private' => $private,
+		'message' => $private ? '' : sanitize_text_field( (string) $lines[0] ),
 		'date'    => sanitize_text_field( isset( $best['commit']['author']['date'] ) ? $best['commit']['author']['date'] : '' ),
-		'url'     => esc_url_raw( isset( $best['html_url'] ) ? $best['html_url'] : '' ),
+		'url'     => esc_url_raw( $private ? 'https://github.com/' . rawurlencode( $owner ) : ( isset( $best['html_url'] ) ? $best['html_url'] : '' ) ),
 	);
 
 	return $out;
@@ -3790,7 +3811,7 @@ function rs_rest_projects() {
 			'fetched=%s; repos=%d; latest=%s; latest_checked=%s; errors=%s; next=%s',
 			empty( $gh['fetched'] ) ? 'never' : gmdate( 'c', (int) $gh['fetched'] ),
 			isset( $gh['repos'] ) ? count( (array) $gh['repos'] ) : 0,
-			empty( $gh['latest']['repo'] ) ? 'none' : $gh['latest']['repo'],
+			empty( $gh['latest']['repo'] ) ? 'none' : ( empty( $gh['latest']['private'] ) ? $gh['latest']['repo'] : 'private' ),
 			empty( $gh['latest_tried'] ) ? 'never' : gmdate( 'c', (int) $gh['latest_tried'] ),
 			empty( $gh['errors'] ) ? 'none' : implode( ',', (array) $gh['errors'] ),
 			wp_next_scheduled( 'rs_refresh_github_stats' ) ? gmdate( 'c', wp_next_scheduled( 'rs_refresh_github_stats' ) ) : 'none'
@@ -3830,7 +3851,7 @@ function rs_github_admin_notice() {
 	$fetched = empty( $gh['fetched'] ) ? 'কখনো না' : human_time_diff( (int) $gh['fetched'], time() ) . ' আগে';
 	$repos   = isset( $gh['repos'] ) ? count( (array) $gh['repos'] ) : 0;
 	$errors  = empty( $gh['errors'] ) ? 'কোনো ত্রুটি নেই' : 'ত্রুটি: ' . implode( ', ', (array) $gh['errors'] );
-	$latest  = empty( $gh['latest']['repo'] ) ? 'নেই' : $gh['latest']['repo'];
+	$latest  = empty( $gh['latest']['repo'] ) ? 'নেই' : $gh['latest']['repo'] . ( empty( $gh['latest']['private'] ) ? '' : ' (প্রাইভেট, সাইটে নাম লুকানো)' );
 	$url     = wp_nonce_url( admin_url( 'admin-post.php?action=rs_refresh_github' ), 'rs_refresh_github' );
 	$done    = isset( $_GET['rs_github'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display only.
 
@@ -3896,6 +3917,15 @@ function rs_github_save_token() {
 		if ( '' !== $token ) {
 			update_site_option( 'rs_github_token', $token );
 		}
+	}
+
+	/* Another token may read repositories this one could not, and the kept
+	   ETag would answer 304 until the next push: ask about them afresh. */
+	$gh = get_site_option( 'rs_github_stats', array() );
+
+	if ( is_array( $gh ) && isset( $gh['latest_list_etag'] ) ) {
+		unset( $gh['latest_list_etag'] );
+		update_site_option( 'rs_github_stats', $gh );
 	}
 
 	rs_refresh_github_stats();
