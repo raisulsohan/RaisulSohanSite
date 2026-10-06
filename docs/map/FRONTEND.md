@@ -14,6 +14,7 @@
 | `19-quote-card.css`, `20-install-bar.css` | The quote-to-image card; the PWA install bar |
 | `21-portfolio-page.css`, `22-case-study-pop-up-modal.css`, `23-story-timeline.css`, `24-command-palette.css`, `25-project-documentation.css` | The portfolio page; the case-study pop-up; the story timeline; the command palette; project documentation pages |
 | `fonts.css` | Page bundle: the self-hosted `@font-face` declarations |
+| `cv.css` | Page bundle: the CV page (`page-cv.php`), the sheet on the stage and its print rules; loaded only on `/cv/` |
 | `lazylord-demo.css`, `lazyimage-demo.css`, `lazykick-demo.css`, `lazymotion-demo.css` | Page bundles: one interactive demo per project, loaded only on that project's page |
 
 ## `src/js/`

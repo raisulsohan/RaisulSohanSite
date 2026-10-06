@@ -1,0 +1,210 @@
+<?php
+/**
+ * Template Name: CV
+ *
+ * The résumé as a page: a light sheet on the portfolio's dark stage, in the
+ * colours of the PDF it stands in for, with the PDF itself a click away. The
+ * content comes from rs_cv_data() in inc/17-cv.php and is the same in both
+ * editions; only the header and footer around it change language.
+ *
+ * @package raisul-sohan
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/* The same dark stage as the portfolio, so the header, the footer and the
+   floating controls follow it. */
+add_filter(
+	'body_class',
+	function ( $classes ) {
+		$classes[] = 'rs-stage';
+		$classes[] = 'rs-stage--cv';
+		return $classes;
+	}
+);
+
+get_header();
+
+$rs_cv  = rs_cv_data();
+$rs_pdf = rs_cv_pdf();
+
+$rs_icon_download = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg>';
+$rs_icon_print    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/></svg>';
+$rs_icon_out      = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>';
+?>
+
+<main class="rs-pf rs-cv" id="rs-content">
+	<div class="rs-pf__glow rs-pf__glow--a" aria-hidden="true"></div>
+	<div class="rs-pf__glow rs-pf__glow--b" aria-hidden="true"></div>
+
+	<header class="rs-pf__wrap rs-cv__hero">
+		<p class="rs-pf__eyebrow">Curriculum vitae</p>
+		<h1 class="rs-pf__title rs-cv__title"><?php echo esc_html( $rs_cv['name'] ); ?></h1>
+		<ul class="rs-cv__roles">
+			<?php foreach ( $rs_cv['roles'] as $rs_role ) : ?>
+				<li><?php echo esc_html( $rs_role ); ?></li>
+			<?php endforeach; ?>
+		</ul>
+		<p class="rs-pf__bio"><?php echo esc_html( $rs_cv['summary'] ); ?></p>
+
+		<div class="rs-pf__actions">
+			<?php if ( $rs_pdf ) : ?>
+				<a class="rs-pf-btn rs-pf-btn--primary" href="<?php echo esc_url( $rs_pdf ); ?>" download="Raisul_Sohan_CV.pdf">
+					<?php echo $rs_icon_download; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
+					Download PDF
+				</a>
+			<?php endif; ?>
+			<button type="button" class="rs-pf-btn rs-pf-btn--ghost" data-rs-cv-print>
+				<?php echo $rs_icon_print; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
+				Print
+			</button>
+			<?php /* Copies the address, the same way the mail icon in the header does:
+			   a mailto: link only helps readers with a mail app set up. */ ?>
+			<button type="button" class="rs-pf-btn rs-pf-btn--ghost" data-rs-copy="<?php echo esc_attr( $rs_cv['email'] ); ?>" data-rs-copy-kind="mail" title="<?php echo esc_attr( $rs_cv['email'] ); ?>" aria-label="<?php echo esc_attr( 'Copy email address: ' . $rs_cv['email'] ); ?>">
+				<?php echo wp_kses( rs_icon( 'mail', 17 ), rs_svg_tags() ); ?>
+				Email
+			</button>
+			<a class="rs-pf-btn rs-pf-btn--ghost" href="https://www.linkedin.com/in/raisulsohan/" target="_blank" rel="noopener noreferrer">
+				<?php echo wp_kses( rs_icon( 'linkedin', 17 ), rs_svg_tags() ); ?>
+				LinkedIn
+			</a>
+		</div>
+
+		<dl class="rs-pf__stats">
+			<?php foreach ( $rs_cv['stats'] as $rs_stat ) : ?>
+				<div>
+					<dt><?php echo esc_html( $rs_stat['label'] ); ?></dt>
+					<dd><?php echo esc_html( $rs_stat['value'] ); ?></dd>
+				</div>
+			<?php endforeach; ?>
+		</dl>
+	</header>
+
+	<section class="rs-pf__wrap rs-cv__section" aria-label="Curriculum vitae">
+		<article class="rs-cv__sheet" id="rs-cv-sheet">
+			<header class="rs-cv__head">
+				<div>
+					<p class="rs-cv__name"><?php echo esc_html( $rs_cv['name'] ); ?></p>
+					<p class="rs-cv__tag"><?php echo esc_html( implode( '  ·  ', $rs_cv['roles'] ) ); ?></p>
+				</div>
+				<ul class="rs-cv__contact">
+					<li><?php echo esc_html( $rs_cv['location'] ); ?></li>
+					<li><a href="mailto:<?php echo esc_attr( $rs_cv['email'] ); ?>"><?php echo esc_html( $rs_cv['email'] ); ?></a></li>
+					<?php foreach ( $rs_cv['links'] as $rs_link ) : ?>
+						<li><a href="<?php echo esc_url( $rs_link['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $rs_link['label'] ); ?></a></li>
+					<?php endforeach; ?>
+				</ul>
+			</header>
+
+			<?php /* Two columns from 900px: the story on the left, the reference on
+			   the right, each flowing on its own. Narrower, the two column wrappers
+			   dissolve (display: contents) and the four blocks stack as profile,
+			   highlights, experience, reference. */ ?>
+			<div class="rs-cv__grid">
+				<div class="rs-cv__col rs-cv__col--story">
+					<div class="rs-cv__intro">
+						<h2 class="rs-cv__h">Profile</h2>
+						<p class="rs-cv__lede"><?php echo esc_html( $rs_cv['profile'] ); ?></p>
+					</div>
+
+					<div class="rs-cv__main">
+						<h2 class="rs-cv__h">Experience</h2>
+					<?php foreach ( $rs_cv['experience'] as $rs_job ) : ?>
+						<section class="rs-cv__job">
+							<div class="rs-cv__job-head">
+								<h3 class="rs-cv__job-title"><?php echo esc_html( $rs_job['title'] ); ?></h3>
+								<span class="rs-cv__job-dates"><?php echo esc_html( $rs_job['dates'] ); ?></span>
+							</div>
+							<p class="rs-cv__job-org"><?php echo esc_html( $rs_job['org'] . ' · ' . $rs_job['place'] ); ?></p>
+							<ul class="rs-cv__list">
+								<?php foreach ( $rs_job['bullets'] as $rs_line ) : ?>
+									<li><?php echo rs_cv_rich( $rs_line ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped in rs_cv_rich(). ?></li>
+								<?php endforeach; ?>
+							</ul>
+						</section>
+					<?php endforeach; ?>
+
+						<h2 class="rs-cv__h">Films &amp; motion <small>selected</small></h2>
+						<?php foreach ( $rs_cv['films'] as $rs_film ) : ?>
+							<p class="rs-cv__film">
+								<a class="rs-cv__film-title" href="<?php echo esc_url( $rs_film['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $rs_film['title'] ); ?></a>
+								<span class="rs-cv__film-meta"><?php echo esc_html( $rs_film['meta'] ); ?></span>
+								<?php if ( '' !== $rs_film['text'] ) : ?>
+									<span class="rs-cv__film-text"><?php echo rs_cv_rich( $rs_film['text'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped in rs_cv_rich(). ?></span>
+								<?php endif; ?>
+							</p>
+						<?php endforeach; ?>
+					</div>
+				</div>
+
+				<div class="rs-cv__col rs-cv__col--side">
+					<aside class="rs-cv__aside rs-cv__aside--top">
+						<h2 class="rs-cv__h">Highlights</h2>
+						<ul class="rs-cv__hl">
+							<?php foreach ( $rs_cv['highlights'] as $rs_hl ) : ?>
+								<li><strong><?php echo esc_html( $rs_hl['lead'] ); ?></strong> <?php echo esc_html( $rs_hl['text'] ); ?></li>
+							<?php endforeach; ?>
+						</ul>
+					</aside>
+
+					<aside class="rs-cv__aside rs-cv__side">
+						<h2 class="rs-cv__h">Open-source tools <small>all free</small></h2>
+						<?php foreach ( $rs_cv['tools'] as $rs_tool ) : ?>
+							<p class="rs-cv__tool">
+								<a class="rs-cv__tool-name" href="<?php echo esc_url( $rs_tool['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $rs_tool['name'] ); ?></a>
+								<span class="rs-cv__tool-kind"><?php echo esc_html( $rs_tool['kind'] ); ?></span>
+								<?php echo esc_html( $rs_tool['text'] ); ?>
+							</p>
+						<?php endforeach; ?>
+
+						<h2 class="rs-cv__h">Skills</h2>
+						<?php foreach ( $rs_cv['skills'] as $rs_group ) : ?>
+							<div class="rs-cv__skill">
+								<h3 class="rs-cv__skill-group"><?php echo esc_html( $rs_group['group'] ); ?></h3>
+								<ul class="rs-cv__list rs-cv__list--tight">
+									<?php foreach ( $rs_group['items'] as $rs_item ) : ?>
+										<li><?php echo esc_html( $rs_item ); ?></li>
+									<?php endforeach; ?>
+								</ul>
+							</div>
+						<?php endforeach; ?>
+
+						<h2 class="rs-cv__h">Education</h2>
+						<?php foreach ( $rs_cv['education'] as $rs_edu ) : ?>
+							<p class="rs-cv__edu"><strong><?php echo esc_html( $rs_edu['lead'] ); ?></strong> <?php echo esc_html( $rs_edu['text'] ); ?></p>
+						<?php endforeach; ?>
+
+						<h2 class="rs-cv__h">Languages</h2>
+						<p class="rs-cv__edu"><?php echo esc_html( $rs_cv['languages'] ); ?></p>
+					</aside>
+				</div>
+			</div>
+		</article>
+
+		<p class="rs-cv__note">
+			Last updated <?php echo esc_html( $rs_cv['updated'] ); ?>
+			<?php if ( $rs_pdf ) : ?>
+				&nbsp;·&nbsp; <a href="<?php echo esc_url( $rs_pdf ); ?>" download="Raisul_Sohan_CV.pdf">Also as a PDF</a>
+			<?php endif; ?>
+			&nbsp;·&nbsp; <a href="<?php echo esc_url( home_url( '/portfolio/' ) ); ?>">See the work<?php echo $rs_icon_out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></a>
+		</p>
+	</section>
+</main>
+
+<script>
+/* The Print button: the stylesheet's print rules turn the sheet into the
+   document, so this is all the button has to do. */
+(function () {
+	var button = document.querySelector('[data-rs-cv-print]');
+	if (button) {
+		button.addEventListener('click', function () {
+			window.print();
+		});
+	}
+}());
+</script>
+
+<?php
+get_footer();

@@ -41,6 +41,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<a class="rs-header__link<?php echo $rs_is_portfolio ? ' is-active' : ''; ?>" href="<?php echo esc_url( $rs_portfolio_url ); ?>"<?php echo $rs_is_portfolio ? ' aria-current="page"' : ''; ?>>
 				<?php echo esc_html( rs_is_en() ? 'Portfolio' : 'পোর্টফোলিও' ); ?>
 			</a>
+			<?php
+			/* The CV is one document in one language, so its link reads
+			   the same on both editions. */
+			$rs_is_cv = function_exists( 'rs_is_cv_page' ) && rs_is_cv_page();
+			?>
+			<a class="rs-header__link<?php echo $rs_is_cv ? ' is-active' : ''; ?>" href="<?php echo esc_url( home_url( '/cv/' ) ); ?>"<?php echo $rs_is_cv ? ' aria-current="page"' : ''; ?>>CV</a>
 		</nav>
 
 		<a class="rs-header__brand" href="<?php echo esc_url( home_url( '/' ) ); ?>">

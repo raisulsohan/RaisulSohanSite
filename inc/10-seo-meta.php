@@ -202,6 +202,11 @@ function rs_seo_context() {
 		);
 	}
 
+	/* The CV has no body text for rs_summary() to shorten; it says what it is. */
+	if ( function_exists( 'rs_is_cv_page' ) && rs_is_cv_page() ) {
+		return rs_cv_seo();
+	}
+
 	if ( is_singular() ) {
 		return array(
 			'title'       => get_the_title( get_queried_object_id() ),

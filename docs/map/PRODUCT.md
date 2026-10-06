@@ -17,11 +17,12 @@ Start here for any change. The theme root is the WordPress theme folder: templat
 | `inc/14-progressive-web-app.php` | The manifest, and `sw.js` served with `RS_SW_CONFIG` prepended (theme version, URI, shell assets) | |
 | `inc/15-the-other-language.php` | The two editions as two sites in one network; `rs_is_en()`; a story written in both | AGENTS.md § 4 |
 | `inc/16-project-documentation.php`, `parts/project-docs.php` | Each portfolio project's `docs/` read from GitHub and rendered at `/portfolio/<project>/documentation/`: every top-level `docs/*.md` becomes a page, subfolders are not read | |
+| `inc/17-cv.php`, `page-cv.php` | The CV at `/cv/`, the same in both editions: `rs_cv_data()` holds the content, the template lays it out as a sheet on the portfolio's stage, `rs_cv_seo()` describes it, `rs_seed_cv_page()` publishes the page once per site; the PDF ships in `assets/cv/` | [FRONTEND.md](FRONTEND.md) (`cv.css`) |
 | `inc/portfolio-cpt.php`, `inc/github-updater.php` | The portfolio post type, meta boxes and admin reorder, the case studies and the demo page bundles (`rs_project_demo_kit()`, `rs_project_demo_assets()`); the self-updater that checks GitHub for new versions | AGENTS.md § 3 |
 | `header.php`, `footer.php` | Document head with the preloaded fonts; footer and the shared modal shells | AGENTS.md § 3 |
 | `index.php`, `single.php`, `page.php`, `404.php` | The post list; a post as a full page (direct visits and crawlers); a page; *Missing Footage* | |
-| `page-index.php`, `page-portfolio.php`, `page-book-list.php`, `page-timeline.php` | Page templates: Index, Portfolio (with the case-study pop-up and documentation), Book List, Story Timeline | |
+| `page-index.php`, `page-portfolio.php`, `page-book-list.php`, `page-timeline.php`, `page-cv.php` | Page templates: Index, Portfolio (with the case-study pop-up and documentation), Book List, Story Timeline, CV | |
 | `sw.js`, `offline.html` | The service worker and its offline fallback | |
 | `scripts/build.js` | Joins and minifies `src/` into `assets/`; `--check` compares with the committed build | [FRONTEND.md](FRONTEND.md) |
-| `assets/` | `style.min.css` and `app.min.js` (built, committed, never edited), `editor.css`, `fonts.css`, `fonts/`, `img/`, `demo/` | |
+| `assets/` | `style.min.css` and `app.min.js` (built, committed, never edited), the page bundles (`cv.min.css`, `*-demo.min.*`), `editor.css`, `fonts.css`, `fonts/`, `img/`, `demo/`, `cv/` (the CV as a PDF) | |
 | `.github/workflows/ci.yml` | PHP syntax on 8.0–8.3, built assets match sources, the version in step | [OPERATIONS.md](OPERATIONS.md) |

@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.28.2-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.29.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.29
+
+**The CV, at `/cv/`.** The résumé is now a page of the site: a light sheet on the portfolio's dark stage, in the colours of the PDF it stands in for, with the PDF a click away and a print stylesheet that turns the sheet back into the document. One document in one language, the same on both editions.
+
+- **7.29.0: `page-cv.php` and `inc/17-cv.php`.** The content lives in `rs_cv_data()` and is rendered by the template; the page bundle `src/css/cv.css` is built to `assets/cv.min.css` and loaded only there. `rs_seed_cv_page()` publishes the page once per site, so a push is all it takes to put the CV online; the header gains a **CV** link to the right of Portfolio on both editions; the language switcher on the CV goes to the CV on the other edition; `rs_cv_seo()` writes the description and a `ProfilePage` schema. The PDF ships in `assets/cv/`.
 
 ## What's new in 7.27
 
@@ -403,7 +409,7 @@ raisul-sohan/
 ├── style.css              Theme header only (the stylesheet is built, see below)
 ├── functions.php          Constants, then loads every inc/NN-*.php in order
 ├── inc/
-│   ├── 01-theme-setup.php … 14-progressive-web-app.php   The theme, one file per area
+│   ├── 01-theme-setup.php … 17-cv.php   The theme, one file per area
 │   ├── github-updater.php Self-updater: checks GitHub for new versions
 │   └── portfolio-cpt.php  Portfolio post type, meta boxes, admin reorder
 ├── src/
@@ -416,10 +422,11 @@ raisul-sohan/
 │   ├── editor.css         Classic editor typography styles
 │   ├── fonts.css          Self-hosted @font-face declarations
 │   ├── fonts/             Noto Serif and Noto Sans Bengali (woff2 files)
-│   └── img/               Portfolio artwork
+│   ├── img/               Portfolio artwork
+│   └── cv/                The CV as a PDF, linked from /cv/
 ├── header.php / footer.php   Document header, footer and modal shells
 ├── index.php / single.php / page.php / 404.php   Templates
-├── page-index.php / page-portfolio.php / page-book-list.php   Page templates
+├── page-index.php / page-portfolio.php / page-book-list.php / page-timeline.php / page-cv.php   Page templates
 ├── sw.js / offline.html   Service worker and offline fallback
 └── .github/workflows/ci.yml   PHP syntax, built-asset and version checks
 ```

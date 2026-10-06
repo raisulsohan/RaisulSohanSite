@@ -315,6 +315,12 @@ function rs_lang_switcher_data() {
 	   and a page of its documentation to the same page. */
 	$portfolio    = '/portfolio/' . rs_portfolio_tail( $here );
 
+	/* The CV is the same page on both editions, so it switches to itself. */
+	if ( ! $is_portfolio && function_exists( 'rs_is_cv_page' ) && rs_is_cv_page() ) {
+		$is_portfolio = true;
+		$portfolio    = '/cv/';
+	}
+
 	if ( rs_is_en() ) {
 		$main_id = function_exists( 'get_main_site_id' ) ? get_main_site_id() : 1;
 		$path    = $is_portfolio ? $portfolio : '/';
