@@ -338,81 +338,88 @@
 	}
 }
 
-/* Two columns from 900px: the story on the left (profile, experience,
-   films), the reference on the right (highlights, tools, skills, education),
-   each column flowing on its own so neither waits for the other. Narrower,
-   the column wrappers dissolve and the four blocks stack as profile,
-   highlights, experience, reference. */
+/* Bento layout: every section has a visible tile, and Experience spans the
+   row so the page never leaves an empty column beside its final entry. */
 
 .rs-cv__grid {
 	display: grid;
-	gap: 2rem;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	align-items: stretch;
+	gap: clamp(0.7rem, 1.4vw, 1rem);
 }
 
-@media (min-width: 900px) {
-	.rs-cv__grid {
-		grid-template-columns: minmax(0, 1fr) 19rem;
-		gap: 2.75rem;
-	}
-
-	.rs-cv__col--side {
-		padding-left: 2.25rem;
-		border-left: 1px solid var(--cv-line);
-	}
-
-	.rs-cv__main,
-	.rs-cv__side {
-		margin-top: 1.9rem;
-	}
+.rs-cv__card {
+	--cv-card-accent: var(--pf-brand2);
+	position: relative;
+	min-width: 0;
+	grid-column: span 12;
+	padding: clamp(1rem, 1.7vw, 1.45rem);
+	border: 1px solid color-mix(in srgb, var(--cv-card-accent) 24%, var(--pf-line));
+	border-radius: 16px;
+	background:
+		radial-gradient(circle at 100% 0, color-mix(in srgb, var(--cv-card-accent) 12%, transparent), transparent 48%),
+		linear-gradient(145deg, color-mix(in srgb, var(--cv-card-accent) 5%, var(--pf-bg1)), var(--pf-bg0) 88%);
+	box-shadow: 0 14px 34px rgba(0, 0, 0, 0.16);
 }
 
-@media (max-width: 899px) {
-	.rs-cv__col {
-		display: contents;
-	}
-
-	.rs-cv__intro {
-		order: 1;
-	}
-
-	.rs-cv__aside--top {
-		order: 2;
-	}
-
-	.rs-cv__main {
-		order: 3;
-	}
-
-	.rs-cv__side {
-		order: 4;
-		padding-top: 1.5rem;
-		border-top: 1px solid var(--cv-line);
-	}
+.rs-cv__card::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 1.2rem;
+	width: 2.4rem;
+	height: 3px;
+	border-radius: 0 0 3px 3px;
+	background: linear-gradient(90deg, var(--cv-card-accent), color-mix(in srgb, var(--cv-card-accent) 25%, var(--pf-pink)));
 }
 
-/* Section headings use the portfolio's violet accent over its fine rules. */
+.rs-cv__card--profile {
+	--cv-card-accent: var(--pf-brand2);
+	grid-column: span 7;
+}
 
-.rs-cv__h {
+.rs-cv__card--highlights {
+	--cv-card-accent: var(--pf-pink);
+	grid-column: span 5;
+}
+
+.rs-cv__card--experience {
+	--cv-card-accent: var(--pf-brand);
+	grid-column: 1 / -1;
+}
+
+.rs-cv__card--tools {
+	--cv-card-accent: var(--pf-blue);
+	grid-column: span 5;
+}
+
+.rs-cv__card--skills {
+	--cv-card-accent: var(--pf-pink);
+	grid-column: span 7;
+}
+
+.rs-cv__card--learning {
+	--cv-card-accent: var(--pf-green);
+	grid-column: 1 / -1;
+}
+
+.rs-cv__card .rs-cv__h {
 	display: flex;
 	align-items: baseline;
 	gap: 0.6rem;
-	margin: 1.9rem 0 0.8rem;
-	padding-bottom: 0.3rem;
-	border-bottom: 1px solid var(--cv-line);
+	margin: 0 0 0.85rem;
+	padding: 0 0 0.45rem;
+	border-bottom: 1px solid color-mix(in srgb, var(--cv-card-accent) 22%, var(--cv-line));
 	font-family: var(--cv-font);
-	font-size: 0.78rem;
-	font-weight: 700;
+	font-size: 0.76rem;
+	font-weight: 750;
 	line-height: 1.4;
 	letter-spacing: 0.16em;
 	text-transform: uppercase;
-	color: var(--cv-acc);
+	color: var(--cv-card-accent);
 }
 
-.rs-cv__h:first-child {
-	margin-top: 0;
-}
-
-.rs-cv__h small {
+.rs-cv__card .rs-cv__h small {
 	font-size: 0.76rem;
 	font-weight: 500;
 	letter-spacing: 0;
@@ -426,46 +433,51 @@
 	line-height: 1.7;
 }
 
-/* Highlights: four tinted tiles. Two by two when the blocks stack, one
-   under another in the side column, where they sit beside the profile. */
-
 .rs-cv__hl {
 	display: grid;
-	grid-template-columns: 1fr 1fr;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 0.6rem;
 	margin: 0;
 	padding: 0;
 	list-style: none;
 }
 
-@media (max-width: 560px), (min-width: 900px) {
-	.rs-cv__hl {
-		grid-template-columns: 1fr;
-	}
-}
-
 .rs-cv__hl li {
-	padding: 0.65rem 0.85rem;
-	border-radius: 10px;
-	border: 1px solid var(--pf-line);
-	background: linear-gradient(135deg, rgba(108, 76, 255, 0.12), rgba(27, 23, 40, 0.8));
-	font-size: 0.88rem;
+	padding: 0.7rem 0.8rem;
+	border: 1px solid color-mix(in srgb, var(--pf-pink) 20%, var(--pf-line));
+	border-radius: 11px;
+	background: color-mix(in srgb, var(--pf-pink) 6%, var(--pf-bg0));
+	font-size: 0.84rem;
 	line-height: 1.5;
 }
 
 .rs-cv__hl strong {
-	font-weight: 700;
+	font-weight: 750;
 	color: var(--cv-warm);
 }
 
-/* Experience */
-
-.rs-cv__job {
-	margin-top: 1.2rem;
+.rs-cv__jobs {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.75rem;
 }
 
-.rs-cv__h + .rs-cv__job {
-	margin-top: 0;
+.rs-cv__job {
+	position: relative;
+	min-width: 0;
+	margin: 0;
+	padding: 1rem 1rem 0.95rem;
+	border: 1px solid var(--pf-line);
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--pf-bg1) 82%, transparent);
+}
+
+.rs-cv__job:nth-child(3n + 2) {
+	border-color: color-mix(in srgb, var(--pf-pink) 24%, var(--pf-line));
+}
+
+.rs-cv__job:nth-child(3n) {
+	border-color: color-mix(in srgb, var(--pf-blue) 24%, var(--pf-line));
 }
 
 .rs-cv__job-head {
@@ -473,35 +485,35 @@
 	flex-wrap: wrap;
 	justify-content: space-between;
 	align-items: baseline;
-	gap: 0.1rem 1rem;
+	gap: 0.15rem 0.8rem;
 }
 
 .rs-cv__job-title {
 	margin: 0;
 	font-family: var(--cv-font);
-	font-size: 1.05rem;
-	font-weight: 700;
-	line-height: 1.3;
+	font-size: 0.98rem;
+	font-weight: 750;
+	line-height: 1.35;
 	color: var(--cv-navy);
 }
 
 .rs-cv__job-dates {
-	font-size: 0.84rem;
+	font-size: 0.8rem;
 	font-variant-numeric: tabular-nums;
 	white-space: nowrap;
 	color: var(--cv-gray);
 }
 
 .rs-cv__job-org {
-	margin: 0.1rem 0 0.45rem;
-	font-size: 0.9rem;
+	margin: 0.2rem 0 0.5rem;
+	font-size: 0.86rem;
 	font-style: italic;
 	color: var(--cv-acc);
 }
 
 .rs-cv__list {
 	margin: 0;
-	padding-left: 1.1rem;
+	padding-left: 1.05rem;
 }
 
 .rs-cv__list li {
@@ -519,86 +531,170 @@
 }
 
 .rs-cv__list--tight {
-	font-size: 0.9rem;
-	line-height: 1.5;
+	font-size: 0.82rem;
+	line-height: 1.48;
 }
 
 .rs-cv__list--tight li {
 	margin-bottom: 0.2rem;
 }
 
-/* Films */
-
-.rs-cv__film {
-	margin: 0.9rem 0 0;
+.rs-cv__tools {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.6rem;
 }
-
-.rs-cv__h + .rs-cv__film {
-	margin-top: 0;
-}
-
-.rs-cv__film-title {
-	font-weight: 700;
-}
-
-.rs-cv__film-meta {
-	margin-left: 0.4rem;
-	font-size: 0.84rem;
-	color: var(--cv-gray);
-}
-
-.rs-cv__film-text {
-	display: block;
-	margin-top: 0.15rem;
-}
-
-.rs-cv__film-text strong {
-	font-weight: 700;
-	color: var(--cv-navy);
-}
-
-/* The side column */
 
 .rs-cv__tool {
-	margin: 0 0 0.8rem;
-	font-size: 0.9rem;
+	min-width: 0;
+	margin: 0;
+	padding: 0.7rem 0.75rem;
+	border: 1px solid var(--pf-line);
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--pf-bg1) 82%, transparent);
+	font-size: 0.84rem;
 	line-height: 1.5;
 }
 
 .rs-cv__tool-name {
-	font-weight: 700;
+	display: block;
+	font-weight: 750;
 }
 
 .rs-cv__tool-kind {
 	display: block;
-	font-size: 0.78rem;
+	margin: 0.15rem 0 0.35rem;
+	font-size: 0.76rem;
 	color: var(--cv-gray);
 }
 
+.rs-cv__skills {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0.65rem;
+}
+
 .rs-cv__skill {
-	margin: 0 0 0.9rem;
+	min-width: 0;
+	margin: 0;
+	padding: 0.7rem;
+	border: 1px solid var(--pf-line);
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--pf-bg1) 82%, transparent);
 }
 
 .rs-cv__skill-group {
-	margin: 0 0 0.25rem;
+	margin: 0 0 0.35rem;
 	font-family: var(--cv-font);
-	font-size: 0.9rem;
-	font-weight: 700;
+	font-size: 0.86rem;
+	font-weight: 750;
 	line-height: 1.4;
 	color: var(--cv-navy);
 }
 
+.rs-cv__education {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0.65rem;
+}
+
 .rs-cv__edu {
-	margin: 0 0 0.4rem;
-	font-size: 0.9rem;
+	margin: 0;
+	padding: 0.75rem 0.85rem;
+	border: 1px solid var(--pf-line);
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--pf-bg1) 82%, transparent);
+	font-size: 0.86rem;
 	line-height: 1.5;
 }
 
+.rs-cv__edu strong,
+.rs-cv__edu span {
+	display: block;
+}
+
 .rs-cv__edu strong {
-	font-weight: 700;
+	margin-bottom: 0.2rem;
+	font-weight: 750;
 	color: var(--cv-navy);
 }
 
+.rs-cv__languages {
+	display: flex;
+	align-items: baseline;
+	gap: 0.6rem 1rem;
+	margin-top: 0.7rem;
+	padding: 0.7rem 0.85rem;
+	border: 1px solid color-mix(in srgb, var(--pf-green) 23%, var(--pf-line));
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--pf-green) 6%, var(--pf-bg0));
+}
+
+.rs-cv__languages .rs-cv__skill-group {
+	flex: 0 0 auto;
+	margin: 0;
+	color: var(--pf-green);
+}
+
+.rs-cv__languages p {
+	margin: 0;
+	font-size: 0.88rem;
+}
+
+@media (max-width: 899px) {
+	.rs-cv__grid {
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+	}
+
+	.rs-cv__card--profile,
+	.rs-cv__card--highlights,
+	.rs-cv__card--tools,
+	.rs-cv__card--skills {
+		grid-column: span 3;
+	}
+
+	.rs-cv__card--experience,
+	.rs-cv__card--learning {
+		grid-column: 1 / -1;
+	}
+
+	.rs-cv__skills {
+		grid-template-columns: 1fr;
+	}
+
+	.rs-cv__education {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 640px) {
+	.rs-cv__grid {
+		grid-template-columns: 1fr;
+	}
+
+	.rs-cv__card--profile,
+	.rs-cv__card--highlights,
+	.rs-cv__card--experience,
+	.rs-cv__card--tools,
+	.rs-cv__card--skills,
+	.rs-cv__card--learning {
+		grid-column: 1 / -1;
+	}
+
+	.rs-cv__hl,
+	.rs-cv__jobs,
+	.rs-cv__tools,
+	.rs-cv__skills,
+	.rs-cv__education {
+		grid-template-columns: 1fr;
+	}
+
+	.rs-cv__languages {
+		align-items: flex-start;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+}
 /* Under the sheet */
 
 .rs-cv__note {
@@ -683,30 +779,63 @@
 		display: none;
 	}
 
-	/* The two columns, whatever the paper's width. */
+	/* Reflow the bento tiles into a clean two-column print layout. */
 	.rs-cv__grid {
-		grid-template-columns: minmax(0, 1fr) 62mm;
-		gap: 8mm;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-items: start;
+		gap: 4mm;
 	}
 
-	.rs-cv__col {
-		display: block;
+	.rs-cv__card {
+		--cv-card-accent: #6c4cff;
+		grid-column: 1 / -1;
+		padding: 4mm;
+		border: 0.3mm solid var(--cv-line);
+		border-radius: 3mm;
+		background: #fff;
+		box-shadow: none;
+		break-inside: auto;
 	}
 
-	.rs-cv__col--side {
-		padding-left: 6mm;
-		border-left: 1px solid var(--cv-line);
+	.rs-cv__card--profile,
+	.rs-cv__card--highlights,
+	.rs-cv__card--tools,
+	.rs-cv__card--skills {
+		grid-column: auto;
 	}
 
-	.rs-cv__main,
-	.rs-cv__side {
-		margin-top: 6mm;
-		padding-top: 0;
-		border-top: 0;
+	.rs-cv__card::before {
+		display: none;
+	}
+
+	.rs-cv__jobs {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 3mm;
+	}
+
+	.rs-cv__tools,
+	.rs-cv__skills {
+		grid-template-columns: 1fr;
+	}
+
+	.rs-cv__education {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.rs-cv__job,
+	.rs-cv__tool,
+	.rs-cv__skill,
+	.rs-cv__edu,
+	.rs-cv__languages {
+		padding: 2.5mm;
+		border: 0.25mm solid var(--cv-line);
+		border-radius: 2mm;
+		background: #fff;
+		box-shadow: none;
 	}
 
 	.rs-cv__hl {
-		grid-template-columns: 1fr;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
 	.rs-cv__h {

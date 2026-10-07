@@ -2,10 +2,10 @@
 /**
  * Template Name: CV
  *
- * The résumé as a page: a light sheet on the portfolio's dark stage, in the
- * colours of the PDF it stands in for, with the PDF itself a click away. The
- * content comes from rs_cv_data() in inc/17-cv.php and is the same in both
- * editions; only the header and footer around it change language.
+ * The résumé as a bento sheet on the portfolio's dark stage, with a printable
+ * version and the downloadable PDF a click away. The content comes from
+ * rs_cv_data() in inc/17-cv.php and is the same in both editions; only the
+ * header and footer around it change language.
  *
  * @package raisul-sohan
  */
@@ -122,78 +122,85 @@ $rs_icon_out      = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 				</ul>
 			</header>
 
-			<?php /* Two columns from 900px: the story on the left, the reference on
-			   the right, each flowing on its own. Narrower, the two column wrappers
-			   dissolve (display: contents) and the four blocks stack as profile,
-			   highlights, experience, reference. */ ?>
+			<?php /* Each section is its own bento tile. The experience list spans
+			   the full row so a taller reference column cannot leave a blank void
+			   beside the last job. */ ?>
 			<div class="rs-cv__grid">
-				<div class="rs-cv__col rs-cv__col--story">
-					<div class="rs-cv__intro">
-						<h2 class="rs-cv__h">Profile</h2>
-						<p class="rs-cv__lede"><?php echo esc_html( $rs_cv['profile'] ); ?></p>
+				<section class="rs-cv__card rs-cv__card--profile" aria-labelledby="rs-cv-profile-title">
+					<h2 class="rs-cv__h" id="rs-cv-profile-title">Profile</h2>
+					<p class="rs-cv__lede"><?php echo esc_html( $rs_cv['profile'] ); ?></p>
+				</section>
+
+				<section class="rs-cv__card rs-cv__card--highlights" aria-labelledby="rs-cv-highlights-title">
+					<h2 class="rs-cv__h" id="rs-cv-highlights-title">Highlights</h2>
+					<ul class="rs-cv__hl">
+						<?php foreach ( $rs_cv['highlights'] as $rs_hl ) : ?>
+							<li><strong><?php echo esc_html( $rs_hl['lead'] ); ?></strong> <?php echo esc_html( $rs_hl['text'] ); ?></li>
+						<?php endforeach; ?>
+					</ul>
+				</section>
+
+				<section class="rs-cv__card rs-cv__card--experience" aria-labelledby="rs-cv-experience-title">
+					<h2 class="rs-cv__h" id="rs-cv-experience-title">Experience</h2>
+					<div class="rs-cv__jobs">
+						<?php foreach ( $rs_cv['experience'] as $rs_job ) : ?>
+							<section class="rs-cv__job">
+								<div class="rs-cv__job-head">
+									<h3 class="rs-cv__job-title"><?php echo esc_html( $rs_job['title'] ); ?></h3>
+									<span class="rs-cv__job-dates"><?php echo esc_html( $rs_job['dates'] ); ?></span>
+								</div>
+								<p class="rs-cv__job-org"><?php echo esc_html( $rs_job['org'] . ' · ' . $rs_job['place'] ); ?></p>
+								<ul class="rs-cv__list">
+									<?php foreach ( $rs_job['bullets'] as $rs_line ) : ?>
+										<li><?php echo rs_cv_rich( $rs_line ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped in rs_cv_rich(). ?></li>
+									<?php endforeach; ?>
+								</ul>
+							</section>
+						<?php endforeach; ?>
 					</div>
+				</section>
 
-					<div class="rs-cv__main">
-						<h2 class="rs-cv__h">Experience</h2>
-					<?php foreach ( $rs_cv['experience'] as $rs_job ) : ?>
-						<section class="rs-cv__job">
-							<div class="rs-cv__job-head">
-								<h3 class="rs-cv__job-title"><?php echo esc_html( $rs_job['title'] ); ?></h3>
-								<span class="rs-cv__job-dates"><?php echo esc_html( $rs_job['dates'] ); ?></span>
-							</div>
-							<p class="rs-cv__job-org"><?php echo esc_html( $rs_job['org'] . ' · ' . $rs_job['place'] ); ?></p>
-							<ul class="rs-cv__list">
-								<?php foreach ( $rs_job['bullets'] as $rs_line ) : ?>
-									<li><?php echo rs_cv_rich( $rs_line ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped in rs_cv_rich(). ?></li>
-								<?php endforeach; ?>
-							</ul>
-						</section>
-					<?php endforeach; ?>
-
-					</div>
-				</div>
-
-				<div class="rs-cv__col rs-cv__col--side">
-					<aside class="rs-cv__aside rs-cv__aside--top">
-						<h2 class="rs-cv__h">Highlights</h2>
-						<ul class="rs-cv__hl">
-							<?php foreach ( $rs_cv['highlights'] as $rs_hl ) : ?>
-								<li><strong><?php echo esc_html( $rs_hl['lead'] ); ?></strong> <?php echo esc_html( $rs_hl['text'] ); ?></li>
-							<?php endforeach; ?>
-						</ul>
-					</aside>
-
-					<aside class="rs-cv__aside rs-cv__side">
-						<h2 class="rs-cv__h">Open-source tools <small>all free</small></h2>
+				<section class="rs-cv__card rs-cv__card--tools" aria-labelledby="rs-cv-tools-title">
+					<h2 class="rs-cv__h" id="rs-cv-tools-title">Open-source tools <small>all free</small></h2>
+					<div class="rs-cv__tools">
 						<?php foreach ( $rs_cv['tools'] as $rs_tool ) : ?>
-							<p class="rs-cv__tool">
+							<div class="rs-cv__tool">
 								<a class="rs-cv__tool-name" href="<?php echo esc_url( $rs_tool['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $rs_tool['name'] ); ?></a>
 								<span class="rs-cv__tool-kind"><?php echo esc_html( $rs_tool['kind'] ); ?></span>
-								<?php echo esc_html( $rs_tool['text'] ); ?>
-							</p>
+								<span><?php echo esc_html( $rs_tool['text'] ); ?></span>
+							</div>
 						<?php endforeach; ?>
+					</div>
+				</section>
 
-						<h2 class="rs-cv__h">Skills</h2>
+				<section class="rs-cv__card rs-cv__card--skills" aria-labelledby="rs-cv-skills-title">
+					<h2 class="rs-cv__h" id="rs-cv-skills-title">Skills</h2>
+					<div class="rs-cv__skills">
 						<?php foreach ( $rs_cv['skills'] as $rs_group ) : ?>
-							<div class="rs-cv__skill">
+							<section class="rs-cv__skill">
 								<h3 class="rs-cv__skill-group"><?php echo esc_html( $rs_group['group'] ); ?></h3>
 								<ul class="rs-cv__list rs-cv__list--tight">
 									<?php foreach ( $rs_group['items'] as $rs_item ) : ?>
 										<li><?php echo esc_html( $rs_item ); ?></li>
 									<?php endforeach; ?>
 								</ul>
-							</div>
+							</section>
 						<?php endforeach; ?>
+					</div>
+				</section>
 
-						<h2 class="rs-cv__h">Education</h2>
+				<section class="rs-cv__card rs-cv__card--learning" aria-labelledby="rs-cv-education-title">
+					<h2 class="rs-cv__h" id="rs-cv-education-title">Education</h2>
+					<div class="rs-cv__education">
 						<?php foreach ( $rs_cv['education'] as $rs_edu ) : ?>
-							<p class="rs-cv__edu"><strong><?php echo esc_html( $rs_edu['lead'] ); ?></strong> <?php echo esc_html( $rs_edu['text'] ); ?></p>
+							<p class="rs-cv__edu"><strong><?php echo esc_html( $rs_edu['lead'] ); ?></strong><span><?php echo esc_html( $rs_edu['text'] ); ?></span></p>
 						<?php endforeach; ?>
-
-						<h2 class="rs-cv__h">Languages</h2>
-						<p class="rs-cv__edu"><?php echo esc_html( $rs_cv['languages'] ); ?></p>
-					</aside>
-				</div>
+					</div>
+					<div class="rs-cv__languages">
+						<h3 class="rs-cv__skill-group">Languages</h3>
+						<p><?php echo esc_html( $rs_cv['languages'] ); ?></p>
+					</div>
+				</section>
 			</div>
 		</article>
 
