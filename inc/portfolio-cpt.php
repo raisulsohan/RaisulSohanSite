@@ -1792,8 +1792,8 @@ function rs_get_default_portfolio_projects() {
 			'tags'        => array( 'Windows 10/11', 'C#', 'Win32 API', 'Desktop Utility', 'PowerShell', 'Always on Top', 'Open Source' ),
 			'accent'      => '#1e8cff',
 			'icon'        => 'terminal',
-			'image'       => get_template_directory_uri() . '/assets/img/lazypin.svg',
-			'image_fit'   => 'contain',
+			'image'       => get_template_directory_uri() . '/assets/img/lazypin.webp',
+			'image_fit'   => 'cover',
 			'action_type' => 'code',
 			'action_bn'   => 'ফ্রি ডাউনলোড',
 			'action_en'   => 'Download Free',
@@ -2221,14 +2221,14 @@ add_action( 'init', 'rs_sync_consciousness_ae_rebrand_v1', 24 );
 /**
  * 10f. Sync LazyPin metadata and copy in the database.
  */
-function rs_sync_lazypin_project_v1() {
+function rs_sync_lazypin_project_v2() {
 	$switched = false;
 	if ( is_multisite() && ! is_main_site() ) {
 		switch_to_blog( get_main_site_id() );
 		$switched = true;
 	}
 
-	if ( get_option( 'rs_portfolio_synced_lazypin_v1' ) ) {
+	if ( get_option( 'rs_portfolio_synced_lazypin_v2' ) ) {
 		if ( $switched ) {
 			restore_current_blog();
 		}
@@ -2271,7 +2271,7 @@ function rs_sync_lazypin_project_v1() {
 		}
 	}
 
-	update_option( 'rs_portfolio_synced_lazypin_v1', 1 );
+	update_option( 'rs_portfolio_synced_lazypin_v2', 1 );
 
 	if ( $switched ) {
 		restore_current_blog();
@@ -2281,7 +2281,7 @@ function rs_sync_lazypin_project_v1() {
 		rs_purge_host_cache_soon();
 	}
 }
-add_action( 'init', 'rs_sync_lazypin_project_v1', 25 );
+add_action( 'init', 'rs_sync_lazypin_project_v2', 25 );
 
 /**
  * 11. Add projects that joined the defaults after the portfolio was seeded.

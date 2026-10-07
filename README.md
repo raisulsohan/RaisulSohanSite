@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.30.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.30.1-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -14,6 +14,7 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 
 **LazyPin on the portfolio.** The native-style Windows 10 & 11 Always-On-Top title-bar utility is now a portfolio project:
 
+- **7.30.1: Animated video WebP thumbnail.** Converted `lazypin-demo.mp4` to a high-efficiency animated WebP (`assets/img/lazypin.webp`) playing the video demonstration continuously on the portfolio card thumbnail.
 - **7.30.0: LazyPin case study, interactive demo & CV integration.** Added LazyPin to the portfolio with complete bilingual technical case studies, vector artwork in `assets/img/lazypin.svg`, a 10-second interactive canvas demo with audio in `assets/demo/lazypin-demo.html` and `lazypin-demo-4x5.html`, database auto-sync via `rs_sync_lazypin_project_v1()`, and added to tools in the CV.
 
 ## What's new in 7.29
