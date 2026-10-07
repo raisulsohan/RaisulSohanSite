@@ -60,6 +60,178 @@
 	margin-top: clamp(2.5rem, 5vw, 3.75rem);
 }
 
+/* Selected work is a quick visual route into the CV's strongest samples. */
+
+.rs-cv__showcase {
+	margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+.rs-cv__showcase-head {
+	display: flex;
+	align-items: end;
+	justify-content: space-between;
+	gap: 1rem 2rem;
+	margin-bottom: 1rem;
+}
+
+.rs-cv__showcase-head .rs-pf__eyebrow {
+	margin-bottom: 0.45rem;
+}
+
+.rs-cv__showcase-title {
+	margin: 0;
+	font-size: clamp(1.5rem, 3vw, 2rem);
+	line-height: 1.15;
+	color: var(--pf-text);
+}
+
+.rs-cv__showcase-intro {
+	max-width: 25rem;
+	margin: 0;
+	font-size: 0.95rem;
+	line-height: 1.55;
+	color: var(--pf-muted);
+}
+
+.rs-cv__projects {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0.9rem;
+}
+
+.rs-cv__project {
+	--project-accent: var(--pf-brand2);
+	position: relative;
+	display: flex;
+	min-height: 14.5rem;
+	flex-direction: column;
+	padding: 1.2rem 1.25rem 1.1rem;
+	border: 1px solid var(--pf-line);
+	border-radius: 16px;
+	background: linear-gradient(145deg, color-mix(in srgb, var(--project-accent) 13%, var(--pf-bg)), var(--pf-bg) 72%);
+	color: var(--pf-text);
+	text-decoration: none;
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+	transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.rs-cv__project:nth-child(2) {
+	--project-accent: var(--pf-pink);
+}
+
+.rs-cv__project:nth-child(3) {
+	--project-accent: #4ec8b5;
+}
+
+.rs-cv__project::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 1.25rem;
+	width: 2.5rem;
+	height: 3px;
+	border-radius: 0 0 3px 3px;
+	background: var(--project-accent);
+}
+
+.rs-cv__project:hover,
+.rs-cv__project:focus-visible {
+	transform: translateY(-3px);
+	border-color: color-mix(in srgb, var(--project-accent) 65%, var(--pf-line));
+	box-shadow: 0 20px 44px rgba(0, 0, 0, 0.22);
+	color: var(--pf-text);
+}
+
+.rs-cv__project:focus-visible {
+	outline: 2px solid var(--project-accent);
+	outline-offset: 3px;
+}
+
+.rs-cv__project-top {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 0.75rem;
+	font-size: 0.68rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	line-height: 1.4;
+	text-transform: uppercase;
+	color: var(--pf-muted);
+}
+
+.rs-cv__project-index {
+	font-size: 1rem;
+	font-variant-numeric: tabular-nums;
+	letter-spacing: 0;
+	color: var(--project-accent);
+}
+
+.rs-cv__project-title {
+	display: block;
+	margin: 1.5rem 0 0;
+	font-size: 1.4rem;
+	font-weight: 750;
+	letter-spacing: -0.025em;
+	line-height: 1.15;
+}
+
+.rs-cv__project-text {
+	margin-top: 0.55rem;
+	font-size: 0.88rem;
+	line-height: 1.55;
+	color: var(--pf-text2);
+}
+
+.rs-cv__project-text strong {
+	color: var(--pf-text);
+}
+
+.rs-cv__project-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	margin-top: auto;
+	padding-top: 1rem;
+	font-size: 0.82rem;
+	font-weight: 700;
+	color: var(--project-accent);
+}
+
+.rs-cv__project-link svg {
+	width: 0.9rem;
+	height: 0.9rem;
+}
+
+@media (max-width: 850px) {
+	.rs-cv__projects {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.rs-cv__project:last-child {
+		grid-column: 1 / -1;
+		min-height: 12rem;
+	}
+}
+
+@media (max-width: 560px) {
+	.rs-cv__showcase-head {
+		align-items: flex-start;
+		flex-direction: column;
+		gap: 0.55rem;
+	}
+
+	.rs-cv__projects {
+		grid-template-columns: 1fr;
+	}
+
+	.rs-cv__project,
+	.rs-cv__project:last-child {
+		grid-column: auto;
+		min-height: 12rem;
+	}
+}
+
 /* --------------------------------------------------------------------------
    The sheet
    -------------------------------------------------------------------------- */
@@ -471,6 +643,7 @@
 
 	.rs-pf__glow,
 	.rs-cv__hero,
+	.rs-cv__showcase,
 	.rs-cv__note,
 	.rs-footer {
 		display: none !important;

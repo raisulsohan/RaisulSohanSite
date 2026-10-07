@@ -91,6 +91,8 @@ function rs_cv_data() {
 		'roles'      => array( 'Motion Designer', '2D Animator', 'Creative Developer' ),
 		'location'   => 'Dhaka, Bangladesh',
 		'email'      => 'lettertosohan@gmail.com',
+		'phone'      => '+880 1775 860544',
+		'whatsapp'   => 'https://wa.me/8801775860544',
 		'updated'    => 'October 2026',
 
 		'links'      => array(
@@ -102,9 +104,9 @@ function rs_cv_data() {
 		),
 
 		/* One sentence for the hero and the search result. */
-		'summary'    => 'Motion designer and 2D animator with ten years of stories told in frames, and a self-taught developer who builds the tools behind the work: free open-source panels for After Effects, Premiere Pro and Figma, and Nomolos, an animated documentary channel.',
+		'summary'    => 'Motion designer and 2D animator with 10+ years turning complex briefs into clear visual stories. I work from concept and storyboard through animation and sound, and build free tools that help creative teams move faster.',
 
-		'profile'    => 'Motion designer and 2D animator with 10+ years of turning scripts into stories for the screen, and a self-taught developer who builds the tools behind the work. Produced story-driven animation for UNDP, UNICEF, GIZ, USAID, the World Bank and WHO; led production for a SaaS animation studio as project manager; author of seven free open-source tools for After Effects, Premiere Pro, Figma and Chrome; and creator of Nomolos, an animated documentary channel on history\'s greatest backfires. Equally at home rigging a character in After Effects and shipping a TypeScript panel that saves the team an afternoon.',
+		'profile'    => 'Motion designer and 2D animator with 10+ years of experience on story-led work for international development, technology and editorial teams. Selected clients include UNDP, UNICEF, GIZ, USAID, the World Bank and WHO. Alongside client work, I build free tools for Adobe, Figma and Chrome, and direct animated documentaries from script to final sound. I pair hands-on craft with production leadership, carrying projects from the first storyboard to delivery and improving the workflow for the next one.',
 
 		'stats'      => array(
 			array( 'label' => 'Years in motion', 'value' => '10+' ),
@@ -114,10 +116,10 @@ function rs_cv_data() {
 		),
 
 		'highlights' => array(
-			array( 'lead' => '100% on-time delivery', 'text' => 'across every client campaign at Vidiosa, while a new storyboard-and-feedback workflow cut turnaround time by 15%.' ),
-			array( 'lead' => '200K+ organic views', 'text' => 'on campaigns where I directed the creative, with measurable uplift in audience engagement.' ),
-			array( 'lead' => '7 open-source tools', 'text' => 'for Adobe CC, Figma and Chrome, released free; 1,100+ GitHub contributions in the last twelve months.' ),
-			array( 'lead' => '3 animated documentaries', 'text' => 'written, illustrated, animated and sound-designed solo in After Effects, for the Nomolos channel and Bichitro Biggan.' ),
+			array( 'lead' => '100% on-time delivery', 'text' => 'across Vidiosa client campaigns; a new storyboard-and-feedback workflow cut turnaround by 15%.' ),
+			array( 'lead' => '200K+ organic views', 'text' => 'on campaigns where I directed the creative, with measurable audience engagement.' ),
+			array( 'lead' => '7 free open-source tools', 'text' => 'for Adobe CC, Figma and Chrome, alongside 1,100+ GitHub contributions in the past year.' ),
+			array( 'lead' => '3 animated documentaries', 'text' => 'written, illustrated, animated and sound-designed for Nomolos and Bichitro Biggan.' ),
 		),
 
 		'experience' => array(
@@ -127,10 +129,10 @@ function rs_cv_data() {
 				'place'   => 'Dhaka, Bangladesh',
 				'dates'   => 'Apr 2026 – Present',
 				'bullets' => array(
-					'Created and run **Nomolos** ([youtube.com/@nomolosfiles](https://www.youtube.com/@nomolosfiles)), an animated documentary channel on history\'s greatest backfires: decisions that achieved the opposite of what they intended. Each episode is written, illustrated, animated and sound-designed solo in After Effects; two episodes live (Prohibition, 9:40; Cobra Effect, 8:49, 23 scenes).',
-					'Write, illustrate and animate science documentaries for **Bichitro Biggan**, a Bengali science magazine; latest film **Consciousness** (4:08, nine hand-drawn scenes, multiplane 3D parallax, volumetric lighting).',
-					'Build and maintain seven free open-source tools for editors and motion designers: Adobe CEP / ExtendScript panels, a Figma plugin and Chrome and Edge extensions, released with documentation on a weekly cadence.',
-					'Architected two zero-plugin WordPress platforms from scratch in PHP and vanilla JavaScript: **bichitrobiggan.com** (bilingual Bengali and English magazine) and **raisulsohan.com**.',
+					'Created **Nomolos** ([youtube.com/@nomolosfiles](https://www.youtube.com/@nomolosfiles)), an animated documentary channel about decisions that backfired. Wrote, illustrated, animated and sound-designed two episodes solo: **Prohibition** (9:40) and **Cobra Effect** (8:49, 23 scenes).',
+					'Write and animate science stories for **Bichitro Biggan**; created **Consciousness** (4:08) with nine hand-drawn scenes, multiplane 3D parallax and volumetric lighting.',
+					'Build and maintain seven free tools for editors and motion designers: Adobe CEP / ExtendScript panels, a Figma plugin, and Chrome and Edge extensions, with regular releases and documentation.',
+					'Built two bilingual WordPress platforms from scratch with PHP and vanilla JavaScript: **bichitrobiggan.com** and **raisulsohan.com**.',
 				),
 			),
 			array(
@@ -139,10 +141,9 @@ function rs_cv_data() {
 				'place'   => 'Dhaka, Bangladesh',
 				'dates'   => 'Aug 2024 – Mar 2026',
 				'bullets' => array(
-					'Led end-to-end animation and motion graphics production for global SaaS and tech clients, from brief to final delivery.',
-					'Coordinated cross-functional creative teams and managed budgets, schedules and client communication, holding a 100% on-time delivery record.',
-					'Introduced a streamlined storyboard-and-feedback workflow that reduced project turnaround time by 15%.',
-					'Directed creative execution on key client campaigns, achieving 200K+ organic views and measurable uplift in engagement.',
+					'Led animation and motion graphics production for global SaaS and technology clients, from brief and storyboard through delivery.',
+					'Managed cross-functional teams, budgets, schedules and client reviews, delivering every campaign on time.',
+					'Introduced a storyboard-and-feedback workflow that cut turnaround time by 15%; directed campaigns with 200K+ organic views.',
 				),
 			),
 			array(
@@ -151,9 +152,9 @@ function rs_cv_data() {
 				'place'   => 'Dhaka, Bangladesh',
 				'dates'   => 'Jan 2022 – Jul 2024',
 				'bullets' => array(
-					'Owned the visual identity of a large industrial group across digital and print: social media, web banners, email newsletters, brochures, advertisements and print-ready artwork.',
-					'Produced and edited video content for marketing campaigns; presented 2D and 3D concepts and mock-ups to marketing and product teams for approval.',
-					'Ran multiple concurrent projects with photographers, illustrators and copywriters, keeping brand standards consistent.',
+					'Maintained a large industrial group\'s visual identity across social, web, email, brochures, advertising and print-ready artwork.',
+					'Produced and edited campaign video; presented 2D and 3D concepts to marketing and product teams.',
+					'Coordinated concurrent projects with photographers, illustrators and copywriters while keeping brand standards consistent.',
 				),
 			),
 			array(
@@ -162,10 +163,10 @@ function rs_cv_data() {
 				'place'   => 'Bangladesh & UK',
 				'dates'   => 'Jan 2018 – Dec 2021',
 				'bullets' => array(
-					'Delivered animated films, explainers, infographic animations, e-learning content and social visuals for international development clients: pitches, storyboards, animatics, Illustrator vector assets, character rigging and animation.',
-					'**UNICEF:** story-based monthly comic animation series for the Oky period tracker\'s period-positive campaign. **USAID:** twelve story-based infographic animations. **GIZ:** climate-change awareness film for Bangladesh.',
-					'**ITF Seafarers\' Trust (London):** app explainer animations in English, Spanish and Portuguese. **Landell Mills:** 3D map animation on the Mekong river and its environment.',
-					'**Also for** Awaj Foundation, the Dutch Embassy (film and painting festivals), HelpAge International and DAI (Lottie animations and an interactive Adobe Animate site).',
+					'Created explainers, infographic films, e-learning and social animation for international development clients, from pitch and storyboard through rigging and final animation.',
+					'**UNICEF:** monthly story-based animation for the Oky period tracker. **USAID:** twelve infographic animations. **GIZ:** a climate-change awareness film for Bangladesh.',
+					'**ITF Seafarers\' Trust:** app explainers in English, Spanish and Portuguese. **Landell Mills:** a 3D map film about the Mekong river.',
+					'Also created work for Awaj Foundation, the Dutch Embassy, HelpAge International and DAI, including Lottie animation and an interactive Adobe Animate site.',
 				),
 			),
 			array(
@@ -174,7 +175,7 @@ function rs_cv_data() {
 				'place'   => 'Bangladesh & UK',
 				'dates'   => '2015 – 2017',
 				'bullets' => array(
-					'Edited and animated 20+ educational YouTube videos on the science, history and culture of Bangladesh in Premiere Pro, After Effects, Cinema 4D and Audition; handled storyboarding and YouTube SEO, growing views and subscribers.',
+					'Edited and animated 20+ educational videos on Bangladesh\'s science, history and culture; also handled storyboarding and YouTube SEO.',
 				),
 			),
 			array(
@@ -183,8 +184,8 @@ function rs_cv_data() {
 				'place'   => 'Dhaka',
 				'dates'   => '2010 – 2015',
 				'bullets' => array(
-					'**Program Manager & Video Editor, Old Bay Media (2013 – 2015):** built and ran Bangla Boi, an online bookshop, end to end: catalogue database, publisher discount deals, customer service and delivery.',
-					'**Program Manager & Sports Journalist, BDSPORTSNEWS.COM (2010 – 2012):** match reports from the Sher-e-Bangla stadium press box and interviews with national cricketers and footballers.',
+					'**Program Manager & Video Editor, Old Bay Media (2013 – 2015):** built and ran Bangla Boi, an online bookshop, from its catalogue and publisher deals to customer service and delivery.',
+					'**Program Manager & Sports Journalist, BDSPORTSNEWS.COM (2010 – 2012):** reported from the Sher-e-Bangla stadium press box and interviewed national cricketers and footballers.',
 				),
 			),
 		),
@@ -194,31 +195,31 @@ function rs_cv_data() {
 				'name' => 'LazyLord',
 				'url'  => 'https://github.com/raisulsohan/LazyLord',
 				'kind' => 'Adobe CEP panel + Figma plugin · TypeScript',
-				'text' => 'Moves real vector artwork between Figma, Photoshop, Illustrator and After Effects; a free alternative to Overlord.',
+				'text' => 'Moves vector artwork between Figma, Photoshop, Illustrator and After Effects as a free Overlord alternative.',
 			),
 			array(
 				'name' => 'LazyMotionToolkit',
 				'url'  => 'https://github.com/raisulsohan/LazyMotionToolkit',
 				'kind' => 'After Effects ScriptUI panel · ExtendScript',
-				'text' => 'Nine motion tools in one dockable panel: smart precomp, auto text boxes, eased fades, animated arrows, anchor pad, grids, background preview renders.',
+				'text' => 'Nine dockable motion tools, including smart precomp, auto text boxes, eased fades, animated arrows, anchor pad and grids.',
 			),
 			array(
 				'name' => 'LazyKick',
 				'url'  => 'https://github.com/raisulsohan/LazyKick',
 				'kind' => 'CEP panel · After Effects & Premiere Pro',
-				'text' => 'Clipboard images straight onto the timeline, time-coded project notes and auto-import of media folders.',
+				'text' => 'Paste clipboard images to the timeline, add time-coded project notes and auto-import media folders.',
 			),
 			array(
 				'name' => 'Lazy-Image',
 				'url'  => 'https://github.com/raisulsohan/LazyImageGeneration',
 				'kind' => 'CEP extension · CDP browser automation',
-				'text' => 'AI image generation inside After Effects and Premiere Pro with no API key and no browser switching.',
+				'text' => 'Generate images from inside After Effects and Premiere Pro without an API key or browser switching.',
 			),
 			array(
 				'name' => 'LazyScroll · LazySnap · LazyRuler',
 				'url'  => 'https://raisulsohan.com/en/portfolio/',
 				'kind' => 'Chrome & Edge extensions · Manifest V3',
-				'text' => 'Per-site media volume control, article and match-commentary text extraction, Photoshop-style rulers and guides on any web page.',
+				'text' => 'Browser tools for per-site media volume, article and commentary text, plus Photoshop-style rulers and guides.',
 			),
 		),
 
@@ -227,19 +228,19 @@ function rs_cv_data() {
 				'title' => 'Nomolos',
 				'url'   => 'https://www.youtube.com/@nomolosfiles',
 				'meta'  => 'Animated documentary channel',
-				'text'  => 'Episode 01 **Prohibition** (9:40) and episode 02 **Cobra Effect** (8:49, 23 hand-illustrated scenes): screenplay, direction, vector illustration, multiplane 3D parallax animation and sound design, all solo. Browser editions of each film are drawn live in JavaScript with no video or image files.',
+				'text'  => 'Two films about history\'s backfires: **Prohibition** (9:40) and **Cobra Effect** (8:49). Script, illustration, animation and sound design, all created solo.',
 			),
 			array(
 				'title' => 'Consciousness',
 				'url'   => 'https://raisulsohan.github.io/Consciousness-animation/',
 				'meta'  => 'Animated science documentary for Bichitro Biggan, 4:08',
-				'text'  => 'Concept, nine illustrated scenes, multiplane 3D parallax, atmospheric glow and volumetric lighting, original sound design from open archives.',
+				'text'  => 'A 4:08 science film with nine illustrated scenes, multiplane 3D parallax, volumetric lighting and original sound design.',
 			),
 			array(
 				'title' => 'Showreel',
 				'url'   => 'https://youtu.be/Hdq8STf5beQ',
-				'meta'  => 'Motion design, 2D animation and SaaS product video',
-				'text'  => '',
+				'meta'  => 'Motion design · 2D animation · SaaS product video',
+				'text'  => 'A short reel of selected motion design, 2D animation and SaaS product work.',
 			),
 		),
 

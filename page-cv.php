@@ -66,6 +66,9 @@ $rs_icon_out      = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 				<?php echo wp_kses( rs_icon( 'mail', 17 ), rs_svg_tags() ); ?>
 				Email
 			</button>
+			<a class="rs-pf-btn rs-pf-btn--ghost" href="<?php echo esc_url( $rs_cv['whatsapp'] ); ?>" target="_blank" rel="noopener noreferrer">
+				WhatsApp
+			</a>
 			<a class="rs-pf-btn rs-pf-btn--ghost" href="https://www.linkedin.com/in/raisulsohan/" target="_blank" rel="noopener noreferrer">
 				<?php echo wp_kses( rs_icon( 'linkedin', 17 ), rs_svg_tags() ); ?>
 				LinkedIn
@@ -82,6 +85,26 @@ $rs_icon_out      = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 		</dl>
 	</header>
 
+	<section class="rs-pf__wrap rs-cv__showcase" aria-labelledby="rs-cv-showcase-title">
+		<div class="rs-cv__showcase-head">
+			<div>
+				<p class="rs-pf__eyebrow">Selected work</p>
+				<h2 class="rs-cv__showcase-title" id="rs-cv-showcase-title">Stories, motion &amp; tools</h2>
+			</div>
+			<p class="rs-cv__showcase-intro">A few projects that show how I combine visual craft, storytelling and creative technology.</p>
+		</div>
+		<div class="rs-cv__projects">
+			<?php foreach ( $rs_cv['films'] as $rs_index => $rs_film ) : ?>
+				<a class="rs-cv__project" href="<?php echo esc_url( $rs_film['url'] ); ?>" target="_blank" rel="noopener noreferrer">
+					<span class="rs-cv__project-top"><span><?php echo esc_html( $rs_film['meta'] ); ?></span><span class="rs-cv__project-index"><?php echo esc_html( sprintf( '%02d', $rs_index + 1 ) ); ?></span></span>
+					<h3 class="rs-cv__project-title"><?php echo esc_html( $rs_film['title'] ); ?></h3>
+					<span class="rs-cv__project-text"><?php echo rs_cv_rich( $rs_film['text'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped in rs_cv_rich(). ?></span>
+					<span class="rs-cv__project-link">View project <?php echo $rs_icon_out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></span>
+				</a>
+			<?php endforeach; ?>
+		</div>
+	</section>
+
 	<section class="rs-pf__wrap rs-cv__section" aria-label="Curriculum vitae">
 		<article class="rs-cv__sheet" id="rs-cv-sheet">
 			<header class="rs-cv__head">
@@ -91,6 +114,7 @@ $rs_icon_out      = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 				</div>
 				<ul class="rs-cv__contact">
 					<li><?php echo esc_html( $rs_cv['location'] ); ?></li>
+					<li><a href="tel:<?php echo esc_attr( preg_replace( '/[^0-9+]/', '', $rs_cv['phone'] ) ); ?>"><?php echo esc_html( $rs_cv['phone'] ); ?></a></li>
 					<li><a href="mailto:<?php echo esc_attr( $rs_cv['email'] ); ?>"><?php echo esc_html( $rs_cv['email'] ); ?></a></li>
 					<?php foreach ( $rs_cv['links'] as $rs_link ) : ?>
 						<li><a href="<?php echo esc_url( $rs_link['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $rs_link['label'] ); ?></a></li>
@@ -126,16 +150,6 @@ $rs_icon_out      = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 						</section>
 					<?php endforeach; ?>
 
-						<h2 class="rs-cv__h">Films &amp; motion <small>selected</small></h2>
-						<?php foreach ( $rs_cv['films'] as $rs_film ) : ?>
-							<p class="rs-cv__film">
-								<a class="rs-cv__film-title" href="<?php echo esc_url( $rs_film['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $rs_film['title'] ); ?></a>
-								<span class="rs-cv__film-meta"><?php echo esc_html( $rs_film['meta'] ); ?></span>
-								<?php if ( '' !== $rs_film['text'] ) : ?>
-									<span class="rs-cv__film-text"><?php echo rs_cv_rich( $rs_film['text'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped in rs_cv_rich(). ?></span>
-								<?php endif; ?>
-							</p>
-						<?php endforeach; ?>
 					</div>
 				</div>
 
