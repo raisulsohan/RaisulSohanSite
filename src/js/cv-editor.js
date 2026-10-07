@@ -9,7 +9,8 @@
 			var template = repeater.querySelector('[data-cv-template]');
 			var items = repeater.querySelector('[data-cv-items]');
 			var index = parseInt(repeater.getAttribute('data-next-index'), 10) || 0;
-			var html = template.innerHTML.replace(/__INDEX__/g, String(index));
+			var token = repeater.getAttribute('data-index-token');
+			var html = template.innerHTML.split(token).join(String(index));
 			repeater.setAttribute('data-next-index', String(index + 1));
 			items.insertAdjacentHTML('beforeend', html);
 			return;
@@ -24,6 +25,7 @@
 		var pdfRemove = event.target.closest('[data-cv-pdf-remove]');
 		if (pdfRemove) {
 			document.querySelector('[data-cv-pdf-id]').value = '0';
+			document.querySelector('[data-cv-pdf-blog-id]').value = '0';
 			document.querySelector('[data-cv-pdf-status]').textContent = 'Using the PDF bundled with the theme. Choose a PDF from the Media Library to replace it.';
 			return;
 		}
@@ -45,6 +47,7 @@
 				return;
 			}
 			document.querySelector('[data-cv-pdf-id]').value = String(attachment.id);
+			document.querySelector('[data-cv-pdf-blog-id]').value = pdfSelect.getAttribute('data-blog-id');
 			document.querySelector('[data-cv-pdf-status]').textContent = 'Selected PDF: ' + attachment.filename;
 		});
 		frame.open();

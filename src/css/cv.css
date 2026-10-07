@@ -561,6 +561,23 @@
 	font-weight: 750;
 }
 
+.rs-cv__tool-names {
+	display: flex;
+	align-items: baseline;
+	flex-wrap: wrap;
+	gap: 0.1rem 0.35rem;
+	margin-bottom: 0.1rem;
+	font-weight: 750;
+}
+
+.rs-cv__tool-names .rs-cv__tool-name {
+	display: inline;
+}
+
+.rs-cv__tool-name-separator {
+	color: var(--cv-gray);
+}
+
 .rs-cv__tool-kind {
 	display: block;
 	margin: 0.15rem 0 0.35rem;

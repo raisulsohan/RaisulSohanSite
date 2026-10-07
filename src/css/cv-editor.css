@@ -79,6 +79,18 @@
 	border-bottom: 0;
 }
 
+.rs-cv-editor__repeater--nested {
+	grid-column: 1 / -1;
+	padding: 0.65rem;
+	border: 1px solid #dcdcde;
+	border-radius: 5px;
+	background: #fff;
+}
+
+.rs-cv-editor__repeater--nested .rs-cv-editor__items {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .rs-cv-editor__repeater-head,
 .rs-cv-editor__item-head {
 	display: flex;

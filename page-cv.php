@@ -102,7 +102,7 @@ $rs_icon_out      = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 		<div class="rs-cv__projects">
 			<?php foreach ( $rs_cv['films'] as $rs_index => $rs_film ) : ?>
 				<?php if ( empty( $rs_film['url'] ) ) { continue; } ?>
-				<a class="rs-cv__project" href="<?php echo esc_url( $rs_film['url'] ); ?>" target="_blank" rel="noopener noreferrer">
+				<a class="rs-cv__project" href="<?php echo esc_url( rs_cv_resolve_url( $rs_film['url'] ) ); ?>" target="_blank" rel="noopener noreferrer">
 					<span class="rs-cv__project-top"><span><?php echo esc_html( $rs_film['meta'] ); ?></span><span class="rs-cv__project-index"><?php echo esc_html( sprintf( '%02d', $rs_index + 1 ) ); ?></span></span>
 					<h3 class="rs-cv__project-title"><?php echo esc_html( $rs_film['title'] ); ?></h3>
 					<span class="rs-cv__project-text"><?php echo rs_cv_rich( $rs_film['text'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped in rs_cv_rich(). ?></span>
@@ -124,7 +124,7 @@ $rs_icon_out      = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 					<?php if ( $rs_cv['phone'] ) : ?><li><a href="tel:<?php echo esc_attr( preg_replace( '/[^0-9+]/', '', $rs_cv['phone'] ) ); ?>"><?php echo esc_html( $rs_cv['phone'] ); ?></a></li><?php endif; ?>
 					<?php if ( $rs_cv['email'] ) : ?><li><a href="mailto:<?php echo esc_attr( $rs_cv['email'] ); ?>"><?php echo esc_html( $rs_cv['email'] ); ?></a></li><?php endif; ?>
 					<?php foreach ( $rs_cv['links'] as $rs_link ) : ?>
-						<?php if ( ! empty( $rs_link['label'] ) && ! empty( $rs_link['url'] ) ) : ?><li><a href="<?php echo esc_url( $rs_link['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $rs_link['label'] ); ?></a></li><?php endif; ?>
+						<?php if ( ! empty( $rs_link['label'] ) && ! empty( $rs_link['url'] ) ) : ?><li><a href="<?php echo esc_url( rs_cv_resolve_url( $rs_link['url'] ) ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $rs_link['label'] ); ?></a></li><?php endif; ?>
 					<?php endforeach; ?>
 				</ul>
 			</header>
@@ -172,7 +172,16 @@ $rs_icon_out      = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 					<div class="rs-cv__tools">
 						<?php foreach ( $rs_cv['tools'] as $rs_tool ) : ?>
 							<div class="rs-cv__tool">
-						<?php if ( ! empty( $rs_tool['url'] ) ) : ?><a class="rs-cv__tool-name" href="<?php echo esc_url( $rs_tool['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $rs_tool['name'] ); ?></a><?php else : ?><span class="rs-cv__tool-name"><?php echo esc_html( $rs_tool['name'] ); ?></span><?php endif; ?>
+								<div class="rs-cv__tool-names">
+									<?php if ( ! empty( $rs_tool['links'] ) ) : ?>
+										<?php foreach ( $rs_tool['links'] as $rs_link_index => $rs_tool_link ) : ?>
+											<?php if ( $rs_link_index ) : ?><span class="rs-cv__tool-name-separator" aria-hidden="true">·</span><?php endif; ?>
+											<?php if ( ! empty( $rs_tool_link['url'] ) ) : ?><a class="rs-cv__tool-name" href="<?php echo esc_url( rs_cv_resolve_url( $rs_tool_link['url'] ) ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $rs_tool_link['label'] ? $rs_tool_link['label'] : $rs_tool['name'] ); ?></a><?php else : ?><span class="rs-cv__tool-name"><?php echo esc_html( $rs_tool_link['label'] ? $rs_tool_link['label'] : $rs_tool['name'] ); ?></span><?php endif; ?>
+										<?php endforeach; ?>
+									<?php else : ?>
+										<span class="rs-cv__tool-name"><?php echo esc_html( $rs_tool['name'] ); ?></span>
+									<?php endif; ?>
+								</div>
 								<span class="rs-cv__tool-kind"><?php echo esc_html( $rs_tool['kind'] ); ?></span>
 								<span><?php echo esc_html( $rs_tool['text'] ); ?></span>
 							</div>
@@ -216,7 +225,7 @@ $rs_icon_out      = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 			<?php if ( $rs_pdf ) : ?>
 				&nbsp;·&nbsp; <a href="<?php echo esc_url( $rs_pdf ); ?>" download="<?php echo esc_attr( $rs_cv['pdf_filename'] ? $rs_cv['pdf_filename'] : 'Raisul_Sohan_CV.pdf' ); ?>"><?php echo esc_html( $rs_cv['labels']['also_pdf'] ); ?></a>
 			<?php endif; ?>
-			<?php if ( $rs_cv['work_url'] ) : ?>&nbsp;·&nbsp; <a href="<?php echo esc_url( $rs_cv['work_url'] ); ?>"><?php echo esc_html( $rs_cv['labels']['see_work'] ); ?><?php echo $rs_icon_out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></a><?php endif; ?>
+			<?php if ( $rs_cv['work_url'] ) : ?>&nbsp;·&nbsp; <a href="<?php echo esc_url( rs_cv_resolve_url( $rs_cv['work_url'] ) ); ?>"><?php echo esc_html( $rs_cv['labels']['see_work'] ); ?><?php echo $rs_icon_out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></a><?php endif; ?>
 		</p>
 	</section>
 </main>

@@ -2,14 +2,13 @@
 /**
  * The CV.
  *
- * One page, /cv/, and the same in both editions: a résumé is written once,
- * in one language, so nothing in this file asks rs_is_en(). This file ships
- * the defaults; the CV page's native editor can override them in _rs_cv_data
- * page meta. The bundled PDF in assets/cv/ is the default download and can be
- * replaced from the Media Library on that page.
+ * The /cv/ page in both editions renders one shared English résumé. This file
+ * ships the defaults; the native editor saves shared content in a network
+ * option, so an edit on either edition appears on both. The bundled PDF in
+ * assets/cv/ is the default and can be replaced from the Media Library.
  *
- * page-cv.php renders rs_cv_data(); the page itself is created once per site
- * by rs_seed_cv_page(), so a new site starts with the same editable CV.
+ * page-cv.php renders rs_cv_data(); each edition keeps its own URL and seeded
+ * page, while both read the same CV data.
  *
  * @package raisul-sohan
  */
@@ -40,22 +39,129 @@ function rs_cv_url() {
 }
 
 /**
+ * The saved CV, shared by the network. Before the first shared save, prefer
+ * legacy content from the English CV page, then fall back to any other CV
+ * page so an existing edit is not lost during the upgrade.
+ *
+ * @param int $post_id Current CV page ID.
+ * @return array|false
+ */
+function rs_cv_saved_data( $post_id = 0 ) {
+	if ( ! is_multisite() ) {
+		return $post_id ? get_post_meta( $post_id, '_rs_cv_data', true ) : false;
+	}
+
+	$shared = get_site_option( 'rs_cv_shared_data_v1', false );
+	if ( is_array( $shared ) ) {
+		return $shared;
+	}
+
+	static $legacy = null;
+	if ( null !== $legacy ) {
+		return $legacy;
+	}
+
+	$legacy  = false;
+	$fallback = false;
+	$site_ids = get_sites(
+		array(
+			'fields' => 'ids',
+			'number' => 0,
+		)
+	);
+
+	foreach ( $site_ids as $site_id ) {
+		$site_id = (int) $site_id;
+		$switched = $site_id !== get_current_blog_id();
+		if ( $switched ) {
+			switch_to_blog( $site_id );
+		}
+
+		$page  = get_page_by_path( 'cv', OBJECT, 'page' );
+		$saved = $page ? get_post_meta( $page->ID, '_rs_cv_data', true ) : false;
+		$is_en = function_exists( 'rs_is_en' ) && rs_is_en();
+
+		if ( is_array( $saved ) ) {
+			if ( ! empty( $saved['pdf_attachment_id'] ) && empty( $saved['pdf_attachment_blog_id'] ) ) {
+				$saved['pdf_attachment_blog_id'] = get_current_blog_id();
+			}
+			if ( $is_en ) {
+				$legacy = $saved;
+				if ( $switched ) {
+					restore_current_blog();
+				}
+				break;
+			}
+			if ( ! is_array( $fallback ) ) {
+				$fallback = $saved;
+			}
+		}
+
+		if ( $switched ) {
+			restore_current_blog();
+		}
+	}
+
+	if ( ! is_array( $legacy ) ) {
+		$legacy = $fallback;
+	}
+
+	return $legacy;
+}
+
+/**
+ * Get a PDF attachment's URL, title and modification time from its source site.
+ *
+ * @param int $attachment_id Attachment ID.
+ * @param int $blog_id       Site where it was uploaded.
+ * @return array|false
+ */
+function rs_cv_pdf_attachment( $attachment_id, $blog_id = 0 ) {
+	$attachment_id = absint( $attachment_id );
+	$blog_id       = absint( $blog_id );
+	$switched      = is_multisite() && $blog_id && $blog_id !== get_current_blog_id();
+
+	if ( ! $attachment_id ) {
+		return false;
+	}
+	if ( $switched ) {
+		if ( ! get_site( $blog_id ) ) {
+			return false;
+		}
+		switch_to_blog( $blog_id );
+	}
+
+	$data = false;
+	if ( 'attachment' === get_post_type( $attachment_id ) && 'application/pdf' === get_post_mime_type( $attachment_id ) ) {
+		$url = wp_get_attachment_url( $attachment_id );
+		if ( $url ) {
+			$data = array(
+				'url'       => $url,
+				'title'     => get_the_title( $attachment_id ),
+				'modified'  => get_post_modified_time( 'U', true, $attachment_id ),
+			);
+		}
+	}
+
+	if ( $switched ) {
+		restore_current_blog();
+	}
+
+	return $data;
+}
+
+/**
  * The PDF of the same CV, with the theme version as cache buster, or an
  * empty string when the file is not there (a half-deployed theme).
  *
  * @return string
  */
 function rs_cv_pdf() {
-	$cv        = rs_cv_data();
-	$media_id = isset( $cv['pdf_attachment_id'] ) ? absint( $cv['pdf_attachment_id'] ) : 0;
+	$cv = rs_cv_data();
+	$pdf = rs_cv_pdf_attachment( $cv['pdf_attachment_id'], $cv['pdf_attachment_blog_id'] );
 
-	if ( $media_id && 'attachment' === get_post_type( $media_id ) && 'application/pdf' === get_post_mime_type( $media_id ) ) {
-		$url = wp_get_attachment_url( $media_id );
-
-		if ( $url ) {
-			$modified = get_post_modified_time( 'U', true, $media_id );
-			return add_query_arg( 'ver', RS_VERSION . '-' . ( $modified ? $modified : '1' ), $url );
-		}
+	if ( $pdf ) {
+		return add_query_arg( 'ver', RS_VERSION . '-' . ( $pdf['modified'] ? $pdf['modified'] : '1' ), $pdf['url'] );
 	}
 
 	$file = 'assets/cv/Raisul_Sohan_CV.pdf';
@@ -65,6 +171,83 @@ function rs_cv_pdf() {
 	}
 
 	return add_query_arg( 'ver', RS_VERSION, RS_URI . '/' . $file );
+}
+
+/**
+ * Resolve a site-relative URL against whichever edition is showing the CV.
+ *
+ * @param string $url URL or site-relative path.
+ * @return string
+ */
+function rs_cv_resolve_url( $url ) {
+	$url = is_scalar( $url ) ? (string) $url : '';
+	if ( 0 === strpos( $url, '/' ) && 0 !== strpos( $url, '//' ) ) {
+		$home      = wp_parse_url( home_url( '/' ) );
+		$base_path = $home && isset( $home['path'] ) ? untrailingslashit( $home['path'] ) : '';
+		if ( $base_path && 0 === strpos( $url, $base_path . '/' ) && $home && ! empty( $home['host'] ) ) {
+			$origin = ( isset( $home['scheme'] ) ? $home['scheme'] : 'https' ) . '://' . $home['host']
+				. ( isset( $home['port'] ) ? ':' . $home['port'] : '' );
+			return $origin . $url;
+		}
+		return home_url( $url );
+	}
+
+	return $url;
+}
+
+/**
+ * Store links to this site as relative paths so they work in either edition.
+ *
+ * @param string $url URL or site-relative path.
+ * @return string
+ */
+function rs_cv_share_url( $url ) {
+	$url    = is_scalar( $url ) ? (string) $url : '';
+	$home   = wp_parse_url( home_url( '/' ) );
+	$target = wp_parse_url( $url );
+	if ( ! $home || ! $target || empty( $home['host'] ) || empty( $target['host'] ) || strtolower( $home['host'] ) !== strtolower( $target['host'] ) ) {
+		return $url;
+	}
+
+	$path = isset( $target['path'] ) ? $target['path'] : '/';
+	$base_paths = array();
+	if ( isset( $home['path'] ) && '/' !== $home['path'] ) {
+		$base_paths[] = untrailingslashit( $home['path'] );
+	}
+	if ( is_multisite() ) {
+		foreach ( get_sites( array( 'number' => 0 ) ) as $site ) {
+			if ( isset( $site->domain, $site->path ) && strtolower( $site->domain ) === strtolower( $target['host'] ) && '/' !== $site->path ) {
+				$base_paths[] = untrailingslashit( $site->path );
+			}
+		}
+	}
+	$base_paths = array_unique( array_filter( $base_paths ) );
+	usort( $base_paths, 'rs_cv_longest_path_first' );
+	foreach ( $base_paths as $base_path ) {
+		if ( $path === $base_path ) {
+			$path = '/';
+			break;
+		}
+		if ( 0 === strpos( $path, $base_path . '/' ) ) {
+			$path = substr( $path, strlen( $base_path ) );
+			break;
+		}
+	}
+
+	return $path
+		. ( isset( $target['query'] ) ? '?' . $target['query'] : '' )
+		. ( isset( $target['fragment'] ) ? '#' . $target['fragment'] : '' );
+}
+
+/**
+ * Sort site base paths longest-first when normalizing shared URLs.
+ *
+ * @param string $left  First path.
+ * @param string $right Second path.
+ * @return int
+ */
+function rs_cv_longest_path_first( $left, $right ) {
+	return strlen( $right ) - strlen( $left );
 }
 
 /**
@@ -107,7 +290,7 @@ function rs_cv_data( $post_id = 0 ) {
 		'updated'    => 'October 2026',
 
 		'links'      => array(
-			array( 'label' => 'raisulsohan.com', 'url' => 'https://raisulsohan.com/en/portfolio/' ),
+			array( 'label' => 'raisulsohan.com', 'url' => '/portfolio/' ),
 			array( 'label' => 'linkedin.com/in/raisulsohan', 'url' => 'https://www.linkedin.com/in/raisulsohan/' ),
 			array( 'label' => 'github.com/raisulsohan', 'url' => 'https://github.com/raisulsohan' ),
 			array( 'label' => 'youtube.com/@nomolosfiles', 'url' => 'https://www.youtube.com/@nomolosfiles' ),
@@ -203,37 +386,40 @@ function rs_cv_data( $post_id = 0 ) {
 		'tools'      => array(
 			array(
 				'name' => 'LazyLord',
-				'url'  => 'https://github.com/raisulsohan/LazyLord',
+				'links' => array( array( 'label' => 'LazyLord', 'url' => 'https://github.com/raisulsohan/LazyLord' ) ),
 				'kind' => 'Adobe CEP panel + Figma plugin · TypeScript',
 				'text' => 'Transfers vector artwork between Figma, Photoshop, Illustrator and After Effects.',
 			),
 			array(
 				'name' => 'LazyMotionToolkit',
-				'url'  => 'https://github.com/raisulsohan/LazyMotionToolkit',
+				'links' => array( array( 'label' => 'LazyMotionToolkit', 'url' => 'https://github.com/raisulsohan/LazyMotionToolkit' ) ),
 				'kind' => 'After Effects ScriptUI panel · ExtendScript',
 				'text' => 'Nine dockable tools for precomps, text boxes, fades, arrows, anchors and grids.',
 			),
 			array(
 				'name' => 'LazyKick',
-				'url'  => 'https://github.com/raisulsohan/LazyKick',
+				'links' => array( array( 'label' => 'LazyKick', 'url' => 'https://github.com/raisulsohan/LazyKick' ) ),
 				'kind' => 'CEP panel · After Effects & Premiere Pro',
 				'text' => 'Paste images, add time-coded notes and import media folders in After Effects or Premiere.',
 			),
 			array(
 				'name' => 'Lazy-Image',
-				'url'  => 'https://github.com/raisulsohan/LazyImageGeneration',
+				'links' => array( array( 'label' => 'Lazy-Image', 'url' => 'https://github.com/raisulsohan/LazyImageGeneration' ) ),
 				'kind' => 'CEP extension · CDP browser automation',
 				'text' => 'Generate images inside After Effects or Premiere Pro without an API key.',
 			),
 			array(
 				'name' => 'LazyScroll · LazySnap',
-				'url'  => 'https://raisulsohan.com/en/portfolio/',
+				'links' => array(
+					array( 'label' => 'LazyScroll', 'url' => '/portfolio/lazyscroll/' ),
+					array( 'label' => 'LazySnap', 'url' => '/portfolio/lazysnap/' ),
+				),
 				'kind' => 'Chrome & Edge extensions · Manifest V3',
 				'text' => 'Per-site media volume controls, article text and commentary text tools.',
 			),
 			array(
 				'name' => 'LazyRuler',
-				'url'  => 'https://raisulsohan.com/en/portfolio/',
+				'links' => array( array( 'label' => 'LazyRuler', 'url' => '/portfolio/lazyruler/' ) ),
 				'kind' => 'Chrome & Edge extension · Manifest V3',
 				'text' => 'Photoshop-style rulers and guides for arranging browser-page elements.',
 			),
@@ -298,9 +484,10 @@ function rs_cv_data( $post_id = 0 ) {
 
 		'languages'  => 'Bengali (native) · English (professional)',
 		'linkedin_url' => 'https://www.linkedin.com/in/raisulsohan/',
-		'work_url'     => home_url( '/portfolio/' ),
+		'work_url'     => '/portfolio/',
 		'pdf_filename' => 'Raisul_Sohan_CV.pdf',
 		'pdf_attachment_id' => 0,
+		'pdf_attachment_blog_id' => 0,
 
 		'labels'       => array(
 			'hero_eyebrow'       => 'Curriculum vitae',
@@ -330,7 +517,7 @@ function rs_cv_data( $post_id = 0 ) {
 	);
 
 	$post_id = $post_id ? absint( $post_id ) : absint( get_queried_object_id() );
-	$saved   = $post_id ? get_post_meta( $post_id, '_rs_cv_data', true ) : array();
+	$saved   = rs_cv_saved_data( $post_id );
 
 	if ( ! is_array( $saved ) ) {
 		return $defaults;
@@ -343,6 +530,21 @@ function rs_cv_data( $post_id = 0 ) {
 		} elseif ( array_key_exists( $key, $saved ) ) {
 			$data[ $key ] = $saved[ $key ];
 		}
+	}
+	if ( ! isset( $data['pdf_attachment_blog_id'] ) || ! $data['pdf_attachment_blog_id'] ) {
+		$data['pdf_attachment_blog_id'] = get_current_blog_id();
+	}
+	if ( is_array( $data['tools'] ) ) {
+		foreach ( $data['tools'] as &$tool ) {
+			if ( ! is_array( $tool ) ) {
+				continue;
+			}
+			if ( ! isset( $tool['links'] ) || ! is_array( $tool['links'] ) ) {
+				$tool['links'] = ! empty( $tool['url'] ) ? array( array( 'label' => isset( $tool['name'] ) ? $tool['name'] : '', 'url' => $tool['url'] ) ) : array();
+			}
+			unset( $tool['url'] );
+		}
+		unset( $tool );
 	}
 
 	return $data;
@@ -361,10 +563,41 @@ function rs_cv_add_editor_box( $post ) {
 	if ( ! $post instanceof WP_Post || 'page-cv.php' !== get_page_template_slug( $post ) ) {
 		return;
 	}
+	if ( is_multisite() && ! current_user_can( 'manage_network_options' ) ) {
+		return;
+	}
 
 	add_meta_box( 'rs-cv-content', 'CV content', 'rs_cv_render_editor_box', 'page', 'normal', 'high' );
 }
 add_action( 'add_meta_boxes_page', 'rs_cv_add_editor_box' );
+
+/**
+ * Queue a cache purge for each edition that has a CV page.
+ */
+function rs_cv_purge_network_caches() {
+	if ( ! function_exists( 'rs_purge_host_cache_soon' ) ) {
+		return;
+	}
+	if ( ! is_multisite() ) {
+		rs_purge_host_cache_soon();
+		return;
+	}
+
+	foreach ( get_sites( array( 'fields' => 'ids', 'number' => 0 ) ) as $site_id ) {
+		$site_id  = (int) $site_id;
+		$switched = $site_id !== get_current_blog_id();
+		if ( $switched ) {
+			switch_to_blog( $site_id );
+		}
+		$page = get_page_by_path( 'cv', OBJECT, 'page' );
+		if ( $page && 'page-cv.php' === get_page_template_slug( $page ) ) {
+			rs_purge_host_cache_soon();
+		}
+		if ( $switched ) {
+			restore_current_blog();
+		}
+	}
+}
 
 /**
  * Escape and print one field in the CV editor.
@@ -398,10 +631,20 @@ function rs_cv_editor_field( $name, $label, $value, $type = 'text', $wide = fals
  * @param array  $fields Field descriptors.
  * @param array  $values Values for this row.
  */
-function rs_cv_editor_repeater_item( $base, $index, $title, $fields, $values = array() ) {
+function rs_cv_editor_repeater_item( $base, $index, $title, $fields, $values = array(), $depth = 0 ) {
 	echo '<div class="rs-cv-editor__item" data-cv-item><div class="rs-cv-editor__item-head"><strong>' . esc_html( $title ) . '</strong><button type="button" class="button-link-delete" data-cv-remove>Remove</button></div><div class="rs-cv-editor__fields">';
 	foreach ( $fields as $key => $field ) {
 		$value = isset( $values[ $key ] ) ? $values[ $key ] : '';
+		if ( ! empty( $field['repeater'] ) ) {
+			rs_cv_editor_repeater(
+				$base . '][' . $index . '][' . $key,
+				$field['title'],
+				$value,
+				$field['fields'],
+				$depth + 1
+			);
+			continue;
+		}
 		if ( isset( $field['lines'] ) && $field['lines'] && is_array( $value ) ) {
 			$value = implode( "\n", $value );
 		}
@@ -418,14 +661,16 @@ function rs_cv_editor_repeater_item( $base, $index, $title, $fields, $values = a
  * @param array  $items  Current rows.
  * @param array  $fields Field descriptors.
  */
-function rs_cv_editor_repeater( $base, $title, $items, $fields ) {
+function rs_cv_editor_repeater( $base, $title, $items, $fields, $depth = 0 ) {
 	$items = is_array( $items ) ? array_values( $items ) : array();
-	echo '<div class="rs-cv-editor__repeater" data-cv-repeater data-next-index="' . esc_attr( count( $items ) ) . '"><div class="rs-cv-editor__repeater-head"><h4>' . esc_html( $title ) . '</h4><button type="button" class="button" data-cv-add>Add item</button></div><input type="hidden" name="rs_cv_data[' . esc_attr( $base ) . '][_present]" value="1"><div class="rs-cv-editor__items" data-cv-items>\n';
+	$nested_class = $depth ? ' rs-cv-editor__repeater--nested' : '';
+	$index_token  = '__INDEX_' . $depth . '__';
+	echo '<div class="rs-cv-editor__repeater' . esc_attr( $nested_class ) . '" data-cv-repeater data-index-token="' . esc_attr( $index_token ) . '" data-next-index="' . esc_attr( count( $items ) ) . '"><div class="rs-cv-editor__repeater-head"><h4>' . esc_html( $title ) . '</h4><button type="button" class="button" data-cv-add>Add item</button></div><input type="hidden" name="rs_cv_data[' . esc_attr( $base ) . '][_present]" value="1"><div class="rs-cv-editor__items" data-cv-items>\n';
 	foreach ( $items as $index => $item ) {
-		rs_cv_editor_repeater_item( $base, (string) $index, $title . ' ' . ( $index + 1 ), $fields, $item );
+		rs_cv_editor_repeater_item( $base, (string) $index, $title . ' ' . ( $index + 1 ), $fields, $item, $depth );
 	}
 	echo '</div><template data-cv-template>';
-	rs_cv_editor_repeater_item( $base, '__INDEX__', $title, $fields );
+	rs_cv_editor_repeater_item( $base, $index_token, $title, $fields, array(), $depth );
 	echo '</template></div>';
 }
 
@@ -437,7 +682,7 @@ function rs_cv_editor_repeater( $base, $title, $items, $fields ) {
 function rs_cv_render_editor_box( $post ) {
 	$cv = rs_cv_data( $post->ID );
 	wp_nonce_field( 'rs_cv_save_content', 'rs_cv_nonce' );
-	echo '<div class="rs-cv-editor"><p class="description">Edit the content and labels shown on the CV page. Experience bullets and selected-work descriptions support **bold** and [link text](https://example.com). Use one line per role, skill or bullet. Changes take effect after you update this page.</p>';
+	echo '<div class="rs-cv-editor"><p class="description">Edit the shared CV content shown in both editions. Saving this page updates both editions; on multisite, this editor is available to network administrators. Each Tool can have multiple link items, and each link label appears as a separate clickable tool name. Experience bullets and selected-work descriptions support **bold** and [link text](https://example.com). Use one line per role, skill or bullet.</p>';
 
 	echo '<details class="rs-cv-editor__section" open><summary>Identity, contact and PDF</summary><div class="rs-cv-editor__fields">';
 	rs_cv_editor_field( 'name', 'Name', $cv['name'] );
@@ -447,18 +692,19 @@ function rs_cv_render_editor_box( $post ) {
 	rs_cv_editor_field( 'phone', 'Phone', $cv['phone'] );
 	rs_cv_editor_field( 'whatsapp', 'WhatsApp URL', $cv['whatsapp'], 'url' );
 	rs_cv_editor_field( 'linkedin_url', 'LinkedIn button URL', $cv['linkedin_url'], 'url' );
-	rs_cv_editor_field( 'work_url', 'Portfolio URL', $cv['work_url'], 'url' );
+	rs_cv_editor_field( 'work_url', 'Portfolio URL or site path', $cv['work_url'] );
 	rs_cv_editor_field( 'updated', 'Last updated text', $cv['updated'] );
 	rs_cv_editor_field( 'pdf_filename', 'PDF download filename', $cv['pdf_filename'] );
 	rs_cv_editor_field( 'summary', 'Short summary', $cv['summary'], 'textarea', true );
 	rs_cv_editor_field( 'profile', 'Profile', $cv['profile'], 'textarea', true );
-	echo '</div><div class="rs-cv-editor__pdf"><input type="hidden" name="rs_cv_data[pdf_attachment_id]" value="' . esc_attr( absint( $cv['pdf_attachment_id'] ) ) . '" data-cv-pdf-id><span data-cv-pdf-status>';
-	if ( ! empty( $cv['pdf_attachment_id'] ) && wp_get_attachment_url( absint( $cv['pdf_attachment_id'] ) ) ) {
-		echo 'Selected PDF: ' . esc_html( get_the_title( absint( $cv['pdf_attachment_id'] ) ) );
+	$pdf_attachment = rs_cv_pdf_attachment( $cv['pdf_attachment_id'], $cv['pdf_attachment_blog_id'] );
+	echo '</div><div class="rs-cv-editor__pdf"><input type="hidden" name="rs_cv_data[pdf_attachment_id]" value="' . esc_attr( absint( $cv['pdf_attachment_id'] ) ) . '" data-cv-pdf-id><input type="hidden" name="rs_cv_data[pdf_attachment_blog_id]" value="' . esc_attr( absint( $cv['pdf_attachment_blog_id'] ) ) . '" data-cv-pdf-blog-id><span data-cv-pdf-status>';
+	if ( $pdf_attachment ) {
+		echo 'Selected PDF: ' . esc_html( $pdf_attachment['title'] );
 	} else {
 		echo 'Using the PDF bundled with the theme. Choose a PDF from the Media Library to replace it.';
 	}
-	echo '</span><button type="button" class="button" data-cv-pdf-select data-title="Choose a CV PDF" data-button="Use this PDF">Choose PDF</button><button type="button" class="button-link-delete" data-cv-pdf-remove>Use bundled PDF</button></div></details>';
+	echo '</span><button type="button" class="button" data-cv-pdf-select data-title="Choose a CV PDF" data-button="Use this PDF" data-blog-id="' . esc_attr( get_current_blog_id() ) . '">Choose PDF</button><button type="button" class="button-link-delete" data-cv-pdf-remove>Use bundled PDF</button></div></details>';
 
 	echo '<details class="rs-cv-editor__section"><summary>Page labels and buttons</summary><div class="rs-cv-editor__fields">';
 	$label_fields = array(
@@ -478,7 +724,7 @@ function rs_cv_render_editor_box( $post ) {
 	echo '</div></details>';
 
 	echo '<details class="rs-cv-editor__section"><summary>Contact links and highlights</summary>';
-	rs_cv_editor_repeater( 'links', 'Contact link', $cv['links'], array( 'label' => array( 'label' => 'Link text' ), 'url' => array( 'label' => 'URL', 'type' => 'url' ) ) );
+	rs_cv_editor_repeater( 'links', 'Contact link', $cv['links'], array( 'label' => array( 'label' => 'Link text' ), 'url' => array( 'label' => 'URL or site path' ) ) );
 	rs_cv_editor_repeater( 'stats', 'Statistic', $cv['stats'], array( 'value' => array( 'label' => 'Value' ), 'label' => array( 'label' => 'Caption' ) ) );
 	rs_cv_editor_repeater( 'highlights', 'Highlight', $cv['highlights'], array( 'lead' => array( 'label' => 'Bold lead' ), 'text' => array( 'label' => 'Description', 'type' => 'textarea', 'wide' => true ) ) );
 	echo '</details>';
@@ -493,11 +739,12 @@ function rs_cv_render_editor_box( $post ) {
 
 	echo '<details class="rs-cv-editor__section"><summary>Selected work and open-source tools</summary>';
 	rs_cv_editor_repeater( 'films', 'Project', $cv['films'], array(
-		'title' => array( 'label' => 'Project title' ), 'url' => array( 'label' => 'URL', 'type' => 'url' ),
+		'title' => array( 'label' => 'Project title' ), 'url' => array( 'label' => 'URL or site path' ),
 		'meta' => array( 'label' => 'Category / details', 'wide' => true ), 'text' => array( 'label' => 'Description', 'type' => 'textarea', 'wide' => true ),
 	) );
 	rs_cv_editor_repeater( 'tools', 'Tool', $cv['tools'], array(
-		'name' => array( 'label' => 'Tool name' ), 'url' => array( 'label' => 'URL', 'type' => 'url' ),
+		'name' => array( 'label' => 'Fallback title (shown when there are no links)' ),
+		'links' => array( 'repeater' => true, 'title' => 'Tool link', 'fields' => array( 'label' => array( 'label' => 'Link text' ), 'url' => array( 'label' => 'URL or site path' ) ) ),
 		'kind' => array( 'label' => 'Platform / technology', 'wide' => true ), 'text' => array( 'label' => 'Description', 'type' => 'textarea', 'wide' => true ),
 	) );
 	echo '</details>';
@@ -545,7 +792,10 @@ function rs_cv_editor_sanitize_rows( $rows, $fields ) {
 		$has_value = false;
 		foreach ( $fields as $key => $type ) {
 			$value = isset( $row[ $key ] ) ? $row[ $key ] : '';
-			if ( 'lines' === $type ) {
+			if ( is_array( $type ) ) {
+				$value = rs_cv_editor_sanitize_rows( $value, $type );
+				$has_value = $has_value || ! empty( $value );
+			} elseif ( 'lines' === $type ) {
 				$value = rs_cv_editor_sanitize_lines( $value );
 				$has_value = $has_value || ! empty( $value );
 			} else {
@@ -576,7 +826,7 @@ function rs_cv_editor_sanitize_rows( $rows, $fields ) {
  * @param WP_Post $post    Page being saved.
  */
 function rs_cv_save_editor_data( $post_id, $post ) {
-	if ( ! $post instanceof WP_Post || 'page-cv.php' !== get_page_template_slug( $post_id ) || ! isset( $_POST['rs_cv_nonce'] ) || ! is_scalar( $_POST['rs_cv_nonce'] ) ) {
+	if ( ! $post instanceof WP_Post || 'page-cv.php' !== get_page_template_slug( $post_id ) || ( is_multisite() && ! current_user_can( 'manage_network_options' ) ) || ! isset( $_POST['rs_cv_nonce'] ) || ! is_scalar( $_POST['rs_cv_nonce'] ) ) {
 		return;
 	}
 
@@ -627,7 +877,7 @@ function rs_cv_save_editor_data( $post_id, $post ) {
 		'stats'      => array( 'value' => 'text', 'label' => 'text' ),
 		'highlights' => array( 'lead' => 'text', 'text' => 'textarea' ),
 		'experience' => array( 'title' => 'text', 'org' => 'text', 'place' => 'text', 'dates' => 'text', 'bullets' => 'lines' ),
-		'tools'      => array( 'name' => 'text', 'url' => 'url', 'kind' => 'text', 'text' => 'textarea' ),
+		'tools'      => array( 'name' => 'text', 'links' => array( 'label' => 'text', 'url' => 'url' ), 'kind' => 'text', 'text' => 'textarea' ),
 		'films'      => array( 'title' => 'text', 'url' => 'url', 'meta' => 'text', 'text' => 'textarea' ),
 		'skills'     => array( 'group' => 'text', 'items' => 'lines' ),
 		'education'  => array( 'lead' => 'text', 'text' => 'textarea' ),
@@ -639,17 +889,59 @@ function rs_cv_save_editor_data( $post_id, $post ) {
 	}
 	if ( isset( $input['pdf_attachment_id'] ) && is_scalar( $input['pdf_attachment_id'] ) ) {
 		$attachment_id = absint( $input['pdf_attachment_id'] );
-		$clean['pdf_attachment_id'] = $attachment_id && 'attachment' === get_post_type( $attachment_id ) && 'application/pdf' === get_post_mime_type( $attachment_id ) ? $attachment_id : 0;
+		$blog_id       = isset( $input['pdf_attachment_blog_id'] ) && is_scalar( $input['pdf_attachment_blog_id'] ) ? absint( $input['pdf_attachment_blog_id'] ) : get_current_blog_id();
+		$switched      = is_multisite() && $blog_id && $blog_id !== get_current_blog_id();
+		if ( ! $blog_id ) {
+			$blog_id = get_current_blog_id();
+		}
+		$valid_pdf = false;
+		if ( ! $switched || get_site( $blog_id ) ) {
+			if ( $switched ) {
+				switch_to_blog( $blog_id );
+			}
+			$valid_pdf = $attachment_id && 'attachment' === get_post_type( $attachment_id ) && 'application/pdf' === get_post_mime_type( $attachment_id );
+			if ( $switched ) {
+				restore_current_blog();
+			}
+		}
+		$clean['pdf_attachment_id']      = $valid_pdf ? $attachment_id : 0;
+		$clean['pdf_attachment_blog_id'] = $valid_pdf ? $blog_id : 0;
 	}
 	$clean['pdf_filename'] = sanitize_file_name( $clean['pdf_filename'] );
 	if ( $clean['pdf_filename'] && '.pdf' !== strtolower( substr( $clean['pdf_filename'], -4 ) ) ) {
 		$clean['pdf_filename'] .= '.pdf';
 	}
-	update_post_meta( $post_id, '_rs_cv_data', $clean );
-
-	if ( function_exists( 'rs_purge_host_cache_soon' ) ) {
-		rs_purge_host_cache_soon();
+	$clean['work_url'] = rs_cv_share_url( $clean['work_url'] );
+	foreach ( array( 'links', 'films' ) as $list_key ) {
+		if ( isset( $clean[ $list_key ] ) && is_array( $clean[ $list_key ] ) ) {
+			foreach ( $clean[ $list_key ] as &$link_row ) {
+				if ( isset( $link_row['url'] ) ) {
+					$link_row['url'] = rs_cv_share_url( $link_row['url'] );
+				}
+			}
+			unset( $link_row );
+		}
 	}
+	if ( isset( $clean['tools'] ) && is_array( $clean['tools'] ) ) {
+		foreach ( $clean['tools'] as &$tool_row ) {
+			if ( isset( $tool_row['links'] ) && is_array( $tool_row['links'] ) ) {
+				foreach ( $tool_row['links'] as &$tool_link ) {
+					if ( isset( $tool_link['url'] ) ) {
+						$tool_link['url'] = rs_cv_share_url( $tool_link['url'] );
+					}
+				}
+				unset( $tool_link );
+			}
+		}
+		unset( $tool_row );
+	}
+	if ( is_multisite() ) {
+		update_site_option( 'rs_cv_shared_data_v1', $clean );
+	} else {
+		update_post_meta( $post_id, '_rs_cv_data', $clean );
+	}
+
+	rs_cv_purge_network_caches();
 }
 add_action( 'save_post_page', 'rs_cv_save_editor_data', 10, 2 );
 
@@ -664,7 +956,7 @@ function rs_cv_editor_assets( $hook ) {
 	}
 	$screen = get_current_screen();
 	$post_id = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0;
-	if ( ! $screen || 'page' !== $screen->post_type || ! $post_id || 'page-cv.php' !== get_page_template_slug( $post_id ) ) {
+	if ( ! $screen || 'page' !== $screen->post_type || ! $post_id || 'page-cv.php' !== get_page_template_slug( $post_id ) || ( is_multisite() && ! current_user_can( 'manage_network_options' ) ) ) {
 		return;
 	}
 
@@ -720,6 +1012,7 @@ function rs_cv_schema() {
 	}
 
 	$cv = rs_cv_data();
+	$same_as = array_map( 'rs_cv_resolve_url', wp_list_pluck( $cv['links'], 'url' ) );
 
 	$data = array(
 		'@context'   => 'https://schema.org',
@@ -736,7 +1029,7 @@ function rs_cv_schema() {
 				'addressLocality' => 'Dhaka',
 				'addressCountry'  => 'BD',
 			),
-			'sameAs'   => array_values( wp_list_pluck( $cv['links'], 'url' ) ),
+			'sameAs'   => array_values( $same_as ),
 		),
 	);
 
