@@ -1,0 +1,128 @@
+/* Admin-only editor for the structured CV page. */
+
+.rs-cv-editor {
+	color: #1d2327;
+}
+
+.rs-cv-editor > .description {
+	max-width: 72rem;
+	margin: 0 0 1rem;
+}
+
+.rs-cv-editor__section {
+	margin: 0.75rem 0;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+	background: #fff;
+}
+
+.rs-cv-editor__section > summary {
+	padding: 0.8rem 1rem;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.rs-cv-editor__section[open] > summary {
+	border-bottom: 1px solid #dcdcde;
+}
+
+.rs-cv-editor__fields {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.9rem 1rem;
+	padding: 1rem;
+}
+
+.rs-cv-editor__field {
+	display: flex;
+	min-width: 0;
+	flex-direction: column;
+	gap: 0.35rem;
+	font-weight: 600;
+}
+
+.rs-cv-editor__field--wide {
+	grid-column: 1 / -1;
+}
+
+.rs-cv-editor__field input,
+.rs-cv-editor__field textarea {
+	width: 100%;
+	max-width: none;
+	font-weight: 400;
+}
+
+.rs-cv-editor__field textarea {
+	min-height: 5.5rem;
+	resize: vertical;
+}
+
+.rs-cv-editor__pdf {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.65rem 1rem;
+	padding: 0 1rem 1rem;
+}
+
+.rs-cv-editor__pdf [data-cv-pdf-status] {
+	flex: 1 1 22rem;
+}
+
+.rs-cv-editor__repeater {
+	padding: 1rem;
+	border-bottom: 1px solid #dcdcde;
+}
+
+.rs-cv-editor__repeater:last-child {
+	border-bottom: 0;
+}
+
+.rs-cv-editor__repeater-head,
+.rs-cv-editor__item-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.rs-cv-editor__repeater-head h4 {
+	margin: 0;
+	font-size: 13px;
+}
+
+.rs-cv-editor__items {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	align-items: start;
+	gap: 0.75rem;
+	margin-top: 0.75rem;
+}
+
+.rs-cv-editor__item {
+	min-width: 0;
+	border: 1px solid #dcdcde;
+	border-radius: 5px;
+	background: #f6f7f7;
+}
+
+.rs-cv-editor__item-head {
+	padding: 0.55rem 0.75rem;
+	border-bottom: 1px solid #dcdcde;
+}
+
+.rs-cv-editor__item .rs-cv-editor__fields {
+	padding: 0.75rem;
+}
+
+.rs-cv-editor__item .rs-cv-editor__field textarea {
+	min-height: 5rem;
+}
+
+@media (max-width: 782px) {
+	.rs-cv-editor__fields,
+	.rs-cv-editor__items {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}

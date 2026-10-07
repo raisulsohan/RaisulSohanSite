@@ -3,14 +3,13 @@
  * The CV.
  *
  * One page, /cv/, and the same in both editions: a résumé is written once,
- * in one language, so nothing in this file asks rs_is_en(). The content is a
- * PHP array rather than text in the page editor, for the reason the portfolio
- * ships its defaults in code: what is committed is what the site serves, and
- * the PDF in assets/cv/ is built from the same facts, so the two cannot drift
- * apart without a commit saying so.
+ * in one language, so nothing in this file asks rs_is_en(). This file ships
+ * the defaults; the CV page's native editor can override them in _rs_cv_data
+ * page meta. The bundled PDF in assets/cv/ is the default download and can be
+ * replaced from the Media Library on that page.
  *
  * page-cv.php renders rs_cv_data(); the page itself is created once per site
- * by rs_seed_cv_page(), so a push is all it takes to put the CV online.
+ * by rs_seed_cv_page(), so a new site starts with the same editable CV.
  *
  * @package raisul-sohan
  */
@@ -47,6 +46,18 @@ function rs_cv_url() {
  * @return string
  */
 function rs_cv_pdf() {
+	$cv        = rs_cv_data();
+	$media_id = isset( $cv['pdf_attachment_id'] ) ? absint( $cv['pdf_attachment_id'] ) : 0;
+
+	if ( $media_id && 'attachment' === get_post_type( $media_id ) && 'application/pdf' === get_post_mime_type( $media_id ) ) {
+		$url = wp_get_attachment_url( $media_id );
+
+		if ( $url ) {
+			$modified = get_post_modified_time( 'U', true, $media_id );
+			return add_query_arg( 'ver', RS_VERSION . '-' . ( $modified ? $modified : '1' ), $url );
+		}
+	}
+
 	$file = 'assets/cv/Raisul_Sohan_CV.pdf';
 
 	if ( ! file_exists( RS_DIR . '/' . $file ) ) {
@@ -85,8 +96,8 @@ function rs_cv_rich( $text ) {
  *
  * @return array
  */
-function rs_cv_data() {
-	return array(
+function rs_cv_data( $post_id = 0 ) {
+	$defaults = array(
 		'name'       => 'Raisul Islam Sohan',
 		'roles'      => array( 'Motion Designer', '2D Animator', 'Creative Developer' ),
 		'location'   => 'Dhaka, Bangladesh',
@@ -286,8 +297,383 @@ function rs_cv_data() {
 		),
 
 		'languages'  => 'Bengali (native) · English (professional)',
+		'linkedin_url' => 'https://www.linkedin.com/in/raisulsohan/',
+		'work_url'     => home_url( '/portfolio/' ),
+		'pdf_filename' => 'Raisul_Sohan_CV.pdf',
+		'pdf_attachment_id' => 0,
+
+		'labels'       => array(
+			'hero_eyebrow'       => 'Curriculum vitae',
+			'download_pdf'       => 'Download PDF',
+			'print'              => 'Print',
+			'email'              => 'Email',
+			'whatsapp'           => 'WhatsApp',
+			'linkedin'           => 'LinkedIn',
+			'copy_email'         => 'Copy email address',
+			'selected_work'      => 'Selected work',
+			'showcase_title'     => 'Stories, motion & tools',
+			'showcase_intro'     => 'A few projects that show how I combine visual craft, storytelling and creative technology.',
+			'view_project'       => 'View project',
+			'sheet_aria_label'   => 'Curriculum vitae',
+			'profile'            => 'Profile',
+			'highlights'         => 'Highlights',
+			'experience'         => 'Experience',
+			'open_source_tools'  => 'Open-source tools',
+			'tools_note'         => 'all free',
+			'skills'             => 'Skills',
+			'education'          => 'Education',
+			'languages'          => 'Languages',
+			'updated_prefix'     => 'Last updated',
+			'also_pdf'           => 'Also as a PDF',
+			'see_work'           => 'See the work',
+		),
 	);
+
+	$post_id = $post_id ? absint( $post_id ) : absint( get_queried_object_id() );
+	$saved   = $post_id ? get_post_meta( $post_id, '_rs_cv_data', true ) : array();
+
+	if ( ! is_array( $saved ) ) {
+		return $defaults;
+	}
+
+	$data = $defaults;
+	foreach ( $defaults as $key => $default ) {
+		if ( 'labels' === $key && isset( $saved[ $key ] ) && is_array( $saved[ $key ] ) ) {
+			$data[ $key ] = array_merge( $default, $saved[ $key ] );
+		} elseif ( array_key_exists( $key, $saved ) ) {
+			$data[ $key ] = $saved[ $key ];
+		}
+	}
+
+	return $data;
 }
+
+/* =========================================================================
+ * Native editor for the seeded CV page
+ * ====================================================================== */
+
+/**
+ * Add the CV editor to the page that uses the CV template.
+ *
+ * @param WP_Post $post The page being edited.
+ */
+function rs_cv_add_editor_box( $post ) {
+	if ( ! $post instanceof WP_Post || 'page-cv.php' !== get_page_template_slug( $post ) ) {
+		return;
+	}
+
+	add_meta_box( 'rs-cv-content', 'CV content', 'rs_cv_render_editor_box', 'page', 'normal', 'high' );
+}
+add_action( 'add_meta_boxes_page', 'rs_cv_add_editor_box' );
+
+/**
+ * Escape and print one field in the CV editor.
+ *
+ * @param string $name  Input name, without the rs_cv_data prefix.
+ * @param string $label Field label.
+ * @param mixed  $value Current value.
+ * @param string $type  text, url, email or textarea.
+ * @param bool   $wide  Whether the field spans the editor grid.
+ */
+function rs_cv_editor_field( $name, $label, $value, $type = 'text', $wide = false ) {
+	$wide_class = $wide ? ' rs-cv-editor__field--wide' : '';
+	$value      = is_scalar( $value ) ? (string) $value : '';
+
+	echo '<label class="rs-cv-editor__field' . esc_attr( $wide_class ) . '"><span>' . esc_html( $label ) . '</span>';
+	if ( 'textarea' === $type ) {
+		echo '<textarea name="rs_cv_data[' . esc_attr( $name ) . ']' . '" rows="4">' . esc_textarea( $value ) . '</textarea>';
+	} else {
+		$input_type = in_array( $type, array( 'url', 'email' ), true ) ? $type : 'text';
+		echo '<input type="' . esc_attr( $input_type ) . '" name="rs_cv_data[' . esc_attr( $name ) . ']' . '" value="' . esc_attr( $value ) . '">';
+	}
+	echo '</label>';
+}
+
+/**
+ * Print one repeatable row, used by current rows and the JS template.
+ *
+ * @param string $base   Repeater meta key.
+ * @param string $index  Row index or the JS placeholder.
+ * @param string $title  Row title in the editor.
+ * @param array  $fields Field descriptors.
+ * @param array  $values Values for this row.
+ */
+function rs_cv_editor_repeater_item( $base, $index, $title, $fields, $values = array() ) {
+	echo '<div class="rs-cv-editor__item" data-cv-item><div class="rs-cv-editor__item-head"><strong>' . esc_html( $title ) . '</strong><button type="button" class="button-link-delete" data-cv-remove>Remove</button></div><div class="rs-cv-editor__fields">';
+	foreach ( $fields as $key => $field ) {
+		$value = isset( $values[ $key ] ) ? $values[ $key ] : '';
+		if ( isset( $field['lines'] ) && $field['lines'] && is_array( $value ) ) {
+			$value = implode( "\n", $value );
+		}
+		rs_cv_editor_field( $base . '][' . $index . '][' . $key, $field['label'], $value, isset( $field['type'] ) ? $field['type'] : 'text', ! empty( $field['wide'] ) );
+	}
+	echo '</div></div>';
+}
+
+/**
+ * Print an editable repeater with Add and Remove controls.
+ *
+ * @param string $base   Repeater meta key.
+ * @param string $title  Visible editor heading.
+ * @param array  $items  Current rows.
+ * @param array  $fields Field descriptors.
+ */
+function rs_cv_editor_repeater( $base, $title, $items, $fields ) {
+	$items = is_array( $items ) ? array_values( $items ) : array();
+	echo '<div class="rs-cv-editor__repeater" data-cv-repeater data-next-index="' . esc_attr( count( $items ) ) . '"><div class="rs-cv-editor__repeater-head"><h4>' . esc_html( $title ) . '</h4><button type="button" class="button" data-cv-add>Add item</button></div><input type="hidden" name="rs_cv_data[' . esc_attr( $base ) . '][_present]" value="1"><div class="rs-cv-editor__items" data-cv-items>\n';
+	foreach ( $items as $index => $item ) {
+		rs_cv_editor_repeater_item( $base, (string) $index, $title . ' ' . ( $index + 1 ), $fields, $item );
+	}
+	echo '</div><template data-cv-template>';
+	rs_cv_editor_repeater_item( $base, '__INDEX__', $title, $fields );
+	echo '</template></div>';
+}
+
+/**
+ * Print the CV page's native content editor.
+ *
+ * @param WP_Post $post The CV page.
+ */
+function rs_cv_render_editor_box( $post ) {
+	$cv = rs_cv_data( $post->ID );
+	wp_nonce_field( 'rs_cv_save_content', 'rs_cv_nonce' );
+	echo '<div class="rs-cv-editor"><p class="description">Edit the content and labels shown on the CV page. Experience bullets and selected-work descriptions support **bold** and [link text](https://example.com). Use one line per role, skill or bullet. Changes take effect after you update this page.</p>';
+
+	echo '<details class="rs-cv-editor__section" open><summary>Identity, contact and PDF</summary><div class="rs-cv-editor__fields">';
+	rs_cv_editor_field( 'name', 'Name', $cv['name'] );
+	rs_cv_editor_field( 'roles', 'Roles (one per line)', implode( "\n", $cv['roles'] ), 'textarea' );
+	rs_cv_editor_field( 'location', 'Location', $cv['location'] );
+	rs_cv_editor_field( 'email', 'Email address', $cv['email'], 'email' );
+	rs_cv_editor_field( 'phone', 'Phone', $cv['phone'] );
+	rs_cv_editor_field( 'whatsapp', 'WhatsApp URL', $cv['whatsapp'], 'url' );
+	rs_cv_editor_field( 'linkedin_url', 'LinkedIn button URL', $cv['linkedin_url'], 'url' );
+	rs_cv_editor_field( 'work_url', 'Portfolio URL', $cv['work_url'], 'url' );
+	rs_cv_editor_field( 'updated', 'Last updated text', $cv['updated'] );
+	rs_cv_editor_field( 'pdf_filename', 'PDF download filename', $cv['pdf_filename'] );
+	rs_cv_editor_field( 'summary', 'Short summary', $cv['summary'], 'textarea', true );
+	rs_cv_editor_field( 'profile', 'Profile', $cv['profile'], 'textarea', true );
+	echo '</div><div class="rs-cv-editor__pdf"><input type="hidden" name="rs_cv_data[pdf_attachment_id]" value="' . esc_attr( absint( $cv['pdf_attachment_id'] ) ) . '" data-cv-pdf-id><span data-cv-pdf-status>';
+	if ( ! empty( $cv['pdf_attachment_id'] ) && wp_get_attachment_url( absint( $cv['pdf_attachment_id'] ) ) ) {
+		echo 'Selected PDF: ' . esc_html( get_the_title( absint( $cv['pdf_attachment_id'] ) ) );
+	} else {
+		echo 'Using the PDF bundled with the theme. Choose a PDF from the Media Library to replace it.';
+	}
+	echo '</span><button type="button" class="button" data-cv-pdf-select data-title="Choose a CV PDF" data-button="Use this PDF">Choose PDF</button><button type="button" class="button-link-delete" data-cv-pdf-remove>Use bundled PDF</button></div></details>';
+
+	echo '<details class="rs-cv-editor__section"><summary>Page labels and buttons</summary><div class="rs-cv-editor__fields">';
+	$label_fields = array(
+		'hero_eyebrow' => 'Top label', 'download_pdf' => 'Download PDF button', 'print' => 'Print button',
+		'email' => 'Email button', 'whatsapp' => 'WhatsApp button', 'linkedin' => 'LinkedIn button', 'copy_email' => 'Email copy screen-reader text',
+		'selected_work' => 'Selected work label', 'showcase_title' => 'Selected work title',
+		'showcase_intro' => 'Selected work introduction', 'view_project' => 'Project link label',
+		'sheet_aria_label' => 'CV sheet screen-reader label', 'profile' => 'Profile heading',
+		'highlights' => 'Highlights heading', 'experience' => 'Experience heading',
+		'open_source_tools' => 'Tools heading', 'tools_note' => 'Tools note', 'skills' => 'Skills heading',
+		'education' => 'Education heading', 'languages' => 'Languages heading',
+		'updated_prefix' => 'Last updated prefix', 'also_pdf' => 'PDF link label', 'see_work' => 'Portfolio link label',
+	);
+	foreach ( $label_fields as $key => $label ) {
+		rs_cv_editor_field( 'labels][' . $key, $label, $cv['labels'][ $key ] );
+	}
+	echo '</div></details>';
+
+	echo '<details class="rs-cv-editor__section"><summary>Contact links and highlights</summary>';
+	rs_cv_editor_repeater( 'links', 'Contact link', $cv['links'], array( 'label' => array( 'label' => 'Link text' ), 'url' => array( 'label' => 'URL', 'type' => 'url' ) ) );
+	rs_cv_editor_repeater( 'stats', 'Statistic', $cv['stats'], array( 'value' => array( 'label' => 'Value' ), 'label' => array( 'label' => 'Caption' ) ) );
+	rs_cv_editor_repeater( 'highlights', 'Highlight', $cv['highlights'], array( 'lead' => array( 'label' => 'Bold lead' ), 'text' => array( 'label' => 'Description', 'type' => 'textarea', 'wide' => true ) ) );
+	echo '</details>';
+
+	echo '<details class="rs-cv-editor__section"><summary>Experience</summary>';
+	rs_cv_editor_repeater( 'experience', 'Position', $cv['experience'], array(
+		'title' => array( 'label' => 'Role title' ), 'org' => array( 'label' => 'Organisation' ),
+		'place' => array( 'label' => 'Location' ), 'dates' => array( 'label' => 'Dates' ),
+		'bullets' => array( 'label' => 'Description bullets (one per line)', 'type' => 'textarea', 'wide' => true, 'lines' => true ),
+	) );
+	echo '</details>';
+
+	echo '<details class="rs-cv-editor__section"><summary>Selected work and open-source tools</summary>';
+	rs_cv_editor_repeater( 'films', 'Project', $cv['films'], array(
+		'title' => array( 'label' => 'Project title' ), 'url' => array( 'label' => 'URL', 'type' => 'url' ),
+		'meta' => array( 'label' => 'Category / details', 'wide' => true ), 'text' => array( 'label' => 'Description', 'type' => 'textarea', 'wide' => true ),
+	) );
+	rs_cv_editor_repeater( 'tools', 'Tool', $cv['tools'], array(
+		'name' => array( 'label' => 'Tool name' ), 'url' => array( 'label' => 'URL', 'type' => 'url' ),
+		'kind' => array( 'label' => 'Platform / technology', 'wide' => true ), 'text' => array( 'label' => 'Description', 'type' => 'textarea', 'wide' => true ),
+	) );
+	echo '</details>';
+
+	echo '<details class="rs-cv-editor__section"><summary>Skills, education and languages</summary>';
+	rs_cv_editor_repeater( 'skills', 'Skill group', $cv['skills'], array(
+		'group' => array( 'label' => 'Group title' ), 'items' => array( 'label' => 'Skills (one per line)', 'type' => 'textarea', 'wide' => true, 'lines' => true ),
+	) );
+	rs_cv_editor_repeater( 'education', 'Education item', $cv['education'], array( 'lead' => array( 'label' => 'Qualification' ), 'text' => array( 'label' => 'Institution / details', 'type' => 'textarea', 'wide' => true ) ) );
+	rs_cv_editor_field( 'languages', 'Languages', $cv['languages'], 'textarea', true );
+	echo '</details></div>';
+}
+
+/**
+ * Convert a textarea into clean, non-empty lines.
+ *
+ * @param mixed $value Raw value.
+ * @return array
+ */
+function rs_cv_editor_sanitize_lines( $value ) {
+	$value = sanitize_textarea_field( is_scalar( $value ) ? (string) $value : '' );
+	$lines = preg_split( '/\r\n|\r|\n/', $value );
+	$lines = array_map( 'trim', $lines );
+	return array_values( array_filter( $lines, 'strlen' ) );
+}
+
+/**
+ * Sanitize a list submitted by the CV editor.
+ *
+ * @param mixed $rows   Submitted rows.
+ * @param array $fields Allowed fields and sanitizers.
+ * @return array
+ */
+function rs_cv_editor_sanitize_rows( $rows, $fields ) {
+	if ( ! is_array( $rows ) ) {
+		return array();
+	}
+
+	$clean = array();
+	foreach ( $rows as $row ) {
+		if ( ! is_array( $row ) ) {
+			continue;
+		}
+		$item = array();
+		$has_value = false;
+		foreach ( $fields as $key => $type ) {
+			$value = isset( $row[ $key ] ) ? $row[ $key ] : '';
+			if ( 'lines' === $type ) {
+				$value = rs_cv_editor_sanitize_lines( $value );
+				$has_value = $has_value || ! empty( $value );
+			} else {
+				$value = is_scalar( $value ) ? (string) $value : '';
+				if ( 'url' === $type ) {
+					$value = esc_url_raw( $value );
+				} elseif ( 'textarea' === $type ) {
+					$value = sanitize_textarea_field( $value );
+				} else {
+					$value = sanitize_text_field( $value );
+				}
+				$has_value = $has_value || '' !== $value;
+			}
+			$item[ $key ] = $value;
+		}
+		if ( $has_value ) {
+			$clean[] = $item;
+		}
+	}
+
+	return $clean;
+}
+
+/**
+ * Save the structured CV fields on the page, with the usual WordPress checks.
+ *
+ * @param int     $post_id Page ID.
+ * @param WP_Post $post    Page being saved.
+ */
+function rs_cv_save_editor_data( $post_id, $post ) {
+	if ( ! $post instanceof WP_Post || 'page-cv.php' !== get_page_template_slug( $post_id ) || ! isset( $_POST['rs_cv_nonce'] ) || ! is_scalar( $_POST['rs_cv_nonce'] ) ) {
+		return;
+	}
+
+	$nonce = sanitize_text_field( wp_unslash( $_POST['rs_cv_nonce'] ) );
+	if ( ! wp_verify_nonce( $nonce, 'rs_cv_save_content' ) || ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || wp_is_post_revision( $post_id ) || ! current_user_can( 'edit_page', $post_id ) ) {
+		return;
+	}
+
+	$input = isset( $_POST['rs_cv_data'] ) ? wp_unslash( $_POST['rs_cv_data'] ) : array();
+	if ( ! is_array( $input ) ) {
+		return;
+	}
+
+	$current = rs_cv_data( $post_id );
+	$clean   = $current;
+	$text_fields = array( 'name', 'location', 'phone', 'updated', 'pdf_filename' );
+	foreach ( $text_fields as $key ) {
+		if ( isset( $input[ $key ] ) && is_scalar( $input[ $key ] ) ) {
+			$clean[ $key ] = sanitize_text_field( $input[ $key ] );
+		}
+	}
+	foreach ( array( 'whatsapp', 'linkedin_url', 'work_url' ) as $key ) {
+		if ( isset( $input[ $key ] ) && is_scalar( $input[ $key ] ) ) {
+			$clean[ $key ] = esc_url_raw( $input[ $key ] );
+		}
+	}
+	if ( isset( $input['email'] ) && is_scalar( $input['email'] ) ) {
+		$clean['email'] = sanitize_email( $input['email'] );
+	}
+	foreach ( array( 'summary', 'profile', 'languages' ) as $key ) {
+		if ( isset( $input[ $key ] ) && is_scalar( $input[ $key ] ) ) {
+			$clean[ $key ] = sanitize_textarea_field( $input[ $key ] );
+		}
+	}
+	if ( isset( $input['roles'] ) ) {
+		$clean['roles'] = rs_cv_editor_sanitize_lines( $input['roles'] );
+	}
+	if ( isset( $input['labels'] ) && is_array( $input['labels'] ) ) {
+		foreach ( $current['labels'] as $key => $default ) {
+			if ( isset( $input['labels'][ $key ] ) && is_scalar( $input['labels'][ $key ] ) ) {
+				$clean['labels'][ $key ] = sanitize_text_field( $input['labels'][ $key ] );
+			}
+		}
+	}
+
+	$row_fields = array(
+		'links'      => array( 'label' => 'text', 'url' => 'url' ),
+		'stats'      => array( 'value' => 'text', 'label' => 'text' ),
+		'highlights' => array( 'lead' => 'text', 'text' => 'textarea' ),
+		'experience' => array( 'title' => 'text', 'org' => 'text', 'place' => 'text', 'dates' => 'text', 'bullets' => 'lines' ),
+		'tools'      => array( 'name' => 'text', 'url' => 'url', 'kind' => 'text', 'text' => 'textarea' ),
+		'films'      => array( 'title' => 'text', 'url' => 'url', 'meta' => 'text', 'text' => 'textarea' ),
+		'skills'     => array( 'group' => 'text', 'items' => 'lines' ),
+		'education'  => array( 'lead' => 'text', 'text' => 'textarea' ),
+	);
+	foreach ( $row_fields as $key => $fields ) {
+		if ( isset( $input[ $key ] ) ) {
+			$clean[ $key ] = rs_cv_editor_sanitize_rows( $input[ $key ], $fields );
+		}
+	}
+	if ( isset( $input['pdf_attachment_id'] ) && is_scalar( $input['pdf_attachment_id'] ) ) {
+		$attachment_id = absint( $input['pdf_attachment_id'] );
+		$clean['pdf_attachment_id'] = $attachment_id && 'attachment' === get_post_type( $attachment_id ) && 'application/pdf' === get_post_mime_type( $attachment_id ) ? $attachment_id : 0;
+	}
+	$clean['pdf_filename'] = sanitize_file_name( $clean['pdf_filename'] );
+	if ( $clean['pdf_filename'] && '.pdf' !== strtolower( substr( $clean['pdf_filename'], -4 ) ) ) {
+		$clean['pdf_filename'] .= '.pdf';
+	}
+	update_post_meta( $post_id, '_rs_cv_data', $clean );
+
+	if ( function_exists( 'rs_purge_host_cache_soon' ) ) {
+		rs_purge_host_cache_soon();
+	}
+}
+add_action( 'save_post_page', 'rs_cv_save_editor_data', 10, 2 );
+
+/**
+ * Load the media picker and the small CV editor bundle only on the CV page.
+ *
+ * @param string $hook Current admin page hook.
+ */
+function rs_cv_editor_assets( $hook ) {
+	if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
+		return;
+	}
+	$screen = get_current_screen();
+	$post_id = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0;
+	if ( ! $screen || 'page' !== $screen->post_type || ! $post_id || 'page-cv.php' !== get_page_template_slug( $post_id ) ) {
+		return;
+	}
+
+	$cv = rs_cv_data( $post_id );
+	wp_enqueue_media();
+	wp_enqueue_style( 'rs-cv-editor', RS_URI . '/assets/cv-editor.min.css', array(), RS_VERSION );
+	wp_enqueue_script( 'rs-cv-editor', RS_URI . '/assets/cv-editor.min.js', array(), RS_VERSION, true );
+}
+add_action( 'admin_enqueue_scripts', 'rs_cv_editor_assets' );
 
 /* =========================================================================
  * The page's own stylesheet, search result and structured data
