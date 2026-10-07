@@ -4,20 +4,20 @@
    lean on the stage from 21-portfolio-page.css (.rs-pf, .rs-pf__wrap,
    .rs-pf__eyebrow, .rs-pf__title, .rs-pf__bio, .rs-pf-btn, .rs-pf__stats).
 
-   The sheet itself is a light document on the dark stage, in the colours of
-   the PDF it stands in for: teal accent, navy headings, slate rules. A system
-   sans face rather than the site's serif, because this is a document a
-   recruiter reads, and it should look like the file they would download.
+   The on-screen sheet uses the portfolio's indigo, violet and pink palette.
+   Print switches back to a white page with the same brand accents. A system
+   sans face keeps the CV easy to scan.
    ========================================================================== */
 
 .rs-cv {
-	--cv-paper: #f8f8fb;
-	--cv-paper2: #eef2f7;
-	--cv-ink: #111827;
-	--cv-navy: #1e293b;
-	--cv-acc: #0f766e;
-	--cv-gray: #5b6472;
-	--cv-line: #cbd5e1;
+	--cv-paper: var(--pf-bg1);
+	--cv-paper2: var(--pf-panel2);
+	--cv-ink: var(--pf-text2);
+	--cv-navy: var(--pf-text);
+	--cv-acc: var(--pf-brand3);
+	--cv-warm: var(--pf-pink);
+	--cv-gray: var(--pf-muted);
+	--cv-line: var(--pf-line);
 	--cv-font: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
@@ -57,7 +57,7 @@
 }
 
 .rs-cv__section {
-	margin-top: clamp(2.5rem, 5vw, 3.75rem);
+	margin-top: clamp(1.25rem, 2.5vw, 1.75rem);
 }
 
 /* Selected work is a quick visual route into the CV's strongest samples. */
@@ -120,7 +120,7 @@
 }
 
 .rs-cv__project:nth-child(3) {
-	--project-accent: #4ec8b5;
+	--project-accent: var(--pf-blue);
 }
 
 .rs-cv__project::before {
@@ -239,15 +239,17 @@
 .rs-cv__sheet {
 	position: relative;
 	padding: clamp(1.5rem, 4vw, 3rem) clamp(1.1rem, 4vw, 3.25rem) clamp(1.75rem, 4vw, 3rem);
-	border: 1px solid rgba(255, 255, 255, 0.08);
+	border: 1px solid var(--pf-line);
 	border-radius: 20px;
-	background: var(--cv-paper);
-	color: var(--cv-ink);
+	background:
+		radial-gradient(circle, rgba(255, 255, 255, 0.025) 1px, transparent 1.2px) 0 0 / 26px 26px,
+		linear-gradient(165deg, var(--pf-bg1), var(--pf-bg0) 76%);
+	color: var(--pf-text2);
 	font-family: var(--cv-font);
 	font-size: 0.95rem;
 	line-height: 1.6;
-	box-shadow: 0 50px 120px -50px rgba(108, 76, 255, 0.6), 0 24px 48px -28px rgba(0, 0, 0, 0.7);
-	color-scheme: light;
+	box-shadow: 0 42px 90px -46px rgba(108, 76, 255, 0.5), 0 24px 48px -28px rgba(0, 0, 0, 0.7);
+	color-scheme: dark;
 	overflow: hidden;
 }
 
@@ -257,7 +259,7 @@
 	position: absolute;
 	inset: 0 0 auto 0;
 	height: 6px;
-	background: linear-gradient(90deg, var(--cv-acc), var(--cv-navy));
+	background: linear-gradient(90deg, var(--pf-brand), var(--pf-pink), var(--pf-blue), var(--pf-green));
 }
 
 .rs-cv__sheet a {
@@ -269,17 +271,17 @@
 
 .rs-cv__sheet a:hover,
 .rs-cv__sheet a:focus-visible {
-	color: var(--cv-acc);
+	color: var(--cv-warm);
 	border-bottom-color: currentColor;
 }
 
 .rs-cv__sheet :focus-visible {
-	outline: 2px solid var(--cv-acc);
+	outline: 2px solid var(--pf-key);
 	outline-offset: 2px;
 }
 
 .rs-cv__sheet ::selection {
-	background: rgba(15, 118, 110, 0.18);
+	background: rgba(143, 116, 255, 0.35);
 }
 
 /* Header */
@@ -288,11 +290,11 @@
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: space-between;
-	align-items: flex-end;
+	align-items: flex-start;
 	gap: 0.9rem 2rem;
-	margin-bottom: 1.75rem;
+	margin-bottom: 1.45rem;
 	padding-bottom: 1.1rem;
-	border-bottom: 2px solid var(--cv-navy);
+	border-bottom: 1px solid var(--cv-line);
 }
 
 .rs-cv__name {
@@ -310,7 +312,7 @@
 	margin: 0.4rem 0 0;
 	font-size: 1rem;
 	font-weight: 600;
-	color: var(--cv-acc);
+	color: var(--cv-warm);
 }
 
 .rs-cv__contact {
@@ -388,7 +390,7 @@
 	}
 }
 
-/* Section headings, as in the PDF: small caps in teal over a slate rule. */
+/* Section headings use the portfolio's violet accent over its fine rules. */
 
 .rs-cv__h {
 	display: flex;
@@ -445,14 +447,15 @@
 .rs-cv__hl li {
 	padding: 0.65rem 0.85rem;
 	border-radius: 10px;
-	background: var(--cv-paper2);
+	border: 1px solid var(--pf-line);
+	background: linear-gradient(135deg, rgba(108, 76, 255, 0.12), rgba(27, 23, 40, 0.8));
 	font-size: 0.88rem;
 	line-height: 1.5;
 }
 
 .rs-cv__hl strong {
 	font-weight: 700;
-	color: var(--cv-acc);
+	color: var(--cv-warm);
 }
 
 /* Experience */
@@ -507,7 +510,7 @@
 }
 
 .rs-cv__list li::marker {
-	color: var(--cv-acc);
+	color: var(--cv-warm);
 }
 
 .rs-cv__list strong {
@@ -636,9 +639,18 @@
 	}
 
 	.rs-cv {
+		--cv-paper: #fff;
+		--cv-paper2: #f1edff;
+		--cv-ink: #111827;
+		--cv-navy: #1e293b;
+		--cv-acc: #6c4cff;
+		--cv-warm: #9a32c7;
+		--cv-gray: #5b6472;
+		--cv-line: #cbd5e1;
 		padding: 0 !important;
 		background: #fff !important;
 		color: var(--cv-ink);
+		color-scheme: light;
 	}
 
 	.rs-pf__glow,
