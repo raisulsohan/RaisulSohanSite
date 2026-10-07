@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="960" y1="0" x2="960" y2="1080" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0e1726"/>
+      <stop offset="50%" stop-color="#090d16"/>
+      <stop offset="100%" stop-color="#05070c"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.3" r="0.6">
+      <stop offset="0%" stop-color="#1e8cff" stop-opacity="0.25"/>
+      <stop offset="50%" stop-color="#0050c8" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="iconBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e8cff"/>
+      <stop offset="100%" stop-color="#0050c8"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#182234"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+    <filter id="iconGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#1e8cff" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <rect width="1920" height="1080" fill="url(#glow)"/>
+
+  <!-- Top App Icon -->
+  <g transform="translate(960, 150)" filter="url(#iconGlow)">
+    <rect x="-64" y="-64" width="128" height="128" rx="28" fill="url(#iconBg)"/>
+    <!-- Pushpin White Glyph -->
+    <g transform="translate(2, -2) rotate(45) scale(1.4)">
+      <!-- Needle -->
+      <line x1="0" y1="12" x2="0" y2="28" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+      <!-- Pin Head -->
+      <path d="M-10,-18 L10,-18 C11,-18 12,-16 11,-14 L8,-6 C9,-5 12,-2 13,4 L-13,4 C-12,-2 -9,-5 -8,-6 L-11,-14 C-12,-16 -11,-18 -10,-18 Z" fill="#ffffff"/>
+      <circle cx="0" cy="4" r="3" fill="#ffffff"/>
+    </g>
+  </g>
+
+  <!-- Title & Subtitle -->
+  <text x="960" y="270" text-anchor="middle" fill="#ffffff" font-family="Inter, 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif" font-size="78" font-weight="700" letter-spacing="-1.5">LazyPin</text>
+  <text x="960" y="318" text-anchor="middle" fill="#8ea6c8" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="28" font-weight="400">Seamless Native Title-Bar Always-On-Top Utility for Windows</text>
+
+  <!-- Mockup Window (Showing Title-Bar Integration) -->
+  <g transform="translate(385, 370)" filter="url(#shadow)">
+    <!-- Window Body -->
+    <rect width="1150" height="290" rx="14" fill="#151d2c" stroke="#2a3850" stroke-width="1.5"/>
+    <!-- Title Bar -->
+    <path d="M 0,14 Q 0,0 14,0 L 1136,0 Q 1150,0 1150,14 L 1150,52 L 0,52 Z" fill="#1c2638" stroke="#2a3850" stroke-width="1.5"/>
+    <!-- Window App Icon & Title -->
+    <rect x="20" y="17" width="18" height="18" rx="4" fill="#1e8cff"/>
+    <text x="48" y="30" fill="#e8eefc" font-family="'Segoe UI', system-ui, sans-serif" font-size="14" font-weight="500" dominant-baseline="middle">Active Window — Seamless Caption Integration</text>
+
+    <!-- Caption Controls + LazyPin Button -->
+    <g transform="translate(930, 0)">
+      <!-- LazyPin Pin Button (Pinned State) -->
+      <g transform="translate(0, 0)">
+        <rect x="0" y="0" width="55" height="52" fill="#22334e"/>
+        <!-- Pin Glyph (Active / Cyan) -->
+        <g transform="translate(27, 26) rotate(45) scale(0.75)">
+          <line x1="0" y1="8" x2="0" y2="18" stroke="#60cdff" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M-7,-12 L7,-12 C8,-12 8.5,-10.5 8,-9 L5,-4 C6,-3 8,-1 9,3 L-9,3 C-8,-1 -6,-3 -5,-4 L-8,-9 C-8.5,-10.5 -8,-12 -7,-12 Z" fill="#60cdff"/>
+        </g>
+        <!-- Highlight indicator line -->
+        <rect x="14" y="49" width="27" height="3" rx="1.5" fill="#60cdff"/>
+      </g>
+
+      <!-- Minimize Button -->
+      <g transform="translate(55, 0)">
+        <rect x="0" y="0" width="55" height="52" fill="transparent"/>
+        <line x1="22" y1="26" x2="33" y2="26" stroke="#9bb1cf" stroke-width="1.2"/>
+      </g>
+      <!-- Maximize Button -->
+      <g transform="translate(110, 0)">
+        <rect x="0" y="0" width="55" height="52" fill="transparent"/>
+        <rect x="22" y="21" width="11" height="11" rx="1.5" fill="none" stroke="#9bb1cf" stroke-width="1.2"/>
+      </g>
+      <!-- Close Button -->
+      <g transform="translate(165, 0)">
+        <rect x="0" y="0" width="55" height="52" fill="transparent"/>
+        <line x1="23" y1="21" x2="32" y2="30" stroke="#9bb1cf" stroke-width="1.2"/>
+        <line x1="32" y1="21" x2="23" y2="30" stroke="#9bb1cf" stroke-width="1.2"/>
+      </g>
+    </g>
+
+    <!-- Inside Content Area -->
+    <g transform="translate(40, 85)">
+      <!-- Status Badge -->
+      <rect x="0" y="0" width="180" height="34" rx="17" fill="rgba(96, 205, 255, 0.12)" stroke="#60cdff" stroke-width="1"/>
+      <circle cx="18" cy="17" r="5" fill="#60cdff"/>
+      <text x="32" y="18" fill="#60cdff" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="600" dominant-baseline="middle">Always On Top Active</text>
+
+      <text x="0" y="70" fill="#ffffff" font-family="'Segoe UI', system-ui, sans-serif" font-size="22" font-weight="600">Pinned window stays locked in the foreground</text>
+      <text x="0" y="105" fill="#8ea6c8" font-family="'Segoe UI', system-ui, sans-serif" font-size="16">Tracked at 60+ FPS via EVENT_OBJECT_LOCATIONCHANGE with zero frame jitter and zero latency.</text>
+
+      <!-- Mini stats strip -->
+      <g transform="translate(0, 135)">
+        <rect x="0" y="0" width="1070" height="46" rx="8" fill="#1b2537"/>
+        <text x="24" y="24" fill="#a0b5d5" font-family="'Segoe UI', system-ui, sans-serif" font-size="14" dominant-baseline="middle">Architecture: <tspan fill="#ffffff" font-weight="600">Win32 Interop (C#)</tspan></text>
+        <text x="340" y="24" fill="#a0b5d5" font-family="'Segoe UI', system-ui, sans-serif" font-size="14" dominant-baseline="middle">Hit Testing: <tspan fill="#ffffff" font-weight="600">DWM + WM_NCHITTEST</tspan></text>
+        <text x="730" y="24" fill="#a0b5d5" font-family="'Segoe UI', system-ui, sans-serif" font-size="14" dominant-baseline="middle">Footprint: <tspan fill="#60cdff" font-weight="600">~15 MB RAM · 0% Idle CPU</tspan></text>
+      </g>
+    </g>
+  </g>
+
+  <!-- 3 Feature Highlight Bento Cards -->
+  <g transform="translate(240, 715)">
+    <!-- Card 1 -->
+    <rect x="0" y="0" width="450" height="195" rx="16" fill="url(#cardGrad)" stroke="#223048" stroke-width="1.5"/>
+    <rect x="24" y="24" width="46" height="46" rx="12" fill="#1e8cff" fill-opacity="0.15"/>
+    <path d="M47,38 L47,56 M41,44 L53,44" stroke="#60cdff" stroke-width="2.5" stroke-linecap="round"/>
+    <text x="82" y="42" fill="#ffffff" font-family="'Segoe UI', system-ui, sans-serif" font-size="20" font-weight="600">Single-Click Pin Toggle</text>
+    <text x="82" y="65" fill="#60cdff" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="500">Instant Always-On-Top</text>
+    <text x="24" y="105" fill="#8ea6c8" font-family="'Segoe UI', system-ui, sans-serif" font-size="15">
+      <tspan x="24" dy="0">Docks directly beside window controls.</tspan>
+      <tspan x="24" dy="24">Locks any active app window to topmost</tspan>
+      <tspan x="24" dy="24">z-order with zero keyboard shortcut friction.</tspan>
+    </text>
+
+    <!-- Card 2 -->
+    <g transform="translate(495, 0)">
+      <rect x="0" y="0" width="450" height="195" rx="16" fill="url(#cardGrad)" stroke="#223048" stroke-width="1.5"/>
+      <rect x="24" y="24" width="46" height="46" rx="12" fill="#1e8cff" fill-opacity="0.15"/>
+      <rect x="36" y="37" width="22" height="20" rx="3" fill="none" stroke="#60cdff" stroke-width="2.2"/>
+      <line x1="36" y1="44" x2="58" y2="44" stroke="#60cdff" stroke-width="1.8"/>
+      <text x="82" y="42" fill="#ffffff" font-family="'Segoe UI', system-ui, sans-serif" font-size="20" font-weight="600">Dynamic App Adaptation</text>
+      <text x="82" y="65" fill="#60cdff" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="500">Chrome, Edge &amp; Native Apps</text>
+      <text x="24" y="105" fill="#8ea6c8" font-family="'Segoe UI', system-ui, sans-serif" font-size="15">
+        <tspan x="24" dy="0">Detects custom caption button metrics</tspan>
+        <tspan x="24" dy="24">and client tabs via DWM &amp; NCHITTEST</tspan>
+        <tspan x="24" dy="24">so it never collides with existing buttons.</tspan>
+      </text>
+    </g>
+
+    <!-- Card 3 -->
+    <g transform="translate(990, 0)">
+      <rect x="0" y="0" width="450" height="195" rx="16" fill="url(#cardGrad)" stroke="#223048" stroke-width="1.5"/>
+      <rect x="24" y="24" width="46" height="46" rx="12" fill="#1e8cff" fill-opacity="0.15"/>
+      <path d="M41,40 L47,35 L53,40 L53,53 L41,53 Z" fill="none" stroke="#60cdff" stroke-width="2.2"/>
+      <text x="82" y="42" fill="#ffffff" font-family="'Segoe UI', system-ui, sans-serif" font-size="20" font-weight="600">Zero-Jitter &amp; Tray Mode</text>
+      <text x="82" y="65" fill="#60cdff" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="500">Process-Scoped WinEvents</text>
+      <text x="24" y="105" fill="#8ea6c8" font-family="'Segoe UI', system-ui, sans-serif" font-size="15">
+        <tspan x="24" dy="0">Hooks only the active process during drag.</tspan>
+        <tspan x="24" dy="24">Auto-hides on fullscreen games and video.</tspan>
+        <tspan x="24" dy="24">Operates silently from the System Tray.</tspan>
+      </text>
+    </g>
+  </g>
+
+  <!-- Footer Info Line -->
+  <text x="960" y="975" text-anchor="middle" fill="#657b9e" font-family="'Segoe UI', system-ui, sans-serif" font-size="18" font-weight="500">
+    Windows 10 &amp; 11 (x64) · Zero Admin Rights Required · 100% Free &amp; Open Source (MIT)
+  </text>
+</svg>

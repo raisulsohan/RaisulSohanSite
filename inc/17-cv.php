@@ -304,7 +304,7 @@ function rs_cv_data( $post_id = 0 ) {
 
 		'stats'      => array(
 			array( 'label' => 'Years in motion', 'value' => '10+' ),
-			array( 'label' => 'Open-source tools', 'value' => '7' ),
+			array( 'label' => 'Open-source tools', 'value' => '8' ),
 			array( 'label' => 'Documentary films', 'value' => '3' ),
 			array( 'label' => 'Organisations served', 'value' => '12' ),
 		),
@@ -312,7 +312,7 @@ function rs_cv_data( $post_id = 0 ) {
 		'highlights' => array(
 			array( 'lead' => '100% on-time delivery', 'text' => 'across Vidiosa client campaigns; a new storyboard-and-feedback workflow cut turnaround by 15%.' ),
 			array( 'lead' => '200K+ organic views', 'text' => 'on campaigns where I directed the creative, with measurable audience engagement.' ),
-			array( 'lead' => '7 free open-source tools', 'text' => 'for Adobe CC, Figma and Chrome, alongside 1,100+ GitHub contributions in the past year.' ),
+			array( 'lead' => '8 free open-source tools', 'text' => 'for Windows, Adobe CC, Figma and Chrome, alongside 1,100+ GitHub contributions in the past year.' ),
 			array( 'lead' => '3 animated documentaries', 'text' => 'written, illustrated, animated and sound-designed for Nomolos and Bichitro Biggan.' ),
 		),
 
@@ -325,7 +325,7 @@ function rs_cv_data( $post_id = 0 ) {
 				'bullets' => array(
 					'Created **Nomolos** ([youtube.com/@nomolosfiles](https://www.youtube.com/@nomolosfiles)); wrote, illustrated, animated and sound-designed **Prohibition** (9:40) and **Cobra Effect** (8:49, 23 scenes).',
 					'Write and animate science stories for **Bichitro Biggan**; created **Consciousness** (4:08) with nine hand-drawn scenes, 3D parallax and volumetric lighting.',
-					'Build and maintain seven free creative tools; built two bilingual PHP / JavaScript WordPress platforms: **bichitrobiggan.com** and **raisulsohan.com**.',
+					'Build and maintain eight free creative and desktop tools; built two bilingual PHP / JavaScript WordPress platforms: **bichitrobiggan.com** and **raisulsohan.com**.',
 				),
 			),
 			array(
@@ -422,6 +422,15 @@ function rs_cv_data( $post_id = 0 ) {
 				'links' => array( array( 'label' => 'LazyRuler', 'url' => '/portfolio/lazyruler/' ) ),
 				'kind' => 'Chrome & Edge extension · Manifest V3',
 				'text' => 'Photoshop-style rulers and guides for arranging browser-page elements.',
+			),
+			array(
+				'name' => 'LazyPin',
+				'links' => array(
+					array( 'label' => 'LazyPin', 'url' => '/portfolio/lazypin/' ),
+					array( 'label' => 'GitHub', 'url' => 'https://github.com/raisulsohan/LazyPin' ),
+				),
+				'kind' => 'Windows 10 & 11 utility · C# & Win32 API',
+				'text' => 'Seamless Always-On-Top pin button directly beside window caption controls.',
 			),
 		),
 

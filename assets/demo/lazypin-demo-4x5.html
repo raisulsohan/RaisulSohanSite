@@ -1,0 +1,462 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>LazyPin Demo 4:5</title>
+<style>
+  :root{--bg:#0a0f1a;--bar:#121826;--fg:#e8eefc;--dim:#8ea6c8;--accent:#60cdff}
+  html,body{margin:0;background:var(--bg);color:var(--fg);height:100vh;font:500 14px "Segoe UI",system-ui,sans-serif}
+  body{display:grid;place-items:center}
+  .player{width:min(100vw,calc((100vh - 100px) * 4 / 5));display:flex;flex-direction:column;background:#000;user-select:none}
+  .player:fullscreen{width:100vw;height:100vh;justify-content:center}
+  .player:fullscreen canvas{max-height:calc(100vh - 100px);object-fit:contain}
+  canvas{display:block;width:100%;height:auto;cursor:pointer}
+  .bar{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--bar);height:40px;box-sizing:content-box}
+  .bar button{all:unset;display:grid;place-items:center;width:32px;height:32px;border-radius:6px;cursor:pointer;color:var(--fg)}
+  .bar button:hover{background:rgba(255,255,255,.1)}
+  .bar button.on{color:var(--accent)}
+  .bar svg{width:18px;height:18px;fill:currentColor}
+  .bar input[type=range]{accent-color:var(--accent);cursor:pointer}
+  #seek{flex:1;min-width:60px}
+  #vol{width:70px}
+  #time{font-variant-numeric:tabular-nums;color:var(--dim);white-space:nowrap;min-width:92px;text-align:center}
+  #frame{font-variant-numeric:tabular-nums;color:var(--dim);white-space:nowrap;min-width:96px;text-align:center;padding:3px 6px;border:1px solid #2c3850;border-radius:6px}
+  .bar select{background:#1c2436;color:var(--fg);border:1px solid #2c3850;border-radius:6px;padding:4px;cursor:pointer}
+  .bar{flex-wrap:wrap;height:auto;row-gap:4px}#seek{order:-1;flex:1 1 100%}
+</style>
+</head>
+<body>
+<div class="player" id="player">
+<canvas id="c" width="1080" height="1350"></canvas>
+<div class="bar" id="bar" hidden>
+  <button id="play" title="Play / Pause (Space, K)"><svg viewBox="0 0 24 24"><path id="playIcon" d="M7 4l13 8-13 8z"/></svg></button>
+  <button id="restart" title="Restart (Home)"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+  <button id="bstep" title="Previous frame (,)"><svg viewBox="0 0 24 24"><path d="M15 5v14L6 12zM17 5h2v14h-2z"/></svg></button>
+  <button id="fstep" title="Next frame (.)"><svg viewBox="0 0 24 24"><path d="M9 5v14l9-7zM5 5h2v14H5z"/></svg></button>
+  <input id="seek" type="range" min="0" max="299" step="1" value="0" title="Seek (← / → = 1 s)">
+  <span id="time">0:00.0 / 0:10.0</span>
+  <span id="frame" title="Frame (current / total)">F 0 / 299</span>
+  <select id="speed" title="Playback speed"><option value=".25">0.25×</option><option value=".5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>
+  <button id="loop" class="on" title="Loop (L)"><svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2zM17 17H7v-3l-4 4 4 4v-3h12v-6h-2z"/></svg></button>
+  <button id="mute" title="Mute (M)"><svg viewBox="0 0 24 24"><path id="muteIcon" d="M3 9v6h4l5 5V4L7 9zM16.5 12A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4z"/></svg></button>
+  <input id="vol" type="range" min="0" max="1" step=".05" value=".9" title="Volume">
+  <button id="fs" title="Fullscreen (F)"><svg viewBox="0 0 24 24"><path d="M5 5h5v2H7v3H5zM14 5h5v5h-2V7h-3zM5 14h2v3h3v2H5zM17 14h2v5h-5v-2h3z"/></svg></button>
+</div>
+</div>
+<script>
+// LazyPin, 10-second product demo, 4:5 (1080x1350): a portrait desktop, video on top, notes dragged up under it. Every pixel is drawn in code; draw(frame) is a pure function of the frame.
+const W = 1080, H = 1350, FPS = 30, DUR = 10, FRAMES = FPS * DUR;
+const cv = document.getElementById('c');
+let ctx = cv.getContext('2d');
+
+// LOOK: Windows 11 dark chrome, the app's own blues (icon gradient + the pinned-glyph #60CDFF), clean flat UI.
+const CHROME = '#202020', HOVER = '#404040', PRESS = '#4f4f4f', ICON = '#f5f5f5', PINNED = '#60cdff',
+      BLUE1 = '#1e8cff', BLUE2 = '#0050c8', NIGHT = '#08101f';
+const FONT = (s, w = 600) => `${w} ${s}px "Segoe UI Variable Display","Segoe UI","Nirmala UI",sans-serif`;
+
+// ---------- math ----------
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => { t = clamp(t); return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+const easeOut = t => 1 - Math.pow(1 - clamp(t), 3);
+const back = t => { t = clamp(t); const c = 1.7; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+function rng(seed) { let a = seed | 0; return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+// keyframed track: [[t, value...], ...] eased between keys
+function track(keys, t) {
+  if (t <= keys[0][0]) return keys[0].slice(1);
+  for (let i = 0; i < keys.length - 1; i++) { const [a, ...va] = keys[i], [b, ...vb] = keys[i + 1];
+    if (t <= b) { const k = ease(prog(t, a, b)); return va.map((v, j) => lerp(v, vb[j], k)); } }
+  return keys[keys.length - 1].slice(1);
+}
+
+// ---------- layout registry (scripts/layout-check.mjs) ----------
+let LAYOUT = [];
+function claim(id, kind, x, y, w, h) {
+  const m = ctx.getTransform(), P = [[x, y], [x + w, y], [x, y + h], [x + w, y + h]].map(([a, c]) => [m.a * a + m.c * c + m.e, m.b * a + m.d * c + m.f]);
+  const xs = P.map(p => p[0]), ys = P.map(p => p[1]); LAYOUT.push({ id, kind, x: Math.min(...xs), y: Math.min(...ys), w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) });
+}
+function withCamera(cam, fn) { ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(cam.k, cam.k); ctx.translate(-cam.cx, -cam.cy); fn(); ctx.restore(); }
+
+// ---------- storyboard ----------
+const BPM = 120, BEAT = 60 / BPM, b = n => n * BEAT;
+const SHOTS = [
+  { id: 'title',  from: 0,    to: b(4),  cam: t => ({ cx: W / 2, cy: H / 2, k: 1 + .04 * prog(t, 0, 2) }) },
+  { id: 'wide',   from: b(4), to: b(6),  cam: t => ({ cx: 540, cy: 660, k: 1.0 + .05 * prog(t, 2, 3) }) },
+  { id: 'close',  from: b(6), to: b(10), cam: t => ({ cx: lerp(775, 785, prog(t, 3, 5)), cy: 330, k: lerp(2.3, 2.5, ease(prog(t, 3, 5))) }) },
+  { id: 'payoff', from: b(10), to: b(16), cam: t => ({ cx: lerp(540, 560, ease(prog(t, 5.5, 8))), cy: lerp(660, 620, ease(prog(t, 5.5, 8))), k: lerp(1.0, 1.06, ease(prog(t, 5.5, 8))) }) },
+  { id: 'end',    from: b(16), to: DUR,  cam: t => ({ cx: W / 2, cy: H / 2, k: 1.03 - .03 * easeOut(prog(t, 8, 9.5)) }) },
+];
+const CLICK_PIN = b(8), CLICK_NOTES = 5.75, DRAG = [6.0, 7.5];
+const EVENTS = [[.15, 'whoosh'], [CLICK_PIN, 'click'], [CLICK_PIN + .03, 'pinned'], [CLICK_NOTES, 'click'], [DRAG[1], 'drop'], [b(16), 'bell']];
+
+// ---------- world (desktop pixels) ----------
+const TB = 44, BW = 58;
+const VID = { x: 300, y: 140, w: 700, h: 470 };
+const NOTES0 = { x: 60, y: 780, w: 780, h: 420 }, NOTES_DX = 60, NOTES_DY = -420;
+const pinBtn = win => ({ x: win.x + win.w - 4 * BW, y: win.y, w: BW, h: TB });
+const notesAt = t => { const k = ease(prog(t, DRAG[0], DRAG[1])); return { ...NOTES0, x: NOTES0.x + NOTES_DX * k, y: NOTES0.y + NOTES_DY * k }; };
+// cursor track (tip position)
+const PB = pinBtn(VID), PIN_C = [PB.x + BW / 2, PB.y + TB / 2 + 2];
+const NOTE_GRAB = [NOTES0.x + 140, NOTES0.y + 22];
+const CURSOR = [
+  [2.0, 520, 1080], [3.05, 700, 270], [3.6, PIN_C[0] - 2, PIN_C[1]], [4.25, PIN_C[0] - 2, PIN_C[1]], [4.8, PIN_C[0] - 40, PIN_C[1] + 60],
+  [5.05, PIN_C[0] - 40, PIN_C[1] + 60], [5.65, ...NOTE_GRAB], [DRAG[0], ...NOTE_GRAB],
+  [DRAG[1], NOTE_GRAB[0] + NOTES_DX, NOTE_GRAB[1] + NOTES_DY], [8, NOTE_GRAB[0] + NOTES_DX + 30, NOTE_GRAB[1] + NOTES_DY + 50],
+];
+
+// wallpaper: Windows 11 style bloom, drawn once
+const wall = document.createElement('canvas'); wall.width = W; wall.height = H;
+(() => {
+  const p = wall.getContext('2d');
+  const g = p.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#0a1a3a'); g.addColorStop(1, '#050b18'); p.fillStyle = g; p.fillRect(0, 0, W, H);
+  const petal = (cx, cy, rx, ry, rot, c0, c1) => { p.save(); p.translate(cx, cy); p.rotate(rot); p.scale(1, ry / rx);
+    const gg = p.createRadialGradient(-rx * .3, 0, 0, 0, 0, rx); gg.addColorStop(0, c0); gg.addColorStop(1, c1);
+    p.fillStyle = gg; p.beginPath(); p.arc(0, 0, rx, 0, 7); p.fill(); p.restore(); };
+  p.globalCompositeOperation = 'lighter';
+  petal(540, 700, 480, 180, -.5, 'rgba(60,140,255,.55)', 'rgba(20,60,160,0)');
+  petal(560, 660, 480, 180, .55, 'rgba(90,170,255,.45)', 'rgba(20,60,160,0)');
+  petal(540, 680, 520, 170, 1.57, 'rgba(70,120,255,.35)', 'rgba(20,60,160,0)');
+  petal(540, 690, 250, 250, 0, 'rgba(150,210,255,.35)', 'rgba(40,90,200,0)');
+  p.globalCompositeOperation = 'source-over';
+  const r = rng(3); for (let i = 0; i < 40000; i++) { p.fillStyle = r() < .5 ? 'rgba(0,0,0,.05)' : 'rgba(255,255,255,.025)'; p.fillRect(r() * W, r() * H, 1.5, 1.5); }
+})();
+
+// pushpin outline (needle pointing left), unit ~ 1 = half width
+function pinPath(p) {
+  p.beginPath();
+  p.moveTo(-0.26, -0.44); p.lineTo(-0.06, -0.44); p.quadraticCurveTo(0.08, -0.44, 0.12, -0.16);
+  p.lineTo(0.44, -0.16); p.quadraticCurveTo(0.5, -0.4, 0.66, -0.42); p.lineTo(0.66, 0.42);
+  p.quadraticCurveTo(0.5, 0.4, 0.44, 0.16); p.lineTo(0.12, 0.16); p.quadraticCurveTo(0.08, 0.44, -0.06, 0.44);
+  p.lineTo(-0.26, 0.44); p.quadraticCurveTo(-0.42, 0, -0.26, -0.44); p.closePath();
+}
+function drawPin(x, y, s, o = {}) {
+  const { col = ICON, filled = false, lw = .085, rot = -Math.PI / 4 } = o;
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(s, s);
+  ctx.lineJoin = ctx.lineCap = 'round'; ctx.strokeStyle = ctx.fillStyle = col; ctx.lineWidth = lw;
+  pinPath(ctx); filled ? (ctx.fill(), ctx.stroke()) : ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-0.34, 0); ctx.lineTo(-0.92, 0); ctx.stroke();
+  ctx.restore();
+}
+function appIcon(x, y, s, glow = 0) {      // the LazyPin.ico, redrawn
+  ctx.save();
+  if (glow) { ctx.shadowColor = `rgba(40,140,255,${.55 * glow})`; ctx.shadowBlur = s * .5; }
+  const g = ctx.createLinearGradient(x - s / 2, y - s / 2, x + s / 2, y + s / 2); g.addColorStop(0, BLUE1); g.addColorStop(1, BLUE2);
+  ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(x - s / 2, y - s / 2, s, s, s * .14); ctx.fill(); ctx.restore();
+  drawPin(x + s * .02, y, s * .4, { rot: 0, lw: .075, col: '#fff' });
+}
+
+function cursor(x, y, pressed) {
+  const s = pressed ? 1.15 : 1.25;
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 19); ctx.lineTo(4.6, 14.6); ctx.lineTo(7.8, 21.6); ctx.lineTo(10.8, 20.3); ctx.lineTo(7.7, 13.4); ctx.lineTo(13.6, 13.4); ctx.closePath();
+  ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
+  ctx.fillStyle = '#fff'; ctx.fill(); ctx.shadowColor = 'transparent';
+  ctx.lineWidth = 1.3; ctx.lineJoin = 'round'; ctx.strokeStyle = '#111'; ctx.stroke(); ctx.restore();
+}
+function clickRing(x, y, t, t0) {
+  const k = prog(t, t0, t0 + .45); if (k <= 0 || k >= 1) return;
+  ctx.save(); ctx.strokeStyle = `rgba(255,255,255,${.7 * (1 - k)})`; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.arc(x, y, 6 + 26 * easeOut(k), 0, 7); ctx.stroke(); ctx.restore();
+}
+
+function captionGlyphs(win, active) {    // minimize, maximize, close
+  const y = win.y + TB / 2, x0 = win.x + win.w - 3 * BW;
+  ctx.save(); ctx.strokeStyle = active ? ICON : '#7d7d7d'; ctx.lineWidth = 1.1; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x0 + BW / 2 - 5.5, y + .5); ctx.lineTo(x0 + BW / 2 + 5.5, y + .5); ctx.stroke();
+  ctx.beginPath(); ctx.roundRect(x0 + BW * 1.5 - 5.5, y - 5.5, 11, 11, 1.5); ctx.stroke();
+  const cx = x0 + BW * 2.5; ctx.beginPath(); ctx.moveTo(cx - 5.5, y - 5.5); ctx.lineTo(cx + 5.5, y + 5.5); ctx.moveTo(cx + 5.5, y - 5.5); ctx.lineTo(cx - 5.5, y + 5.5); ctx.stroke();
+  ctx.restore();
+}
+function windowFrame(win, title, active, iconCol, body) {
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = active ? 60 : 36; ctx.shadowOffsetY = active ? 18 : 10;
+  ctx.fillStyle = CHROME; ctx.beginPath(); ctx.roundRect(win.x, win.y, win.w, win.h, 9); ctx.fill(); ctx.restore();
+  ctx.save(); ctx.beginPath(); ctx.roundRect(win.x, win.y, win.w, win.h, 9); ctx.clip();
+  body();
+  ctx.fillStyle = CHROME; ctx.fillRect(win.x, win.y, win.w, TB);
+  ctx.restore();
+  ctx.save(); ctx.strokeStyle = active ? 'rgba(255,255,255,.16)' : 'rgba(255,255,255,.08)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.roundRect(win.x + .5, win.y + .5, win.w - 1, win.h - 1, 9); ctx.stroke(); ctx.restore();
+  ctx.fillStyle = iconCol; ctx.beginPath(); ctx.roundRect(win.x + 16, win.y + TB / 2 - 8, 16, 16, 3); ctx.fill();
+  ctx.font = FONT(15, 400); ctx.fillStyle = active ? ICON : '#8a8a8a'; ctx.textBaseline = 'middle'; ctx.fillText(title, win.x + 44, win.y + TB / 2 + 1);
+  captionGlyphs(win, active);
+}
+
+function videoBody(t) {
+  const x = VID.x, y = VID.y + TB, w = VID.w, h = VID.h - TB;
+  const sky = ctx.createLinearGradient(0, y, 0, y + h); sky.addColorStop(0, '#ff9a62'); sky.addColorStop(.55, '#ffcf8a'); sky.addColorStop(1, '#ffe6b8');
+  ctx.fillStyle = sky; ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = '#fff4d6'; ctx.beginPath(); ctx.arc(x + w * .64, y + h * .48, 52, 0, 7); ctx.fill();
+  const hills = [['#e2735a', .58, 70, .9, 0], ['#b8505a', .7, 55, 1.5, 2], ['#6b3557', .82, 40, 2.4, 5]];
+  for (const [c, base, amp, sp, ph] of hills) {
+    ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(x, y + h);
+    for (let i = 0; i <= 40; i++) { const u = i / 40, X = x + u * w; ctx.lineTo(X, y + h * base - amp * (.5 + .5 * Math.sin(u * 5 + ph + t * sp * .35)) * (.6 + .4 * Math.sin(u * 2.3 + ph))); }
+    ctx.lineTo(x + w, y + h); ctx.fill();
+  }
+  // player bar
+  const by = y + h - 46; ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(x, by, w, 46);
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(x + 22, by + 14); ctx.lineTo(x + 22, by + 32); ctx.lineTo(x + 36, by + 23); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.3)'; ctx.fillRect(x + 56, by + 21, w - 170, 4);
+  const pr = .18 + t * .022; ctx.fillStyle = '#ff5a5a'; ctx.fillRect(x + 56, by + 21, (w - 170) * pr, 4);
+  ctx.beginPath(); ctx.arc(x + 56 + (w - 170) * pr, by + 23, 6, 0, 7); ctx.fill();
+  ctx.font = FONT(14, 500); ctx.fillStyle = '#fff'; ctx.textBaseline = 'middle';
+  const sec = 754 + Math.floor(t); ctx.fillText(`${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`, x + w - 100, by + 23);
+}
+const NOTE_LINES = ['Lecture 4 - Notes', '', '- Window pinned: video stays on top', '- Keep writing, no Alt+Tab', '- Drag anything, it never hides'];
+function notesBody(t, win) {
+  const x = win.x, y = win.y + TB;
+  ctx.fillStyle = '#272727'; ctx.fillRect(x, y, win.w, win.h - TB);
+  ctx.fillStyle = '#202020'; ctx.fillRect(x, y, win.w, 36);
+  ctx.font = FONT(14, 400); ctx.fillStyle = '#cfcfcf'; ctx.textBaseline = 'middle';
+  ['File', 'Edit', 'View'].forEach((s, i) => ctx.fillText(s, x + 20 + i * 58, y + 18));
+  // text types on over the whole film
+  const total = NOTE_LINES.join('\n').length, shown = Math.floor(total * clamp(.38 + (t - 2) * .07, 0, 1));
+  ctx.font = '400 19px "Cascadia Mono", Consolas, monospace'; ctx.fillStyle = '#e8e8e8';
+  let n = shown, ly = y + 72, lastX = x + 26;
+  for (const l of NOTE_LINES) { const s = l.slice(0, Math.max(0, n)); ctx.fillText(s, x + 26, ly); lastX = x + 26 + ctx.measureText(s).width; n -= l.length + 1; if (n < 0) break; ly += 34; }
+  if (Math.floor(t * 2) % 2 === 0) { ctx.fillStyle = '#e8e8e8'; ctx.fillRect(lastX + 2, ly - 12, 2, 24); }
+}
+
+function taskbar(t) {
+  ctx.fillStyle = 'rgba(24,26,32,.92)'; ctx.fillRect(0, H - 52, W, 52);
+  ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.fillRect(0, H - 52, W, 1);
+  const icons = ['#3b9cff', '#9aa4b2', '#f2c14e', '#e85d4a', '#2fb67c'], x0 = W / 2 - icons.length * 26;
+  icons.forEach((c, i) => { const cx = x0 + i * 52 + 26, cy = H - 26;
+    if (i === 0) { ctx.fillStyle = c; for (const [dx, dy] of [[-9, -9], [1, -9], [-9, 1], [1, 1]]) ctx.fillRect(cx + dx, cy + dy, 8, 8); }
+    else { ctx.fillStyle = c; ctx.beginPath(); ctx.roundRect(cx - 11, cy - 11, 22, 22, 5); ctx.fill(); } });
+  // tray: LazyPin lives here
+  drawPin(W - 196, H - 26, 10, { rot: 0, lw: .14, col: '#dfe7f5' });
+  ctx.font = FONT(14, 400); ctx.fillStyle = '#e6e6e6'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  ctx.fillText('10:24 AM', W - 24, H - 34); ctx.fillText('10/7/2026', W - 24, H - 16); ctx.textAlign = 'left';
+}
+
+// LazyPin's overlay button, drawn on the foreground window's title bar
+function pinOverlay(t, win, pinned, hoverK, pressed) {
+  const p = pinBtn(win);
+  ctx.fillStyle = pressed ? PRESS : hoverK > 0 ? `rgb(${Math.round(lerp(32, 64, hoverK))},${Math.round(lerp(32, 64, hoverK))},${Math.round(lerp(32, 64, hoverK))})` : CHROME;
+  ctx.fillRect(p.x, p.y + 1, p.w, p.h - 1);
+  const pk = pinned ? easeOut(prog(t, CLICK_PIN, CLICK_PIN + .25)) : 0;
+  const sc = pressed ? .9 : 1 + .25 * Math.sin(Math.PI * pk) * (pinned ? 1 : 0);
+  drawPin(p.x + p.w / 2, p.y + p.h / 2 + 1, 10.5 * sc, { col: pinned ? PINNED : ICON, filled: pinned && pk > .3, lw: .11 });
+  claim('pin-button', 'keep', p.x, p.y, p.w, p.h);
+}
+
+function desktop(t) {
+  ctx.drawImage(wall, 0, 0);
+  const notesActive = t >= CLICK_NOTES, notes = notesAt(t);
+  const pinned = t >= CLICK_PIN;
+  const drawNotes = () => { windowFrame(notes, 'Notes - Notepad', notesActive, '#5fb3f9', () => notesBody(t, notes)); if (notesActive) pinOverlay(t, notes, false, 0, false); };
+  const drawVideo = () => {
+    windowFrame(VID, 'Lecture 4.mp4 - Media Player', !notesActive, '#ff6a5a', () => videoBody(t));
+    if (!notesActive) {
+      const hk = prog(t, 3.5, 3.62), pressed = t >= CLICK_PIN - .07 && t < CLICK_PIN + .05;
+      pinOverlay(t, VID, pinned, t > 4.25 ? 1 - prog(t, 4.3, 4.45) : hk, pressed);
+      if (pinned) {   // ripple: "pinned"
+        const k = prog(t, CLICK_PIN, CLICK_PIN + .6);
+        if (k < 1) { ctx.save(); ctx.strokeStyle = `rgba(96,205,255,${.8 * (1 - k)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(PIN_C[0], PIN_C[1] - 2, 10 + 40 * easeOut(k), 0, 7); ctx.stroke(); ctx.restore(); }
+      }
+    }
+    claim('video-window', 'keep', VID.x, VID.y, VID.w, VID.h);
+  };
+  // the pinned video is topmost: it always draws above the notes window
+  drawNotes(); drawVideo();
+  claim('notes-window', 'keep', notes.x, notes.y, notes.w, notes.h);
+  // tooltip while hovering, before the click
+  const tip = prog(t, 3.72, 3.8) * (1 - prog(t, 3.95, 4.0));
+  if (tip > 0) {
+    ctx.save(); ctx.globalAlpha = tip; ctx.font = FONT(13, 400);
+    const s = 'Keep this window on top', tw = ctx.measureText(s).width + 20, tx = PIN_C[0] - 30, ty = VID.y + TB + 14;
+    ctx.fillStyle = '#2b2b2b'; ctx.strokeStyle = 'rgba(255,255,255,.15)'; ctx.beginPath(); ctx.roundRect(tx, ty, tw, 28, 5); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#eee'; ctx.textBaseline = 'middle'; ctx.fillText(s, tx + 10, ty + 14.5); ctx.restore();
+    claim('tooltip', 'text', tx, ty, tw, 28);
+  }
+  taskbar(t);
+  // cursor on top of everything
+  if (t >= 2) {
+    const [cx, cy] = track(CURSOR, t);
+    const pressed = (t >= CLICK_PIN - .07 && t < CLICK_PIN + .05) || (t >= CLICK_NOTES - .05 && t < DRAG[1]);
+    clickRing(cx, cy, t, CLICK_PIN); clickRing(cx, cy, t, CLICK_NOTES);
+    cursor(cx, cy, pressed);
+  }
+}
+
+// ---------- screen-space pieces ----------
+function caption(text, num, t, t0, t1, cy = 900) {
+  const a = prog(t, t0, t0 + .3) * (1 - prog(t, t1 - .2, t1)); if (a <= 0) return;
+  ctx.save(); ctx.globalAlpha = a; ctx.font = FONT(40, 600);
+  const tw = ctx.measureText(text).width, nw = 52, w = tw + nw + 64, h = 76, x = W / 2 - w / 2, y = cy + 14 * (1 - easeOut(prog(t, t0, t0 + .35)));
+  ctx.shadowColor = 'rgba(0,0,0,.4)'; ctx.shadowBlur = 24; ctx.fillStyle = 'rgba(14,18,28,.88)'; ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.fill(); ctx.shadowColor = 'transparent';
+  ctx.fillStyle = PINNED; ctx.beginPath(); ctx.arc(x + 14 + nw / 2, y + h / 2, nw / 2, 0, 7); ctx.fill();
+  ctx.fillStyle = NIGHT; ctx.font = FONT(30, 700); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(num, x + 14 + nw / 2, y + h / 2 + 2);
+  ctx.fillStyle = '#fff'; ctx.font = FONT(40, 600); ctx.textAlign = 'left'; ctx.fillText(text, x + nw + 34, y + h / 2 + 3);
+  ctx.restore(); claim('caption', 'text', x, y, w, h);
+}
+function card(t, mode) {
+  const g = ctx.createRadialGradient(W / 2, H * .42, 0, W / 2, H * .42, W * .7); g.addColorStop(0, '#0f2a5c'); g.addColorStop(1, NIGHT);
+  ctx.fillStyle = g; ctx.fillRect(-200, -200, W + 400, H + 400);
+  // soft drifting light
+  for (let i = 0; i < 3; i++) { const x = W / 2 + Math.sin(t * .6 + i * 2.1) * 420, y = H * .45 + Math.cos(t * .5 + i) * 160;
+    const gg = ctx.createRadialGradient(x, y, 0, x, y, 380); gg.addColorStop(0, 'rgba(40,130,255,.12)'); gg.addColorStop(1, 'rgba(40,130,255,0)'); ctx.fillStyle = gg; ctx.fillRect(x - 380, y - 380, 760, 760); }
+  const t0 = mode === 'title' ? .1 : 8.0;
+  const pi = back(prog(t, t0, t0 + .55)), y = H * .37 - 60 * (1 - pi);
+  ctx.save(); ctx.globalAlpha = clamp(prog(t, t0, t0 + .25)); ctx.translate(W / 2, y); ctx.scale(lerp(.6, 1, pi), lerp(.6, 1, pi)); ctx.rotate(-.25 * (1 - pi));
+  appIcon(0, 0, 200, 1); ctx.restore(); claim('app-icon', 'keep', W / 2 - 100, y - 100, 200, 200);
+  const tk = easeOut(prog(t, t0 + .35, t0 + .8));
+  ctx.save(); ctx.globalAlpha = tk; ctx.font = FONT(120, 700); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('LazyPin', W / 2, H * .37 + 190 + 20 * (1 - tk)); ctx.restore(); claim('name', 'text', W / 2 - 240, H * .37 + 125, 480, 130);
+  const sk = easeOut(prog(t, t0 + .7, t0 + 1.1));
+  ctx.save(); ctx.globalAlpha = sk; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  if (mode === 'title') {
+    ctx.font = FONT(46, 500); ctx.fillStyle = '#cfe4ff'; ctx.fillText('Keep any window on top', W / 2, H * .37 + 300);
+    claim('tagline', 'text', W / 2 - 380, H * .37 + 268, 760, 66);
+  } else {
+    ctx.font = FONT(44, 500); ctx.fillStyle = '#cfe4ff'; ctx.fillText('Always on top, in one click', W / 2, H * .37 + 296);
+    claim('tagline', 'text', W / 2 - 330, H * .37 + 264, 660, 64);
+    const lk = easeOut(prog(t, t0 + 1.0, t0 + 1.4)); ctx.globalAlpha = lk;
+    ctx.font = FONT(30, 500); ctx.fillStyle = PINNED; ctx.fillText('github.com/raisulsohan/LazyPin', W / 2, H * .37 + 380);
+    ctx.font = FONT(26, 400); ctx.fillStyle = '#8ea6c8'; ctx.fillText('Windows 10 & 11  ·  Free & open source (MIT)', W / 2, H * .37 + 432);
+    claim('link', 'text', W / 2 - 250, H * .37 + 358, 500, 44); claim('meta', 'text', W / 2 - 300, H * .37 + 412, 600, 40);
+  }
+  ctx.restore();
+}
+
+function draw(frame) {
+  const t = frame / FPS; LAYOUT = [];
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.filter = 'none';
+  ctx.fillStyle = NIGHT; ctx.fillRect(0, 0, W, H);
+  const shot = SHOTS.find(s => t >= s.from && t < s.to) || SHOTS[SHOTS.length - 1];
+  withCamera(shot.cam(t), () => (shot.id === 'title' || shot.id === 'end') ? card(t, shot.id) : desktop(t));
+  if (shot.id === 'wide' || shot.id === 'close') caption('Click the pin button', '1', t, 3.0, 5.0, 1130);
+  if (shot.id === 'payoff') caption('Your video stays on top', '2', t, 6.9, 8.0, 1150);
+  const fo = prog(t, 9.6, 10); if (fo > 0) { ctx.fillStyle = `rgba(8,16,31,${fo})`; ctx.fillRect(0, 0, W, H); }
+  window.LAYOUT = LAYOUT;
+}
+window.draw = draw; window.FRAMES = FRAMES; window.FPS = FPS;
+window.CUES = SHOTS.slice(1).map(s => s.from);
+
+// ---------- soundtrack, written for this film: bright, light tech groove in C, 120 BPM ----------
+window.SCORE = ac => {
+  const T0 = ac.currentTime + (ac instanceof OfflineAudioContext ? 0 : .05);
+  const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+  const comp = ac.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 3; comp.connect(ac.destination);
+  const master = ac.createGain(); master.gain.setValueAtTime(.85, T0); master.gain.setValueAtTime(.85, T0 + 9.2); master.gain.linearRampToValueAtTime(0, T0 + 10); master.connect(comp);
+  const rev = ac.createConvolver(), wet = ac.createGain(); wet.gain.value = .25; rev.connect(wet); wet.connect(master);
+  { const n = Math.round(ac.sampleRate * 1.8), ir = ac.createBuffer(2, n, ac.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); let s = 41 + c; for (let i = 0; i < n; i++) { s = (s * 1103515245 + 12345) & 0x7fffffff; d[i] = (s / 0x7fffffff * 2 - 1) * Math.pow(1 - i / n, 3); } } rev.buffer = ir; }
+  const bus = (g, r = .5) => { const x = ac.createGain(); x.gain.value = g; x.connect(master); const s = ac.createGain(); s.gain.value = r; x.connect(s); s.connect(rev); return x; };
+  const PAD = bus(.16, .8), PL = bus(.17, .6), DR = bus(.5, .1), BS = bus(.32, .05), FX = bus(.42, .6);
+  const noise = (() => { const n = ac.sampleRate, buf = ac.createBuffer(1, n, n), d = buf.getChannelData(0); let s = 9; for (let i = 0; i < n; i++) { s = (s * 1103515245 + 12345) & 0x7fffffff; d[i] = s / 0x7fffffff * 2 - 1; } return buf; })();
+  function tone(out, t, type, f, peak, a, dec, len, f2) {
+    const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + .08);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + a); g.gain.setTargetAtTime(0, t + a + (len || 0), dec);
+    o.connect(g); g.connect(out); o.start(t); o.stop(t + a + (len || 0) + dec * 8);
+  }
+  function hiss(out, t, type, f, q, peak, a, dec, f2) {
+    const s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain(); s.buffer = noise; fl.type = type; fl.frequency.setValueAtTime(f, t); fl.Q.value = q;
+    if (f2) fl.frequency.exponentialRampToValueAtTime(f2, t + a + dec * 2);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + a); g.gain.setTargetAtTime(0, t + a, dec); s.connect(fl); fl.connect(g); g.connect(out); s.start(t); s.stop(t + a + dec * 8);
+  }
+  // one chord per bar: Cmaj7, Am9, Fmaj7, G6, Cmaj7(add9)
+  const CH = [[48, 55, 64, 71], [45, 52, 60, 67], [41, 48, 57, 64], [43, 50, 59, 64], [48, 55, 62, 64, 71]];
+  CH.forEach((c, bar) => {
+    const t = T0 + bar * 2, len = bar === 4 ? 1.2 : 1.7;
+    c.forEach((m, i) => { const pf = ac.createBiquadFilter(); pf.type = 'lowpass'; pf.frequency.value = 1500; pf.connect(PAD);
+      [-6, 6].forEach(dt => { const o = ac.createOscillator(), g = ac.createGain(); o.type = 'sawtooth'; o.frequency.value = hz(m + 12); o.detune.value = dt;
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.11, t + .25); g.gain.setTargetAtTime(0, t + len, .25); o.connect(g); g.connect(pf); o.start(t); o.stop(t + len + 2.5); }); });
+    // arpeggio pluck in 8ths, the motion that carries every cut
+    if (bar < 4) for (let k = 0; k < 8; k++) { const m = c[[0, 1, 2, 3, 2, 1, 2, 3][k]] + 24; tone(PL, t + k * BEAT / 2, 'triangle', hz(m), k % 2 ? .55 : .8, .004, .12); }
+    // bass from bar 3 (6 s), root on 8ths
+    if (bar === 3) for (let k = 0; k < 8; k++) tone(BS, t + k * BEAT / 2, 'sine', hz(c[0] - 12), .9, .005, .1, .05);
+    // hats from bar 1, kick from bar 2: one layer per bar
+    if (bar >= 1 && bar < 4) for (let k = 0; k < 8; k++) hiss(DR, t + k * BEAT / 2, 'highpass', 8000, .7, k % 2 ? .1 : .16, .002, .03);
+    if (bar >= 2 && bar < 4) for (let k = 0; k < 4; k++) tone(DR, t + k * BEAT, 'sine', 140, .75, .003, .09, 0, 48);
+  });
+  // final ring: bell on the end card
+  for (const [tt, name] of EVENTS) {
+    const t = T0 + tt;
+    if (name === 'whoosh') hiss(FX, t, 'bandpass', 500, 1.2, .5, .35, .25, 3500);
+    if (name === 'click') { hiss(FX, t, 'bandpass', 3200, 3, .55, .001, .012); tone(FX, t, 'square', 1800, .05, .001, .01); }
+    if (name === 'pinned') { tone(FX, t, 'sine', hz(88), .3, .003, .25); tone(FX, t + .09, 'sine', hz(95), .3, .003, .35); tone(FX, t + .09, 'triangle', hz(83), .08, .003, .3); }
+    if (name === 'drop') { tone(FX, t, 'sine', 160, .45, .004, .12, 0, 70); hiss(FX, t, 'lowpass', 900, .7, .15, .003, .05); }
+    if (name === 'bell') { [76, 83, 88].forEach((m, i) => tone(FX, t + i * .06, 'sine', hz(m), .16, .004, .7)); }
+  }
+};
+
+// live preview (render.mjs loads the page with ?render)
+// player: play/pause, restart, frame step, seek, time, speed, loop, mute, volume, fullscreen + keyboard
+if (!new URLSearchParams(location.search).has('render')) {
+  const $ = id => document.getElementById(id);
+  $('bar').hidden = false; $('seek').max = FRAMES - 1;
+  const P = { playing: false, base: 0, since: 0, speed: 1, loop: true, muted: false, vol: .9 };
+  let ac = null, gain = null, music = null, src = null;
+  const fmt = s => `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, '0')}`;
+  const now = () => P.playing ? P.base + (performance.now() - P.since) / 1000 * P.speed : P.base;
+
+  async function audio() {   // render the score once, offline, so it can start from any point
+    if (!ac) { ac = new AudioContext(); gain = ac.createGain(); gain.connect(ac.destination); applyVol(); }
+    if (!music) { const off = new OfflineAudioContext(2, Math.ceil(48000 * DUR), 48000); window.SCORE(off); music = await off.startRendering(); }
+    if (ac.state === 'suspended') await ac.resume();
+  }
+  function stopAudio() { if (src) { try { src.stop(); } catch {} src.disconnect(); src = null; } }
+  function startAudio(t) {
+    stopAudio(); if (!music || !P.playing || t >= DUR) return;
+    src = ac.createBufferSource(); src.buffer = music; src.playbackRate.value = P.speed; src.connect(gain); src.start(0, t);
+  }
+  function applyVol() { if (gain) gain.gain.value = P.muted ? 0 : P.vol;
+    $('muteIcon').setAttribute('d', P.muted || P.vol == 0 ? 'M3 9v6h4l5 5V4L7 9zM16 9l5 6M21 9l-5 6' : 'M3 9v6h4l5 5V4L7 9zM16.5 12A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4z');
+    $('mute').classList.toggle('on', P.muted); }
+  function setIcon() { $('playIcon').setAttribute('d', P.playing ? 'M6 4h4v16H6zM14 4h4v16h-4z' : 'M7 4l13 8-13 8z'); }
+
+  async function play() {
+    if (P.playing) return;
+    if (P.base >= DUR - 1 / FPS) P.base = 0;
+    P.playing = true; P.since = performance.now(); setIcon();
+    await audio(); if (!P.playing) return;
+    P.base = now(); P.since = performance.now(); startAudio(P.base);
+  }
+  function pause() { if (!P.playing) return; P.base = now(); P.playing = false; stopAudio(); setIcon(); }
+  function toggle() { P.playing ? pause() : play(); }
+  function seek(t) {
+    P.base = clamp(t, 0, DUR - 1 / FPS); P.since = performance.now();
+    if (P.playing) startAudio(P.base);
+  }
+  function step(n) { pause(); seek((Math.round(P.base * FPS) + n) / FPS); }
+
+  document.querySelectorAll('.bar button').forEach(b => b.addEventListener('click', () => b.blur()));   // Space never double-fires a focused button
+  $('play').onclick = toggle; cv.onclick = toggle;
+  $('restart').onclick = () => seek(0);
+  $('bstep').onclick = () => step(-1); $('fstep').onclick = () => step(1);
+  let wasPlaying = false;
+  $('seek').addEventListener('pointerdown', () => { wasPlaying = P.playing; pause(); });
+  $('seek').addEventListener('input', e => seek(+e.target.value / FPS));
+  $('seek').addEventListener('change', () => { if (wasPlaying) play(); wasPlaying = false; });
+  $('speed').onchange = e => { P.base = now(); P.since = performance.now(); P.speed = +e.target.value; if (P.playing) startAudio(P.base); };
+  $('loop').onclick = () => { P.loop = !P.loop; $('loop').classList.toggle('on', P.loop); };
+  $('mute').onclick = () => { P.muted = !P.muted; applyVol(); };
+  $('vol').oninput = e => { P.vol = +e.target.value; P.muted = false; applyVol(); };
+  $('fs').onclick = () => document.fullscreenElement ? document.exitFullscreen() : $('player').requestFullscreen();
+  addEventListener('keydown', e => {
+    if (e.target.tagName === 'SELECT' || (e.target.type === 'range' && e.key.startsWith('Arrow'))) return;
+    const k = e.key, map = {
+      ' ': toggle, k: toggle, K: toggle, Home: () => seek(0), End: () => seek(DUR),
+      ArrowLeft: () => seek(now() - 1), ArrowRight: () => seek(now() + 1), ',': () => step(-1), '.': () => step(1),
+      m: () => $('mute').click(), M: () => $('mute').click(), l: () => $('loop').click(), L: () => $('loop').click(),
+      f: () => $('fs').click(), F: () => $('fs').click(),
+    };
+    if (map[k]) { e.preventDefault(); map[k](); }
+  });
+
+  const loop = () => {
+    let t = now();
+    if (P.playing && t >= DUR) {
+      if (P.loop) { seek(0); t = 0; } else { P.base = DUR - 1 / FPS; P.playing = false; stopAudio(); setIcon(); t = P.base; }
+    }
+    const f = Math.min(FRAMES - 1, Math.floor(t * FPS + 1e-6));
+    draw(f); $('seek').value = f; $('time').textContent = `${fmt(f / FPS)} / ${fmt(DUR)}`; $('frame').textContent = `F ${f} / ${FRAMES - 1}`;
+    requestAnimationFrame(loop);
+  };
+  loop();
+}
+</script>
+</body>
+</html>

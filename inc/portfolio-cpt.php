@@ -1752,6 +1752,55 @@ function rs_get_default_portfolio_projects() {
 			'github_url'  => 'https://github.com/raisulsohan/Consciousness-animation',
 			'order'       => 5,
 		),
+		array(
+			'id'          => 'lazypin',
+			'category'    => 'tools',
+			'type_bn'     => 'উইন্ডোজ ডেস্কটপ ইউটিলিটি ও সিস্টেম সফটওয়্যার',
+			'type_en'     => 'Windows Desktop Utility & System Tool',
+			'badge_bn'    => 'উইন্ডোজ ১০ ও ১১ • ওপেন সোর্স',
+			'badge_en'    => 'Windows 10 & 11 • Open Source',
+			'title_bn'    => 'LazyPin — যেকোনো উইন্ডো এক ক্লিকে অলওয়েজ-অন-টপ পিন করার নেটিভ উইন্ডোজ টুল',
+			'title_en'    => 'LazyPin — Seamless Native Title-Bar Always-On-Top Pin Utility for Windows',
+			'summary_bn'  => 'উইন্ডোজ ১০ ও ১১-এ যেকোনো অ্যাপ্লিকেশন উইন্ডোর মিনিমাইজ বাটনের ঠিক পাশে একটি নিখুঁত নেটিভ পিন বাটন যুক্ত করে এক ক্লিকে অলওয়েজ-অন-টপ (Always-On-Top) করার হালকা ও অত্যন্ত দ্রুতগতির ডেস্কটপ ইউটিলিটি। উইন্ডো ড্র্যাগ ও রিসাইজ ট্র্যাকিংয়ে জিরো-জিটার পারফরম্যান্স, ক্রোমিয়াম ও আধুনিক অ্যাপের জন্য স্মার্ট ক্যাপশন অ্যাডাপ্টেশন এবং ফুলস্ক্রিন অটো-হাইড সুবিধা।',
+			'summary_en'  => 'A lightweight, zero-latency Windows 10 & 11 desktop utility that docks a native-looking Always-On-Top pin button directly beside window caption controls (minimize/maximize/close) on any active window. Engineered with Win32 C# interop, process-scoped WinEvent hooks for zero-jitter 60 FPS tracking, dynamic DWM & WM_NCHITTEST caption hit-testing, and automatic full-screen detection.',
+			'role_bn'     => 'একক সফটওয়্যার আর্কিটেক্ট ও সিস্টেম ডেভেলপার',
+			'role_en'     => 'Solo Software Architect & Systems Developer',
+			'context_bn'  => 'উইন্ডোজ ১০ ও ১১ ডেস্কটপ অ্যাপ • C# / Win32 API • v1.0.3',
+			'context_en'  => 'Windows 10 & 11 Desktop Utility • C# / Win32 API • v1.0.3',
+			'challenge_bn'=> "মাল্টিটাস্কিংয়ের সময় প্রোগ্রামার, ভিডিও এডিটর, গবেষক বা শিক্ষার্থীদের প্রায়শই কোনো রেফারেন্স উইন্ডো—যেমন ক্যালকুলেটর, ভিডিও টিউটোরিয়াল, চিটশিট, ডকুমেন্টেশন বা চ্যাট অ্যাপ—মূল কাজের উইন্ডোর ওপর সার্বক্ষণিক দৃশ্যমান (Always-on-Top) রাখতে হয়। মাইক্রোসফট পাওয়ারটয়স (PowerToys)-এর মতো প্রচলিত টুলগুলোতে কীবোর্ড শর্টকাট (Win+Ctrl+T) মুখস্থ রাখতে হয়, যা কাজের স্বাভাবিক ছন্দ ভেঙে দেয় এবং উইন্ডোর ওপর কোনো স্পষ্ট ভিজ্যুয়াল অ্যাফর্ডেন্স থাকে না। তাছাড়া অন্যান্য পুরনো পিন ইউটিলিটিগুলো ভারী ব্যাকগ্রাউন্ড প্রসেস চালায়, অ্যাডমিন পারমিশন চায় কিংবা উইন্ডো নাড়াচাড়া করার সময় বাটন আলাদা হয়ে মারাত্মক জিটার (Jitter) তৈরি করে।\n\nপ্রধান কারিগরি চ্যালেঞ্জসমূহ:\n১. জিরো-জিটার রিয়েল-টাইম উইন্ডো ট্র্যাকিং: ব্যবহারকারী যখন মাউস দিয়ে দ্রুত গতিতে উইন্ডো সরান (Drag) বা উইন্ডোজ স্ন্যাপ (Snap) করেন, তখন পিন বাটনটিকে টাইটেল বারের মিনিমাইজ বাটনের পাশে ৬০+ FPS ফ্রেম-রেটে নিখুঁতভাবে আটকে রাখা। গ্লোবাল সিস্টেম-ওয়াইড হুক ব্যবহার করলে মেসেজ পাম্পে চাপ পড়ে পুরো ওএস ল্যাগ করত; তাই ট্র্যাকিং হুকটিকে কেবল নির্দিষ্ট সক্রিয় প্রসেসে সীমাবদ্ধ রাখা ছিল অপরিহার্য।\n২. নন-স্ট্যান্ডার্ড ও কাস্টম ক্যাপশন বার শনাক্তকরণ: গুগল ক্রোম, মাইক্রোসফট এজ, ব্র্যাভ কিংবা ইলেকট্রন অ্যাপগুলো (যেমন Claude Desktop, VS Code, Spotify) সাধারণ উইন্ডোজ টাইটেল বার ব্যবহার না করে টাইটেল বারের ভেতরেই ক্লায়েন্ট ট্যাব আঁকে। ফলে ফিক্সড অফসেট বসালে পিন বাটন ইউজারের ট্যাবের ওপর চেপে বসত। DWM API ও নন-ক্লায়েন্ট হিট-টেস্টিং (WM_NCHITTEST) ব্যবহার করে লাইভ ক্যাপশন বাটন মেকানিক্স মাপা এবং হ্যাং হওয়া উইন্ডোতে মূল থ্রেড যাতে ফ্রিজ না হয় তা নিশ্চিত করা ছিল বড় চ্যালেঞ্জ।\n৩. নন-ইন্ট্রুসিভ এক্সিকিউশন ও ফুলস্ক্রিন ইন্টেলিজেন্স: পিন করার সময় কীবোর্ড ফোকাস না হারানো, গেম বা ফুলস্ক্রিন ভিডিও প্লেব্যাকে স্বয়ংক্রিয়ভাবে লুকিয়ে যাওয়া এবং কোনো অ্যাডমিন প্রিভিলেজ (UAC) ছাড়া ব্যবহারকারীর লোকাল ডিরেক্টরিতে নীরবে চলা।",
+			'challenge_en'=> "Multitasking developers, video editors, designers, and students routinely need secondary reference windows—such as video tutorials, calculators, sticky notes, terminal logs, or API documentation—to remain anchored on top of primary workspace applications. Conventional solutions like Microsoft PowerToys rely on arbitrary keyboard shortcuts (Win+Ctrl+T) that disrupt creative flow and provide zero visual feedback on the window frame. Other third-party utilities suffer from heavy background overhead, require elevated administrative rights, or produce noticeable latency and visual jitter where the pin button lags behind the window during dragging.\n\nCore Technical Challenges:\n1. Zero-Jitter Real-Time Window Tracking: Maintaining an overlay button anchored beside the minimize button at 60+ FPS without visual drift or separation during aggressive window dragging or Aero Snap resizing. System-wide WinEvent hooks flood the message pump; the tracking hook had to be strictly scoped to the active window's thread process ID.\n2. Dynamic Custom Caption Bar Hit-Testing: Modern web browsers (Chrome, Edge, Brave) and Electron applications (Claude Desktop, VS Code, Spotify) draw custom interactive tabs across the title bar rather than standard Win32 non-client areas. Static pixel coordinates collide with tabs. The utility required a non-blocking hit-testing heuristic using DWM APIs and WM_NCHITTEST with strict timeout fallbacks to prevent freezing on hung processes.\n3. Non-Intrusive Z-Order & Fullscreen Intelligence: Accurately toggling HWND_TOPMOST without stealing keyboard focus, keeping the pin button overlay promoted only when needed, auto-hiding during borderless full-screen games and media playback, and operating quietly from the System Tray with zero administrative privileges required.",
+			'solution_bn' => "১. প্রসেস-স্কোপ্ড উইনইভেন্ট হুক আর্কিটেকচার: গ্লোবাল হুকের বদলে সক্রিয় উইন্ডোর সুনির্দিষ্ট প্রসেস আইডিতে (PID) SetWinEventHook(EVENT_OBJECT_LOCATIONCHANGE) ব্যবহার করা হয়েছে। উইন্ডো নাড়াচাড়ার সাথে সাথে এটি ব্যাকগ্রাউন্ড লুপ ছাড়াই তাৎক্ষণিক কোঅর্ডিনেট আপডেট করে, যার ফলে ০% আইডল সিপিইউ ব্যবহারে ১ পিক্সেলও বিচ্যুতির ঝুঁকি ছাড়া ৬০+ FPS গতিতে জিরো-জিটার ট্র্যাকিং পাওয়া যায়।\n\n২. ডায়নামিক DWM ও WM_NCHITTEST ক্যাপশন হিউরিস্টিক: DwmGetWindowAttribute (DWMWA_CAPTION_BUTTON_BOUNDS) এবং SendMessageTimeout-এর সমন্বয়ে নন-ব্লকিং হিট-টেস্ট ইঞ্জিন তৈরি করা হয়েছে। কোনো অ্যাপ যদি রেসপন্ড না করে (IsHungAppWindow), তবে টাইমআউট প্রটেকশন থাকায় মূল থ্রেড কখনো আটকে থাকে না। ফলে ক্রোম, এজ, নোটপ্যাড কিংবা ফাইল এক্সপ্লোরার—সব অ্যাপের মিনিমাইজ বাটনের বামে নিরাপদ ফাঁকা জায়গা স্বয়ংক্রিয়ভাবে শনাক্ত হয়।\n\n৩. সিঙ্গেল-ক্লিক পিন ও অ্যাকসেন্ট স্টেট ভিজ্যুয়ালাইজেশন: পিন বাটনে ক্লিক করলেই SetWindowPos(HWND_TOPMOST) দিয়ে সক্রিয় উইন্ডোটি অলওয়েজ-অন-টপ হিসেবে লক হয় এবং বাটনে সিগনেচার অ্যাকসেন্ট কালার (#60CDFF) হাইলাইট ফুটে ওঠে। পুনরায় ক্লিক করলে উইন্ডো সাধারণ z-order-এ ফিরে আসে।\n\n৪. ফুলস্ক্রিন ও মনিটর ইন্টেলিজেন্স: CoversMonitor অ্যালগরিদম দিয়ে সক্রিয় উইন্ডোটি কোনো মনিটরের ফুলস্ক্রিন গেম, ইউটিউব/মিডিয়া প্লেয়ার কিংবা F11 ব্রাউজার ভিউতে আছে কিনা যাচাই করে স্বয়ংক্রিয়ভাবে পিন বাটন লুকিয়ে রাখা হয় যাতে কোনো ফুলস্ক্রিন কনটেন্টে ব্যাঘাত না ঘটে।\n\n৫. ডিপিআই-অ্যাওয়ার স্কেলিং ও থিম হারমনি: GetDpiForWindow ব্যবহার করে ১০০%, ১২৫%, ১৫০%, ২০০% যেকোনো মনিটর ডিপিআই স্কেলিংয়ে বাটনের সাইজ, প্যাডিং ও আইকন নিখুঁতভাবে সমন্বয় করা হয়। উইন্ডোজ ডার্ক ও লাইট থিমের সাথে মিলিয়ে ক্যাপশন কালার এডাপ্ট করে।\n\n৬. সিস্টেম ট্রে ও জিরো-অ্যাডমিন ইনস্টলার: টাস্কবারে জঞ্জাল না করে সিস্টেম ট্রেতে নিঃশব্দে চলে (মাত্র ~১৫ এমবি র‍্যাম ব্যবহার)। Inno Setup দিয়ে প্রস্তুতকৃত ইনস্টলার ব্যবহারকারীর লোকাল ডিরেক্টরিতে (%LOCALAPPDATA%\\Programs\\LazyPin) ইনস্টল হয়, ফলে কোনো UAC অ্যাডমিন পারমিশন ছাড়াই উইন্ডোজ সাইন-ইন অটোস্টার্ট সহ সম্পূর্ণ নিরাপদে কাজ করে।",
+			'solution_en' => "1. Process-Scoped WinEvent Hook Architecture: Scopes SetWinEventHook(EVENT_OBJECT_LOCATIONCHANGE) exclusively to the thread process ID of the active target window. By eliminating global system-wide message flooding, the overlay moves in lockstep with window dragging at 60+ FPS with zero button jitter and 0% idle CPU overhead.\n\n2. Dynamic DWM & WM_NCHITTEST Caption Hit-Testing: Combines DwmGetWindowAttribute with non-blocking SendMessageTimeout hit-testing across title-bar coordinates. Detects custom caption controls and tab strips across Chrome, Edge, Brave, and Electron apps, with IsHungAppWindow protection preventing locks on unresponsive processes.\n\n3. Single-Click Always-On-Top Toggle & Z-Order Management: Uses native Win32 SetWindowPos with HWND_TOPMOST and HWND_NOTOPMOST flags to pin and unpin target windows instantly. Visual state transitions immediately to a vibrant cyan accent (#60CDFF) upon pinning.\n\n4. Fullscreen Intelligence & Auto-Hide: Implements CoversMonitor to evaluate whether active windows occupy full monitor bounds (such as borderless games, media players, or F11 browser views), automatically hiding the overlay to preserve immersive experiences.\n\n5. Per-Monitor DPI-Aware Scaling & Windows Theme Adaptation: Dynamically queries GetDpiForWindow to scale button dimensions, padding, and icons precisely across mixed-DPI multi-monitor setups (100%–250%), harmonizing with Windows 10 & 11 dark and light title bars.\n\n6. Silent System Tray Operation & Zero-UAC Installation: Runs unobtrusively in the Windows notification area with startup toggle controls, consuming ~15 MB RAM. Ships with an Inno Setup installer that targets per-user AppData directories, requiring zero administrator elevation.",
+			'highlights_bn'=> array(
+				'উইন্ডোজ ১০ ও ১১-এ যেকোনো সক্রিয় অ্যাপ উইন্ডো এক ক্লিকে অলওয়েজ-অন-টপ করার সুবিধা',
+				'মিনিমাইজ বাটনের ঠিক পাশে নেটিভ স্টাইলের ক্যাপশন বাটন ইন্টিগ্রেশন',
+				'উইন্ডো ড্র্যাগ ও রিসাইজ করার সময় জিরো-জিটার ও ফ্রেম-পারফেক্ট লোকেশন ট্র্যাকিং',
+				'DWM ও NCHITTEST অ্যালগরিদম দিয়ে ক্রোম, এজ ও কাস্টম টাইটেল-বার অটো-ডিটেকশন',
+				'ফুলস্ক্রিন গেমস, মিডিয়া প্লেয়ার ও F11 ব্রাউজারে স্বয়ংক্রিয়ভাবে বাটন হাইড হওয়া',
+				'সিস্টেম ট্রে ইন্টিগ্রেশন — ব্যাকগ্রাউন্ডে নিঃশব্দে চলে, মাত্র ~১৫ এমবি র‍্যাম ব্যবহার',
+				'কোনো অ্যাডমিন প্রিভিলেজ (UAC) ছাড়া সহজ ইনস্টলেশন এবং ১০০% ফ্রি ও ওপেন সোর্স'
+			),
+			'highlights_en'=> array(
+				'Single-click Always-On-Top toggle docked directly beside window minimize buttons',
+				'Seamless native design harmonizing with Windows 10 & 11 caption geometry and themes',
+				'Zero-jitter, frame-perfect window tracking via process-scoped WinEvent location hooks',
+				'Intelligent DWM & WM_NCHITTEST heuristics supporting Chrome, Edge, and custom client tabs',
+				'Fullscreen intelligence automatically hiding overlays during games and media playback',
+				'Low-overhead System Tray integration consuming ~15 MB RAM with 0% idle CPU usage',
+				'Zero administrator privileges (UAC) required; 100% free and open-source (MIT)'
+			),
+			'tags'        => array( 'Windows 10/11', 'C#', 'Win32 API', 'Desktop Utility', 'PowerShell', 'Always on Top', 'Open Source' ),
+			'accent'      => '#1e8cff',
+			'icon'        => 'terminal',
+			'image'       => get_template_directory_uri() . '/assets/img/lazypin.svg',
+			'image_fit'   => 'contain',
+			'action_type' => 'code',
+			'action_bn'   => 'ফ্রি ডাউনলোড',
+			'action_en'   => 'Download Free',
+			'direct_url'  => 'https://github.com/raisulsohan/LazyPin/releases/latest',
+			'github_url'  => 'https://github.com/raisulsohan/LazyPin',
+			'order'       => 55,
+		),
 	);
 }
 
@@ -2170,6 +2219,71 @@ function rs_sync_consciousness_ae_rebrand_v1() {
 add_action( 'init', 'rs_sync_consciousness_ae_rebrand_v1', 24 );
 
 /**
+ * 10f. Sync LazyPin metadata and copy in the database.
+ */
+function rs_sync_lazypin_project_v1() {
+	$switched = false;
+	if ( is_multisite() && ! is_main_site() ) {
+		switch_to_blog( get_main_site_id() );
+		$switched = true;
+	}
+
+	if ( get_option( 'rs_portfolio_synced_lazypin_v1' ) ) {
+		if ( $switched ) {
+			restore_current_blog();
+		}
+		return;
+	}
+
+	$defaults = array();
+	foreach ( rs_get_default_portfolio_projects() as $d ) {
+		if ( 'lazypin' === $d['id'] ) {
+			$defaults[ $d['id'] ] = $d;
+		}
+	}
+
+	$slug = 'lazypin';
+	if ( isset( $defaults[ $slug ] ) ) {
+		$item  = $defaults[ $slug ];
+		$posts = get_posts( array(
+			'post_type'      => 'rs_portfolio',
+			'name'           => $slug,
+			'posts_per_page' => 1,
+			'post_status'    => 'any',
+		) );
+
+		if ( ! empty( $posts ) ) {
+			$post_id = $posts[0]->ID;
+			wp_update_post( array(
+				'ID'         => $post_id,
+				'post_title' => $item['title_en'],
+			) );
+
+			foreach ( array( 'category', 'type_bn', 'type_en', 'badge_bn', 'badge_en', 'title_bn', 'title_en', 'summary_bn', 'summary_en', 'role_bn', 'role_en', 'context_bn', 'context_en', 'challenge_bn', 'challenge_en', 'solution_bn', 'solution_en', 'highlights_bn', 'highlights_en', 'accent', 'icon', 'image', 'image_fit', 'action_type', 'action_bn', 'action_en', 'direct_url', 'github_url' ) as $field ) {
+				if ( isset( $item[ $field ] ) ) {
+					update_post_meta( $post_id, '_rs_portfolio_' . $field, $item[ $field ] );
+				}
+			}
+
+			if ( ! empty( $item['tags'] ) && is_array( $item['tags'] ) ) {
+				update_post_meta( $post_id, '_rs_portfolio_tags', implode( ', ', $item['tags'] ) );
+			}
+		}
+	}
+
+	update_option( 'rs_portfolio_synced_lazypin_v1', 1 );
+
+	if ( $switched ) {
+		restore_current_blog();
+	}
+
+	if ( function_exists( 'rs_purge_host_cache_soon' ) ) {
+		rs_purge_host_cache_soon();
+	}
+}
+add_action( 'init', 'rs_sync_lazypin_project_v1', 25 );
+
+/**
  * 11. Add projects that joined the defaults after the portfolio was seeded.
  *
  * The initial seed only runs on an empty portfolio, so a project added to
@@ -2188,7 +2302,7 @@ function rs_sync_new_portfolio_projects() {
 
 	$added = false;
 	if ( get_option( 'rs_portfolio_seeded_v1' ) ) {
-		foreach ( array( 'lazylord', 'lazykick', 'lazymotiontoolkit', 'nomolos-prohibition', 'nomolos-cobra-effect', 'consciousness-animation' ) as $slug ) {
+		foreach ( array( 'lazylord', 'lazykick', 'lazymotiontoolkit', 'nomolos-prohibition', 'nomolos-cobra-effect', 'consciousness-animation', 'lazypin' ) as $slug ) {
 			if ( ! get_option( 'rs_portfolio_added_' . $slug ) ) {
 				$added = true;
 			}
@@ -2200,6 +2314,7 @@ function rs_sync_new_portfolio_projects() {
 	rs_seed_portfolio_demo( 'lazymotiontoolkit', 'lazymotiontoolkit-demo.html', 'lazymotiontoolkit-demo-vertical.html' );
 	rs_seed_portfolio_demo( 'lazy-image-ae', 'lazy-image-demo.html', 'lazy-image-demo-vertical.html' );
 	rs_seed_portfolio_demo( 'lazykick', 'lazykick-demo.html', 'lazykick-demo-vertical.html' );
+	rs_seed_portfolio_demo( 'lazypin', 'lazypin-demo.html', 'lazypin-demo-4x5.html' );
 
 	if ( $switched ) {
 		restore_current_blog();

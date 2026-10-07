@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.29.6-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.30.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.30
+
+**LazyPin on the portfolio.** The native-style Windows 10 & 11 Always-On-Top title-bar utility is now a portfolio project:
+
+- **7.30.0: LazyPin case study, interactive demo & CV integration.** Added LazyPin to the portfolio with complete bilingual technical case studies, vector artwork in `assets/img/lazypin.svg`, a 10-second interactive canvas demo with audio in `assets/demo/lazypin-demo.html` and `lazypin-demo-4x5.html`, database auto-sync via `rs_sync_lazypin_project_v1()`, and added to tools in the CV.
 
 ## What's new in 7.29
 
