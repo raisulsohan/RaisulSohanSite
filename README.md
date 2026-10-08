@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.31.1-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.31.2-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -14,6 +14,7 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 
 **Lingopie on the portfolio.** A client promo joins the Video & motion projects:
 
+- **7.31.2: CV columns split down the middle.** Profile and Highlights, and Open-source tools and Skills, now take 6 + 6 of the 12-column grid instead of 7 + 5 and 5 + 7, and the job columns use the same gap (`--cv-gap`), so the gutter between left and right runs straight down the centre of the sheet on desktop.
 - **7.31.1: Lingopie on the CV.** The promo joins the CV's selected work, before the Showreel. `rs_cv_add_lingopie_v1()` adds it once to a CV that was already saved (the saved copy replaces the defaults), and the defaults carry it for a CV that never was.
 - **7.31.0: Lingopie promo case study.** Added the 1:37 Lingopie promo, designed and animated in After Effects, with bilingual case-study copy, its animated WebP sneak peek as the card image, and a link to the watch page at [raisulsohan.github.io/Lingopie-promo-animation](https://raisulsohan.github.io/Lingopie-promo-animation/) (16:9 and 4:5). It is inserted once at the top of the portfolio by `rs_sync_new_portfolio_projects()`.
 

@@ -339,13 +339,16 @@
 }
 
 /* Bento layout: every section has a visible tile, and Experience spans the
-   row so the page never leaves an empty column beside its final entry. */
+   row so the page never leaves an empty column beside its final entry. Every
+   two-up row splits 6 + 6, and the job columns use the same gap, so the gutter
+   between left and right runs down the middle of the whole sheet. */
 
 .rs-cv__grid {
 	display: grid;
+	--cv-gap: clamp(0.7rem, 1.4vw, 1rem);
 	grid-template-columns: repeat(12, minmax(0, 1fr));
 	align-items: stretch;
-	gap: clamp(0.7rem, 1.4vw, 1rem);
+	gap: var(--cv-gap);
 }
 
 .rs-cv__card {
@@ -375,12 +378,12 @@
 
 .rs-cv__card--profile {
 	--cv-card-accent: var(--pf-brand2);
-	grid-column: span 7;
+	grid-column: span 6;
 }
 
 .rs-cv__card--highlights {
 	--cv-card-accent: var(--pf-pink);
-	grid-column: span 5;
+	grid-column: span 6;
 }
 
 .rs-cv__card--experience {
@@ -390,12 +393,12 @@
 
 .rs-cv__card--tools {
 	--cv-card-accent: var(--pf-blue);
-	grid-column: span 5;
+	grid-column: span 6;
 }
 
 .rs-cv__card--skills {
 	--cv-card-accent: var(--pf-pink);
-	grid-column: span 7;
+	grid-column: span 6;
 }
 
 .rs-cv__card--learning {
@@ -459,7 +462,7 @@
 .rs-cv__jobs {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 0.75rem;
+	gap: var(--cv-gap, 0.75rem);
 }
 
 .rs-cv__job {
