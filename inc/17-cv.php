@@ -447,6 +447,7 @@ function rs_cv_data( $post_id = 0 ) {
 				'meta'  => 'Animated science documentary for Bichitro Biggan, 4:08',
 				'text'  => 'A 4:08 science film with nine illustrated scenes, multiplane 3D parallax, volumetric lighting and original sound design.',
 			),
+			rs_cv_lingopie_film(),
 			array(
 				'title' => 'Showreel',
 				'url'   => 'https://youtu.be/Hdq8STf5beQ',
@@ -1109,3 +1110,73 @@ function rs_seed_cv_page() {
 	}
 }
 add_action( 'init', 'rs_seed_cv_page', 25 );
+
+/**
+ * The Lingopie promo as a selected-work entry.
+ *
+ * @return array
+ */
+function rs_cv_lingopie_film() {
+	return array(
+		'title' => 'Lingopie',
+		'url'   => 'https://raisulsohan.github.io/Lingopie-promo-animation/',
+		'meta'  => 'Client promo · After Effects, 1:37',
+		'text'  => 'A promo for a language-learning platform, built from the client\'s voice-over and raw product recordings, with every headline timed to its spoken word. Delivered in 4K 16:9 and 4:5.',
+	);
+}
+
+/**
+ * Add the Lingopie promo to a CV that was already saved, once.
+ *
+ * A saved CV replaces the defaults whole, so a new entry in the defaults
+ * reaches only a CV that was never edited. This puts the entry into the
+ * saved copy as well, before the Showreel (or at the end), unless it is
+ * already there. The flag is network-wide because the CV is.
+ */
+function rs_cv_add_lingopie_v1() {
+	$flag = 'rs_cv_added_lingopie_v1';
+	if ( get_site_option( $flag ) ) {
+		return;
+	}
+
+	$page  = null;
+	$saved = false;
+	if ( is_multisite() ) {
+		$saved = rs_cv_saved_data();
+	} else {
+		$page  = get_page_by_path( 'cv', OBJECT, 'page' );
+		$saved = $page ? get_post_meta( $page->ID, '_rs_cv_data', true ) : false;
+	}
+
+	if ( is_array( $saved ) ) {
+		$entry = rs_cv_lingopie_film();
+		$films = isset( $saved['films'] ) && is_array( $saved['films'] ) ? array_values( $saved['films'] ) : array();
+		$found = false;
+		$at    = count( $films );
+
+		foreach ( $films as $i => $film ) {
+			if ( ! empty( $film['url'] ) && false !== stripos( $film['url'], 'Lingopie-promo-animation' ) ) {
+				$found = true;
+			}
+			if ( isset( $film['title'] ) && 'Showreel' === $film['title'] && $at === count( $films ) ) {
+				$at = $i;
+			}
+		}
+
+		if ( ! $found ) {
+			array_splice( $films, $at, 0, array( $entry ) );
+			$saved['films'] = $films;
+
+			if ( is_multisite() ) {
+				update_site_option( 'rs_cv_shared_data_v1', $saved );
+			} elseif ( $page ) {
+				update_post_meta( $page->ID, '_rs_cv_data', $saved );
+			}
+
+			rs_cv_purge_network_caches();
+		}
+	}
+
+	update_site_option( $flag, 1 );
+}
+add_action( 'init', 'rs_cv_add_lingopie_v1', 26 );
