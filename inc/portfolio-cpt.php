@@ -1801,6 +1801,53 @@ function rs_get_default_portfolio_projects() {
 			'github_url'  => 'https://github.com/raisulsohan/LazyPin',
 			'order'       => 55,
 		),
+		array(
+			'id'          => 'lingopie-promo',
+			'category'    => 'video',
+			'type_bn'     => 'আফটার ইফেক্টস মোশন ডিজাইন ও ক্লায়েন্ট প্রোমো',
+			'type_en'     => 'After Effects Motion Design & Client Promo',
+			'badge_bn'    => 'ক্লায়েন্ট প্রোমো • ১:৩৭ মিনিট',
+			'badge_en'    => 'Client Promo • 1:37 Mins',
+			'title_bn'    => 'Lingopie — আফটার ইফেক্টসে নির্মিত ভাষা শেখার প্ল্যাটফর্মের ক্লায়েন্ট প্রোমো',
+			'title_en'    => 'Lingopie — A Client Promo for a Language-Learning Platform, Crafted in After Effects',
+			'summary_bn'  => 'আসল সিনেমা, টিভি শো ও ডকুমেন্টারি দেখে ভাষা শেখার প্ল্যাটফর্ম লিঙ্গোপাই (Lingopie)-এর জন্য নির্মিত ৯৭.৫ সেকেন্ডের প্রোমো। ক্লায়েন্টের ভয়েস-ওভার আর প্রোডাক্টের কাঁচা স্ক্রিন রেকর্ডিং থেকে অ্যাডোবি আফটার ইফেক্টসে (Adobe After Effects) পরিচ্ছন্ন, আধুনিক মোশন ডিজাইনে গল্পটি সাজিয়েছেন রাইসুল সোহান। ইন্টারঅ্যাক্টিভ সাবটাইটেল, শব্দ সেভ ও কুইজ, নেটফ্লিক্স ও ডিজনি+ এক্সটেনশন থেকে শুরু করে শেষের অফার টিকেট পর্যন্ত প্রতিটি হেডলাইন ভয়েস-ওভারের শব্দে শব্দে মেলানো। ৪কে ১৬:৯ এবং ৪:৫ দুই ফরম্যাটে ডেলিভার করা হয়েছে।',
+			'summary_en'  => 'A 97.5-second promo for Lingopie, the platform that teaches languages through real movies, TV shows and documentaries. Raisul Sohan turned the client\'s voice-over and raw product screen recordings into a clean, modern motion piece in Adobe After Effects: interactive subtitles, saved words and quizzes, the Netflix & Disney+ extension and a closing offer ticket, with every headline landing on its spoken word. Delivered in 4K 16:9 and 4:5.',
+			'role_bn'     => 'রাইসুল সোহান — মোশন ডিজাইনার ও আফটার ইফেক্টস অ্যানিমেটর',
+			'role_en'     => 'Raisul Sohan — Motion Designer & After Effects Animator',
+			'context_bn'  => 'ক্লায়েন্ট প্রোমো • আফটার ইফেক্টস মোশন • ৪কে ১৬:৯ ও ৪:৫ • ১:৩৭ মিনিট',
+			'context_en'  => 'Client Promo • After Effects Motion • 4K 16:9 & 4:5 • 1:37 Mins',
+			'challenge_bn'=> "ক্লায়েন্ট দিয়েছিলেন একটি ভয়েস-ওভার আর প্রোডাক্টের কয়েক ঘণ্টার কাঁচা স্ক্রিন রেকর্ডিং। সেখান থেকে এমন একটি প্রোমো বানাতে হতো যা দেখায় প্রোডাক্টটি আসলে কীভাবে কাজ করে, আর শেষ হয় অফারে:\n\n১. শব্দে শব্দে টাইমিং: প্রতিটি হেডলাইন, হাইলাইট ও কার্ড ভয়েস-ওভারের নির্দিষ্ট শব্দে পড়তে হবে, তাই ক্লায়েন্টের শব্দভিত্তিক SRT-কেই টাইমিংয়ের একমাত্র উৎস ধরা হয়েছে।\n২. কাঁচা রেকর্ডিং থেকে পরিষ্কার প্রোডাক্ট শট: লম্বা স্ক্রিন রেকর্ডিংয়ের ভেতর থেকে ঠিক মুহূর্তগুলো বেছে নিয়ে অ্যাপ উইন্ডোর ভেতরে ক্যামেরা পুশ দিয়ে দেখানো, যাতে ছোট লেখাও পড়া যায়।\n৩. ব্র্যান্ড সেফটি: রেকর্ডিংয়ে থাকা স্পর্শকাতর ফুটেজ ও সাবটাইটেল লাইন প্রতিটি শট থেকে বাদ রাখা।\n৪. দুই ফরম্যাট, এক গল্প: একই টাইমলাইন ৪কে ১৬:৯ এবং ৪:৫ ফিড দুই ফরম্যাটেই সাজানো, যেখানে ৪:৫-এ প্রতিটি সিনের লেআউট আলাদাভাবে বসাতে হয়েছে।",
+			'challenge_en'=> "The client supplied a voice-over and hours of raw product screen recordings. The brief was a promo that shows how the product actually works and ends on the offer:\n\n1. Word-Level Timing: Every headline, highlight and card had to land on a specific spoken word, so the client's word-level SRT became the single source of timing.\n2. Clean Product Shots from Raw Recordings: Picking the exact moments out of long screen recordings and staging them inside app windows with camera pushes, so even small interface text stays readable.\n3. Brand Safety: Keeping sensitive footage and subtitle lines that appeared in the recordings out of every shot.\n4. Two Formats, One Story: Building the same timeline for 4K 16:9 and a 4:5 feed cut, with every scene re-laid out for the portrait frame.",
+			'solution_bn' => "১. ভয়েস-ওভারে লক করা টাইমিং: শব্দভিত্তিক SRT ধরে প্রতিটি হেডলাইনের শব্দ আলাদা আলাদা করে আসে, আর হাইলাইট ও স্ট্রাইক-থ্রু নিজের শব্দের সাথেই চলে।\n\n২. অ্যাপ উইন্ডো ও ক্যামেরা মুভ: স্ক্রিন রেকর্ডিংগুলো ভাসমান অ্যাপ উইন্ডোর ভেতরে বসিয়ে ইজড ক্যামেরা পুশ দিয়ে দেখানো হয়েছে, হার্ড কাটের বদলে মসৃণ ট্রানজিশন।\n\n৩. ব্র্যান্ড ভিজ্যুয়াল সিস্টেম: লিঙ্গোপাইয়ের কমলা (#FF8243), গাঢ় ইংক ও উষ্ণ সাদা ব্যাকগ্রাউন্ড, সাথে Bricolage Grotesque ও Inter টাইপফেস দিয়ে পরিচ্ছন্ন, মিনিমাল ও আধুনিক লুক।\n\n৪. প্রোডাক্ট মোমেন্ট: শব্দে ক্লিক করে অর্থ দেখা, সেভ → প্র্যাকটিস → ফ্ল্যাশকার্ড → কুইজ, ডেইলি গোল কার্ড, নেটফ্লিক্স ও ডিজনি+ এক্সটেনশন কার্ড এবং ছিঁড়ে দুই ভাগ হওয়া অফার টিকেট (৭ দিন ফ্রি, ৭৩% ছাড়)।\n\n৫. ডেলিভারি: ৪কে ১৬:৯ এবং ২১৬০×২৭০০ ৪:৫, ৩০ fps, H.264 কনস্ট্যান্ট ৭০ Mbps, যাতে ক্লায়েন্টের ন্যূনতম ৫০ Mbps শর্ত পূরণ হয়।",
+			'solution_en' => "1. Timing Locked to the Voice-Over: Following the word-level SRT, each headline builds word by word, and highlights and strike-throughs travel with their own word.\n\n2. App Windows & Camera Moves: Screen recordings sit inside floating app windows and are revealed with eased camera pushes, favouring smooth transitions over hard cuts.\n\n3. Brand Visual System: Lingopie orange (#FF8243), deep ink and a warm white ground, set in Bricolage Grotesque and Inter for a clean, minimal, modern look.\n\n4. Product Moments: click-a-word translations, save → practice → flashcards → quiz, the daily-goal card, the Netflix & Disney+ extension card and an offer ticket that tears in two (7 days free, 73% off).\n\n5. Delivery: 4K 16:9 and 2160×2700 4:5 at 30 fps, H.264 at a constant 70 Mbps to clear the client's 50 Mbps minimum.",
+			'highlights_bn'=> array(
+				'লিঙ্গোপাইয়ের জন্য ১:৩৭ মিনিটের ক্লায়েন্ট প্রোমো, অ্যাডোবি আফটার ইফেক্টসে নির্মিত',
+				'ক্লায়েন্টের শব্দভিত্তিক SRT ধরে প্রতিটি হেডলাইন ভয়েস-ওভারের শব্দে মেলানো',
+				'কাঁচা স্ক্রিন রেকর্ডিং থেকে অ্যাপ উইন্ডো ও ক্যামেরা পুশে সাজানো প্রোডাক্ট শট',
+				'৪কে ১৬:৯ এবং ৪:৫ দুই ফরম্যাট, প্রতিটি সিন আলাদা লেআউটে',
+				'লিঙ্গোপাইয়ের ব্র্যান্ড কালার ও টাইপফেসে পরিচ্ছন্ন, মিনিমাল লুক',
+				'৭০ Mbps কনস্ট্যান্ট বিটরেটে ডেলিভারি, ক্লায়েন্টের ৫০ Mbps শর্তের ওপরে'
+			),
+			'highlights_en'=> array(
+				'A 1:37 client promo for Lingopie, crafted in Adobe After Effects',
+				'Every headline locked to the voice-over through the client\'s word-level SRT',
+				'Product shots staged from raw screen recordings with app windows and camera pushes',
+				'Two formats, 4K 16:9 and 4:5, with every scene re-laid out for the portrait cut',
+				'A clean, minimal look in Lingopie\'s brand colours and typefaces',
+				'Delivered at a constant 70 Mbps, above the client\'s 50 Mbps minimum'
+			),
+			'tags'        => array( 'Adobe After Effects', 'Motion Design', 'Client Work', 'Promo', 'Product Video', 'Premiere Pro' ),
+			'accent'      => '#ff8243',
+			'icon'        => 'video',
+			'image'       => 'https://raw.githubusercontent.com/raisulsohan/Lingopie-promo-animation/main/media/peek-1-subtitles.webp',
+			'image_fit'   => 'cover',
+			'action_type' => 'video',
+			'action_bn'   => 'প্রোমোটি দেখুন',
+			'action_en'   => 'Watch Promo',
+			'direct_url'  => 'https://raisulsohan.github.io/Lingopie-promo-animation/',
+			'github_url'  => 'https://github.com/raisulsohan/Lingopie-promo-animation',
+			'order'       => 6,
+		),
 	);
 }
 
@@ -2302,7 +2349,7 @@ function rs_sync_new_portfolio_projects() {
 
 	$added = false;
 	if ( get_option( 'rs_portfolio_seeded_v1' ) ) {
-		foreach ( array( 'lazylord', 'lazykick', 'lazymotiontoolkit', 'nomolos-prohibition', 'nomolos-cobra-effect', 'consciousness-animation', 'lazypin' ) as $slug ) {
+		foreach ( array( 'lazylord', 'lazykick', 'lazymotiontoolkit', 'nomolos-prohibition', 'nomolos-cobra-effect', 'consciousness-animation', 'lazypin', 'lingopie-promo' ) as $slug ) {
 			if ( ! get_option( 'rs_portfolio_added_' . $slug ) ) {
 				$added = true;
 			}
