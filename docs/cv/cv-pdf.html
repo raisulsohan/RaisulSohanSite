@@ -1,0 +1,316 @@
+<!doctype html>
+<!--
+  The source of assets/cv/Raisul_Sohan_CV.pdf, the "Download PDF" file on /cv/.
+
+  Two A4 pages, laid out by hand from rs_cv_data() in inc/17-cv.php. When the
+  CV changes there, change it here too, then print it with Edge or Chrome:
+
+    msedge --headless=new --no-pdf-header-footer --print-to-pdf="assets/cv/Raisul_Sohan_CV.pdf" "file:///<path>/docs/cv/cv-pdf.html"
+
+  Open the file in a browser first: each page shows a red outline if its
+  content no longer fits, so nothing is cut off in the PDF.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Raisul Islam Sohan - CV</title>
+<meta name="author" content="Raisul Islam Sohan">
+<meta name="description" content="Curriculum vitae of Raisul Islam Sohan, motion designer, 2D animator and creative developer.">
+<style>
+@page { size: A4; margin: 0; }
+:root {
+	--ink: #111827;
+	--navy: #1e293b;
+	--acc: #6c4cff;
+	--warm: #9a32c7;
+	--gray: #5b6472;
+	--line: #d6dce6;
+	--tint: #f4f1ff;
+	--font: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #e5e7eb; }
+body { font: 8.4pt/1.42 var(--font); color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+a { color: inherit; text-decoration: none; }
+b, strong { font-weight: 650; color: var(--navy); }
+
+.page {
+	position: relative;
+	width: 210mm;
+	height: 297mm;
+	margin: 0 auto 8mm;
+	padding: 12mm 13mm 14mm;
+	overflow: hidden;
+	background: #fff;
+	page-break-after: always;
+	break-after: page;
+}
+.page:last-child { page-break-after: auto; break-after: auto; }
+.page.is-over { outline: 3px solid red; }
+@media print { body { background: #fff; } .page { margin: 0; } }
+
+.foot {
+	position: absolute;
+	left: 13mm; right: 13mm; bottom: 7mm;
+	display: flex; justify-content: space-between;
+	padding-top: 2mm;
+	border-top: 0.5pt solid var(--line);
+	font-size: 7pt; color: var(--gray);
+}
+
+/* ---------- head ---------- */
+.head { display: flex; justify-content: space-between; gap: 8mm; align-items: flex-start; }
+.name { margin: 0; font-size: 22pt; font-weight: 800; letter-spacing: 0.04em; line-height: 1.05; color: var(--navy); text-transform: uppercase; }
+.roles { margin: 1.6mm 0 0; font-size: 10pt; font-weight: 600; color: var(--acc); letter-spacing: 0.01em; }
+.contact { margin: 0; padding: 0; list-style: none; text-align: right; font-size: 7.8pt; line-height: 1.55; color: var(--gray); }
+.contact a { color: var(--navy); }
+.rule { height: 1.1mm; margin: 3.4mm 0 3.4mm; border-radius: 1mm; background: linear-gradient(90deg, var(--acc), var(--warm)); }
+
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.5mm; margin-bottom: 3.4mm; }
+.stat { padding: 2.2mm 3mm; border-radius: 2mm; background: var(--tint); }
+.stat b { display: block; font-size: 15pt; line-height: 1.1; color: var(--acc); font-weight: 800; }
+.stat span { font-size: 7.4pt; color: var(--gray); }
+
+h2 {
+	display: flex; align-items: center; gap: 2mm;
+	margin: 0 0 2mm;
+	font-size: 8.4pt; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--acc);
+}
+h2::after { content: ""; flex: 1; height: 0.5pt; background: var(--line); }
+section { margin-bottom: 3.2mm; }
+p { margin: 0; }
+
+.highlights { display: grid; grid-template-columns: 1fr 1fr; gap: 2mm 4mm; }
+.highlights div { padding-left: 2.6mm; border-left: 0.9mm solid var(--acc); }
+.highlights div:nth-child(even) { border-color: var(--warm); }
+.highlights b { display: block; font-size: 9pt; }
+
+/* ---------- experience ---------- */
+.job { margin-bottom: 2.4mm; break-inside: avoid; }
+.job:last-child { margin-bottom: 0; }
+.job-top { display: flex; justify-content: space-between; gap: 4mm; align-items: baseline; }
+.job-title { font-size: 9.6pt; font-weight: 700; color: var(--navy); }
+.job-dates { font-size: 7.8pt; font-weight: 600; color: var(--acc); white-space: nowrap; }
+.job-org { margin: 0.3mm 0 1mm; font-size: 7.9pt; color: var(--gray); }
+ul.bul { margin: 0; padding: 0; list-style: none; }
+ul.bul li { position: relative; padding-left: 3.4mm; margin-bottom: 0.7mm; }
+ul.bul li::before { content: ""; position: absolute; left: 0.4mm; top: 1.75mm; width: 1.3mm; height: 1.3mm; border-radius: 50%; background: var(--acc); }
+
+/* ---------- page two ---------- */
+.work { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.4mm; }
+.work a { display: block; padding: 2mm 2.6mm; border: 0.5pt solid var(--line); border-radius: 2mm; }
+.work .meta { display: block; font-size: 6.8pt; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--warm); }
+.work .title { display: block; margin: 0.6mm 0 0.6mm; font-size: 9.6pt; font-weight: 750; color: var(--navy); }
+.work .text { font-size: 7.8pt; color: var(--ink); }
+.work .wide { grid-column: span 2; }
+
+.tools { display: grid; grid-template-columns: 1fr 1fr; gap: 2.2mm 3mm; }
+.tool { padding: 1.9mm 2.6mm; border-radius: 2mm; background: var(--tint); }
+.tool-names { font-size: 9pt; font-weight: 750; color: var(--navy); }
+.tool-names a + a::before { content: " · "; color: var(--gray); font-weight: 400; }
+.tool-names .gh { font-size: 7.4pt; font-weight: 600; color: var(--acc); }
+.tool-kind { display: block; margin: 0.2mm 0 0.6mm; font-size: 7.2pt; color: var(--gray); }
+.tool p { font-size: 7.9pt; }
+
+.skills { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
+.skills h3 { margin: 0 0 1mm; font-size: 8.6pt; font-weight: 750; color: var(--navy); }
+.skills ul.bul li { font-size: 7.9pt; }
+
+.edu { display: grid; grid-template-columns: 1.1fr 1.1fr 1.5fr 1fr; gap: 4mm; }
+.edu b { display: block; font-size: 8.6pt; }
+.edu span { font-size: 7.9pt; color: var(--gray); }
+.lang { margin-top: 2.6mm; font-size: 8.2pt; }
+.lang b { margin-right: 2mm; }
+</style>
+</head>
+<body>
+
+<!-- ======================================================= page 1 -->
+<div class="page">
+	<header class="head">
+		<div>
+			<h1 class="name">Raisul Islam Sohan</h1>
+			<p class="roles">Motion Designer · 2D Animator · Creative Developer</p>
+		</div>
+		<ul class="contact">
+			<li>Dhaka, Bangladesh · <a href="tel:+8801775860544">+880 1775 860544</a></li>
+			<li><a href="mailto:lettertosohan@gmail.com">lettertosohan@gmail.com</a> · <a href="https://wa.me/8801775860544">WhatsApp</a></li>
+			<li><a href="https://raisulsohan.com/en/portfolio/">raisulsohan.com</a> · <a href="https://www.linkedin.com/in/raisulsohan/">linkedin.com/in/raisulsohan</a></li>
+			<li><a href="https://github.com/raisulsohan">github.com/raisulsohan</a> · <a href="https://www.youtube.com/@nomolosfiles">youtube.com/@nomolosfiles</a></li>
+			<li><a href="https://youtu.be/Hdq8STf5beQ">Showreel on YouTube</a></li>
+		</ul>
+	</header>
+	<div class="rule"></div>
+
+	<div class="stats">
+		<div class="stat"><b>10+</b><span>Years in motion</span></div>
+		<div class="stat"><b>10</b><span>Open-source tools</span></div>
+		<div class="stat"><b>3</b><span>Documentary films</span></div>
+		<div class="stat"><b>12</b><span>Organisations served</span></div>
+	</div>
+
+	<section>
+		<h2>Profile</h2>
+		<p>Motion designer and 2D animator with 10+ years of experience on story-led work for international development, technology and editorial teams. Selected clients include UNDP, UNICEF, GIZ, USAID, the World Bank and WHO. Alongside client work, I build free tools for Adobe, Figma, Chrome and Windows, and direct animated documentaries from script to final sound. I pair hands-on craft with production leadership, carrying projects from the first storyboard to delivery and improving the workflow for the next one.</p>
+	</section>
+
+	<section>
+		<h2>Highlights</h2>
+		<div class="highlights">
+			<div><b>100% on-time delivery</b>across Vidiosa client campaigns; a new storyboard-and-feedback workflow cut turnaround by 15%.</div>
+			<div><b>200K+ organic views</b>on campaigns where I directed the creative, with measurable audience engagement.</div>
+			<div><b>10 free open-source tools</b>for Windows, Adobe CC, Figma and Chrome, alongside 1,100+ GitHub contributions in the past year.</div>
+			<div><b>3 animated documentaries</b>written, illustrated, animated and sound-designed for Nomolos and Bichitro Biggan.</div>
+		</div>
+	</section>
+
+	<section>
+		<h2>Experience</h2>
+		<div class="job">
+			<div class="job-top"><span class="job-title">Independent Motion Designer &amp; Creative Developer</span><span class="job-dates">Apr 2026 – Present</span></div>
+			<div class="job-org">Self-employed · Dhaka, Bangladesh</div>
+			<ul class="bul">
+				<li>Created <b>Nomolos</b> (<a href="https://www.youtube.com/@nomolosfiles">youtube.com/@nomolosfiles</a>); wrote, illustrated, animated and sound-designed <b>Prohibition</b> (9:40) and <b>Cobra Effect</b> (8:49, 23 scenes).</li>
+				<li>Write and animate science stories for <b>Bichitro Biggan</b>; created <b>Consciousness</b> (4:08) with nine hand-drawn scenes, 3D parallax and volumetric lighting.</li>
+				<li>Build and maintain ten free creative and desktop tools; built two bilingual PHP / JavaScript WordPress platforms: <b>bichitrobiggan.com</b> and <b>raisulsohan.com</b>.</li>
+			</ul>
+		</div>
+		<div class="job">
+			<div class="job-top"><span class="job-title">Project Manager</span><span class="job-dates">Aug 2024 – Mar 2026</span></div>
+			<div class="job-org">Vidiosa · Dhaka, Bangladesh</div>
+			<ul class="bul">
+				<li>Led animation and motion graphics for global SaaS and technology clients, from brief and storyboard through delivery.</li>
+				<li>Managed cross-functional teams, budgets, schedules and client reviews; delivered every campaign on time.</li>
+				<li>Introduced a storyboard-and-feedback workflow that cut turnaround by 15%; directed campaigns with 200K+ organic views.</li>
+			</ul>
+		</div>
+		<div class="job">
+			<div class="job-top"><span class="job-title">Senior Motion &amp; Graphics Designer</span><span class="job-dates">Jan 2022 – Jul 2024</span></div>
+			<div class="job-org">JMI Group · Dhaka, Bangladesh</div>
+			<ul class="bul">
+				<li>Maintained a large industrial group's visual identity across social, web, email, brochures, advertising and print.</li>
+				<li>Produced campaign videos and presented 2D and 3D concepts to marketing and product teams.</li>
+				<li>Coordinated photographers, illustrators and copywriters across concurrent projects while keeping brand standards consistent.</li>
+			</ul>
+		</div>
+		<div class="job">
+			<div class="job-top"><span class="job-title">Senior Motion Graphics Designer &amp; 2D Animator</span><span class="job-dates">Jan 2018 – Dec 2021</span></div>
+			<div class="job-org">Big Blue Communications · Bangladesh &amp; UK</div>
+			<ul class="bul">
+				<li>Created explainers, infographic films, e-learning and social animation for development clients, from pitch and storyboard through final animation.</li>
+				<li>Delivered UNICEF Oky stories, twelve USAID infographic animations, a GIZ climate film and a 3D Mekong map film for Landell Mills.</li>
+				<li>Made multilingual app explainers for <b>ITF Seafarers' Trust</b> and animation or interactive work for Awaj Foundation, the Dutch Embassy, HelpAge International and DAI.</li>
+			</ul>
+		</div>
+		<div class="job">
+			<div class="job-top"><span class="job-title">Video Editor &amp; Animator</span><span class="job-dates">2015 – 2017</span></div>
+			<div class="job-org">Think School (ThinkBangla) · Bangladesh &amp; UK</div>
+			<ul class="bul">
+				<li>Edited and animated 20+ educational videos on Bangladesh's science, history and culture; also handled storyboarding and YouTube SEO for the series.</li>
+			</ul>
+		</div>
+	</section>
+
+	<div class="foot"><span>Raisul Islam Sohan · Curriculum vitae</span><span>Page 1 of 2</span></div>
+</div>
+
+<!-- ======================================================= page 2 -->
+<div class="page">
+	<section>
+		<h2>Earlier experience</h2>
+		<div class="job">
+			<div class="job-top"><span class="job-title">Program Manager, Video Editor &amp; Sports Journalist</span><span class="job-dates">2010 – 2015</span></div>
+			<div class="job-org">Old Bay Media · BDSPORTSNEWS.COM · Dhaka</div>
+			<ul class="bul">
+				<li><b>Old Bay Media (2013 – 2015):</b> built and ran Bangla Boi, managing its catalogue, publisher deals, service and delivery.</li>
+				<li><b>BDSPORTSNEWS.COM (2010 – 2012):</b> reported from Sher-e-Bangla and interviewed national cricketers and footballers.</li>
+			</ul>
+		</div>
+	</section>
+
+	<section>
+		<h2>Selected work</h2>
+		<div class="work">
+			<a href="https://www.youtube.com/@nomolosfiles"><span class="meta">Animated documentary channel</span><span class="title">Nomolos</span><span class="text">Two films about history's backfires: <b>Prohibition</b> (9:40) and <b>Cobra Effect</b> (8:49). Script, illustration, animation and sound design, all created solo.</span></a>
+			<a href="https://raisulsohan.github.io/Consciousness-animation/"><span class="meta">Science documentary · 4:08</span><span class="title">Consciousness</span><span class="text">A science film for Bichitro Biggan with nine illustrated scenes, multiplane 3D parallax, volumetric lighting and original sound design.</span></a>
+			<a href="https://raisulsohan.github.io/Lingopie-promo-animation/"><span class="meta">Client promo · After Effects, 1:37</span><span class="title">Lingopie</span><span class="text">A promo for a language-learning platform, built from the client's voice-over and raw product recordings, every headline timed to its word. 4K 16:9 and 4:5.</span></a>
+			<a class="wide" href="https://raisulsohan.com/en/portfolio/lazyeditmirror/"><span class="meta">Open-source tool · Premiere Pro panel</span><span class="title">LazyEditMirror</span><span class="text">A free panel that copies a front-camera edit onto the side camera, finding the sync by listening to both recordings. Try it in the browser at raisulsohan.com.</span></a>
+			<a href="https://youtu.be/Hdq8STf5beQ"><span class="meta">Motion design · 2D animation</span><span class="title">Showreel</span><span class="text">A short reel of selected motion design, 2D animation and SaaS product work.</span></a>
+		</div>
+	</section>
+
+	<section>
+		<h2>Open-source tools <span style="font-weight:600;letter-spacing:.04em;color:var(--gray);text-transform:none">· all free</span></h2>
+		<div class="tools">
+			<div class="tool"><div class="tool-names"><a href="https://raisulsohan.com/en/portfolio/lazylord/">LazyLord</a><a class="gh" href="https://github.com/raisulsohan/LazyLord">GitHub</a></div><span class="tool-kind">Adobe CEP panel + Figma plugin · TypeScript</span><p>Transfers vector artwork between Figma, Photoshop, Illustrator and After Effects.</p></div>
+			<div class="tool"><div class="tool-names"><a href="https://raisulsohan.com/en/portfolio/lazymotiontoolkit/">LazyMotionToolkit</a><a class="gh" href="https://github.com/raisulsohan/LazyMotionToolkit">GitHub</a></div><span class="tool-kind">After Effects ScriptUI panel · ExtendScript</span><p>Nine dockable tools for precomps, text boxes, fades, arrows, anchors and grids.</p></div>
+			<div class="tool"><div class="tool-names"><a href="https://raisulsohan.com/en/portfolio/lazykick/">LazyKick</a><a class="gh" href="https://github.com/raisulsohan/LazyKick">GitHub</a></div><span class="tool-kind">CEP panel · After Effects &amp; Premiere Pro</span><p>Paste images, add time-coded notes and import media folders in After Effects or Premiere.</p></div>
+			<div class="tool"><div class="tool-names"><a href="https://raisulsohan.com/en/portfolio/lazy-image-ae/">Lazy-Image</a><a class="gh" href="https://github.com/raisulsohan/LazyImageGeneration">GitHub</a></div><span class="tool-kind">CEP extension · CDP browser automation</span><p>Generate images inside After Effects or Premiere Pro without an API key.</p></div>
+			<div class="tool"><div class="tool-names"><a href="https://raisulsohan.com/en/portfolio/lazyeditmirror/">LazyEditMirror</a><a class="gh" href="https://github.com/raisulsohan/LazyEditMirror">GitHub</a></div><span class="tool-kind">Premiere Pro UXP panel · Node.js &amp; ffmpeg</span><p>Copies a front-camera edit onto the side camera, finding the sync by audio.</p></div>
+			<div class="tool"><div class="tool-names"><a href="https://raisulsohan.com/en/portfolio/lazymaplayers/">LazyMapLayers</a><a class="gh" href="https://github.com/raisulsohan/LazyMapLayers">GitHub</a></div><span class="tool-kind">After Effects CEP panel · TypeScript &amp; MapLibre GL</span><p>Frame-exact map design and animation: flights, 3D cities, data maps and labels in every script.</p></div>
+			<div class="tool"><div class="tool-names"><a href="https://raisulsohan.com/en/portfolio/lazyscroll/">LazyScroll</a><a href="https://raisulsohan.com/en/portfolio/lazysnap/">LazySnap</a><a href="https://raisulsohan.com/en/portfolio/lazyruler/">LazyRuler</a></div><span class="tool-kind">Chrome &amp; Edge extensions · Manifest V3</span><p>Per-site media volume, clean article and commentary text, and Photoshop-style rulers for web pages.</p></div>
+			<div class="tool"><div class="tool-names"><a href="https://raisulsohan.com/en/portfolio/lazypin/">LazyPin</a><a class="gh" href="https://github.com/raisulsohan/LazyPin">GitHub</a></div><span class="tool-kind">Windows 10 &amp; 11 utility · C# &amp; Win32 API</span><p>Seamless Always-On-Top pin button directly beside window caption controls.</p></div>
+		</div>
+	</section>
+
+	<section>
+		<h2>Skills</h2>
+		<div class="skills">
+			<div>
+				<h3>Motion &amp; design</h3>
+				<ul class="bul">
+					<li>After Effects (expert): Duik Angela and Joystick 'n Sliders rigging, expressions, 3D parallax</li>
+					<li>Premiere Pro, Cinema 4D, Audition</li>
+					<li>Illustrator, Photoshop, InDesign, Figma, Animate</li>
+					<li>Storyboarding, illustration, sound design, YouTube SEO</li>
+				</ul>
+			</div>
+			<div>
+				<h3>Code &amp; automation</h3>
+				<ul class="bul">
+					<li>JavaScript (ES6+), TypeScript, Node.js, C# (Win32 API)</li>
+					<li>Adobe CEP, UXP, ExtendScript, ScriptUI; Figma Plugin API; Chrome extensions (Manifest V3)</li>
+					<li>PHP, WordPress theme architecture, HTML, CSS, Lottie</li>
+					<li>Git and GitHub, documentation, release management</li>
+				</ul>
+			</div>
+			<div>
+				<h3>Production &amp; leadership</h3>
+				<ul class="bul">
+					<li>Project management: ClickUp, Trello, Asana</li>
+					<li>Creative direction, scriptwriting, storyboard review</li>
+					<li>Client and stakeholder communication, budgeting, scheduling</li>
+					<li>AI-assisted research and scripting: Claude, ChatGPT, Gemini, Perplexity</li>
+				</ul>
+			</div>
+		</div>
+	</section>
+
+	<section>
+		<h2>Education &amp; languages</h2>
+		<div class="edu">
+			<div><b>B.S.S. (Hons.) in Social Science</b><span>Government Bangla College, Dhaka · 2014</span></div>
+			<div><b>HSC, Science (2007) · SSC, Science</b><span>Motijheel Model High School &amp; College (2005)</span></div>
+			<div><b>Continuing education</b><span>Motion Design School, LinkedIn Learning, Skillshare (motion graphics, video editing, graphic design)</span></div>
+			<div><b>Languages</b><span>Bengali (native) · English (professional)</span></div>
+		</div>
+	</section>
+
+	<div class="foot"><span>Last updated October 2026 · <a href="https://raisulsohan.com/en/cv/">raisulsohan.com/en/cv</a></span><span>Page 2 of 2</span></div>
+</div>
+
+<script>
+/* Mark a page whose content runs past its bottom margin (screen only; printing ignores it). */
+document.querySelectorAll('.page').forEach(function (page) {
+	var foot = page.querySelector('.foot');
+	var limit = foot.getBoundingClientRect().top - 2;
+	var last = 0;
+	Array.prototype.forEach.call(page.children, function (el) {
+		if (el !== foot) { last = Math.max(last, el.getBoundingClientRect().bottom); }
+	});
+	page.dataset.room = Math.round(limit - last);
+	if (last > limit) { page.classList.add('is-over'); }
+});
+</script>
+</body>
+</html>

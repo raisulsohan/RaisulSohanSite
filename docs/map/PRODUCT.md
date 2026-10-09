@@ -24,5 +24,5 @@ Start here for any change. The theme root is the WordPress theme folder: templat
 | `page-index.php`, `page-portfolio.php`, `page-book-list.php`, `page-timeline.php`, `page-cv.php` | Page templates: Index, Portfolio (with the case-study pop-up and documentation), Book List, Story Timeline, CV | |
 | `sw.js`, `offline.html` | The service worker and its offline fallback | |
 | `scripts/build.js` | Joins and minifies `src/` into `assets/`; `--check` compares with the committed build | [FRONTEND.md](FRONTEND.md) |
-| `assets/` | `style.min.css` and `app.min.js` (built, committed, never edited), the page bundles (`cv.min.css`, admin-only `cv-editor.min.css` and `cv-editor.min.js`, `*-demo.min.*`), `editor.css`, `fonts.css`, `fonts/`, `img/`, `demo/`, `cv/` (the bundled CV PDF) | |
+| `assets/` | `style.min.css` and `app.min.js` (built, committed, never edited), the page bundles (`cv.min.css`, admin-only `cv-editor.min.css` and `cv-editor.min.js`, `*-demo.min.*`), `editor.css`, `fonts.css`, `fonts/`, `img/`, `demo/`, `cv/` (the bundled CV PDF, printed from `docs/cv/cv-pdf.html`; the steps are in that file) | |
 | `.github/workflows/ci.yml` | PHP syntax on 8.0–8.3, built assets match sources, the version in step | [OPERATIONS.md](OPERATIONS.md) |

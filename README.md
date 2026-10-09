@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.33.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.33.1-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -14,6 +14,7 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 
 **LazyMapLayers on the portfolio, the CV brought up to date, and cards that move.**
 
+- **7.33.1: A new CV PDF, with its source in the repository.** `assets/cv/Raisul_Sohan_CV.pdf` is rebuilt from the current CV: two A4 pages with the ten tools, LazyEditMirror and Lingopie in the selected work, the new skills and clickable links to the English edition. It used to be made outside the repository and had fallen behind the page; it is now printed from `docs/cv/cv-pdf.html` with headless Edge or Chrome (the command is in the file, and a page that overflows shows a red outline in the browser).
 - **7.33.0: LazyMapLayers, ten tools on the CV, animated card art.** LazyMapLayers, the free map design and map animation panel for After Effects, joins the portfolio with a bilingual case study, added once through `rs_sync_new_portfolio_projects()`. The cards of LazyEditMirror and LazyMapLayers are now animated SVGs (`assets/img/lazyeditmirror.svg`, `assets/img/lazymaplayers.svg`): an 8-second loop in CSS keyframes inside the file, so an `<img>` plays it with no video file, and it holds a still frame under reduced motion; everything that matters sits inside the featured card's crop. The CV gains LazyEditMirror and LazyMapLayers among the open-source tools (now ten, with the three browser extensions in one entry so the list stays in even rows), LazyEditMirror in the selected work, project-page links beside GitHub for the Adobe tools, Windows in the profile, and UXP and C# among the skills. `rs_cv_tools_update_v1()` applies the same to a CV that was already saved, once, changing only text that still reads exactly as the theme wrote it.
 
 ## What's new in 7.32
