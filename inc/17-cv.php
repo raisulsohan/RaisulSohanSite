@@ -300,11 +300,11 @@ function rs_cv_data( $post_id = 0 ) {
 		/* One sentence for the hero and the search result. */
 		'summary'    => 'Motion designer and 2D animator with 10+ years turning complex briefs into clear visual stories. I work from concept and storyboard through animation and sound, and build free tools that help creative teams move faster.',
 
-		'profile'    => 'Motion designer and 2D animator with 10+ years of experience on story-led work for international development, technology and editorial teams. Selected clients include UNDP, UNICEF, GIZ, USAID, the World Bank and WHO. Alongside client work, I build free tools for Adobe, Figma and Chrome, and direct animated documentaries from script to final sound. I pair hands-on craft with production leadership, carrying projects from the first storyboard to delivery and improving the workflow for the next one.',
+		'profile'    => 'Motion designer and 2D animator with 10+ years of experience on story-led work for international development, technology and editorial teams. Selected clients include UNDP, UNICEF, GIZ, USAID, the World Bank and WHO. Alongside client work, I build free tools for Adobe, Figma, Chrome and Windows, and direct animated documentaries from script to final sound. I pair hands-on craft with production leadership, carrying projects from the first storyboard to delivery and improving the workflow for the next one.',
 
 		'stats'      => array(
 			array( 'label' => 'Years in motion', 'value' => '10+' ),
-			array( 'label' => 'Open-source tools', 'value' => '8' ),
+			array( 'label' => 'Open-source tools', 'value' => '10' ),
 			array( 'label' => 'Documentary films', 'value' => '3' ),
 			array( 'label' => 'Organisations served', 'value' => '12' ),
 		),
@@ -312,7 +312,7 @@ function rs_cv_data( $post_id = 0 ) {
 		'highlights' => array(
 			array( 'lead' => '100% on-time delivery', 'text' => 'across Vidiosa client campaigns; a new storyboard-and-feedback workflow cut turnaround by 15%.' ),
 			array( 'lead' => '200K+ organic views', 'text' => 'on campaigns where I directed the creative, with measurable audience engagement.' ),
-			array( 'lead' => '8 free open-source tools', 'text' => 'for Windows, Adobe CC, Figma and Chrome, alongside 1,100+ GitHub contributions in the past year.' ),
+			array( 'lead' => '10 free open-source tools', 'text' => 'for Windows, Adobe CC, Figma and Chrome, alongside 1,100+ GitHub contributions in the past year.' ),
 			array( 'lead' => '3 animated documentaries', 'text' => 'written, illustrated, animated and sound-designed for Nomolos and Bichitro Biggan.' ),
 		),
 
@@ -325,7 +325,7 @@ function rs_cv_data( $post_id = 0 ) {
 				'bullets' => array(
 					'Created **Nomolos** ([youtube.com/@nomolosfiles](https://www.youtube.com/@nomolosfiles)); wrote, illustrated, animated and sound-designed **Prohibition** (9:40) and **Cobra Effect** (8:49, 23 scenes).',
 					'Write and animate science stories for **Bichitro Biggan**; created **Consciousness** (4:08) with nine hand-drawn scenes, 3D parallax and volumetric lighting.',
-					'Build and maintain eight free creative and desktop tools; built two bilingual PHP / JavaScript WordPress platforms: **bichitrobiggan.com** and **raisulsohan.com**.',
+					'Build and maintain ten free creative and desktop tools; built two bilingual PHP / JavaScript WordPress platforms: **bichitrobiggan.com** and **raisulsohan.com**.',
 				),
 			),
 			array(
@@ -386,43 +386,31 @@ function rs_cv_data( $post_id = 0 ) {
 		'tools'      => array(
 			array(
 				'name' => 'LazyLord',
-				'links' => array( array( 'label' => 'LazyLord', 'url' => 'https://github.com/raisulsohan/LazyLord' ) ),
+				'links' => rs_cv_tool_links( 'LazyLord', 'lazylord', 'LazyLord' ),
 				'kind' => 'Adobe CEP panel + Figma plugin · TypeScript',
 				'text' => 'Transfers vector artwork between Figma, Photoshop, Illustrator and After Effects.',
 			),
 			array(
 				'name' => 'LazyMotionToolkit',
-				'links' => array( array( 'label' => 'LazyMotionToolkit', 'url' => 'https://github.com/raisulsohan/LazyMotionToolkit' ) ),
+				'links' => rs_cv_tool_links( 'LazyMotionToolkit', 'lazymotiontoolkit', 'LazyMotionToolkit' ),
 				'kind' => 'After Effects ScriptUI panel · ExtendScript',
 				'text' => 'Nine dockable tools for precomps, text boxes, fades, arrows, anchors and grids.',
 			),
 			array(
 				'name' => 'LazyKick',
-				'links' => array( array( 'label' => 'LazyKick', 'url' => 'https://github.com/raisulsohan/LazyKick' ) ),
+				'links' => rs_cv_tool_links( 'LazyKick', 'lazykick', 'LazyKick' ),
 				'kind' => 'CEP panel · After Effects & Premiere Pro',
 				'text' => 'Paste images, add time-coded notes and import media folders in After Effects or Premiere.',
 			),
 			array(
 				'name' => 'Lazy-Image',
-				'links' => array( array( 'label' => 'Lazy-Image', 'url' => 'https://github.com/raisulsohan/LazyImageGeneration' ) ),
+				'links' => rs_cv_tool_links( 'Lazy-Image', 'lazy-image-ae', 'LazyImageGeneration' ),
 				'kind' => 'CEP extension · CDP browser automation',
 				'text' => 'Generate images inside After Effects or Premiere Pro without an API key.',
 			),
-			array(
-				'name' => 'LazyScroll · LazySnap',
-				'links' => array(
-					array( 'label' => 'LazyScroll', 'url' => '/portfolio/lazyscroll/' ),
-					array( 'label' => 'LazySnap', 'url' => '/portfolio/lazysnap/' ),
-				),
-				'kind' => 'Chrome & Edge extensions · Manifest V3',
-				'text' => 'Per-site media volume controls, article text and commentary text tools.',
-			),
-			array(
-				'name' => 'LazyRuler',
-				'links' => array( array( 'label' => 'LazyRuler', 'url' => '/portfolio/lazyruler/' ) ),
-				'kind' => 'Chrome & Edge extension · Manifest V3',
-				'text' => 'Photoshop-style rulers and guides for arranging browser-page elements.',
-			),
+			rs_cv_tool_lazyeditmirror(),
+			rs_cv_tool_lazymaplayers(),
+			rs_cv_tool_browser_extensions(),
 			array(
 				'name' => 'LazyPin',
 				'links' => array(
@@ -448,6 +436,7 @@ function rs_cv_data( $post_id = 0 ) {
 				'text'  => 'A 4:08 science film with nine illustrated scenes, multiplane 3D parallax, volumetric lighting and original sound design.',
 			),
 			rs_cv_lingopie_film(),
+			rs_cv_lazyeditmirror_work(),
 			array(
 				'title' => 'Showreel',
 				'url'   => 'https://youtu.be/Hdq8STf5beQ',
@@ -469,8 +458,8 @@ function rs_cv_data( $post_id = 0 ) {
 			array(
 				'group' => 'Code & automation',
 				'items' => array(
-					'JavaScript (ES6+), TypeScript, Node.js',
-					'Adobe CEP, ExtendScript, ScriptUI; Figma Plugin API; Chrome extensions (Manifest V3)',
+					'JavaScript (ES6+), TypeScript, Node.js, C# (Win32 API)',
+					'Adobe CEP, UXP, ExtendScript, ScriptUI; Figma Plugin API; Chrome extensions (Manifest V3)',
 					'PHP, WordPress theme architecture, HTML, CSS, Lottie',
 					'Git and GitHub, documentation, release management',
 				),
@@ -1180,3 +1169,312 @@ function rs_cv_add_lingopie_v1() {
 	update_site_option( $flag, 1 );
 }
 add_action( 'init', 'rs_cv_add_lingopie_v1', 26 );
+
+/**
+ * A tool's two links: its project page on this site, then its repository.
+ *
+ * @param string $label Link text for the project page.
+ * @param string $slug  Portfolio project slug.
+ * @param string $repo  Repository name under github.com/raisulsohan.
+ * @return array[]
+ */
+function rs_cv_tool_links( $label, $slug, $repo ) {
+	return array(
+		array( 'label' => $label, 'url' => '/portfolio/' . $slug . '/' ),
+		array( 'label' => 'GitHub', 'url' => 'https://github.com/raisulsohan/' . $repo ),
+	);
+}
+
+/**
+ * LazyEditMirror as an open-source tools entry.
+ *
+ * @return array
+ */
+function rs_cv_tool_lazyeditmirror() {
+	return array(
+		'name'  => 'LazyEditMirror',
+		'links' => rs_cv_tool_links( 'LazyEditMirror', 'lazyeditmirror', 'LazyEditMirror' ),
+		'kind'  => 'Premiere Pro UXP panel · Node.js & ffmpeg',
+		'text'  => 'Copies a front-camera edit onto the side camera, finding the sync by audio.',
+	);
+}
+
+/**
+ * LazyMapLayers as an open-source tools entry.
+ *
+ * @return array
+ */
+function rs_cv_tool_lazymaplayers() {
+	return array(
+		'name'  => 'LazyMapLayers',
+		'links' => rs_cv_tool_links( 'LazyMapLayers', 'lazymaplayers', 'LazyMapLayers' ),
+		'kind'  => 'After Effects CEP panel · TypeScript & MapLibre GL',
+		'text'  => 'Frame-exact map design and animation: flights, 3D cities, data maps and labels in every script.',
+	);
+}
+
+/**
+ * The three browser extensions as one entry, which keeps the tools list in
+ * even rows of two now that it holds ten tools.
+ *
+ * @return array
+ */
+function rs_cv_tool_browser_extensions() {
+	return array(
+		'name'  => 'LazyScroll · LazySnap · LazyRuler',
+		'links' => array(
+			array( 'label' => 'LazyScroll', 'url' => '/portfolio/lazyscroll/' ),
+			array( 'label' => 'LazySnap', 'url' => '/portfolio/lazysnap/' ),
+			array( 'label' => 'LazyRuler', 'url' => '/portfolio/lazyruler/' ),
+		),
+		'kind'  => 'Chrome & Edge extensions · Manifest V3',
+		'text'  => 'Per-site media volume, clean article and commentary text, and Photoshop-style rulers for web pages.',
+	);
+}
+
+/**
+ * LazyEditMirror as a selected-work entry, the tool in "Stories, motion & tools".
+ *
+ * @return array
+ */
+function rs_cv_lazyeditmirror_work() {
+	return array(
+		'title' => 'LazyEditMirror',
+		'url'   => '/portfolio/lazyeditmirror/',
+		'meta'  => 'Open-source tool · Premiere Pro panel',
+		'text'  => 'A free panel that copies a front-camera edit onto the side camera, finding the sync by listening to both recordings. Try it in the browser.',
+	);
+}
+
+/**
+ * Bring a saved CV up to date with the October 2026 tools, in place.
+ *
+ * Only text that still reads exactly as the theme first wrote it is
+ * changed, so anything edited in the dashboard stays as it was. Adds
+ * LazyEditMirror and LazyMapLayers after Lazy-Image, gives the Adobe tools
+ * their project-page link beside GitHub, folds the three browser extensions
+ * into one entry so the list stays in even rows, counts ten tools, names UXP and C#
+ * among the skills, and puts LazyEditMirror in the selected work before the
+ * Showreel.
+ *
+ * @param array $saved Saved CV data, changed in place.
+ * @return bool Whether anything changed.
+ */
+function rs_cv_apply_tools_update_v1( &$saved ) {
+	$changed = false;
+
+	$text = function ( $value ) use ( &$changed ) {
+		if ( ! is_string( $value ) ) {
+			return $value;
+		}
+
+		$new = strtr(
+			$value,
+			array(
+				'I build free tools for Adobe, Figma and Chrome,'           => 'I build free tools for Adobe, Figma, Chrome and Windows,',
+				'Build and maintain eight free creative and desktop tools;' => 'Build and maintain ten free creative and desktop tools;',
+			)
+		);
+
+		if ( $new !== $value ) {
+			$changed = true;
+		}
+
+		return $new;
+	};
+
+	if ( isset( $saved['profile'] ) ) {
+		$saved['profile'] = $text( $saved['profile'] );
+	}
+
+	if ( isset( $saved['stats'] ) && is_array( $saved['stats'] ) ) {
+		foreach ( $saved['stats'] as &$stat ) {
+			if ( isset( $stat['label'], $stat['value'] ) && 'Open-source tools' === $stat['label'] && '8' === (string) $stat['value'] ) {
+				$stat['value'] = '10';
+				$changed       = true;
+			}
+		}
+		unset( $stat );
+	}
+
+	if ( isset( $saved['highlights'] ) && is_array( $saved['highlights'] ) ) {
+		foreach ( $saved['highlights'] as &$highlight ) {
+			if ( isset( $highlight['lead'] ) && '8 free open-source tools' === $highlight['lead'] ) {
+				$highlight['lead'] = '10 free open-source tools';
+				$changed           = true;
+			}
+		}
+		unset( $highlight );
+	}
+
+	if ( isset( $saved['experience'] ) && is_array( $saved['experience'] ) ) {
+		foreach ( $saved['experience'] as &$job ) {
+			if ( isset( $job['bullets'] ) && is_array( $job['bullets'] ) ) {
+				$job['bullets'] = array_map( $text, $job['bullets'] );
+			}
+		}
+		unset( $job );
+	}
+
+	$skills = array(
+		'JavaScript (ES6+), TypeScript, Node.js' => 'JavaScript (ES6+), TypeScript, Node.js, C# (Win32 API)',
+		'Adobe CEP, ExtendScript, ScriptUI; Figma Plugin API; Chrome extensions (Manifest V3)' => 'Adobe CEP, UXP, ExtendScript, ScriptUI; Figma Plugin API; Chrome extensions (Manifest V3)',
+	);
+	if ( isset( $saved['skills'] ) && is_array( $saved['skills'] ) ) {
+		foreach ( $saved['skills'] as &$group ) {
+			if ( ! isset( $group['items'] ) || ! is_array( $group['items'] ) ) {
+				continue;
+			}
+			foreach ( $group['items'] as &$item ) {
+				if ( is_string( $item ) && isset( $skills[ $item ] ) ) {
+					$item    = $skills[ $item ];
+					$changed = true;
+				}
+			}
+			unset( $item );
+		}
+		unset( $group );
+	}
+
+	/* The tools: project-page links for the Adobe tools that had only GitHub, then the two new ones. */
+	$tools = isset( $saved['tools'] ) && is_array( $saved['tools'] ) ? array_values( $saved['tools'] ) : array();
+	$pages = array(
+		'LazyLord'          => array( 'lazylord', 'LazyLord' ),
+		'LazyMotionToolkit' => array( 'lazymotiontoolkit', 'LazyMotionToolkit' ),
+		'LazyKick'          => array( 'lazykick', 'LazyKick' ),
+		'Lazy-Image'        => array( 'lazy-image-ae', 'LazyImageGeneration' ),
+	);
+	$urls  = function ( $tool ) {
+		$out = array();
+		if ( ! empty( $tool['url'] ) ) {
+			$out[] = (string) $tool['url'];
+		}
+		foreach ( isset( $tool['links'] ) && is_array( $tool['links'] ) ? $tool['links'] : array() as $link ) {
+			if ( ! empty( $link['url'] ) ) {
+				$out[] = (string) $link['url'];
+			}
+		}
+		return $out;
+	};
+
+	foreach ( $tools as &$tool ) {
+		$name = isset( $tool['name'] ) ? (string) $tool['name'] : '';
+		if ( ! isset( $pages[ $name ] ) ) {
+			continue;
+		}
+		if ( array( 'https://github.com/raisulsohan/' . $pages[ $name ][1] ) === $urls( $tool ) ) {
+			$tool['links'] = rs_cv_tool_links( $name, $pages[ $name ][0], $pages[ $name ][1] );
+			unset( $tool['url'] );
+			$changed = true;
+		}
+	}
+	unset( $tool );
+
+	/* The two browser-extension entries become one, when both read as first written. */
+	$pair = array(
+		'name'  => 'LazyScroll · LazySnap',
+		'links' => array(
+			array( 'label' => 'LazyScroll', 'url' => '/portfolio/lazyscroll/' ),
+			array( 'label' => 'LazySnap', 'url' => '/portfolio/lazysnap/' ),
+		),
+		'kind'  => 'Chrome & Edge extensions · Manifest V3',
+		'text'  => 'Per-site media volume controls, article text and commentary text tools.',
+	);
+	$ruler = array(
+		'name'  => 'LazyRuler',
+		'links' => array( array( 'label' => 'LazyRuler', 'url' => '/portfolio/lazyruler/' ) ),
+		'kind'  => 'Chrome & Edge extension · Manifest V3',
+		'text'  => 'Photoshop-style rulers and guides for arranging browser-page elements.',
+	);
+	$pair_at  = array_search( $pair, $tools, false );
+	$ruler_at = array_search( $ruler, $tools, false );
+	if ( false !== $pair_at && false !== $ruler_at ) {
+		$tools[ $pair_at ] = rs_cv_tool_browser_extensions();
+		array_splice( $tools, $ruler_at, 1 );
+		$changed = true;
+	}
+
+	$has = function ( $needle ) use ( &$tools, $urls ) {
+		foreach ( $tools as $i => $tool ) {
+			foreach ( $urls( $tool ) as $url ) {
+				if ( false !== stripos( $url, $needle ) ) {
+					return $i;
+				}
+			}
+		}
+		return false;
+	};
+
+	foreach ( array(
+		'LazyEditMirror' => rs_cv_tool_lazyeditmirror(),
+		'LazyMapLayers'  => rs_cv_tool_lazymaplayers(),
+	) as $needle => $entry ) {
+		if ( false !== $has( $needle ) ) {
+			continue;
+		}
+		$after = 'LazyMapLayers' === $needle ? $has( 'LazyEditMirror' ) : false;
+		if ( false === $after ) {
+			$after = $has( 'LazyImageGeneration' );
+		}
+		if ( false === $after ) {
+			$after = $has( 'lazy-image-ae' );
+		}
+		$at = false !== $after ? $after + 1 : count( $tools );
+		array_splice( $tools, $at, 0, array( $entry ) );
+		$changed = true;
+	}
+	$saved['tools'] = $tools;
+
+	/* The tool in the selected work, before the Showreel. */
+	$films = isset( $saved['films'] ) && is_array( $saved['films'] ) ? array_values( $saved['films'] ) : array();
+	$found = false;
+	$at    = count( $films );
+	foreach ( $films as $i => $film ) {
+		if ( ! empty( $film['url'] ) && false !== stripos( $film['url'], 'lazyeditmirror' ) ) {
+			$found = true;
+		}
+		if ( isset( $film['title'] ) && 'Showreel' === $film['title'] && $at === count( $films ) ) {
+			$at = $i;
+		}
+	}
+	if ( ! $found ) {
+		array_splice( $films, $at, 0, array( rs_cv_lazyeditmirror_work() ) );
+		$saved['films'] = $films;
+		$changed        = true;
+	}
+
+	return $changed;
+}
+
+/**
+ * Run rs_cv_apply_tools_update_v1() on the saved CV, once. A CV that was
+ * never saved shows the defaults, which already carry all of it.
+ */
+function rs_cv_tools_update_v1() {
+	$flag = 'rs_cv_tools_updated_v1';
+	if ( get_site_option( $flag ) ) {
+		return;
+	}
+
+	$page  = null;
+	$saved = false;
+	if ( is_multisite() ) {
+		$saved = rs_cv_saved_data();
+	} else {
+		$page  = get_page_by_path( 'cv', OBJECT, 'page' );
+		$saved = $page ? get_post_meta( $page->ID, '_rs_cv_data', true ) : false;
+	}
+
+	if ( is_array( $saved ) && rs_cv_apply_tools_update_v1( $saved ) ) {
+		if ( is_multisite() ) {
+			update_site_option( 'rs_cv_shared_data_v1', $saved );
+		} elseif ( $page ) {
+			update_post_meta( $page->ID, '_rs_cv_data', $saved );
+		}
+
+		rs_cv_purge_network_caches();
+	}
+
+	update_site_option( $flag, 1 );
+}
+add_action( 'init', 'rs_cv_tools_update_v1', 27 );

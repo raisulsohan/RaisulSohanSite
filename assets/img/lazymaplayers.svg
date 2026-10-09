@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" fill="none" font-family="Inter, 'Segoe UI', system-ui, sans-serif">
+<title>LazyMapLayers: free, frame-exact map animation for After Effects</title>
+<defs>
+	<linearGradient id="bg" x1="0" y1="0" x2="1920" y2="1080" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#0f1a24"/><stop offset="1" stop-color="#090d14"/></linearGradient>
+	<radialGradient id="glow" cx="960" cy="200" r="700" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#10b981" stop-opacity=".22"/><stop offset="1" stop-color="#10b981" stop-opacity="0"/></radialGradient>
+	<linearGradient id="tile" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#10b981"/><stop offset="1" stop-color="#0ea5e9"/></linearGradient>
+	<linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d2a40"/><stop offset="1" stop-color="#0a1c2e"/></linearGradient>
+	<linearGradient id="land" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a3d33"/><stop offset="1" stop-color="#143229"/></linearGradient>
+	<linearGradient id="prism" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6ee7b7"/><stop offset="1" stop-color="#10b981"/></linearGradient>
+	<clipPath id="view"><rect width="1320" height="600" rx="26"/></clipPath>
+</defs>
+<style>
+
+*{animation-duration:8s;animation-iteration-count:infinite;animation-timing-function:cubic-bezier(.45,0,.2,1)}
+.cam{animation-name:cam}
+@keyframes cam{0%,11.25%{transform:translate(0,0) scale(1)}42.50%,62.50%{transform:translate(-558.0px,-200.3px) scale(1.45)}75.00%,100%{transform:translate(0,0) scale(1)}}
+.route{stroke-dasharray:640;animation-name:route}
+@keyframes route{0%,21.25%{stroke-dashoffset:640;opacity:1}42.50%,92.50%{stroke-dashoffset:0;opacity:1}97.50%,100%{stroke-dashoffset:0;opacity:0}}
+.pa{animation-name:pa}.pb{animation-name:pb}
+@keyframes pa{0%,16.25%{opacity:0;transform:translateY(-60px)}20.63%{opacity:1;transform:translateY(4px)}22.50%,92.50%{opacity:1;transform:translateY(0)}97.50%,100%{opacity:0}}
+@keyframes pb{0%,41.25%{opacity:0;transform:translateY(-60px)}45.63%{opacity:1;transform:translateY(4px)}47.50%,92.50%{opacity:1;transform:translateY(0)}97.50%,100%{opacity:0}}
+.la{animation-name:la}.lb{animation-name:lb}
+@keyframes la{0%,22.50%{opacity:0}27.50%,92.50%{opacity:1}97.50%,100%{opacity:0}}
+@keyframes lb{0%,47.50%{opacity:0}52.50%,92.50%{opacity:1}97.50%,100%{opacity:0}}
+.pr{transform-box:fill-box;transform-origin:50% 100%}
+@keyframes pr0{0%,75.00%{transform:scaleY(0)}81.25%,92.50%{transform:scaleY(1)}97.50%,100%{transform:scaleY(0)}}.pr0{animation-name:pr0}@keyframes pr1{0%,76.50%{transform:scaleY(0)}82.75%,92.50%{transform:scaleY(1)}97.50%,100%{transform:scaleY(0)}}.pr1{animation-name:pr1}@keyframes pr2{0%,78.00%{transform:scaleY(0)}84.25%,92.50%{transform:scaleY(1)}97.50%,100%{transform:scaleY(0)}}.pr2{animation-name:pr2}@keyframes pr3{0%,79.50%{transform:scaleY(0)}85.75%,92.50%{transform:scaleY(1)}97.50%,100%{transform:scaleY(0)}}.pr3{animation-name:pr3}@keyframes pr4{0%,81.00%{transform:scaleY(0)}87.25%,92.50%{transform:scaleY(1)}97.50%,100%{transform:scaleY(0)}}.pr4{animation-name:pr4}
+.legend{animation-name:legend}
+@keyframes legend{0%,75.00%{opacity:0}80.00%,92.50%{opacity:1}97.50%,100%{opacity:0}}
+.hud{animation-name:hud}
+@keyframes hud{0%,11.25%{opacity:1}13.75%,70.00%{opacity:0}73.75%,100%{opacity:1}}
+.hud2{animation-name:hud2}
+@keyframes hud2{0%,13.75%{opacity:0}17.50%,67.50%{opacity:1}70.00%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation-delay:-6.9s!important;animation-play-state:paused!important}}
+
+.bn{font-family:'Noto Sans Bengali','Nirmala UI','Vrinda','Hind Siliguri',sans-serif}
+</style>
+<rect width="1920" height="1080" fill="url(#bg)"/>
+<rect width="1920" height="1080" fill="url(#glow)"/>
+
+<!-- mark and name -->
+<g transform="translate(560 104)">
+	<rect width="104" height="104" rx="27" fill="url(#tile)"/>
+	<path d="M30 30 L52 22 L74 30 V80 L52 72 L30 80 Z" fill="#fff" fill-opacity=".25" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
+	<path d="M52 22 V72" stroke="#fff" stroke-width="4"/>
+	<path d="M62 46 C56 39 56 33 62 29 C68 33 68 39 62 46 Z" fill="#fff"/>
+</g>
+<text x="690" y="186" font-size="92" font-weight="800" letter-spacing="-2"><tspan fill="#fff">LazyMap</tspan><tspan fill="#34d399">Layers</tspan></text>
+
+<!-- the map -->
+<g transform="translate(300 262)">
+	<g clip-path="url(#view)">
+		<rect width="1320" height="600" fill="url(#sea)"/>
+		<g class="cam">
+			<path d="M0 0V600M120 0V600M240 0V600M360 0V600M480 0V600M600 0V600M720 0V600M840 0V600M960 0V600M1080 0V600M1200 0V600M1320 0V600M0 0H1320M0 120H1320M0 240H1320M0 360H1320M0 480H1320M0 600H1320" stroke="#ffffff" stroke-opacity=".05" stroke-width="2"/>
+			<path d="M0 0 H1320 V250 C1260 290 1230 330 1200 390 C1170 450 1130 490 1080 530 L1040 600 H880 C850 560 820 530 780 520 C740 510 700 540 660 530 C600 515 580 460 540 440 C490 415 440 460 390 440 C340 420 320 360 260 350 C200 340 170 400 120 390 C70 380 40 340 0 330 Z" fill="url(#land)" stroke="#2f7a63" stroke-width="3"/>
+			<path d="M420 0 C440 100 500 180 470 260 C455 320 510 390 540 440 M760 0 C780 80 720 150 750 240 C770 310 740 400 760 520" stroke="#2b7bb9" stroke-width="7" stroke-linecap="round" opacity=".8"/>
+			<path d="M1270 0 C1240 90 1300 170 1270 250" stroke="#94a3b8" stroke-width="3" stroke-dasharray="12 9" opacity=".7"/>
+			<path d="M240 140 L600 230 L860 320 L1050 455 M600 230 L930 90 M600 230 L360 330" stroke="#c9a96e" stroke-width="3" opacity=".55"/>
+			<circle cx="240" cy="140" r="7" fill="#e2e8f0"/>
+	<text x="254" y="130" class="bn" font-size="26" font-weight="700" fill="#e2e8f0">রাজশাহী</text>
+	<text x="254" y="156" font-size="18" fill="#94a3b8">Rajshahi</text><circle cx="360" cy="330" r="7" fill="#e2e8f0"/>
+	<text x="374" y="320" class="bn" font-size="26" font-weight="700" fill="#e2e8f0">খুলনা</text>
+	<text x="374" y="346" font-size="18" fill="#94a3b8">Khulna</text><circle cx="930" cy="90" r="7" fill="#e2e8f0"/>
+	<text x="944" y="80" class="bn" font-size="26" font-weight="700" fill="#e2e8f0">সিলেট</text>
+	<text x="944" y="106" font-size="18" fill="#94a3b8">Sylhet</text>
+			<path class="route" d="M600 230 Q900 230 1050 455" stroke="#fbbf24" stroke-width="8" stroke-linecap="round"/>
+			<g class="pr pr0">
+		<path d="M223 140 V30 L235 18 H269 V128 L257 140 Z" fill="#0f766e"/>
+		<rect x="223" y="30" width="34" height="110" fill="url(#prism)"/>
+		<path d="M223 30 L235 18 H269 L257 30 Z" fill="#a7f3d0"/>
+	</g><g class="pr pr1">
+		<path d="M343 330 V250 L355 238 H389 V318 L377 330 Z" fill="#0f766e"/>
+		<rect x="343" y="250" width="34" height="80" fill="url(#prism)"/>
+		<path d="M343 250 L355 238 H389 L377 250 Z" fill="#a7f3d0"/>
+	</g><g class="pr pr2">
+		<path d="M913 90 V-40 L925 -52 H959 V78 L947 90 Z" fill="#0f766e"/>
+		<rect x="913" y="-40" width="34" height="130" fill="url(#prism)"/>
+		<path d="M913 -40 L925 -52 H959 L947 -40 Z" fill="#a7f3d0"/>
+	</g><g class="pr pr3">
+		<path d="M583 230 V10 L595 -2 H629 V218 L617 230 Z" fill="#0f766e"/>
+		<rect x="583" y="10" width="34" height="220" fill="url(#prism)"/>
+		<path d="M583 10 L595 -2 H629 L617 10 Z" fill="#a7f3d0"/>
+	</g><g class="pr pr4">
+		<path d="M1033 455 V295 L1045 283 H1079 V443 L1067 455 Z" fill="#0f766e"/>
+		<rect x="1033" y="295" width="34" height="160" fill="url(#prism)"/>
+		<path d="M1033 295 L1045 283 H1079 L1067 295 Z" fill="#a7f3d0"/>
+	</g>
+			<g class="pa"><g transform="translate(600 230)"><ellipse cx="0" cy="2" rx="12" ry="4" fill="#000" opacity=".35"/><path d="M0 0 C-12 -16 -20 -26 -20 -38 A20 20 0 1 1 20 -38 C20 -26 12 -16 0 0 Z" fill="#ec4899" stroke="#fff" stroke-width="3"/><circle cx="0" cy="-38" r="7" fill="#fff"/></g></g>
+			<g class="pb"><g transform="translate(1050 455)"><ellipse cx="0" cy="2" rx="12" ry="4" fill="#000" opacity=".35"/><path d="M0 0 C-12 -16 -20 -26 -20 -38 A20 20 0 1 1 20 -38 C20 -26 12 -16 0 0 Z" fill="#ec4899" stroke="#fff" stroke-width="3"/><circle cx="0" cy="-38" r="7" fill="#fff"/></g></g>
+			<g class="la"><text x="572" y="276" text-anchor="end" class="bn" font-size="38" font-weight="800" fill="#fff">ঢাকা</text><text x="572" y="304" text-anchor="end" font-size="22" fill="#cbd5e1">Dhaka</text></g>
+			<g class="lb"><text x="1020" y="501" text-anchor="end" class="bn" font-size="38" font-weight="800" fill="#fff">চট্টগ্রাম</text><text x="1020" y="529" text-anchor="end" font-size="22" fill="#cbd5e1">Chittagong</text></g>
+		</g>
+		<text x="1290" y="570" text-anchor="end" font-size="22" font-weight="700" fill="#5b8fb0" letter-spacing="6" opacity=".8">BAY OF BENGAL</text>
+		<!-- what the camera is doing -->
+		<g class="hud"><rect x="1046" y="24" width="250" height="48" rx="24" fill="#0b1220" fill-opacity=".8" stroke="#334155"/><text x="1171" y="56" text-anchor="middle" font-size="24" font-weight="700" fill="#cbd5e1">Zoom 6.4</text></g>
+		<g class="hud2"><rect x="966" y="24" width="330" height="48" rx="24" fill="#0b1220" fill-opacity=".8" stroke="#fbbf24"/><text x="1131" y="56" text-anchor="middle" font-size="24" font-weight="700" fill="#fbbf24">Fly · along route</text></g>
+		<g class="legend"><rect x="24" y="488" width="310" height="88" rx="16" fill="#0b1220" fill-opacity=".85" stroke="#334155"/><text x="44" y="524" font-size="22" font-weight="700" fill="#e2e8f0">Data from a CSV</text><rect x="44" y="542" width="200" height="14" rx="7" fill="url(#prism)"/><text x="256" y="556" font-size="18" fill="#94a3b8">prisms</text></g>
+	</g>
+	<rect width="1320" height="600" rx="26" stroke="#1f3b4d" stroke-width="2"/>
+</g>
+
+<text x="960" y="940" text-anchor="middle" font-size="36" fill="#9fb3c8">Frame-exact maps, flights and data stories, free.</text>
+<text x="960" y="992" text-anchor="middle" font-size="26" fill="#5f7385">Free and open source · Adobe After Effects panel</text>
+</svg>

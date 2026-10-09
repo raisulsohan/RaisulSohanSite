@@ -1901,6 +1901,59 @@ function rs_get_default_portfolio_projects() {
 			'github_url'  => 'https://github.com/raisulsohan/LazyEditMirror',
 			'order'       => 7,
 		),
+		array(
+			'id'          => 'lazymaplayers',
+			'category'    => 'tools',
+			'type_bn'     => 'After Effects CEP প্যানেল ও ম্যাপ রেন্ডারার',
+			'type_en'     => 'After Effects CEP Panel & Map Renderer',
+			'badge_bn'    => 'ফ্রি ও ওপেন সোর্স • After Effects',
+			'badge_en'    => 'Free & Open Source • After Effects',
+			'title_bn'    => 'LazyMapLayers — After Effects-এর জন্য ফ্রি, ফ্রেম-নিখুঁত ম্যাপ ডিজাইন ও ম্যাপ অ্যানিমেশন',
+			'title_en'    => 'LazyMapLayers — Free, Frame-Exact Map Design and Map Animation for After Effects',
+			'summary_bn'  => 'ম্যাপ, ফ্লাইট, রুট আর ডেটা-গল্পের জন্য After Effects-এর একটি ফ্রি প্যানেল। বেসম্যাপের প্রতিটি ফ্রেম তার নিজস্ব ক্যামেরায় আঁকা হয়, তাই জুমে ঝাপসা ধাপ বা হঠাৎ লাফিয়ে ওঠা লেবেল থাকে না; আর পিন, লেবেল, রুট ও বর্ডার আসে আসল After Effects লেয়ার হয়ে, পিক্সেল ধরে মিলিয়ে। পুরো পৃথিবী থেকে রাস্তা পর্যন্ত এক টানা ক্যামেরা, 3D টেরেইন ও ভবন, CSV থেকে ডেটা ম্যাপ, আর সব লিপিতে নাম। ফ্রি ও ওপেন সোর্স, কোনো অ্যাকাউন্ট বা কী লাগে না।',
+			'summary_en'  => 'A free After Effects panel for maps, flights, routes and data stories. Every frame of the basemap is rendered at its exact camera, so there are no blurry zoom steps or popping labels, while pins, labels, routes and borders arrive as real After Effects layers that line up to the pixel. One camera from the whole globe to street level, 3D terrain and buildings, data maps from a CSV, and labels in every script. Free and open source, with no account and no key.',
+			'role_bn'     => 'একক ডেভেলপার ও ক্রিয়েটিভ টুলস ইঞ্জিনিয়ার',
+			'role_en'     => 'Solo Developer & Creative Tools Engineer',
+			'context_bn'  => 'Adobe CEP 12 • TypeScript, Preact ও MapLibre GL • v0.9',
+			'context_en'  => 'Adobe CEP 12 • TypeScript, Preact & MapLibre GL • v0.9',
+			'challenge_bn'=> "এক্সপ্লেইনার আর ডকুমেন্টারিতে ম্যাপ লাগে প্রায় সবসময়, কিন্তু After Effects-এ ম্যাপ অ্যানিমেট করার টুলগুলো দামি, পেইড ডেটা পার্টনারের ওপর নির্ভরশীল, আর তবুও জোড়াতালি চোখে পড়ে: এক জুম লেভেলের টাইল থেকে আরেকটায় যাওয়ার সময় ঝাপসা ধাপ, লাফিয়ে ওঠা ও ছোট হয়ে যাওয়া লেবেল, মাঝপথে থেমে যাওয়া ক্যামেরা মুভ। ফ্রি উপায়, অর্থাৎ স্ক্রিনশট আর হাতে কিফ্রেম, ক্যামেরা নড়তেই ভেঙে পড়ে।\n\nপ্রযুক্তিগত চ্যালেঞ্জ:\n১. প্রতিটি ফ্রেমে নিখুঁত ম্যাপ: পুরো পৃথিবী থেকে একটা রাস্তায় উড়ে যাওয়া ক্যামেরার জন্য ম্যাপ আঁকতে হবে ঠিক সেই ক্যামেরায়, দুই জুম লেভেলের মাঝে টেনে বড় করে নয়।\n২. ম্যাপে আটকে থাকা লেয়ার: পিন, লেবেল, রুট আর বর্ডারকে হতে হবে এডিট করা যায় এমন After Effects লেয়ার, যা ক্যামেরা নড়ার সময়ও 2D ও 3D-তে রেন্ডার করা পিক্সেলের ওপর বসে থাকে।\n৩. সব লিপিতে লেবেল: বাংলা, আরবি, হিন্দি, থাই আর CJK নাম ঠিকভাবে জুড়তে হবে, আর পুরো টাইমলাইনে কখনো একটার ওপর আরেকটা পড়া বা ঝিলমিল করা চলবে না।\n৪. ফ্রি ডেটা, অফলাইনে: অ্যাকাউন্ট, API কী বা মাসিক বিল ছাড়াই পৃথিবীর ম্যাপ, শহরের খুঁটিনাটি, টেরেইন আর স্যাটেলাইট ছবি।",
+			'challenge_en'=> "Maps turn up in almost every explainer and documentary, but the tools for animating them in After Effects are expensive, depend on paid data partners, and still show their seams: blurry steps as one zoom level's tiles hand over to the next, labels that pop and shrink, and camera moves that stop halfway. The free route, screenshots and hand-made keyframes, breaks as soon as the camera moves.\n\nTechnical challenges:\n1. A map that is exact on every frame: a camera that flies from the whole globe down to a street needs the map drawn at that exact camera, not stretched between zoom levels.\n2. Layers that stay on the map: pins, labels, routes and borders have to be editable After Effects layers that sit on the rendered pixels while the camera moves, in 2D and in 3D.\n3. Labels in every script: Bengali, Arabic, Hindi, Thai and CJK names have to shape correctly and never overlap or flicker across the timeline.\n4. Free data, offline: a world map, city detail, terrain and satellite imagery without an account, an API key or a monthly bill.",
+			'solution_bn' => "১. After Effects-এর ভেতরে ফ্রেম রেন্ডারার: MapLibre GL JS ম্যাপ কম্পের প্রতিটি ফ্রেম তার নিজস্ব ক্যামেরায় আঁকে (1080p প্রায় ৭৫–১৭০ মিলিসেকেন্ডে, 4K ২৮০–৬৪০ মিলিসেকেন্ডে), ৪× পর্যন্ত সুপারস্যাম্পলিং আর After Effects-এর শাটারের সাথে মেলানো মোশন ব্লারসহ। শুধু বদলে যাওয়া ফ্রেম আবার আঁকা হয়, আর রেন্ডার থামিয়ে পরে আবার চালানো যায়।\n\n২. এক টানা ক্যামেরা: শটের তালিকা, মাঝে fly, straight, along-route বা cut মুভ, van Wijk–Nuij জুম-অ্যান্ড-প্যান কার্ভে পৃথিবী থেকে রাস্তা পর্যন্ত, ৮৫° পর্যন্ত পিচ, 3D টেরেইন ও ভবনসহ। প্যানেলের ক্যামেরা MapLibre-এর প্রজেকশনের সাথে 0.00000003 px পর্যন্ত মেলে, আর একটি মেলানো After Effects ক্যামেরা 3D লেয়ারকে মাটিতে বসিয়ে রাখে (সর্বোচ্চ ভুল 0.004 px)।\n\n৩. আসল After Effects লেয়ার: পিন, ড্র-অন রুট, কলআউট, বর্ডার আর হাইলাইট করা এলাকা আসে লেয়ার ও এডিটযোগ্য শেপ লেয়ার হয়ে; সাথে স্থল, পানি, রাস্তা, সীমানা ও ভবনের আলাদা পাস আর ম্যাট।\n\n৪. পুরো টাইমলাইন জুড়ে লেবেল: স্থানীয় লিপিতে নাম, নিচে ইংরেজি; কলিশন চেক করে বসানো, তাই কখনো একটার ওপর আরেকটা পড়ে না, মসৃণভাবে ফেড হয়; আর {name}-এর মতো ফিল্ড দিয়ে নিজের কম্প থেকে লেবেল ডিজাইন করা যায়।\n\n৫. ডেটা-গল্প: একটি CSV জায়গাগুলোকে রং করে, বাবল, স্পাইক, ফ্লো, হিট আর সংখ্যা অনুযায়ী উঁচু হওয়া প্রিজম ম্যাপ বানায়, সাথে লেজেন্ড ও বার চার্ট। জায়গা মেলে ২৬টি ভাষায় নাম বা ISO কোড দিয়ে, আর ডিস্কের একটি CSV বদলালে ম্যাপ নিজে থেকেই নতুন রং নেয়।\n\n৬. ফ্রি, উন্মুক্ত ডেটা: Natural Earth-এর অফলাইন বিশ্ব ম্যাপ, যেকোনো ডাউনলোড করা এলাকার জন্য Protomaps হয়ে OpenStreetMap-এর খুঁটিনাটি, Mapterhorn-এর উন্মুক্ত টেরেইন, Sentinel-2 থেকে বানানো দশ মিটারের স্যাটেলাইট ছবি, NASA Blue Marble, আর Google Earth Studio থেকে আনা ক্যামেরা।\n\n৭. টেকসই করে বানানো: প্যানেলের প্রতিটি কাজ এক undo ধাপ; মূল অংশ ইউনিট টেস্টসহ বিশুদ্ধ TypeScript, After Effects-এর ভেতরের একটি টেস্ট স্যুট সংখ্যাগুলো মাপে, আর প্যাকেজটি সাইন করা, উইন্ডোজ ও macOS-এর ইনস্টলারসহ।",
+			'solution_en' => "1. A frame renderer inside After Effects: MapLibre GL JS draws every frame of the map comp at its exact camera (1080p in about 75–170 ms, 4K in about 280–640 ms), with up to 4× supersampling and motion blur that matches After Effects' shutter. Only frames that changed are drawn again, and a render can be cancelled and resumed.\n\n2. One continuous camera: a list of shots joined by fly, straight, along-route or cut moves on a van Wijk–Nuij zoom-and-pan curve from the globe to street level, with pitch up to 85° and 3D terrain and buildings. The panel's camera matches MapLibre's projection to within 0.00000003 px, and a matched After Effects camera keeps 3D layers on the ground (worst error 0.004 px).\n\n3. Real After Effects layers: pins, routes that draw on, callouts, borders and highlighted areas arrive as layers and editable shape layers, alongside separate passes and mattes for land, water, roads, boundaries and buildings.\n\n4. Labels placed over the whole timeline: names in the local script with English subtitles, collision-checked so they never overlap, fading smoothly, and designable from a comp of your own with fields such as {name}.\n\n5. Data stories: a CSV colours places and adds bubbles, spikes, flows, heat and prism maps that rise by their numbers, with a legend and a bar chart. Places are matched by name in 26 languages or by ISO code, and a CSV watched on disk recolours the map as soon as it is saved.\n\n6. Free, open data: an offline Natural Earth world map, OpenStreetMap detail for any downloaded region through Protomaps, open terrain from Mapterhorn, a ten-metre satellite picture built from Sentinel-2, NASA Blue Marble, and a camera imported from Google Earth Studio.\n\n7. Built to last: every panel action is one undo step, the core is pure TypeScript with unit tests, an in-After-Effects test suite measures the numbers, and the package is signed, with installers for Windows and macOS.",
+			'highlights_bn'=> array(
+				'প্রতিটি ফ্রেম নিজস্ব ক্যামেরায় রেন্ডার: জুমে ঝাপসা ধাপ বা লাফিয়ে ওঠা লেবেল নেই',
+				'পৃথিবী থেকে রাস্তা পর্যন্ত এক টানা ক্যামেরা, ৮৫° পিচ, 3D টেরেইন ও ভবন',
+				'পিন, রুট, বর্ডার আর লেবেল আসল After Effects লেয়ার, পিক্সেল ধরে মেলানো',
+				'বাংলাসহ সব লিপিতে নাম, পুরো টাইমলাইনে কলিশন ছাড়া',
+				'CSV থেকে ডেটা ম্যাপ: রং, বাবল, ফ্লো, হিট, প্রিজম, লেজেন্ড ও বার চার্ট',
+				'অফলাইন বিশ্ব ম্যাপ, OpenStreetMap এলাকা, টেরেইন আর Sentinel-2 স্যাটেলাইট ছবি, সব ফ্রি',
+				'Google Earth Studio-র ক্যামেরা আমদানি, আলাদা রেন্ডার পাস ও ম্যাট',
+				'প্রতিটি কাজ এক undo ধাপ; সাইন করা প্যাকেজ, এক-ক্লিক ইনস্টল',
+				'After Effects 2024+; MIT লাইসেন্সে ফ্রি ও ওপেন সোর্স'
+			),
+			'highlights_en'=> array(
+				'Every frame rendered at its exact camera: no blurry zoom steps or popping labels',
+				'One camera from the globe to street level, 85° pitch, 3D terrain and buildings',
+				'Pins, routes, borders and labels as real After Effects layers, matched to the pixel',
+				'Names in every script, Bengali included, placed over the whole timeline without collisions',
+				'Data maps from a CSV: colours, bubbles, flows, heat, prisms, a legend and a bar chart',
+				'Offline world map, OpenStreetMap regions, terrain and Sentinel-2 satellite imagery, all free',
+				'Cameras imported from Google Earth Studio; separate render passes and mattes',
+				'Every action one undo step; a signed package with one-click installers',
+				'After Effects 2024+; free and open source under MIT'
+			),
+			'tags'        => array( 'After Effects', 'Adobe CEP', 'TypeScript', 'MapLibre GL', 'OpenStreetMap', 'Map Animation', 'Data Visualization' ),
+			'accent'      => '#34d399',
+			'icon'        => 'extension',
+			'image'       => get_template_directory_uri() . '/assets/img/lazymaplayers.svg',
+			'image_fit'   => 'cover',
+			'action_type' => 'code',
+			'action_bn'   => 'ফ্রি ডাউনলোড',
+			'action_en'   => 'Download Free',
+			'direct_url'  => 'https://github.com/raisulsohan/LazyMapLayers/releases/latest',
+			'github_url'  => 'https://github.com/raisulsohan/LazyMapLayers',
+			'order'       => 8,
+		),
 	);
 }
 
@@ -2402,7 +2455,7 @@ function rs_sync_new_portfolio_projects() {
 
 	$added = false;
 	if ( get_option( 'rs_portfolio_seeded_v1' ) ) {
-		foreach ( array( 'lazylord', 'lazykick', 'lazymotiontoolkit', 'nomolos-prohibition', 'nomolos-cobra-effect', 'consciousness-animation', 'lazypin', 'lingopie-promo', 'lazyeditmirror' ) as $slug ) {
+		foreach ( array( 'lazylord', 'lazykick', 'lazymotiontoolkit', 'nomolos-prohibition', 'nomolos-cobra-effect', 'consciousness-animation', 'lazypin', 'lingopie-promo', 'lazyeditmirror', 'lazymaplayers' ) as $slug ) {
 			if ( ! get_option( 'rs_portfolio_added_' . $slug ) ) {
 				$added = true;
 			}

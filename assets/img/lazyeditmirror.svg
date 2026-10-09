@@ -1,73 +1,125 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" fill="none">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1920" y2="1080" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#17142a"/>
-      <stop offset="1" stop-color="#0c0a14"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="960" cy="260" r="620" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#7c3aed" stop-opacity="0.28"/>
-      <stop offset="1" stop-color="#7c3aed" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="tile" x1="890" y1="140" x2="1030" y2="280" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#7c3aed"/>
-      <stop offset="1" stop-color="#ec4899"/>
-    </linearGradient>
-  </defs>
-  <rect width="1920" height="1080" fill="url(#bg)"/>
-  <rect width="1920" height="1080" fill="url(#glow)"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" fill="none" font-family="Inter, 'Segoe UI', system-ui, sans-serif">
+<title>LazyEditMirror: cut the front camera once, the side camera follows</title>
+<defs>
+	<linearGradient id="bg" x1="0" y1="0" x2="1920" y2="1080" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#17142a"/><stop offset="1" stop-color="#0c0a14"/></linearGradient>
+	<radialGradient id="glow" cx="960" cy="200" r="700" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#7c3aed" stop-opacity=".3"/><stop offset="1" stop-color="#7c3aed" stop-opacity="0"/></radialGradient>
+	<radialGradient id="glow2" cx="1500" cy="980" r="600" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ec4899" stop-opacity=".14"/><stop offset="1" stop-color="#ec4899" stop-opacity="0"/></radialGradient>
+	<linearGradient id="tile" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#ec4899"/></linearGradient>
+	<linearGradient id="v1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#6d28d9"/></linearGradient>
+	<linearGradient id="v2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22c3dd"/><stop offset="1" stop-color="#0e7490"/></linearGradient>
+	<pattern id="hatch" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="22" height="22" fill="#43202a"/><rect width="11" height="22" fill="#fb7185"/></pattern>
+	<clipPath id="lanes"><rect x="420" y="370" width="1180" height="460"/></clipPath>
+</defs>
+<style>
+*{animation-duration:8s;animation-iteration-count:infinite;animation-timing-function:cubic-bezier(.3,.7,.2,1)}
+.junk{transform-box:fill-box;transform-origin:center;animation-name:junk}
+@keyframes junk{0%,11.25%{opacity:1;transform:scaleX(1)}13.13%{opacity:1;filter:brightness(1.8)}16.88%,95.00%{opacity:0;transform:scaleX(0)}98.75%,100%{opacity:1;transform:scaleX(1)}}
+.rip{animation-timing-function:cubic-bezier(.5,0,.2,1)}
+@keyframes r0{0%,16.25%{transform:translateX(0)}25.00%,100%{transform:translateX(0px)}}.r0{animation-name:r0}@keyframes r1{0%,16.25%{transform:translateX(0)}25.00%,100%{transform:translateX(-70px)}}.r1{animation-name:r1}@keyframes r2{0%,16.25%{transform:translateX(0)}25.00%,100%{transform:translateX(-130px)}}.r2{animation-name:r2}@keyframes r3{0%,16.25%{transform:translateX(0)}25.00%,100%{transform:translateX(-210px)}}.r3{animation-name:r3}
+@keyframes d0{0%,52.50%{opacity:0;transform:translateY(-70px)}56.50%{opacity:1;transform:translateY(6px)}58.13%,92.50%{opacity:1;transform:translateY(0)}97.50%,100%{opacity:0;transform:translateY(0)}}.d0{animation-name:d0}@keyframes d1{0%,56.00%{opacity:0;transform:translateY(-70px)}60.00%{opacity:1;transform:translateY(6px)}61.63%,92.50%{opacity:1;transform:translateY(0)}97.50%,100%{opacity:0;transform:translateY(0)}}.d1{animation-name:d1}@keyframes d2{0%,59.50%{opacity:0;transform:translateY(-70px)}63.50%{opacity:1;transform:translateY(6px)}65.13%,92.50%{opacity:1;transform:translateY(0)}97.50%,100%{opacity:0;transform:translateY(0)}}.d2{animation-name:d2}@keyframes d3{0%,63.00%{opacity:0;transform:translateY(-70px)}67.00%{opacity:1;transform:translateY(6px)}68.63%,92.50%{opacity:1;transform:translateY(0)}97.50%,100%{opacity:0;transform:translateY(0)}}.d3{animation-name:d3}
+.side{animation-name:side}
+@keyframes side{0%,28.75%{opacity:0;transform:translateX(150px)}32.50%{opacity:1;transform:translateX(150px)}43.75%{opacity:1;transform:translateX(0)}70.00%{opacity:1;transform:translateX(0)}75.00%,100%{opacity:0;transform:translateX(0)}}
+.lock{animation-name:lock}
+@keyframes lock{0%,43.13%{opacity:0}45.00%,70.00%{opacity:1}75.00%,100%{opacity:0}}
+.chip{animation-name:chip}
+@keyframes chip{0%,43.13%{opacity:0}45.00%,50.63%{opacity:1}52.50%,100%{opacity:0}}
+.ok{animation-name:ok}
+@keyframes ok{0%,67.50%{opacity:0;transform:scale(.4)}71.25%{opacity:1;transform:scale(1.12)}73.13%,92.50%{opacity:1;transform:scale(1)}97.50%,100%{opacity:0}}
+.ok{transform-box:fill-box;transform-origin:center}
+.s1{animation-name:s1}.s2{animation-name:s2}.s3{animation-name:s3}
+@keyframes s1{0%,26.25%{opacity:1}28.75%,97.50%{opacity:0}100%{opacity:1}}
+@keyframes s2{0%,26.25%{opacity:0}28.75%,48.75%{opacity:1}51.25%,100%{opacity:0}}
+@keyframes s3{0%,48.75%{opacity:0}51.25%,95.00%{opacity:1}97.50%,100%{opacity:0}}
+.scan{animation-name:scan;animation-timing-function:linear}
+@keyframes scan{0%,31.25%{opacity:0;transform:translateX(0)}31.87%{opacity:.9}43.13%{opacity:.9;transform:translateX(1180px)}43.75%,100%{opacity:0;transform:translateX(1180px)}}
+@media (prefers-reduced-motion:reduce){*{animation-delay:-6s!important;animation-play-state:paused!important}}
+</style>
+<rect width="1920" height="1080" fill="url(#bg)"/>
+<rect width="1920" height="1080" fill="url(#glow)"/>
+<rect width="1920" height="1080" fill="url(#glow2)"/>
 
-  <!-- the panel's brand mark: a solid half, a mirror axis, an outlined half -->
-  <rect x="890" y="140" width="140" height="140" rx="36" fill="url(#tile)"/>
-  <rect x="918" y="175" width="34" height="70" rx="7" fill="#ffffff"/>
-  <path d="M960 160 V260" stroke="#ffffff" stroke-opacity="0.8" stroke-width="4" stroke-dasharray="8 7"/>
-  <rect x="970" y="180" width="26" height="60" rx="6" stroke="#ffffff" stroke-width="5"/>
+<!-- the panel's brand mark and name -->
+<g transform="translate(542 104)">
+	<rect width="104" height="104" rx="27" fill="url(#tile)"/>
+	<rect x="21" y="26" width="25" height="52" rx="6" fill="#fff"/>
+	<path d="M52 14 V90" stroke="#fff" stroke-opacity=".8" stroke-width="3.5" stroke-dasharray="7 6"/>
+	<rect x="60" y="30" width="20" height="44" rx="5" stroke="#fff" stroke-width="4"/>
+</g>
+<text x="672" y="186" font-size="92" font-weight="800" letter-spacing="-2"><tspan fill="#fff">LazyEdit</tspan><tspan fill="#ec4899">Mirror</tspan></text>
 
-  <text x="960" y="404" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="96" font-weight="700" letter-spacing="-2"><tspan fill="#ffffff">LazyEdit</tspan><tspan fill="#ec4899">Mirror</tspan></text>
-  <text x="960" y="466" text-anchor="middle" fill="#a39dbf" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="36">Cut the front camera once. The side camera follows.</text>
+<!-- the three steps; the bright pill moves along -->
 
-  <g stroke="#2e2846" stroke-width="2" fill="#15121f">
-    <rect x="210" y="580" width="460" height="300" rx="20"/>
-    <rect x="730" y="580" width="460" height="300" rx="20"/>
-    <rect x="1250" y="580" width="460" height="300" rx="20"/>
-  </g>
+<g opacity=".38">
+	<rect x="310" y="262" width="300" height="60" rx="30" fill="none" stroke="#463f66" stroke-width="3"/>
+	<circle cx="344" cy="292" r="19" fill="#463f66"/>
+	<text x="344" y="303" text-anchor="middle" font-size="26" font-weight="800" fill="#c3bedb">1</text>
+	<text x="376" y="304" font-size="32" font-weight="700" fill="#c3bedb">Cut once</text>
+</g>
+<g opacity=".38">
+	<rect x="810" y="262" width="300" height="60" rx="30" fill="none" stroke="#463f66" stroke-width="3"/>
+	<circle cx="844" cy="292" r="19" fill="#463f66"/>
+	<text x="844" y="303" text-anchor="middle" font-size="26" font-weight="800" fill="#c3bedb">2</text>
+	<text x="876" y="304" font-size="32" font-weight="700" fill="#c3bedb">Analyze</text>
+</g>
+<g opacity=".38">
+	<rect x="1310" y="262" width="300" height="60" rx="30" fill="none" stroke="#463f66" stroke-width="3"/>
+	<circle cx="1344" cy="292" r="19" fill="#463f66"/>
+	<text x="1344" y="303" text-anchor="middle" font-size="26" font-weight="800" fill="#c3bedb">3</text>
+	<text x="1376" y="304" font-size="32" font-weight="700" fill="#c3bedb">Sync</text>
+</g>
 
-  <!-- 1. the front camera, cut -->
-  <g>
-    <rect x="262" y="626" width="70" height="40" rx="6" fill="#7c3aed"/>
-    <rect x="336" y="626" width="22" height="40" rx="4" fill="#fb7185" opacity="0.85"/>
-    <rect x="362" y="626" width="92" height="40" rx="6" fill="#7c3aed"/>
-    <rect x="458" y="626" width="16" height="40" rx="4" fill="#fb7185" opacity="0.85"/>
-    <rect x="478" y="626" width="140" height="40" rx="6" fill="#7c3aed"/>
-    <path d="M347 618 V676 M466 618 V676" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
-    <path d="M262 690 H618" stroke="#34d399" stroke-opacity="0.55" stroke-width="16" stroke-dasharray="3 3"/>
-  </g>
+<g class="s1">
+	<rect x="310" y="262" width="300" height="60" rx="30" fill="#a78bfa" fill-opacity=".18" stroke="#a78bfa" stroke-width="3"/>
+	<circle cx="344" cy="292" r="19" fill="#a78bfa"/>
+	<text x="344" y="303" text-anchor="middle" font-size="26" font-weight="800" fill="#15131f">1</text>
+	<text x="376" y="304" font-size="32" font-weight="700" fill="#fff">Cut once</text>
+</g>
+<g class="s2">
+	<rect x="810" y="262" width="300" height="60" rx="30" fill="#22d3ee" fill-opacity=".18" stroke="#22d3ee" stroke-width="3"/>
+	<circle cx="844" cy="292" r="19" fill="#22d3ee"/>
+	<text x="844" y="303" text-anchor="middle" font-size="26" font-weight="800" fill="#15131f">2</text>
+	<text x="876" y="304" font-size="32" font-weight="700" fill="#fff">Analyze</text>
+</g>
+<g class="s3">
+	<rect x="1310" y="262" width="300" height="60" rx="30" fill="#ec4899" fill-opacity=".18" stroke="#ec4899" stroke-width="3"/>
+	<circle cx="1344" cy="292" r="19" fill="#ec4899"/>
+	<text x="1344" y="303" text-anchor="middle" font-size="26" font-weight="800" fill="#15131f">3</text>
+	<text x="1376" y="304" font-size="32" font-weight="700" fill="#fff">Sync</text>
+</g>
 
-  <!-- 2. two recordings, matched by their sound -->
-  <g stroke-width="5" stroke-linecap="round">
-    <path d="M782 640 v8 M796 632 v24 M810 624 v40 M824 636 v16 M838 628 v32 M852 620 v48 M866 634 v20 M880 640 v8 M894 630 v28 M908 622 v44 M922 636 v16 M936 628 v32 M950 640 v8 M964 626 v36 M978 634 v20 M992 620 v48 M1006 632 v24 M1020 640 v8 M1034 628 v32 M1048 636 v16 M1062 624 v40 M1076 632 v24 M1090 638 v12 M1104 630 v28 M1118 636 v16 M1132 640 v8" stroke="#a78bfa"/>
-    <path d="M782 690 v8 M796 682 v24 M810 674 v40 M824 686 v16 M838 678 v32 M852 670 v48 M866 684 v20 M880 690 v8 M894 680 v28 M908 672 v44 M922 686 v16 M936 678 v32 M950 690 v8 M964 676 v36 M978 684 v20 M992 670 v48 M1006 682 v24 M1020 690 v8 M1034 678 v32 M1048 686 v16 M1062 674 v40 M1076 682 v24 M1090 688 v12 M1104 680 v28 M1118 686 v16 M1132 690 v8" stroke="#22d3ee"/>
-  </g>
-  <path d="M852 612 V726" stroke="#34d399" stroke-width="3" stroke-dasharray="7 6"/>
+<!-- the sequence -->
+<rect x="300" y="352" width="1320" height="500" rx="26" fill="#1a1727" stroke="#312c48" stroke-width="2"/>
+<g font-size="34" font-weight="800">
+	<text x="330" y="450" fill="#fff">V2</text><text x="330" y="482" font-size="20" font-weight="700" fill="#22d3ee">SIDE</text>
+	<text x="330" y="564" fill="#fff">V1</text><text x="330" y="596" font-size="20" font-weight="700" fill="#a78bfa">FRONT</text>
+	<text x="330" y="672" fill="#fff">A1</text>
+</g>
+<g fill="#14121d"><rect x="420" y="392" width="1180" height="92" rx="10"/><rect x="420" y="506" width="1180" height="92" rx="10"/><rect x="420" y="620" width="1180" height="78" rx="10"/></g>
+<g clip-path="url(#lanes)">
+	<g class="rip r0"><rect x="420" y="620" width="216" height="78" rx="9" fill="#1d5a48"/><path transform="translate(420 0)" d="M4 643.2h6v31.6h-6zM16 641.4h6v35.3h-6zM28 632.6h6v52.8h-6zM40 634.2h6v49.6h-6zM52 644.3h6v29.5h-6zM64 652.1h6v13.9h-6zM76 644.4h6v29.2h-6zM88 641.5h6v35.0h-6zM100 646.0h6v26.1h-6zM112 651.1h6v15.7h-6zM124 652.2h6v13.6h-6zM136 652.0h6v14.1h-6zM148 648.6h6v20.7h-6zM160 645.0h6v28.0h-6zM172 641.5h6v35.0h-6zM184 638.6h6v40.8h-6zM196 648.8h6v20.3h-6zM208 647.5h6v23.1h-6z" fill="#6ee7b7"/></g><g class="rip r1"><rect x="710" y="620" width="256" height="78" rx="9" fill="#1d5a48"/><path transform="translate(710 0)" d="M4 650.9h6v16.3h-6zM16 652.4h6v13.2h-6zM28 650.3h6v17.5h-6zM40 647.4h6v23.2h-6zM52 652.6h6v12.7h-6zM64 644.2h6v29.7h-6zM76 642.3h6v33.5h-6zM88 637.7h6v42.7h-6zM100 636.7h6v44.6h-6zM112 644.7h6v28.6h-6zM124 651.2h6v15.5h-6zM136 643.6h6v30.9h-6zM148 642.1h6v33.8h-6zM160 644.7h6v28.7h-6zM172 646.3h6v25.3h-6zM184 651.6h6v14.8h-6zM196 652.5h6v12.9h-6zM208 651.4h6v15.2h-6zM220 648.5h6v20.9h-6zM232 643.8h6v30.4h-6zM244 641.3h6v35.3h-6z" fill="#6ee7b7"/></g><g class="rip r2"><rect x="1030" y="620" width="296" height="78" rx="9" fill="#1d5a48"/><path transform="translate(1030 0)" d="M4 648.7h6v20.6h-6zM16 650.1h6v17.8h-6zM28 643.6h6v30.8h-6zM40 643.7h6v30.6h-6zM52 650.2h6v17.5h-6zM64 652.7h6v12.6h-6zM76 652.1h6v13.9h-6zM88 650.4h6v17.1h-6zM100 642.9h6v32.3h-6zM112 641.1h6v35.7h-6zM124 633.8h6v50.4h-6zM136 638.8h6v40.3h-6zM148 651.0h6v16.1h-6zM160 647.8h6v22.3h-6zM172 635.9h6v46.2h-6zM184 634.1h6v49.8h-6zM196 643.8h6v30.4h-6zM208 645.0h6v28.0h-6zM220 652.4h6v13.1h-6zM232 649.8h6v18.3h-6zM244 650.9h6v16.1h-6zM256 651.1h6v15.8h-6zM268 646.8h6v24.5h-6zM280 648.3h6v21.3h-6z" fill="#6ee7b7"/></g><g class="rip r3"><rect x="1410" y="620" width="186" height="78" rx="9" fill="#1d5a48"/><path transform="translate(1410 0)" d="M4 642.4h6v33.3h-6zM16 644.7h6v28.6h-6zM28 644.3h6v29.4h-6zM40 651.3h6v15.5h-6zM52 652.8h6v12.5h-6zM64 651.0h6v16.0h-6zM76 647.6h6v22.8h-6zM88 643.5h6v30.9h-6zM100 645.6h6v26.7h-6zM112 645.8h6v26.3h-6zM124 650.8h6v16.4h-6zM136 641.9h6v34.3h-6zM148 636.6h6v44.7h-6zM160 630.8h6v56.3h-6zM172 640.8h6v36.4h-6z" fill="#6ee7b7"/></g><rect class="junk" x="640" y="620" width="66" height="78" rx="8" fill="#43202a"/><rect class="junk" x="970" y="620" width="56" height="78" rx="8" fill="#43202a"/><rect class="junk" x="1330" y="620" width="76" height="78" rx="8" fill="#43202a"/>
+	<g class="rip r0"><rect x="420" y="506" width="216" height="92" rx="10" fill="url(#v1)"/><rect x="420" y="506" width="216" height="22" rx="10" fill="#fff" opacity=".12"/></g><g class="rip r1"><rect x="710" y="506" width="256" height="92" rx="10" fill="url(#v1)"/><rect x="710" y="506" width="256" height="22" rx="10" fill="#fff" opacity=".12"/></g><g class="rip r2"><rect x="1030" y="506" width="296" height="92" rx="10" fill="url(#v1)"/><rect x="1030" y="506" width="296" height="22" rx="10" fill="#fff" opacity=".12"/></g><g class="rip r3"><rect x="1410" y="506" width="186" height="92" rx="10" fill="url(#v1)"/><rect x="1410" y="506" width="186" height="22" rx="10" fill="#fff" opacity=".12"/></g><rect class="junk" x="640" y="506" width="66" height="92" rx="8" fill="url(#hatch)" stroke="#fb7185" stroke-width="3"/><rect class="junk" x="970" y="506" width="56" height="92" rx="8" fill="url(#hatch)" stroke="#fb7185" stroke-width="3"/><rect class="junk" x="1330" y="506" width="76" height="92" rx="8" fill="url(#hatch)" stroke="#fb7185" stroke-width="3"/>
+	<g class="drop d0"><rect x="420" y="392" width="216" height="92" rx="10" fill="url(#v2)"/><rect x="420" y="392" width="216" height="22" rx="10" fill="#fff" opacity=".14"/></g><g class="drop d1"><rect x="640" y="392" width="256" height="92" rx="10" fill="url(#v2)"/><rect x="640" y="392" width="256" height="22" rx="10" fill="#fff" opacity=".14"/></g><g class="drop d2"><rect x="900" y="392" width="296" height="92" rx="10" fill="url(#v2)"/><rect x="900" y="392" width="296" height="22" rx="10" fill="#fff" opacity=".14"/></g><g class="drop d3"><rect x="1200" y="392" width="186" height="92" rx="10" fill="url(#v2)"/><rect x="1200" y="392" width="186" height="22" rx="10" fill="#fff" opacity=".14"/></g>
+</g>
 
-  <!-- 3. the side camera, mirrored -->
-  <g>
-    <rect x="1302" y="626" width="70" height="40" rx="6" fill="#0e7490"/>
-    <rect x="1376" y="626" width="92" height="40" rx="6" fill="#0e7490"/>
-    <rect x="1472" y="626" width="140" height="40" rx="6" fill="#0e7490"/>
-    <rect x="1302" y="674" width="70" height="28" rx="6" fill="#7c3aed"/>
-    <rect x="1376" y="674" width="92" height="28" rx="6" fill="#7c3aed"/>
-    <rect x="1472" y="674" width="140" height="28" rx="6" fill="#7c3aed"/>
-    <circle cx="1640" cy="646" r="16" fill="#34d399"/>
-    <path d="M1632 646 l6 6 l11 -12" stroke="#0b1f19" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  </g>
+<!-- Analyze: the side camera's audio slides into line with the front's -->
+<text x="330" y="784" font-size="22" font-weight="700" fill="#22d3ee" class="side">SIDE</text>
+<text x="330" y="810" font-size="22" font-weight="700" fill="#22d3ee" class="side">AUDIO</text>
+<g clip-path="url(#lanes)"><g class="side"><path transform="translate(420 0)" d="M4 759.7h6v28.5h-6zM16 758.1h6v31.9h-6zM28 750.1h6v47.7h-6zM40 751.6h6v44.8h-6zM52 760.7h6v26.6h-6zM64 767.7h6v12.5h-6zM76 760.8h6v26.4h-6zM88 758.2h6v31.6h-6zM100 762.2h6v23.5h-6zM112 766.9h6v14.2h-6zM124 767.8h6v12.3h-6zM136 767.7h6v12.7h-6zM148 764.6h6v18.7h-6zM160 761.4h6v25.3h-6zM172 758.2h6v31.6h-6zM184 755.6h6v36.8h-6zM196 764.8h6v18.3h-6zM208 763.6h6v20.8h-6z" fill="#22d3ee"/><path transform="translate(640 0)" d="M4 766.6h6v14.7h-6zM16 768.0h6v11.9h-6zM28 766.1h6v15.8h-6zM40 763.5h6v21.0h-6zM52 768.2h6v11.5h-6zM64 760.6h6v26.8h-6zM76 758.9h6v30.2h-6zM88 754.7h6v38.6h-6zM100 753.9h6v40.3h-6zM112 761.1h6v25.8h-6zM124 767.0h6v14.0h-6zM136 760.0h6v27.9h-6zM148 758.8h6v30.5h-6zM160 761.1h6v25.9h-6zM172 762.6h6v22.9h-6zM184 767.3h6v13.3h-6zM196 768.2h6v11.7h-6zM208 767.2h6v13.7h-6zM220 764.5h6v18.9h-6zM232 760.3h6v27.4h-6zM244 758.0h6v31.9h-6z" fill="#22d3ee"/><path transform="translate(900 0)" d="M4 764.7h6v18.6h-6zM16 766.0h6v16.0h-6zM28 760.1h6v27.8h-6zM40 760.2h6v27.6h-6zM52 766.1h6v15.8h-6zM64 768.3h6v11.4h-6zM76 767.7h6v12.5h-6zM88 766.3h6v15.5h-6zM100 759.4h6v29.1h-6zM112 757.9h6v32.2h-6zM124 751.2h6v45.5h-6zM136 755.8h6v36.4h-6zM148 766.7h6v14.5h-6zM160 763.9h6v20.1h-6zM172 753.2h6v41.7h-6zM184 751.5h6v44.9h-6zM196 760.3h6v27.5h-6zM208 761.4h6v25.3h-6zM220 768.1h6v11.9h-6zM232 765.7h6v16.6h-6zM244 766.7h6v14.6h-6zM256 766.9h6v14.2h-6zM268 762.9h6v22.1h-6zM280 764.4h6v19.3h-6z" fill="#22d3ee"/><path transform="translate(1200 0)" d="M4 759.0h6v30.1h-6zM16 761.1h6v25.8h-6zM28 760.7h6v26.5h-6zM40 767.0h6v14.0h-6zM52 768.4h6v11.3h-6zM64 766.8h6v14.5h-6zM76 763.7h6v20.6h-6zM88 760.0h6v27.9h-6zM100 761.9h6v24.2h-6zM112 762.1h6v23.8h-6zM124 766.6h6v14.8h-6zM136 758.5h6v31.0h-6zM148 753.8h6v40.4h-6zM160 748.6h6v50.9h-6zM172 757.5h6v32.9h-6z" fill="#22d3ee"/></g></g>
+<rect class="scan" x="418" y="620" width="4" height="196" fill="#fbbf24"/>
+<g class="lock">
+	<path d="M960 624 V804" stroke="#34d399" stroke-width="4" stroke-dasharray="10 8"/>
+</g>
+<g class="chip">
+	<rect x="1180" y="411" width="410" height="54" rx="27" fill="#173a30" stroke="#34d399" stroke-width="3"/>
+	<text x="1385" y="448" text-anchor="middle" font-size="28" font-weight="800" fill="#34d399">side = front +0.635 s</text>
+</g>
 
-  <g font-family="Inter, 'Segoe UI', system-ui, sans-serif">
-    <text x="262" y="806" fill="#ffffff" font-size="40" font-weight="600">Cut once</text>
-    <text x="262" y="850" fill="#8b86a3" font-size="28">The front camera, on V1</text>
-    <text x="782" y="806" fill="#ffffff" font-size="40" font-weight="600">Analyze</text>
-    <text x="782" y="850" fill="#8b86a3" font-size="28">Matched by their sound</text>
-    <text x="1302" y="806" fill="#ffffff" font-size="40" font-weight="600">Sync</text>
-    <text x="1302" y="850" fill="#8b86a3" font-size="28">Same cuts on the side camera</text>
-  </g>
-  <text x="960" y="960" text-anchor="middle" fill="#6f6885" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="28">Free and open source · Adobe Premiere Pro panel</text>
+<!-- Sync: same cuts on the side camera, verified -->
+<g class="ok">
+	<circle cx="1548" cy="438" r="34" fill="#34d399"/>
+	<path d="M1531 438 l12 12 l22 -24" stroke="#0b1f19" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+
+<text x="960" y="940" text-anchor="middle" font-size="36" fill="#a39dbf">Cut the front camera once. The side camera follows.</text>
+<text x="960" y="992" text-anchor="middle" font-size="26" fill="#6f6885">Free and open source · Adobe Premiere Pro panel</text>
 </svg>
