@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.31.2-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.32.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.32
+
+**LazyEditMirror on the portfolio.** The Premiere Pro panel that copies a front-camera edit onto the side camera, synced by audio, joins the tools:
+
+- **7.32.0: LazyEditMirror case study, interactive demo and demo animation.** Bilingual case study and card artwork in `assets/img/lazyeditmirror.svg`, added once through `rs_sync_new_portfolio_projects()`. The interactive demo is a new page bundle (`src/js/lazyeditmirror-demo.js`, `src/css/lazyeditmirror-demo.css`, mounted as `LazyEditMirrorDemo`): a small Premiere sequence with the panel beside it, where you cut the pauses out of the front camera, Analyze a side file, Sync, and play both monitors in sync, with the real panel's wording, two-click Sync, one undo step per placement and the advanced sync references. The 18-second demo animation from the LazyEditMirror repository plays in the pop-up from `assets/demo/lazyeditmirror-demo.html`; it has no portrait cut, so `rs_seed_portfolio_demo()` now accepts `''` for the tall file.
 
 ## What's new in 7.31
 

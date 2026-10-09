@@ -16,7 +16,7 @@
 | `fonts.css` | Page bundle: the self-hosted `@font-face` declarations |
 | `cv.css` | Page bundle: the CV page (`page-cv.php`), the sheet on the stage and its print rules; loaded only on `/cv/` |
 | `cv-editor.css` | Admin-only page bundle: the CV content metabox; loaded only while editing the page that uses `page-cv.php` |
-| `lazylord-demo.css`, `lazyimage-demo.css`, `lazykick-demo.css`, `lazymotion-demo.css` | Page bundles: one interactive demo per project, loaded only on that project's page |
+| `lazylord-demo.css`, `lazyimage-demo.css`, `lazykick-demo.css`, `lazymotion-demo.css`, `lazyeditmirror-demo.css` | Page bundles: one interactive demo per project, loaded only on that project's page |
 
 ## `src/js/`
 
@@ -33,6 +33,6 @@
 | `25-service-worker-helper.js`, `26-register-the-service-worker.js`, `27-pwa-installation-prompt.js` | The PWA: helper, registration, the install prompt |
 | `28-command-palette.js`, `29-the-other-language-on-a-story-page.js` | The command palette; the switch to the other edition on a story page |
 | `cv-editor.js` | Admin-only page bundle: add/remove controls for CV repeaters and the Media Library PDF picker |
-| `lazylord-demo.js`, `lazyimage-demo.js`, `lazykick-demo.js`, `lazymotion-demo.js` | Page bundles: the interactive demos, each running its project's own code; fetched by the portfolio pop-up on first use |
+| `lazylord-demo.js`, `lazyimage-demo.js`, `lazykick-demo.js`, `lazymotion-demo.js`, `lazyeditmirror-demo.js` | Page bundles: the interactive demos, each running its project's own code; fetched by the portfolio pop-up on first use |
 
 After any change here: `npm run build`, commit `assets/*.min.*` with the sources, bump the version in the four places (AGENTS.md § 3).

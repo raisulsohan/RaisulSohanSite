@@ -1,0 +1,1650 @@
+/* ==========================================================================
+   LazyEditMirror interactive demo
+   A small Premiere Pro sequence (two monitors, a timeline) with the
+   LazyEditMirror panel docked beside it, in the panel's own colours.
+   Two fixed stages, scaled to fit: 1280 x 760 for containers 980px and
+   wider, 440 x 1120 for phones and narrow columns. The box's height comes
+   from CSS alone, so the page never shifts.
+   ========================================================================== */
+
+.lem-wrap {
+	container-type: inline-size;
+}
+
+/* The page's own type rules stop at the demo's edge. */
+.lem p,
+.lem b,
+.lem small,
+.lem figure,
+.lem figcaption,
+.lem label {
+	font-family: inherit;
+	line-height: inherit;
+	letter-spacing: normal;
+	text-transform: none;
+	margin: 0;
+}
+
+.lem {
+	--bg: #15131f;
+	--card: #1f1c2e;
+	--card-2: #2a2640;
+	--input: #110f1a;
+	--line: #312c48;
+	--line-strong: #463f66;
+	--text: #f1effa;
+	--text-2: #c3bedb;
+	--muted: #8d87a8;
+	--accent: #a78bfa;
+	--accent-strong: #7c3aed;
+	--pink: #ec4899;
+	--pink-strong: #db2777;
+	--cyan: #22d3ee;
+	--amber: #fbbf24;
+	--ok: #34d399;
+	--ok-soft: #173a30;
+	--warn: #fbbf24;
+	--warn-soft: #3d3218;
+	--bad: #fb7185;
+	--bad-soft: #43202a;
+	--done: #93a4c3;
+	--pr: #2d8ceb;
+	position: relative;
+	width: 100%;
+	aspect-ratio: 1280 / 760;
+	overflow: hidden;
+	border-radius: 18px;
+	background:
+		radial-gradient(50% 60% at 20% 10%, rgba(124, 58, 237, 0.16), transparent 70%),
+		radial-gradient(45% 55% at 90% 95%, rgba(236, 72, 153, 0.1), transparent 70%),
+		#0f0d17;
+	color: var(--text);
+	font: 12px/1.35 Inter, "Segoe UI", system-ui, -apple-system, var(--rs-sans, sans-serif), sans-serif;
+	letter-spacing: normal;
+	text-align: left;
+	isolation: isolate;
+	contain: layout paint;
+	-webkit-tap-highlight-color: transparent;
+}
+
+@container (max-width: 979px) {
+	.lem {
+		max-width: 520px;
+		margin-inline: auto;
+		aspect-ratio: 440 / 1120;
+	}
+}
+
+.lem:not(.lem-ready)::after {
+	content: attr(data-label);
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	font-weight: 600;
+	color: var(--muted);
+}
+
+.lem *,
+.lem *::before,
+.lem *::after {
+	box-sizing: border-box;
+}
+
+.lem button {
+	font: inherit;
+	color: inherit;
+	margin: 0;
+	text-transform: none;
+	letter-spacing: normal;
+	cursor: pointer;
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+.lem button:disabled {
+	cursor: default;
+}
+
+.lem button:focus-visible,
+.lem [data-junk]:focus-visible,
+.lem select:focus-visible,
+.lem input:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
+.lem svg {
+	display: block;
+}
+
+/* ---------- the stage ---------- */
+
+.lem-stage {
+	position: absolute;
+	left: 0;
+	top: 0;
+	transform-origin: 0 0;
+	display: grid;
+	padding: 0 14px 14px;
+}
+
+.lem-stage--wide {
+	grid-template-columns: minmax(0, 1fr) 348px;
+	grid-template-rows: 44px minmax(0, 1fr);
+	column-gap: 14px;
+}
+
+.lem-stage--tall {
+	grid-template-columns: minmax(0, 1fr);
+	grid-template-rows: 44px auto auto minmax(0, 1fr);
+	padding: 0 12px 12px;
+}
+
+.lem-top {
+	grid-column: 1 / -1;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	border-bottom: 1px solid #241f36;
+	margin: 0 -14px;
+	padding: 0 14px;
+	background: rgba(10, 9, 16, 0.65);
+}
+
+.lem-stage--tall .lem-top {
+	margin: 0 -12px;
+	padding: 0 12px;
+	gap: 8px;
+}
+
+.lem-app {
+	display: grid;
+	place-items: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 6px;
+	background: #00005b;
+	border: 1.5px solid #9999ff;
+	color: #9999ff;
+	font-weight: 800;
+	font-size: 12px;
+	flex: none;
+}
+
+.lem-proj {
+	color: var(--text-2);
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.lem-spacer {
+	flex: 1;
+}
+
+.lem-guide {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 9px;
+	color: var(--text);
+	font-weight: 600;
+	font-size: 12.5px;
+}
+
+.lem-guide__n {
+	display: grid;
+	place-items: center;
+	flex: none;
+	min-width: 22px;
+	height: 22px;
+	padding: 0 4px;
+	border-radius: 11px;
+	background: linear-gradient(135deg, #7c3aed, #ec4899);
+	color: #fff;
+	font-size: 11.5px;
+	font-weight: 800;
+}
+
+.lem-guide.is-done .lem-guide__n {
+	background: var(--ok);
+	color: #0b1f19;
+}
+
+.lem-guide__t {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.lem-stage--tall .lem-guide {
+	justify-content: flex-start;
+	align-items: flex-start;
+	padding: 8px 2px 4px;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.lem-stage--tall .lem-guide__t {
+	white-space: normal;
+}
+
+.lem-tbtn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	height: 28px;
+	padding: 0 11px;
+	border: 1px solid var(--line-strong);
+	border-radius: 7px;
+	background: var(--card);
+	font-weight: 600;
+	white-space: nowrap;
+	flex: none;
+}
+
+.lem-tbtn svg {
+	width: 14px;
+	height: 14px;
+}
+
+.lem-tbtn:hover:not(:disabled) {
+	border-color: var(--accent);
+}
+
+.lem-tbtn:disabled {
+	opacity: 0.4;
+}
+
+/* ---------- the work area: monitors, transport, timeline ---------- */
+
+.lem-work {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	min-height: 0;
+	padding-top: 12px;
+}
+
+.lem-stage--tall .lem-work {
+	padding-top: 6px;
+}
+
+.lem-mons {
+	position: relative;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+}
+
+.lem-stage--tall .lem-mons {
+	gap: 8px;
+}
+
+.lem-mon figcaption {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 8px;
+	height: 22px;
+	font-size: 11px;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.lem-mon figcaption b {
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	color: var(--accent);
+}
+
+.lem-mon[data-mon="side"] figcaption b {
+	color: var(--cyan);
+}
+
+.lem-mon__src {
+	color: var(--muted);
+	font-variant-numeric: tabular-nums;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.lem-stage--tall .lem-mon figcaption {
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0;
+	height: 30px;
+	font-size: 9.5px;
+	line-height: 1.35;
+}
+
+.lem-screen {
+	position: relative;
+	aspect-ratio: 16 / 9;
+	overflow: hidden;
+	border-radius: 8px;
+	background: #07060c;
+	border: 1px solid var(--line-strong);
+}
+
+.lem-screen > svg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.lem-mon.is-empty .lem-screen > svg,
+.lem-mon.is-empty .lem-rec,
+.lem-mon.is-empty .lem-cc {
+	visibility: hidden;
+}
+
+.lem-rec {
+	position: absolute;
+	left: 8px;
+	top: 8px;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 2px 7px;
+	border-radius: 5px;
+	background: rgba(8, 7, 14, 0.7);
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+}
+
+.lem-rec i {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--bad);
+}
+
+.lem-stage.is-playing .lem-rec i {
+	animation: lem-blink 1s steps(2, start) infinite;
+}
+
+.lem-tag {
+	position: absolute;
+	right: 8px;
+	top: 8px;
+	padding: 2px 9px;
+	border-radius: 11px;
+	background: rgba(8, 7, 14, 0.75);
+	border: 1px solid transparent;
+	font-size: 10.5px;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.lem-tag:empty {
+	display: none;
+}
+
+.lem-tag.is-ok {
+	color: var(--ok);
+	border-color: var(--ok);
+}
+
+.lem-tag.is-warn {
+	color: var(--warn);
+	border-color: var(--warn);
+}
+
+.lem-tag.is-bad {
+	color: var(--bad);
+	border-color: var(--bad);
+}
+
+.lem-cc {
+	position: absolute;
+	left: 50%;
+	bottom: 8px;
+	max-width: calc(100% - 20px);
+	transform: translateX(-50%);
+	padding: 3px 9px;
+	border-radius: 5px;
+	background: rgba(0, 0, 0, 0.72);
+	color: #fff;
+	font-size: 12.5px;
+	font-weight: 600;
+	line-height: 1.3;
+	text-align: center;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.lem-cc:empty {
+	display: none;
+}
+
+.lem-stage--tall .lem-cc {
+	bottom: 5px;
+	padding: 2px 5px;
+	font-size: 8.5px;
+	white-space: normal;
+	width: max-content;
+}
+
+.lem-stage--tall .lem-rec {
+	left: 5px;
+	top: 5px;
+	padding: 1px 5px;
+	font-size: 7.5px;
+}
+
+.lem-stage--tall .lem-tag {
+	right: 5px;
+	top: 5px;
+	padding: 1px 6px;
+	font-size: 8px;
+}
+
+.lem-empty {
+	position: absolute;
+	inset: 0;
+	display: none;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	text-align: center;
+	color: var(--muted);
+	background: repeating-linear-gradient(135deg, #0b0a12 0 10px, #0e0c17 10px 20px);
+}
+
+.lem-mon.is-empty .lem-empty {
+	display: flex;
+}
+
+.lem-empty b {
+	color: var(--text-2);
+	font-size: 13px;
+}
+
+.lem-empty small {
+	font-size: 11px;
+	color: var(--cyan);
+}
+
+.lem-stage--tall .lem-empty b {
+	font-size: 9.5px;
+}
+
+.lem-stage--tall .lem-empty small {
+	font-size: 8.5px;
+}
+
+/* The audio engine at work, over both monitors. */
+.lem-scan {
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	display: grid;
+	place-items: center;
+	padding: 6px;
+	border-radius: 10px;
+	background: rgba(17, 15, 26, 0.94);
+	border: 1px solid var(--line-strong);
+	animation: lem-fade-in 0.25s ease both;
+}
+
+.lem-scan[hidden] {
+	display: none;
+}
+
+.lem-scan.is-out {
+	animation: lem-fade-out 0.3s ease both;
+}
+
+.lem-scan svg {
+	width: 100%;
+	height: 100%;
+	font-family: Inter, "Segoe UI", system-ui, sans-serif;
+}
+
+.lem-scan__title {
+	fill: var(--muted);
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.lem-scan__lab {
+	font-size: 13px;
+	font-weight: 700;
+}
+
+.lem-scan__sub {
+	fill: var(--muted);
+	font-size: 11px;
+	font-weight: 500;
+}
+
+.lem-scan__chip rect {
+	fill: var(--ok-soft);
+	stroke: var(--ok);
+}
+
+.lem-scan__chip text {
+	fill: var(--ok);
+	font-size: 11.5px;
+	font-weight: 700;
+}
+
+.lem-scan__chip.is-bad rect {
+	fill: var(--warn-soft);
+	stroke: var(--warn);
+}
+
+.lem-scan__chip.is-bad text {
+	fill: var(--warn);
+}
+
+.lem-transport {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	height: 34px;
+	padding: 0 8px;
+	border-radius: 8px;
+	background: #1a1727;
+	border: 1px solid var(--line);
+}
+
+.lem-tp {
+	display: grid;
+	place-items: center;
+	width: 28px;
+	height: 24px;
+	border: 0;
+	border-radius: 6px;
+	background: transparent;
+}
+
+.lem-tp:hover {
+	background: var(--card-2);
+}
+
+.lem-tp svg {
+	width: 16px;
+	height: 16px;
+}
+
+.lem-tp--play {
+	width: 34px;
+	background: var(--pr);
+	color: #fff;
+}
+
+.lem-tp--play:hover {
+	background: #4aa0f0;
+}
+
+.lem-tc {
+	color: var(--muted);
+	font-variant-numeric: tabular-nums;
+	font-size: 11.5px;
+	white-space: nowrap;
+}
+
+.lem-tc b {
+	color: var(--pr);
+	font-weight: 700;
+}
+
+.lem-keys {
+	margin-left: auto;
+	color: var(--muted);
+	font-size: 10.5px;
+	white-space: nowrap;
+}
+
+.lem-stage--tall .lem-transport {
+	height: 32px;
+}
+
+.lem-stage--tall .lem-tc {
+	font-size: 10.5px;
+}
+
+.lem-stage--tall .lem-keys {
+	display: none;
+}
+
+/* ---------- the timeline ---------- */
+
+.lem-tl {
+	--hw: 64px;
+	--rh: 24px;
+	--v: 66px;
+	--a: 54px;
+	--a2: 40px;
+	display: flex;
+	flex-direction: column;
+	padding: 0 12px 10px;
+	border-radius: 10px;
+	background: #1a1727;
+	border: 1px solid var(--line);
+	min-height: 0;
+}
+
+.lem-stage--wide .lem-tl {
+	flex: 1;
+}
+
+.lem-stage--tall .lem-tl {
+	--hw: 40px;
+	--rh: 20px;
+	--v: 46px;
+	--a: 38px;
+	--a2: 28px;
+	padding: 0 8px 8px;
+}
+
+.lem-tl__head {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	height: 34px;
+}
+
+.lem-tl__head > b {
+	color: var(--text-2);
+	font-size: 12px;
+}
+
+.lem-tl__dur {
+	color: var(--muted);
+	font-size: 11px;
+	font-variant-numeric: tabular-nums;
+}
+
+.lem-cutall {
+	margin-left: auto;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	height: 24px;
+	padding: 0 10px;
+	border: 1px solid #6d2a3d;
+	border-radius: 6px;
+	background: var(--bad-soft);
+	color: var(--bad);
+	font-size: 11px;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.lem-cutall svg {
+	width: 13px;
+	height: 13px;
+}
+
+.lem-cutall:hover:not(:disabled) {
+	background: #5a2434;
+}
+
+.lem-cutall:disabled {
+	border-color: var(--line);
+	background: transparent;
+	color: var(--muted);
+}
+
+.lem-stage--tall .lem-tl__head {
+	height: 30px;
+	gap: 7px;
+}
+
+.lem-stage--tall .lem-tl__head > b {
+	font-size: 11px;
+}
+
+.lem-stage--tall .lem-tl__dur {
+	font-size: 9.5px;
+}
+
+.lem-stage--tall .lem-cutall {
+	height: 22px;
+	padding: 0 7px;
+	font-size: 10px;
+}
+
+.lem-tl__body {
+	display: grid;
+	grid-template-columns: var(--hw) minmax(0, 1fr);
+}
+
+.lem-heads {
+	display: flex;
+	flex-direction: column;
+}
+
+.lem-rh {
+	height: var(--rh);
+}
+
+.lem-th {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	height: var(--v);
+	padding-left: 8px;
+	margin-bottom: 2px;
+	border-radius: 6px 0 0 6px;
+	background: #221e33;
+	color: var(--text);
+	font-weight: 700;
+	font-size: 12px;
+}
+
+.lem-th small {
+	color: var(--muted);
+	font-size: 9.5px;
+	font-weight: 600;
+}
+
+.lem-th[data-tr="V1"] small {
+	color: var(--accent);
+}
+
+.lem-th[data-tr="V2"] small {
+	color: var(--cyan);
+}
+
+.lem-th--a {
+	height: var(--a);
+	background: #1d2a29;
+}
+
+.lem-th--a:last-child {
+	height: var(--a2);
+}
+
+.lem-stage--tall .lem-th {
+	padding-left: 5px;
+	font-size: 10.5px;
+}
+
+.lem-stage--tall .lem-th small {
+	font-size: 7.5px;
+}
+
+.lem-lanes {
+	position: relative;
+	touch-action: none;
+	cursor: text;
+}
+
+.lem-ruler {
+	position: relative;
+	height: var(--rh);
+	border-bottom: 1px solid var(--line);
+	cursor: ew-resize;
+}
+
+.lem-ruler i {
+	position: absolute;
+	bottom: 0;
+	width: 1px;
+	height: 5px;
+	background: #4a4466;
+}
+
+.lem-ruler i.is-major {
+	height: 10px;
+	background: var(--muted);
+}
+
+.lem-ruler span {
+	position: absolute;
+	top: 2px;
+	padding-left: 4px;
+	color: var(--muted);
+	font-size: 9.5px;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.lem-stage--tall .lem-ruler span {
+	font-size: 8px;
+}
+
+.lem-lane {
+	position: relative;
+	height: var(--v);
+	margin-bottom: 2px;
+	background: #14121d;
+	border-radius: 0 6px 6px 0;
+}
+
+.lem-lane--a {
+	height: var(--a);
+}
+
+.lem-lane--a:last-of-type {
+	height: var(--a2);
+}
+
+.lem-clip {
+	position: absolute;
+	top: 3px;
+	bottom: 3px;
+	overflow: hidden;
+	border-radius: 4px;
+	border: 1px solid rgba(255, 255, 255, 0.16);
+	transition: left 0.32s cubic-bezier(0.3, 0.7, 0.2, 1), width 0.32s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+
+.lem-clip b {
+	position: absolute;
+	left: 5px;
+	top: 3px;
+	color: rgba(255, 255, 255, 0.95);
+	font-size: 10px;
+	font-weight: 700;
+	white-space: nowrap;
+	pointer-events: none;
+}
+
+.lem-clip--v1 {
+	background: linear-gradient(180deg, #8b5cf6, #6d28d9);
+}
+
+.lem-clip--v1.is-selected {
+	box-shadow: inset 0 0 0 2px #fff;
+}
+
+.lem-clip--v2 {
+	background: linear-gradient(180deg, #22c3dd, #0e7490);
+}
+
+.lem-clip--a1 {
+	background: #1f5f4c;
+	border-color: rgba(52, 211, 153, 0.35);
+}
+
+.lem-wave {
+	position: absolute;
+	inset: 2px 0;
+	width: 100%;
+	height: calc(100% - 4px);
+	fill: #6ee7b7;
+	opacity: 0.85;
+}
+
+.lem-stage--tall .lem-clip b {
+	left: 3px;
+	top: 2px;
+	font-size: 7.5px;
+}
+
+.lem-land {
+	animation: lem-land 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+}
+
+/* The pauses and retakes still in the front edit: click to cut. */
+.lem-junk {
+	position: absolute;
+	top: 3px;
+	bottom: 3px;
+	z-index: 2;
+	display: flex;
+	align-items: flex-end;
+	justify-content: center;
+	overflow: hidden;
+	border-radius: 3px;
+	border: 1px solid var(--bad);
+	background: repeating-linear-gradient(135deg, rgba(251, 113, 133, 0.85) 0 4px, rgba(67, 32, 42, 0.92) 4px 8px);
+	cursor: crosshair;
+	transition: left 0.32s cubic-bezier(0.3, 0.7, 0.2, 1), filter 0.15s;
+}
+
+.lem-junk span {
+	padding: 0 2px 2px;
+	color: #fff;
+	font-size: 9px;
+	font-weight: 700;
+	text-shadow: 0 1px 2px #000;
+	white-space: nowrap;
+	pointer-events: none;
+}
+
+.lem-junk:hover {
+	filter: brightness(1.3);
+	box-shadow: 0 0 0 2px rgba(251, 113, 133, 0.45);
+}
+
+.lem-junk.is-locked {
+	cursor: not-allowed;
+	opacity: 0.75;
+}
+
+.lem-stage--tall .lem-junk span {
+	display: none;
+}
+
+.lem-ghost {
+	position: absolute;
+	top: 3px;
+	bottom: 3px;
+	z-index: 1;
+	border-radius: 3px;
+	background: var(--bad);
+	transform-origin: center;
+	animation: lem-cut 0.5s ease both;
+	pointer-events: none;
+}
+
+.lem-ghost--a {
+	background: rgba(251, 113, 133, 0.5);
+}
+
+.lem-park {
+	position: absolute;
+	top: 3px;
+	bottom: 3px;
+	border-radius: 3px;
+	background: rgba(251, 191, 36, 0.55);
+	border: 1px dashed var(--amber);
+	animation: lem-park 0.5s ease both;
+	pointer-events: none;
+}
+
+.lem-ph {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	width: 0;
+	z-index: 4;
+	pointer-events: none;
+}
+
+.lem-ph::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: -0.5px;
+	width: 1.5px;
+	background: var(--pr);
+}
+
+.lem-ph i {
+	position: absolute;
+	top: 0;
+	left: -6px;
+	width: 12px;
+	height: 12px;
+	border-radius: 2px 2px 6px 6px;
+	background: var(--pr);
+}
+
+/* ---------- the panel (LazyEditMirror 1.1.2, styles.css) ---------- */
+
+.lem-panel {
+	min-height: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	margin-top: 12px;
+	border-radius: 10px;
+	border: 1px solid var(--line-strong);
+	background: var(--bg);
+	font-family: "Adobe Clean", "Segoe UI", Inter, system-ui, sans-serif;
+	scrollbar-width: thin;
+	scrollbar-color: var(--line-strong) transparent;
+}
+
+.lem-stage--tall .lem-panel {
+	margin-top: 8px;
+}
+
+.lem-p {
+	display: flex;
+	flex-direction: column;
+	padding: 12px 12px 14px;
+}
+
+.lem-p__top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	margin-bottom: 12px;
+}
+
+.lem-brand {
+	display: flex;
+	align-items: center;
+	min-width: 0;
+}
+
+.lem-mark {
+	display: flex;
+	align-items: center;
+	flex: none;
+	width: 26px;
+	height: 26px;
+	border-radius: 7px;
+	background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%);
+	padding: 0 5px;
+	margin-right: 9px;
+}
+
+.lem-mark__s {
+	width: 6px;
+	height: 12px;
+	border-radius: 2px;
+	background: #fff;
+}
+
+.lem-mark__a {
+	width: 1px;
+	height: 16px;
+	margin: 0 2px;
+	background: rgba(255, 255, 255, 0.55);
+}
+
+.lem-mark__o {
+	width: 4px;
+	height: 10px;
+	border: 1px solid #fff;
+	border-radius: 2px;
+}
+
+.lem-bname {
+	font-size: 15px;
+	font-weight: 700;
+	line-height: 1.1;
+}
+
+.lem-bname span {
+	color: var(--pink);
+}
+
+.lem-bsub {
+	color: var(--muted);
+	font-size: 10.5px;
+	margin-top: 2px;
+}
+
+.lem-pill {
+	display: flex;
+	align-items: center;
+	flex: none;
+	border: 1px solid var(--line-strong);
+	border-radius: 12px;
+	background: var(--card);
+	color: var(--text-2);
+	padding: 4px 9px 4px 7px;
+	font-size: 10.5px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.lem-pill__dot {
+	width: 7px;
+	height: 7px;
+	border-radius: 4px;
+	background: var(--muted);
+	margin-right: 6px;
+}
+
+.lem-pill[data-engine="ok"] {
+	color: var(--ok);
+	border-color: var(--ok-soft);
+	background: var(--ok-soft);
+}
+
+.lem-pill[data-engine="ok"] .lem-pill__dot {
+	background: var(--ok);
+}
+
+.lem-pill[data-engine="starting"] {
+	color: var(--warn);
+	border-color: var(--warn-soft);
+	background: var(--warn-soft);
+}
+
+.lem-pill[data-engine="starting"] .lem-pill__dot {
+	background: var(--warn);
+	animation: lem-blink 0.6s steps(2, start) infinite;
+}
+
+.lem-stripe {
+	display: flex;
+	gap: 3px;
+	height: 3px;
+	margin: -2px 0 12px;
+}
+
+.lem-stripe i {
+	flex: 1;
+}
+
+.lem-stripe i:nth-child(1) { background: var(--accent-strong); }
+.lem-stripe i:nth-child(2) { background: var(--pink); }
+.lem-stripe i:nth-child(3) { background: var(--amber); }
+.lem-stripe i:nth-child(4) { background: var(--ok); }
+.lem-stripe i:nth-child(5) { background: var(--cyan); }
+
+.lem-card {
+	display: flex;
+	flex-direction: column;
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	background: var(--card);
+	padding: 11px 12px 12px;
+	margin-bottom: 10px;
+}
+
+.lem-card[hidden] {
+	display: none;
+}
+
+.lem-ctitle {
+	display: flex;
+	align-items: center;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.4px;
+	color: var(--text-2);
+	margin-bottom: 9px;
+}
+
+.lem-ctitle > span {
+	display: flex;
+	align-items: center;
+}
+
+.lem-ctitle--between {
+	justify-content: space-between;
+}
+
+.lem-step {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 17px;
+	height: 17px;
+	border-radius: 9px;
+	background: var(--accent-strong);
+	color: #fff;
+	font-size: 10px;
+	font-weight: 700;
+	margin-right: 7px;
+}
+
+.lem-card--violet {
+	border-left: 3px solid var(--accent-strong);
+}
+
+.lem-card--violet .lem-ctitle {
+	color: var(--accent);
+}
+
+.lem-card--cyan {
+	border-left: 3px solid var(--cyan);
+}
+
+.lem-card--cyan .lem-ctitle > span {
+	color: var(--cyan);
+}
+
+.lem-card--cyan .lem-step {
+	background: #0891b2;
+}
+
+.lem-card--amber {
+	border-left: 3px solid var(--amber);
+}
+
+.lem-card--amber .lem-ctitle > span:first-child {
+	color: var(--amber);
+}
+
+.lem-field {
+	display: flex;
+	flex-direction: column;
+	margin-bottom: 9px;
+}
+
+.lem-field:last-child {
+	margin-bottom: 0;
+}
+
+.lem-field > span {
+	color: var(--text-2);
+	font-size: 11px;
+	font-weight: 600;
+	margin-bottom: 4px;
+}
+
+.lem select,
+.lem input,
+.lem textarea {
+	width: 100%;
+	margin: 0;
+	background: var(--input);
+	color: var(--text);
+	border: 1px solid var(--line-strong);
+	border-radius: 6px;
+	padding: 6px 8px;
+	font: inherit;
+	font-size: 12px;
+	min-height: 28px;
+	box-shadow: none;
+}
+
+.lem select {
+	cursor: pointer;
+}
+
+.lem select:focus,
+.lem input:focus,
+.lem textarea:focus {
+	border-color: var(--accent);
+}
+
+.lem-hint {
+	margin: 5px 0 0;
+	color: var(--muted);
+	font-size: 10.5px;
+	line-height: 1.45;
+}
+
+.lem-hint:empty {
+	display: none;
+}
+
+.lem-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+}
+
+.lem-adv .lem-row {
+	margin-top: 8px;
+}
+
+.lem-link {
+	align-self: flex-start;
+	padding: 4px 0 0;
+	margin-top: 4px;
+	border: 0;
+	background: none;
+	color: var(--cyan);
+	font-size: 11px;
+	font-weight: 600;
+}
+
+.lem-link:hover {
+	color: #fff;
+}
+
+.lem-adv {
+	display: flex;
+	flex-direction: column;
+	border-top: 1px solid var(--line);
+	margin-top: 8px;
+	padding-top: 10px;
+}
+
+.lem-adv[hidden] {
+	display: none;
+}
+
+.lem-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--card-2);
+	color: var(--text);
+	border: 1px solid var(--line-strong);
+	border-radius: 7px;
+	padding: 7px 10px;
+	font-size: 12px;
+	font-weight: 700;
+	text-align: center;
+	white-space: nowrap;
+}
+
+.lem-btn:hover:not(:disabled) {
+	border-color: var(--accent);
+	background: #343048;
+}
+
+.lem-btn--primary {
+	background: var(--accent-strong);
+	border-color: var(--accent-strong);
+	color: #fff;
+}
+
+.lem-btn--primary:hover:not(:disabled) {
+	background: #8b5cf6;
+	border-color: var(--accent);
+}
+
+.lem-btn--accent {
+	background: var(--pink-strong);
+	border-color: var(--pink-strong);
+	color: #fff;
+}
+
+.lem-btn--accent:hover:not(:disabled) {
+	background: var(--pink);
+	border-color: #f472b6;
+}
+
+.lem-btn--accent.lem-btn--danger,
+.lem-btn--accent.lem-btn--danger:hover:not(:disabled) {
+	background: #b4433a;
+	border-color: #b4433a;
+}
+
+.lem-btn--small {
+	padding: 3px 9px;
+	font-size: 10.5px;
+	font-weight: 600;
+	border-radius: 6px;
+}
+
+.lem-btn:disabled {
+	opacity: 0.4;
+}
+
+.lem-actions {
+	display: flex;
+	gap: 8px;
+	margin: 2px 0 8px;
+}
+
+.lem-actions .lem-btn {
+	flex: 1;
+	min-height: 32px;
+}
+
+.lem-actions [data-act="sync"]:not(:disabled) {
+	box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.5);
+	animation: lem-pulse 1.8s ease-out infinite;
+}
+
+.lem-progress {
+	height: 4px;
+	border-radius: 2px;
+	background: var(--line);
+	margin-bottom: 8px;
+	overflow: hidden;
+}
+
+.lem-progress[hidden] {
+	display: none;
+}
+
+.lem-progress i {
+	display: block;
+	height: 4px;
+	width: 0;
+	border-radius: 2px;
+	background: linear-gradient(90deg, #7c3aed 0%, #ec4899 55%, #fbbf24 100%);
+	transition: width 0.3s ease;
+}
+
+.lem-status {
+	margin: 0 0 10px;
+	color: var(--text-2);
+	line-height: 1.45;
+	min-height: 16px;
+}
+
+.lem-status--ok {
+	color: var(--ok);
+}
+
+.lem-status--warn {
+	color: var(--warn);
+}
+
+.lem-status--error {
+	color: var(--bad);
+}
+
+.lem-result {
+	border-color: var(--line-strong);
+	border-left: 3px solid var(--ok);
+	animation: lem-fade-in 0.3s ease both;
+}
+
+.lem-result .lem-ctitle {
+	color: var(--text);
+}
+
+.lem-result--ok {
+	border-color: var(--ok);
+	background: #1b2630;
+}
+
+.lem-result--error {
+	border-color: var(--bad);
+}
+
+.lem-frow {
+	display: flex;
+	align-items: center;
+	padding: 6px 0;
+	border-top: 1px solid var(--line);
+}
+
+.lem-frow:first-child {
+	border-top: 0;
+	padding-top: 0;
+}
+
+.lem-fdot {
+	flex: none;
+	width: 8px;
+	height: 8px;
+	border-radius: 4px;
+	background: var(--muted);
+	margin-right: 9px;
+}
+
+.lem-frow--ok .lem-fdot { background: var(--ok); }
+.lem-frow--done .lem-fdot { background: var(--done); }
+.lem-frow--wait .lem-fdot { background: var(--warn); }
+
+.lem-fmain {
+	flex: 1;
+	min-width: 0;
+}
+
+.lem-fname {
+	font-weight: 700;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.lem-fsub {
+	color: var(--muted);
+	font-size: 10.5px;
+	margin-top: 1px;
+}
+
+.lem-fcount {
+	color: var(--text-2);
+	font-size: 11px;
+	font-weight: 600;
+	white-space: nowrap;
+	margin-left: 10px;
+}
+
+.lem-frow--ok .lem-fcount { color: var(--ok); }
+.lem-frow--done .lem-fcount { color: var(--done); }
+
+.lem-rtotals {
+	margin: 10px 0 0;
+	padding-top: 9px;
+	border-top: 1px solid var(--line);
+	font-weight: 600;
+	line-height: 1.45;
+}
+
+.lem-rfiles:empty + .lem-rtotals {
+	margin-top: 0;
+	padding-top: 0;
+	border-top: 0;
+}
+
+.lem-rtotals.is-error {
+	color: var(--bad);
+}
+
+.lem-logbody[hidden] {
+	display: none;
+}
+
+.lem-log {
+	height: 120px;
+	resize: none;
+	font-family: Consolas, "Cascadia Mono", ui-monospace, monospace;
+	font-size: 10.5px;
+	line-height: 1.45;
+	white-space: pre;
+}
+
+.lem-logcard .lem-ctitle {
+	margin-bottom: 0;
+}
+
+.lem-logbody {
+	margin-top: 9px;
+}
+
+.lem-foot {
+	color: var(--muted);
+	font-size: 10.5px;
+	line-height: 1.45;
+	margin-top: 2px;
+}
+
+.lem-foot a {
+	color: var(--accent);
+	text-decoration: none;
+}
+
+.lem-foot a:hover {
+	text-decoration: underline;
+}
+
+/* ---------- toast ---------- */
+
+.lem-toast {
+	position: absolute;
+	left: 50%;
+	bottom: 22px;
+	z-index: 10;
+	max-width: 80%;
+	padding: 8px 14px;
+	border-radius: 9px;
+	background: rgba(31, 28, 46, 0.97);
+	border: 1px solid var(--line-strong);
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+	color: var(--text);
+	font-weight: 600;
+	text-align: center;
+	opacity: 0;
+	transform: translate(-50%, 8px);
+	transition: opacity 0.2s, transform 0.2s;
+	pointer-events: none;
+}
+
+.lem-toast.is-on {
+	opacity: 1;
+	transform: translate(-50%, 0);
+}
+
+.lem-stage.is-scrubbing,
+.lem-stage.is-scrubbing * {
+	cursor: ew-resize !important;
+}
+
+/* ---------- motion ---------- */
+
+@keyframes lem-land {
+	from {
+		opacity: 0;
+		transform: translateY(-28px) scale(0.96);
+		filter: brightness(1.8);
+	}
+}
+
+@keyframes lem-cut {
+	0% {
+		opacity: 1;
+		transform: scaleX(1);
+	}
+
+	100% {
+		opacity: 0;
+		transform: scaleX(0);
+	}
+}
+
+@keyframes lem-park {
+	0% {
+		opacity: 0;
+	}
+
+	30% {
+		opacity: 1;
+	}
+
+	100% {
+		opacity: 0;
+	}
+}
+
+@keyframes lem-fade-in {
+	from {
+		opacity: 0;
+	}
+}
+
+@keyframes lem-fade-out {
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes lem-blink {
+	50% {
+		opacity: 0.25;
+	}
+}
+
+@keyframes lem-pulse {
+	0% {
+		box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.5);
+	}
+
+	70%,
+	100% {
+		box-shadow: 0 0 0 8px rgba(236, 72, 153, 0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lem *,
+	.lem *::before,
+	.lem *::after {
+		animation: none !important;
+		transition: none !important;
+	}
+}

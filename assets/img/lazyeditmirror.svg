@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1920" y2="1080" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#17142a"/>
+      <stop offset="1" stop-color="#0c0a14"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="960" cy="260" r="620" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7c3aed" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#7c3aed" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="tile" x1="890" y1="140" x2="1030" y2="280" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#ec4899"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <rect width="1920" height="1080" fill="url(#glow)"/>
+
+  <!-- the panel's brand mark: a solid half, a mirror axis, an outlined half -->
+  <rect x="890" y="140" width="140" height="140" rx="36" fill="url(#tile)"/>
+  <rect x="918" y="175" width="34" height="70" rx="7" fill="#ffffff"/>
+  <path d="M960 160 V260" stroke="#ffffff" stroke-opacity="0.8" stroke-width="4" stroke-dasharray="8 7"/>
+  <rect x="970" y="180" width="26" height="60" rx="6" stroke="#ffffff" stroke-width="5"/>
+
+  <text x="960" y="404" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="96" font-weight="700" letter-spacing="-2"><tspan fill="#ffffff">LazyEdit</tspan><tspan fill="#ec4899">Mirror</tspan></text>
+  <text x="960" y="466" text-anchor="middle" fill="#a39dbf" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="36">Cut the front camera once. The side camera follows.</text>
+
+  <g stroke="#2e2846" stroke-width="2" fill="#15121f">
+    <rect x="210" y="580" width="460" height="300" rx="20"/>
+    <rect x="730" y="580" width="460" height="300" rx="20"/>
+    <rect x="1250" y="580" width="460" height="300" rx="20"/>
+  </g>
+
+  <!-- 1. the front camera, cut -->
+  <g>
+    <rect x="262" y="626" width="70" height="40" rx="6" fill="#7c3aed"/>
+    <rect x="336" y="626" width="22" height="40" rx="4" fill="#fb7185" opacity="0.85"/>
+    <rect x="362" y="626" width="92" height="40" rx="6" fill="#7c3aed"/>
+    <rect x="458" y="626" width="16" height="40" rx="4" fill="#fb7185" opacity="0.85"/>
+    <rect x="478" y="626" width="140" height="40" rx="6" fill="#7c3aed"/>
+    <path d="M347 618 V676 M466 618 V676" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+    <path d="M262 690 H618" stroke="#34d399" stroke-opacity="0.55" stroke-width="16" stroke-dasharray="3 3"/>
+  </g>
+
+  <!-- 2. two recordings, matched by their sound -->
+  <g stroke-width="5" stroke-linecap="round">
+    <path d="M782 640 v8 M796 632 v24 M810 624 v40 M824 636 v16 M838 628 v32 M852 620 v48 M866 634 v20 M880 640 v8 M894 630 v28 M908 622 v44 M922 636 v16 M936 628 v32 M950 640 v8 M964 626 v36 M978 634 v20 M992 620 v48 M1006 632 v24 M1020 640 v8 M1034 628 v32 M1048 636 v16 M1062 624 v40 M1076 632 v24 M1090 638 v12 M1104 630 v28 M1118 636 v16 M1132 640 v8" stroke="#a78bfa"/>
+    <path d="M782 690 v8 M796 682 v24 M810 674 v40 M824 686 v16 M838 678 v32 M852 670 v48 M866 684 v20 M880 690 v8 M894 680 v28 M908 672 v44 M922 686 v16 M936 678 v32 M950 690 v8 M964 676 v36 M978 684 v20 M992 670 v48 M1006 682 v24 M1020 690 v8 M1034 678 v32 M1048 686 v16 M1062 674 v40 M1076 682 v24 M1090 688 v12 M1104 680 v28 M1118 686 v16 M1132 690 v8" stroke="#22d3ee"/>
+  </g>
+  <path d="M852 612 V726" stroke="#34d399" stroke-width="3" stroke-dasharray="7 6"/>
+
+  <!-- 3. the side camera, mirrored -->
+  <g>
+    <rect x="1302" y="626" width="70" height="40" rx="6" fill="#0e7490"/>
+    <rect x="1376" y="626" width="92" height="40" rx="6" fill="#0e7490"/>
+    <rect x="1472" y="626" width="140" height="40" rx="6" fill="#0e7490"/>
+    <rect x="1302" y="674" width="70" height="28" rx="6" fill="#7c3aed"/>
+    <rect x="1376" y="674" width="92" height="28" rx="6" fill="#7c3aed"/>
+    <rect x="1472" y="674" width="140" height="28" rx="6" fill="#7c3aed"/>
+    <circle cx="1640" cy="646" r="16" fill="#34d399"/>
+    <path d="M1632 646 l6 6 l11 -12" stroke="#0b1f19" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <g font-family="Inter, 'Segoe UI', system-ui, sans-serif">
+    <text x="262" y="806" fill="#ffffff" font-size="40" font-weight="600">Cut once</text>
+    <text x="262" y="850" fill="#8b86a3" font-size="28">The front camera, on V1</text>
+    <text x="782" y="806" fill="#ffffff" font-size="40" font-weight="600">Analyze</text>
+    <text x="782" y="850" fill="#8b86a3" font-size="28">Matched by their sound</text>
+    <text x="1302" y="806" fill="#ffffff" font-size="40" font-weight="600">Sync</text>
+    <text x="1302" y="850" fill="#8b86a3" font-size="28">Same cuts on the side camera</text>
+  </g>
+  <text x="960" y="960" text-anchor="middle" fill="#6f6885" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="28">Free and open source · Adobe Premiere Pro panel</text>
+</svg>

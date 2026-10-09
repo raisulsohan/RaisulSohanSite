@@ -1848,6 +1848,59 @@ function rs_get_default_portfolio_projects() {
 			'github_url'  => 'https://github.com/raisulsohan/Lingopie-promo-animation',
 			'order'       => 6,
 		),
+		array(
+			'id'          => 'lazyeditmirror',
+			'category'    => 'tools',
+			'type_bn'     => 'Premiere Pro UXP প্যানেল ও অডিও সিঙ্ক ইঞ্জিন',
+			'type_en'     => 'Premiere Pro UXP Panel & Audio Sync Engine',
+			'badge_bn'    => 'ফ্রি ও ওপেন সোর্স • Premiere Pro',
+			'badge_en'    => 'Free & Open Source • Premiere Pro',
+			'title_bn'    => 'LazyEditMirror — Premiere Pro-তে ফ্রন্ট ক্যামেরার এডিট অডিও মিলিয়ে সাইড ক্যামেরায় কপি করার প্যানেল',
+			'title_en'    => 'LazyEditMirror — Copy a Front-Camera Edit onto the Side Camera, Synced by Audio, in Premiere Pro',
+			'summary_bn'  => 'দুই ক্যামেরার শুটের জন্য Premiere Pro-র একটি ফ্রি প্যানেল: ফ্রন্ট ক্যামেরা একবার কাটুন, LazyEditMirror সাইড ক্যামেরাকে নিজের ট্র্যাকে ঠিক একই কাট আর একই টাইমিংয়ে বসিয়ে দেবে। একটি ছোট অডিও ইঞ্জিন দুই রেকর্ডিংয়ের শব্দ শুনে ক্যামেরা দুটোর সিঙ্ক খুঁজে নেয়, তাই হাতে মেলানোর কিছু নেই, আর টাইমলাইনের কিছুই ওভাররাইট হয় না। ফ্রি ও ওপেন সোর্স।',
+			'summary_en'  => 'A free Premiere Pro panel for two-camera shoots: cut the front camera once, and LazyEditMirror places the side camera on its own track with the same cuts and the same timing. A small audio engine finds the sync between the cameras by listening to both recordings, so there is nothing to line up by hand and nothing on the timeline is overwritten. Free and open source.',
+			'role_bn'     => 'একক ডেভেলপার ও ক্রিয়েটিভ টুলস ইঞ্জিনিয়ার',
+			'role_en'     => 'Solo Developer & Creative Tools Engineer',
+			'context_bn'  => 'Adobe Premiere Pro UXP • Node.js ও ffmpeg অডিও ইঞ্জিন • v1.1.2',
+			'context_en'  => 'Adobe Premiere Pro UXP • Node.js & ffmpeg Audio Engine • v1.1.2',
+			'challenge_bn'=> "প্রেজেন্টার ভিডিও সাধারণত দুটো ক্যামেরায় শুট হয়: একটা সামনে থেকে, একটা পাশ থেকে। এডিটর আগে ফ্রন্ট ক্যামেরা কাটেন: বিরতি, কাশি আর রিটেক বাদ দিতে প্রায়ই কয়েক ডজন কাট। তারপর সেই একই এডিট সাইড ক্যামেরায় আবার বানাতে হয়, ক্লিপ ধরে ধরে, ঠিক একই মুহূর্তে। হাতে করলে এই দ্বিতীয় দফায় প্রথম এডিটের সমান সময় লাগে, আর একটু ভুলেই ঠোঁট আর কথা মেলে না। মাল্টিক্যাম ব্যবহার করতে হলে সেটা কাটার আগেই সাজাতে হয়, পরে নয়।\n\nপ্রযুক্তিগত চ্যালেঞ্জ:\n১. API-তে অডিও নেই: Premiere-এর UXP API ক্লিপ, ট্র্যাক আর সোর্স রেঞ্জ পড়তে পারে, কিন্তু একটি অডিও স্যাম্পলও না; ফলে প্যানেল নিজে শুনতে পারে না দুই ক্যামেরা কোথায় মেলে।\n২. দুই দিকেই অনেক ফাইল: ফ্রন্ট এডিট কয়েকটি রেকর্ডিং থেকে কাটা হতে পারে, আর সাইড ক্যামেরার কয়েকটি ফাইল ভিন্ন ভিন্ন সময়ে শুরু ও শেষ হতে পারে।\n৩. টাইমলাইন অক্ষত রাখা: Premiere-এর ওভাররাইট এডিট সবসময় ক্লিপের লিঙ্কড অডিও সাথে নিয়ে আসে, শুধু ভিডিওর কোনো অপশন নেই; অথচ আগের অডিও বা আগে বসানো ক্লিপ কখনো ঢাকা পড়া চলবে না।\n৪. ফ্রেম ধরে নিখুঁত: মিলিসেকেন্ডে মাপা অফসেটকে সিকোয়েন্সের ফ্রেম গ্রিডে বসাতে হবে, আর ফলাফল ধরে নেওয়া নয়, যাচাই করতে হবে।",
+			'challenge_en'=> "A presenter video is usually filmed with two cameras: one from the front and one from the side. The editor cuts the front camera first, removing pauses, coughs and retakes, often with dozens of cuts. Then the same edit has to be rebuilt on the side camera, clip by clip, at exactly the same moments. Done by hand, that second pass takes about as long as the first, and a single slip leaves the lips out of sync. Multicam editing has to be set up before the first cut, not after it.\n\nTechnical challenges:\n1. No audio in the API: Premiere's UXP API can read clips, tracks and source ranges, but not a single audio sample, so the panel cannot hear where the two cameras meet.\n2. Many files on both sides: the front edit may be cut from several recordings, and the side camera may have several files that start and stop at different times.\n3. Leaving the timeline untouched: Premiere's overwrite edit always brings a clip's linked audio along, with no video-only option, and the edit must never cover existing audio or clips already placed.\n4. Exact to the frame: an offset measured in milliseconds has to land on the sequence's frame grid, and the result has to be checked, not assumed.",
+			'solution_bn' => "১. Premiere-এর পাশে একটি ছোট অডিও ইঞ্জিন: 127.0.0.1-এ চলা একটি লোকাল HTTP সার্ভার (Node.js ও ffmpeg) প্রতিটি ফাইলের অডিও ৮ kHz মোনোতে ডিকোড করে, ২০০ Hz লাউডনেস এনভেলপে রূপ দেয়, ক্যাশে রাখে, আর FFT দিয়ে সাইডকে ফ্রন্টের সাথে ক্রস-কোরিলেট করে। সবচেয়ে জোরালো ও স্পষ্টভাবে আলাদা পিকটাই অফসেট, ৫ মিলিসেকেন্ড পর্যন্ত নিখুঁত; মানদণ্ডের নিচে হলে 'no match' জানিয়ে বাদ রাখা হয়। কোনো ফাইল প্রথমবার পড়তে সময় লাগে, পরের বার থেকে তাৎক্ষণিক।\n\n২. সেটিং নয়, ধাপ: Master ও Target ট্র্যাক আর একটি সাইড ক্যামেরা ফাইল বাছুন, Analyze চাপুন, তারপর Sync। রেজাল্ট কার্ডে প্রতিটি ফ্রন্ট ফাইলের জন্য দেখায় কী পাওয়া গেল (side = front +0.635 s, correlation 0.84) আর কতগুলো ক্লিপ বসবে, আগেই বসানো, বা অন্য সাইড ফাইলের অপেক্ষায়।\n\n৩. অনেক ফাইলের জন্য পাস: প্রতি পাসে একটি সাইড ফাইল। কোনো ফ্রন্ট ক্লিপ তখনই বসে যখন সেটা পুরোটা সাইড ফাইলের ভেতরে আঁটে; Target ট্র্যাকে আগে থেকে থাকা ক্লিপ কখনো ছোঁয়া হয় না, আর সব ফ্রন্ট ক্লিপ ঢাকা না পড়া পর্যন্ত কার্ড জানায় কোনগুলোর জন্য আরেকটি সাইড ফাইল লাগবে।\n\n৪. কিছুই ওভাররাইট হয় না: প্রতিটি প্লেসমেন্টের সময় সাইড অডিও এক মুহূর্তের জন্য একটি ফাঁকা অডিও ট্র্যাকে রাখা হয় এবং সাথে সাথে সরিয়ে ফেলা হয়; ফলে Target ট্র্যাকে শুধু ভিডিও থাকে আর আগের কোনো অডিওতে হাত পড়ে না। সাইডের ইন-পয়েন্ট ফ্রেম গ্রিডে স্ন্যাপ হয়, Target ট্র্যাক আবার পড়ে প্ল্যানের সাথে যাচাই করা হয়, আর প্রতিটি প্লেসমেন্ট আলাদা Edit > Undo ধাপ।\n\n৫. অডিও কাজে না এলে হাতের রেফারেন্স: হাতে সিঙ্ক করা এক জোড়া ক্লিপ, জ্যাম-সিঙ্ক করা ক্যামেরার জন্য মিলে যাওয়া সোর্স টাইমকোড, কিংবা নিজে লেখা অফসেট; সাথে সূক্ষ্ম সংশোধনের জন্য ঐচ্ছিক বাড়তি অফসেট।\n\n৬. সেটআপের ঝামেলা নেই: ইনস্টলার Creative Cloud-এর নিজস্ব প্লাগইন ইনস্টলার দিয়ে প্যানেল যোগ করে, ইঞ্জিন রাখে ইউজার ফোল্ডারে, একটি lazyeditmirror: লিঙ্ক রেজিস্টার করে যাতে প্যানেল কোনো উইন্ডো ছাড়াই ইঞ্জিন চালু করতে পারে, আর Node.js ও ffmpeg না থাকলেই কেবল winget দিয়ে ইনস্টলের প্রস্তাব দেয়। তিন ঘণ্টা অলস থাকলে ইঞ্জিন নিজে বন্ধ হয়।\n\n৭. Premiere-এ যাওয়ার আগেই পরীক্ষিত: প্রতিটি কল Adobe-এর Premiere Pro UXP রেফারেন্স আর অফিশিয়াল 26.5 টাইপ ডিক্লারেশনের সাথে মিলিয়ে দেখা; টাইমিংয়ের হিসাব আলাদা বিশুদ্ধ কোডে, তার ইউনিট টেস্ট, Premiere API-র একটি মক-এর ওপর এন্ড-টু-এন্ড রান, আর ffmpeg দিয়ে বানানো কৃত্রিম রেকর্ডিংয়ে ইঞ্জিনের সেলফ-টেস্ট। Premiere Pro 26.5.2-তে চার ফাইলের ৮৬ ক্লিপের ফ্রন্ট এডিটে নিশ্চিত: correlation 0.84, এক পাসে ২৩টি ক্লিপ বসানো ও যাচাই।",
+			'solution_en' => "1. A small audio engine beside Premiere: a local HTTP server on 127.0.0.1 (Node.js and ffmpeg) decodes each file's audio to 8 kHz mono, turns it into a 200 Hz loudness envelope, caches it, and cross-correlates side against front with an FFT. The strongest, clearly isolated peak is the offset, measured to 5 ms; anything below the bar is reported as no match and left alone. The first read of a file is slow, every later one is instant.\n\n2. Steps, not settings: choose the Master and Target tracks and a side-camera file, click Analyze, then Sync. The result card shows, per front file, what was found (side = front +0.635 s, correlation 0.84) and how many clips will be placed, are already done, or are still waiting for another side file.\n\n3. Passes for many files: one side file per pass. A front clip is placed only when it fits inside the side file whole, clips already on the Target track are never touched, and the card names the front clips that still need a side file until every front clip is covered.\n\n4. Nothing overwritten: the side audio is parked on an empty audio track for a moment and removed right after each placement, so the Target track ends up video-only and no existing audio is touched. Side in-points are snapped to the frame grid, the Target track is read back and verified against the plan, and every placement is its own Edit > Undo step.\n\n5. Manual references when the audio cannot help: a pair of clips synced by hand, matching source timecode for jam-synced cameras, or an offset typed in, each with an optional extra offset for fine correction.\n\n6. Nothing to set up: the installer adds the panel through Creative Cloud's own plugin installer, puts the engine in the user folder, registers a lazyeditmirror: link so the panel can start it without a window, and offers to install Node.js and ffmpeg with winget only when they are missing. The engine exits by itself after three idle hours.\n\n7. Tested before Premiere sees it: every call checked against Adobe's Premiere Pro UXP reference and the official 26.5 type declarations; the timing maths is pure code with unit tests, an end-to-end run against a mock of the Premiere API, and an engine self-test on synthetic recordings made with ffmpeg. Confirmed on Premiere Pro 26.5.2 with an 86-clip, four-file front edit: correlation 0.84, and 23 clips placed and verified in one pass.",
+			'highlights_bn'=> array(
+				'ফ্রন্ট ক্যামেরা একবার কাটুন; সাইড ক্যামেরা নিজের ট্র্যাকে একই কাট পায়',
+				'শব্দ শুনে সিঙ্ক: লাউডনেস এনভেলপের FFT ক্রস-কোরিলেশন, ৫ মিলিসেকেন্ড পর্যন্ত নিখুঁত',
+				'এক ক্লিকে Analyze, এক ক্লিকে Sync; প্রতিটি ফ্রন্ট ফাইলের জন্য রেজাল্ট কার্ড',
+				'একাধিক ফ্রন্ট ও সাইড ফাইল, প্রতি পাসে একটি সাইড ফাইল, সব ক্লিপ ঢাকা না পড়া পর্যন্ত',
+				'কিছুই ওভাররাইট হয় না: সাইড অডিও সাময়িক রেখে সরানো, আগের ক্লিপ অক্ষত',
+				'ফ্রেম গ্রিডে স্ন্যাপ, আবার পড়ে যাচাই, প্রতিটি প্লেসমেন্ট এক undo ধাপ',
+				'হাতের রেফারেন্স: হাতে সিঙ্ক করা জোড়া, সোর্স টাইমকোড বা নিজে লেখা অফসেট',
+				'ইনস্টলার ইঞ্জিন সাজিয়ে দেয়; Node.js ও ffmpeg কেবল না থাকলে ইনস্টলের প্রস্তাব',
+				'Premiere Pro 26.5+ UXP প্যানেল; MIT লাইসেন্সে ফ্রি ও ওপেন সোর্স'
+			),
+			'highlights_en'=> array(
+				'Cut the front camera once; the side camera gets the same cuts on its own track',
+				'Sync found by sound: FFT cross-correlation of loudness envelopes, to 5 ms',
+				'One click to Analyze, one to Sync, with a result card per front file',
+				'Several front and side files, one side file per pass, until every clip is covered',
+				'Nothing overwritten: side audio parked and removed, existing clips untouched',
+				'Snapped to the frame grid, read back and verified, every placement one undo step',
+				'Manual references: a hand-synced pair, source timecode or a typed offset',
+				'The installer sets up the engine; Node.js and ffmpeg offered only when missing',
+				'Premiere Pro 26.5+ UXP panel; free and open source under MIT'
+			),
+			'tags'        => array( 'Premiere Pro', 'Adobe UXP', 'Node.js', 'ffmpeg', 'Audio Sync', 'Multi-Camera', 'Productivity' ),
+			'accent'      => '#ec4899',
+			'icon'        => 'extension',
+			'image'       => get_template_directory_uri() . '/assets/img/lazyeditmirror.svg',
+			'image_fit'   => 'cover',
+			'action_type' => 'code',
+			'action_bn'   => 'ফ্রি ডাউনলোড',
+			'action_en'   => 'Download Free',
+			'direct_url'  => 'https://github.com/raisulsohan/LazyEditMirror/releases/latest',
+			'github_url'  => 'https://github.com/raisulsohan/LazyEditMirror',
+			'order'       => 7,
+		),
 	);
 }
 
@@ -2349,7 +2402,7 @@ function rs_sync_new_portfolio_projects() {
 
 	$added = false;
 	if ( get_option( 'rs_portfolio_seeded_v1' ) ) {
-		foreach ( array( 'lazylord', 'lazykick', 'lazymotiontoolkit', 'nomolos-prohibition', 'nomolos-cobra-effect', 'consciousness-animation', 'lazypin', 'lingopie-promo' ) as $slug ) {
+		foreach ( array( 'lazylord', 'lazykick', 'lazymotiontoolkit', 'nomolos-prohibition', 'nomolos-cobra-effect', 'consciousness-animation', 'lazypin', 'lingopie-promo', 'lazyeditmirror' ) as $slug ) {
 			if ( ! get_option( 'rs_portfolio_added_' . $slug ) ) {
 				$added = true;
 			}
@@ -2362,6 +2415,7 @@ function rs_sync_new_portfolio_projects() {
 	rs_seed_portfolio_demo( 'lazy-image-ae', 'lazy-image-demo.html', 'lazy-image-demo-vertical.html' );
 	rs_seed_portfolio_demo( 'lazykick', 'lazykick-demo.html', 'lazykick-demo-vertical.html' );
 	rs_seed_portfolio_demo( 'lazypin', 'lazypin-demo.html', 'lazypin-demo-4x5.html' );
+	rs_seed_portfolio_demo( 'lazyeditmirror', 'lazyeditmirror-demo.html', '' );
 
 	if ( $switched ) {
 		restore_current_blog();
@@ -2541,9 +2595,12 @@ add_action( 'init', 'rs_sync_portfolio_downloads', 22 );
  * Give an existing project the demo that ships with the theme, once, and
  * never over one set in the dashboard.
  *
+ * A project whose demo has no portrait cut passes '' for $tall, and the
+ * player shows the 16:9 cut on every screen.
+ *
  * @param string $slug Project slug.
  * @param string $wide 16:9 demo file in assets/demo/.
- * @param string $tall 9:16 demo file in assets/demo/.
+ * @param string $tall 9:16 demo file in assets/demo/, or ''.
  */
 function rs_seed_portfolio_demo( $slug, $wide, $tall ) {
 	$flag = 'rs_portfolio_demo_' . $slug;
@@ -2567,7 +2624,7 @@ function rs_seed_portfolio_demo( $slug, $wide, $tall ) {
 	if ( ! get_post_meta( $ids[0], '_rs_portfolio_demo', true ) ) {
 		$base = get_template_directory_uri() . '/assets/demo/';
 		update_post_meta( $ids[0], '_rs_portfolio_demo', $base . $wide );
-		update_post_meta( $ids[0], '_rs_portfolio_demo_tall', $base . $tall );
+		update_post_meta( $ids[0], '_rs_portfolio_demo_tall', '' !== $tall ? $base . $tall : '' );
 	}
 
 	update_option( $flag, 1 );
@@ -3813,6 +3870,15 @@ function rs_project_demo_kit( $slug ) {
 			'mount'  => 'LazyMotionDemo',
 			'sub_en' => 'Select layers in a small comp and run the ten tools: anchor, head to line, auto box, fade, stagger, lightning and the rest, one undo step each.',
 			'sub_bn' => 'ছোট একটা কম্পে লেয়ার সিলেক্ট করে দশটা টুল চালিয়ে দেখুন: অ্যাঙ্কর, হেড টু লাইন, অটো বক্স, ফেড, স্ট্যাগার, বজ্রপাত আর বাকিগুলো; প্রতিটি এক ধাপে আনডু হয়।',
+		),
+		'lazyeditmirror' => array(
+			'bundle' => 'lazyeditmirror-demo',
+			'wrap'   => 'lem-wrap',
+			'root'   => 'lem',
+			'attr'   => 'data-lazyeditmirror-demo',
+			'mount'  => 'LazyEditMirrorDemo',
+			'sub_en' => 'Cut the pauses out of the front camera, Analyze a side-camera file, Sync, and press play: both cameras say the same line at the same moment.',
+			'sub_bn' => 'ফ্রন্ট ক্যামেরা থেকে বিরতিগুলো কেটে ফেলুন, একটি সাইড ক্যামেরা ফাইল Analyze করুন, Sync চাপুন, তারপর চালিয়ে দেখুন: দুই ক্যামেরা একই মুহূর্তে একই কথা বলছে।',
 		),
 	) );
 
