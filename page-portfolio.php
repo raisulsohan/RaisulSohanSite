@@ -1114,7 +1114,7 @@ foreach ( $projects as $p ) {
 		'direct_url'  => $p['direct_url'],
 		'github_url'  => ! empty( $p['github_url'] ) ? $p['github_url'] : '',
 		'url'         => function_exists( 'rs_project_url' ) ? rs_project_url( $p['id'] ) : '',
-		'docs'        => function_exists( 'rs_project_docs' ) && rs_project_docs( $p ) ? rs_project_docs_url( $p['id'] ) : '',
+		'docs'        => function_exists( 'rs_project_docs_entry_url' ) ? rs_project_docs_entry_url( $p ) : '',
 		'before'      => ! empty( $p['before'] ) ? esc_url_raw( $p['before'] ) : '',
 		'after'       => ! empty( $p['after'] ) ? esc_url_raw( $p['after'] ) : '',
 		'try'         => function_exists( 'rs_project_has_demo' ) && rs_project_has_demo( $p['id'] ) && function_exists( 'rs_project_url' ) ? rs_project_url( $p['id'] ) . '#try' : '',

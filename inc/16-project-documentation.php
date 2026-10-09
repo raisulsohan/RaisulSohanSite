@@ -35,7 +35,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * The version of the index's book fields. An index kept with another one is
  * built again whole, ETags or not.
  */
-define( 'RS_DOCS_BOOKS_V', 2 );
+define( 'RS_DOCS_BOOKS_V', 3 );
 
 /**
  * Every repository's documentation index, keyed by lower-case owner/repo.
@@ -412,14 +412,20 @@ function rs_docs_refresh( $slug, $args, $old ) {
 			}
 		);
 	}
-	/* A book's pages stay together, after the rest, unless the docs README
-	   placed the book's home page itself. */
+	/* A book's pages stay together. With no README of the docs folder's own
+	   to set an order, the books come first, straight after the home page:
+	   a manual is what a reader came for, and the first book is where the
+	   portfolio's Documentation link lands (see rs_project_docs_entry()).
+	   With one, they follow the rest, unless that README placed a book. */
+	$shelf = array();
 	foreach ( $book_order as $key ) {
 		if ( ! in_array( $key, $keys, true ) ) {
-			$rest[] = $key;
+			$shelf[] = $key;
 		}
 	}
-	$keys = array_merge( $keys, $rest );
+	$keys = $made ? array_merge( $keys, $shelf, $rest ) : array_merge( $keys, $rest, $shelf );
+
+	$new['entry'] = ( $made && $book_order ) ? $book_order[0] : '';
 
 	$new['pages']      = $pages;
 	$new['order']      = $keys;
@@ -616,6 +622,26 @@ function rs_project_docs_url( $project_id, $key = '' ) {
 }
 
 /**
+ * Where the portfolio's Documentation link lands: the first book of the docs
+ * (LazyMapLayers' manual) when the docs folder has no README of its own to
+ * be a home page, the documentation's home otherwise.
+ *
+ * @param array $project Project.
+ * @return string '' when the project has no documentation.
+ */
+function rs_project_docs_entry_url( $project ) {
+	$index = rs_project_docs( $project );
+
+	if ( ! $index ) {
+		return '';
+	}
+
+	$entry = isset( $index['entry'] ) ? (string) $index['entry'] : '';
+
+	return rs_project_docs_url( $project['id'], ( '' !== $entry && isset( $index['pages'][ $entry ] ) ) ? $entry : '' );
+}
+
+/**
  * The link to a project's documentation, as the portfolio shows it beside
  * the project's type and role. Empty when the project has none.
  *
@@ -632,7 +658,7 @@ function rs_project_docs_link( $project, $is_en, $class = '' ) {
 	return sprintf(
 		'<a class="rs-pf-docs-link%1$s" href="%2$s"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4.5h6a4 4 0 0 1 4 4V21a3 3 0 0 0-3-3H2z"/><path d="M22 4.5h-6a4 4 0 0 0-4 4V21a3 3 0 0 1 3-3h7z"/></svg><span>%3$s</span></a>',
 		$class ? ' ' . esc_attr( $class ) : '',
-		esc_url( rs_project_docs_url( $project['id'] ) ),
+		esc_url( rs_project_docs_entry_url( $project ) ),
 		esc_html( $is_en ? 'Documentation' : 'ডকুমেন্টেশন' )
 	);
 }
