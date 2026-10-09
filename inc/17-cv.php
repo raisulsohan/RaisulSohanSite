@@ -1209,9 +1209,54 @@ function rs_cv_tool_lazymaplayers() {
 		'name'  => 'LazyMapLayers',
 		'links' => rs_cv_tool_links( 'LazyMapLayers', 'lazymaplayers', 'LazyMapLayers' ),
 		'kind'  => 'After Effects CEP panel · TypeScript & MapLibre GL',
-		'text'  => 'Frame-exact map design and animation: flights, 3D cities, data maps and labels in every script.',
+		'text'  => 'Frame-exact map animation, offline down to city level: flights, 3D cities, data maps and labels in every script.',
 	);
 }
+
+/**
+ * LazyMapLayers 1.0 works offline down to city level: give the tool's line in
+ * a CV that was already saved the new text, once. A line that was edited by
+ * hand keeps the edit; only the text this theme wrote at 0.9 is replaced.
+ */
+function rs_cv_lazymaplayers_v1_0() {
+	$flag = 'rs_cv_lazymaplayers_v1_0';
+	if ( get_site_option( $flag ) ) {
+		return;
+	}
+
+	$page  = null;
+	$saved = false;
+	if ( is_multisite() ) {
+		$saved = rs_cv_saved_data();
+	} else {
+		$page  = get_page_by_path( 'cv', OBJECT, 'page' );
+		$saved = $page ? get_post_meta( $page->ID, '_rs_cv_data', true ) : false;
+	}
+
+	$old     = 'Frame-exact map design and animation: flights, 3D cities, data maps and labels in every script.';
+	$changed = false;
+	if ( is_array( $saved ) && ! empty( $saved['tools'] ) && is_array( $saved['tools'] ) ) {
+		foreach ( $saved['tools'] as $i => $tool ) {
+			if ( isset( $tool['name'], $tool['text'] ) && 'LazyMapLayers' === $tool['name'] && $old === $tool['text'] ) {
+				$saved['tools'][ $i ]['text'] = rs_cv_tool_lazymaplayers()['text'];
+				$changed                      = true;
+			}
+		}
+	}
+
+	if ( $changed ) {
+		if ( is_multisite() ) {
+			update_site_option( 'rs_cv_shared_data_v1', $saved );
+		} elseif ( $page ) {
+			update_post_meta( $page->ID, '_rs_cv_data', $saved );
+		}
+
+		rs_cv_purge_network_caches();
+	}
+
+	update_site_option( $flag, 1 );
+}
+add_action( 'init', 'rs_cv_lazymaplayers_v1_0', 28 );
 
 /**
  * The three browser extensions as one entry, which keeps the tools list in
