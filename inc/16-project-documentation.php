@@ -32,6 +32,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  * ====================================================================== */
 
 /**
+ * The version of the index's book fields. An index kept with another one is
+ * built again whole, ETags or not.
+ */
+define( 'RS_DOCS_BOOKS_V', 2 );
+
+/**
  * Every repository's documentation index, keyed by lower-case owner/repo.
  *
  * @return array
@@ -207,7 +213,10 @@ function rs_docs_refresh( $slug, $args, $old ) {
 
 	/* An ETag is only worth sending with the listing it stands for kept:
 	   a 304 without that listing would leave nothing to build from. */
-	$docs = rs_docs_list( $slug, 'docs', $args, isset( $old['etag_docs'], $old['files_docs'] ) ? (string) $old['etag_docs'] : '' );
+	/* An index made before books were read (7.35.0 made some without its
+	   subfolders: a 304 hid them) is asked for whole once more. */
+	$fresh = isset( $old['books_v'] ) && RS_DOCS_BOOKS_V === (int) $old['books_v'];
+	$docs  = rs_docs_list( $slug, 'docs', $args, ( $fresh && isset( $old['etag_docs'], $old['files_docs'] ) ) ? (string) $old['etag_docs'] : '' );
 
 	/* No docs folder, or no longer one. */
 	if ( 404 === $docs['status'] ) {
@@ -238,9 +247,9 @@ function rs_docs_refresh( $slug, $args, $old ) {
 	}
 
 	/* Nothing moved since the last look: not the folder, not the top of the
-	   repository, not a book. An index made before books were read has no
-	   books_sub yet and is built once more. */
-	if ( 304 === $docs['status'] && 304 === $root['status'] && ! empty( $old['pages'] ) && isset( $old['books_sub'] ) && ! $books['moved'] ) {
+	   repository, not a book. An index of another book version is built
+	   once more. */
+	if ( 304 === $docs['status'] && 304 === $root['status'] && ! empty( $old['pages'] ) && $fresh && ! $books['moved'] ) {
 		return $new;
 	}
 
@@ -419,6 +428,7 @@ function rs_docs_refresh( $slug, $args, $old ) {
 	$new['dirs_docs']  = $sub_dirs;
 	$new['books_sub']  = $books['files'];
 	$new['etag_books'] = $books['etags'];
+	$new['books_v']    = RS_DOCS_BOOKS_V;
 	$new['etag_docs']  = $docs['etag'];
 	$new['etag_root']  = $root['etag'];
 
