@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.33.1-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.34.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.34
+
+**LazyMapLayers 1.0 on the portfolio, with a demo animation of a real job in After Effects.**
+
+- **7.34.0: LazyMapLayers case study at 1.0, and its demo animation.** The case study follows the 1.0 release: the download carries the map data for the whole world, so the panel works offline down to city level, and the 0.9 work (prism maps, routes drawn with the Pen tool, names bent along streets and rivers, maps that follow each other's camera) is in the solution and highlights. `rs_sync_lazymaplayers_v1_0()` writes the new text once into the project that was seeded at 0.9. The new demo animation, `assets/demo/lazymaplayers-demo.html` (32 s, 16:9, seeded once through `rs_seed_portfolio_demo()`), shows one map shot made start to finish in an After Effects workspace with no internet: New map, three shots found through the offline search, Apply to timeline with its keyframes, a route clicked from Dhaka to Chattogram, auto labels in Bengali with English below, the render with its frame counter, and then the finished shot played full frame from the globe down the route. The map is drawn from LazyMapLayers' own offline pack (Natural Earth, OpenStreetMap and geoBoundaries, simplified and embedded gzipped), and the page has the full player bar, keyboard shortcuts and a synthesized soundtrack that follows seek, speed, mute and volume.
 
 ## What's new in 7.33
 
