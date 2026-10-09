@@ -145,6 +145,42 @@
 	color: #fff;
 }
 
+/* A book's chapters (a subfolder of docs/ with its own README), under its
+   home page while one of its pages is open. */
+.rs-doc__chapters {
+	margin: 0.2rem 0 0.6rem 0.6rem;
+	padding: 0 0 0 0.5rem;
+	list-style: none;
+	border-left: 1px solid var(--pf-line);
+}
+
+.rs-doc__chapters > li > a {
+	display: block;
+	padding: 0.32rem 0.6rem;
+	border-radius: 8px;
+	font-size: 0.82rem;
+	line-height: 1.35;
+	color: var(--pf-text2);
+	text-decoration: none;
+}
+
+.rs-doc__chapters > li > a:hover {
+	background: rgba(255, 255, 255, 0.05);
+	color: var(--pf-text);
+}
+
+.rs-doc__chapters > .is-here > a {
+	background: rgba(108, 76, 255, 0.18);
+	box-shadow: inset 2px 0 0 var(--pf-pink);
+	font-weight: 600;
+	color: #fff;
+}
+
+.rs-doc__pages > .is-in > a {
+	color: var(--pf-text);
+	font-weight: 600;
+}
+
 .rs-doc__toc {
 	margin: 0.3rem 0 0.6rem 0.9rem;
 	padding-left: 0.7rem;
@@ -205,7 +241,8 @@
 
 @media (max-width: 959px) {
 	.rs-doc__label,
-	.rs-doc__toc {
+	.rs-doc__toc,
+	.rs-doc__chapters {
 		display: none;
 	}
 
@@ -231,6 +268,12 @@
 		padding: 0.45rem 0.95rem;
 		font-size: 0.84rem;
 		white-space: nowrap;
+	}
+
+	/* In a book's chapter on a phone, the book's pill says where you are;
+	   the previous and next links walk the chapters. */
+	.rs-doc__pages > .is-in > a {
+		border-color: var(--pf-pink);
 	}
 
 	.rs-doc__pages > .is-here > a {

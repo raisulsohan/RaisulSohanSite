@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.34.2-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.35.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.35
+
+**A project's documentation can hold a book: a subfolder of `docs/` with a README of its own.**
+
+- **7.35.0: Books in project documentation.** Until now only the top-level `docs/*.md` of a project's repository became pages at `/portfolio/<project>/documentation/`. A subfolder of `docs/` that has its own `README.md` is now read too, as a book: its README is a page named after the folder (`/documentation/manual/`) and every Markdown file in it is a page of its own, in the order that README links to them. Each subfolder is asked for with its ETag like the rest, so this costs nothing between pushes, and an index made before this version is rebuilt once. In the sidebar a book's chapters are listed under its home page only while one of its pages is open, so a forty-chapter manual does not bury the rest of the docs; on a phone the book's pill is outlined and Previous and Next walk the chapters. Pictures in a book come from the repository's raw files like everywhere else. The first book is LazyMapLayers' manual (`docs/manual/`), every option a chapter with pictures from After Effects.
 
 ## What's new in 7.34
 

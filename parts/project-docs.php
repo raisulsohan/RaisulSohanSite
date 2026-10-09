@@ -26,6 +26,8 @@ $pd_at    = array_search( $pd['key'], $pd_order, true );
 $pd_prev  = ( false !== $pd_at && $pd_at > 0 ) ? $pd_order[ $pd_at - 1 ] : null;
 $pd_next  = ( false !== $pd_at && $pd_at < count( $pd_order ) - 1 ) ? $pd_order[ $pd_at + 1 ] : null;
 $pd_toc   = $pd_html ? rs_docs_sections( $pd_html ) : array();
+/* The book the open page belongs to (a subfolder of docs/ with its own README), or ''. */
+$pd_here_book = ! empty( $pd['page']['book'] ) ? (string) $pd['page']['book'] : '';
 $pd_arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 ?>
 <main class="rs-pf rs-pf--docs" id="rs-content">
@@ -55,16 +57,47 @@ $pd_arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 							if ( ! isset( $pd_index['pages'][ $pd_key ] ) ) {
 								continue;
 							}
+							$pd_item = $pd_index['pages'][ $pd_key ];
+							$pd_book = ! empty( $pd_item['book'] ) ? (string) $pd_item['book'] : '';
+
+							/* A book's chapters are listed under its home page, and only
+							   while one of its pages is open: forty chapters would bury
+							   the rest of the docs. */
+							if ( '' !== $pd_book && $pd_key !== $pd_book ) {
+								continue;
+							}
 							$pd_here  = $pd_key === $pd['key'];
-							$pd_item  = $pd_index['pages'][ $pd_key ];
+							$pd_in    = '' !== $pd_book && $pd_book === $pd_here_book;
 							$pd_title = '' === $pd_key ? ( $rs_is_en ? 'Overview' : 'শুরু' ) : ( ! empty( $pd_item['label'] ) ? $pd_item['label'] : $pd_item['title'] );
 							?>
-							<li<?php echo $pd_here ? ' class="is-here"' : ''; ?>>
+							<li<?php echo $pd_here ? ' class="is-here"' : ( $pd_in ? ' class="is-in"' : '' ); ?>>
 								<a href="<?php echo esc_url( rs_project_docs_url( $pd_proj['id'], $pd_key ) ); ?>"<?php echo $pd_here ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $pd_title ); ?></a>
 								<?php if ( $pd_here && count( $pd_toc ) > 1 ) : ?>
 									<ol class="rs-doc__toc">
 										<?php foreach ( $pd_toc as $pd_section ) : ?>
 											<li><a href="#<?php echo esc_attr( $pd_section['id'] ); ?>"><?php echo esc_html( $pd_section['text'] ); ?></a></li>
+										<?php endforeach; ?>
+									</ol>
+								<?php endif; ?>
+								<?php if ( $pd_in ) : ?>
+									<ol class="rs-doc__chapters">
+										<?php foreach ( $pd_order as $pd_ch ) : ?>
+											<?php
+											if ( $pd_ch === $pd_book || ! isset( $pd_index['pages'][ $pd_ch ] ) || ( isset( $pd_index['pages'][ $pd_ch ]['book'] ) ? $pd_index['pages'][ $pd_ch ]['book'] : '' ) !== $pd_book ) {
+												continue;
+											}
+											$pd_ch_here = $pd_ch === $pd['key'];
+											?>
+											<li<?php echo $pd_ch_here ? ' class="is-here"' : ''; ?>>
+												<a href="<?php echo esc_url( rs_project_docs_url( $pd_proj['id'], $pd_ch ) ); ?>"<?php echo $pd_ch_here ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $pd_index['pages'][ $pd_ch ]['title'] ); ?></a>
+												<?php if ( $pd_ch_here && count( $pd_toc ) > 1 ) : ?>
+													<ol class="rs-doc__toc">
+														<?php foreach ( $pd_toc as $pd_section ) : ?>
+															<li><a href="#<?php echo esc_attr( $pd_section['id'] ); ?>"><?php echo esc_html( $pd_section['text'] ); ?></a></li>
+														<?php endforeach; ?>
+													</ol>
+												<?php endif; ?>
+											</li>
 										<?php endforeach; ?>
 									</ol>
 								<?php endif; ?>
@@ -119,7 +152,7 @@ $pd_arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 	'use strict';
 
 	var row  = document.querySelector('.rs-doc__pages');
-	var here = row && row.querySelector('.is-here');
+	var here = row && row.querySelector(':scope > .is-here, :scope > .is-in');
 
 	if (row && here && row.scrollWidth > row.clientWidth) {
 		row.scrollLeft = here.getBoundingClientRect().left - row.getBoundingClientRect().left - 16;

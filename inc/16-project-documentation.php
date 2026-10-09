@@ -62,7 +62,7 @@ function rs_docs_index( $slug ) {
  * @param string $dir  Directory, '' for the top.
  * @param array  $args From rs_github_request_args().
  * @param string $etag ETag from last time, or ''.
- * @return array { status: int (0 on a network error), files: name => file, etag: string }
+ * @return array { status: int (0 on a network error), files: name => file, dirs: string[], etag: string }
  */
 function rs_docs_list( $slug, $dir, $args, $etag ) {
 	if ( '' !== $etag ) {
@@ -72,19 +72,25 @@ function rs_docs_list( $slug, $dir, $args, $etag ) {
 	$response = wp_remote_get( 'https://api.github.com/repos/' . $slug . '/contents' . ( '' !== $dir ? '/' . $dir : '' ), $args );
 
 	if ( is_wp_error( $response ) ) {
-		return array( 'status' => 0, 'files' => array(), 'etag' => $etag );
+		return array( 'status' => 0, 'files' => array(), 'dirs' => array(), 'etag' => $etag );
 	}
 
 	$status = (int) wp_remote_retrieve_response_code( $response );
 
 	if ( 200 !== $status ) {
-		return array( 'status' => $status, 'files' => array(), 'etag' => $etag );
+		return array( 'status' => $status, 'files' => array(), 'dirs' => array(), 'etag' => $etag );
 	}
 
 	$files = array();
+	$dirs  = array();
 	$items = json_decode( wp_remote_retrieve_body( $response ), true );
 
 	foreach ( is_array( $items ) ? $items : array() as $item ) {
+		if ( ! empty( $item['name'] ) && 'dir' === ( isset( $item['type'] ) ? $item['type'] : '' ) ) {
+			$dirs[] = (string) $item['name'];
+			continue;
+		}
+
 		if ( empty( $item['name'] ) || 'file' !== ( isset( $item['type'] ) ? $item['type'] : '' ) || ! preg_match( '/\.md$/i', $item['name'] ) ) {
 			continue;
 		}
@@ -100,6 +106,7 @@ function rs_docs_list( $slug, $dir, $args, $etag ) {
 	return array(
 		'status' => 200,
 		'files'  => $files,
+		'dirs'   => $dirs,
 		'etag'   => (string) wp_remote_retrieve_header( $response, 'etag' ),
 	);
 }
@@ -217,14 +224,25 @@ function rs_docs_refresh( $slug, $args, $old ) {
 		return $new;
 	}
 
-	/* Nothing moved since the last look. */
-	if ( 304 === $docs['status'] && 304 === $root['status'] && ! empty( $old['pages'] ) ) {
+	/* A 304 has no body: the files it stands for are the ones kept. */
+	$in_docs  = 200 === $docs['status'] ? $docs['files'] : ( isset( $old['files_docs'] ) ? (array) $old['files_docs'] : array() );
+	$in_root  = 200 === $root['status'] ? $root['files'] : ( isset( $old['files_root'] ) ? (array) $old['files_root'] : array() );
+	$sub_dirs = 200 === $docs['status'] ? $docs['dirs'] : ( isset( $old['dirs_docs'] ) ? (array) $old['dirs_docs'] : array() );
+
+	/* Subfolders of docs/ with a README of their own are books of their own
+	   (a manual of many chapters, say): asked for with their ETags too. */
+	$books = rs_docs_books( $slug, $args, $old, $sub_dirs );
+
+	if ( null === $books ) {
 		return $new;
 	}
 
-	/* A 304 has no body: the files it stands for are the ones kept. */
-	$in_docs = 200 === $docs['status'] ? $docs['files'] : ( isset( $old['files_docs'] ) ? (array) $old['files_docs'] : array() );
-	$in_root = 200 === $root['status'] ? $root['files'] : ( isset( $old['files_root'] ) ? (array) $old['files_root'] : array() );
+	/* Nothing moved since the last look: not the folder, not the top of the
+	   repository, not a book. An index made before books were read has no
+	   books_sub yet and is built once more. */
+	if ( 304 === $docs['status'] && 304 === $root['status'] && ! empty( $old['pages'] ) && isset( $old['books_sub'] ) && ! $books['moved'] ) {
+		return $new;
+	}
 
 	if ( empty( $in_docs ) ) {
 		return array( 'checked' => time() );
@@ -296,6 +314,56 @@ function rs_docs_refresh( $slug, $args, $old ) {
 		$pages[ $key ] = $file;
 	}
 
+	/* The books: each one's README is its home page, under the folder's name,
+	   then its pages in the order that README links to them. */
+	$book_order = array();
+	foreach ( $books['files'] as $dir => $files ) {
+		if ( empty( $files ) ) {
+			continue;
+		}
+
+		$home_key = sanitize_title( $dir );
+		$keys_in  = array();
+		$order_in = array();
+
+		foreach ( $files as $name => $file ) {
+			$is_home = 'README.md' === $name;
+			$key     = $is_home ? $home_key : rs_docs_key( $name );
+
+			/* A page of the docs folder, or of another book, keeps its name. */
+			if ( ! $is_home && ( isset( $pages[ $key ] ) || $key === $home_key ) ) {
+				$key = $home_key . '-' . $key;
+			}
+
+			$md            = rs_docs_markdown( $file );
+			$file['title'] = rs_docs_title( (string) $md, $is_home ? ucfirst( $dir ) : ucfirst( str_replace( '-', ' ', $key ) ) );
+			$file['lang']  = rs_docs_lang( $md );
+			$file['book']  = $home_key;
+			$pages[ $key ] = $file;
+			$keys_in[ $name ] = $key;
+
+			if ( $is_home && null !== $md && preg_match_all( '/\]\(\s*<?([^)\s>]+)/', $md, $found ) ) {
+				foreach ( $found[1] as $href ) {
+					if ( preg_match( '~^(?:\./)?([^/#]+\.md)~i', (string) $href, $m ) && isset( $files[ $m[1] ] ) ) {
+						$order_in[] = $m[1];
+					}
+				}
+			}
+		}
+
+		if ( ! isset( $keys_in['README.md'] ) ) {
+			continue;
+		}
+
+		$list = array( $keys_in['README.md'] );
+		foreach ( array_merge( $order_in, array_keys( $keys_in ) ) as $name ) {
+			if ( ! in_array( $keys_in[ $name ], $list, true ) ) {
+				$list[] = $keys_in[ $name ];
+			}
+		}
+		$book_order = array_merge( $book_order, $list );
+	}
+
 	if ( $made ) {
 		$pages[''] = array(
 			'made'  => true,
@@ -321,7 +389,7 @@ function rs_docs_refresh( $slug, $args, $old ) {
 
 	$rest = array();
 	foreach ( array_keys( $pages ) as $key ) {
-		if ( ! in_array( (string) $key, $keys, true ) ) {
+		if ( ! in_array( (string) $key, $keys, true ) && ! in_array( (string) $key, $book_order, true ) ) {
 			$rest[] = (string) $key;
 		}
 	}
@@ -335,16 +403,74 @@ function rs_docs_refresh( $slug, $args, $old ) {
 			}
 		);
 	}
+	/* A book's pages stay together, after the rest, unless the docs README
+	   placed the book's home page itself. */
+	foreach ( $book_order as $key ) {
+		if ( ! in_array( $key, $keys, true ) ) {
+			$rest[] = $key;
+		}
+	}
 	$keys = array_merge( $keys, $rest );
 
 	$new['pages']      = $pages;
 	$new['order']      = $keys;
 	$new['files_docs'] = $in_docs;
 	$new['files_root'] = $in_root;
+	$new['dirs_docs']  = $sub_dirs;
+	$new['books_sub']  = $books['files'];
+	$new['etag_books'] = $books['etags'];
 	$new['etag_docs']  = $docs['etag'];
 	$new['etag_root']  = $root['etag'];
 
 	return $new;
+}
+
+/**
+ * The books in a repository's docs folder: every subfolder with a
+ * README.md, and the Markdown files in it. Each subfolder is asked for with
+ * its ETag, so this is free between pushes. Subfolders without a README
+ * (pictures, demos, notes) cost one look each and are not books.
+ *
+ * @param string   $slug owner/repo.
+ * @param array    $args From rs_github_request_args().
+ * @param array    $old  The index as it stands.
+ * @param string[] $dirs The subfolders of docs/.
+ * @return array|null { files: dir => name => file (empty for a folder that is not a book), etags: dir => etag, moved: bool }, or null when GitHub failed.
+ */
+function rs_docs_books( $slug, $args, $old, $dirs ) {
+	$old_files = isset( $old['books_sub'] ) ? (array) $old['books_sub'] : array();
+	$old_etags = isset( $old['etag_books'] ) ? (array) $old['etag_books'] : array();
+	$files     = array();
+	$etags     = array();
+	$moved     = count( array_diff( array_keys( $old_files ), $dirs ) ) > 0;
+
+	foreach ( $dirs as $dir ) {
+		$etag = isset( $old_etags[ $dir ], $old_files[ $dir ] ) ? (string) $old_etags[ $dir ] : '';
+		$list = rs_docs_list( $slug, 'docs/' . $dir, $args, $etag );
+
+		if ( 304 === $list['status'] ) {
+			$files[ $dir ] = $old_files[ $dir ];
+			$etags[ $dir ] = $etag;
+			continue;
+		}
+
+		if ( 200 !== $list['status'] ) {
+			return null;
+		}
+
+		$moved = true;
+
+		/* A folder without a README is remembered (empty) so its ETag saves
+		   the next look, but it is not a book. */
+		$files[ $dir ] = isset( $list['files']['README.md'] ) ? $list['files'] : array();
+		$etags[ $dir ] = $list['etag'];
+	}
+
+	return array(
+		'files' => $files,
+		'etags' => $etags,
+		'moved' => $moved,
+	);
 }
 
 /**
@@ -915,6 +1041,12 @@ function rs_docs_made_html( $doc ) {
 		}
 
 		$page = $index['pages'][ $key ];
+
+		/* A book is listed by its home page; its chapters are listed there. */
+		if ( ! empty( $page['book'] ) && $key !== $page['book'] ) {
+			continue;
+		}
+
 		$lead = rs_docs_lead( $page );
 
 		$html .= '<li><a href="' . esc_url( rs_project_docs_url( $project['id'], $key ) ) . '">';
