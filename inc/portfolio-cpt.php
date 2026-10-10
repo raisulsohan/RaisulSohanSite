@@ -1704,6 +1704,55 @@ function rs_get_default_portfolio_projects() {
 			'order'       => 1,
 		),
 		array(
+			'id'          => 'nomolos-qin-shi-huang',
+			'category'    => 'video',
+			'type_bn'     => 'আফটার ইফেক্টস মোশন অ্যানিমেশন ও অরিজিনাল ফিল্ম',
+			'type_en'     => 'After Effects Motion Animation & Original Documentary Film',
+			'badge_bn'    => 'আফটার ইফেক্টস অ্যানিমেশন • ১১:৩৪ মিনিট',
+			'badge_en'    => 'After Effects Animation • 11:34 Mins',
+			'title_bn'    => 'Nomolos 03: Qin Shi Huang — আফটার ইফেক্টস, নিজস্ব ইলাস্ট্রেশন ও কাস্টম সাউন্ডট্র্যাকে নির্মিত অ্যানিমেশন ফিল্ম',
+			'title_en'    => 'Nomolos 03: Qin Shi Huang — An Animated Documentary Film Crafted in After Effects by Raisul Sohan',
+			'summary_bn'  => 'মৃত্যুকে জয় করে চিরঞ্জীব হওয়ার উন্মাদনায় পারদ পান করে নিজের ও নিজ সাম্রাজ্যের পতন ডেকে আনা চীনের প্রথম সম্রাট কিন শি হুয়াংয়ের (Qin Shi Huang) ওপর নোমোলোস (Nomolos) সিরিজের তৃতীয় পূর্ণাঙ্গ সিনেমাটিক অ্যানিমেশন ডকুমেন্টারি ফিল্ম। সম্পূর্ণ কনসেপ্ট, চিত্রনাট্য রচনা, ১৬টি দৃশ্য ও ৪৩টি সিকোয়েন্সের প্রতিটি উপাদানের জন্য নিজস্ব ভেক্টর ইলাস্ট্রেশন আর্টওয়ার্ক তৈরি, অ্যাডোবি আফটার ইফেক্টসে (Adobe After Effects) মাল্টি-লেয়ার ৩ডি প্যারালাক্স ও সিনেমাটিক সিগনেচার গ্লো অ্যানিমেশন এবং উন্মুক্ত ফ্রি রিসোর্স থেকে খুঁজে প্রতিটি সিনের জন্য ফ্রেম-বাই-ফ্রেম নিজস্ব সাউন্ড কম্পোজিশন (SFX, BGM, Underscore) দিয়ে ফিল্মটি এককভাবে তৈরি করেছেন রাইসুল সোহান। ১১ মিনিট ৩৪ সেকেন্ডের এই সিনেমাটিক আর্টপিস ঐতিহাসিক ট্র্যাজেডি, গভীর মনস্তত্ত্ব ও আধুনিক মোশন ডিজাইনের এক অনন্য মহাকাব্যিক রূপায়ণ।',
+			'summary_en'  => 'The third animated documentary film in the Nomolos series, exploring the tragic psychological paradox of China\'s First Emperor, Qin Shi Huang: The Emperor Who Drank Mercury to Live Forever—entirely conceived, written, illustrated, animated in Adobe After Effects, and sound-composed by Raisul Sohan. Spanning 16 complete scenes, 43 continuous sequences, and 11 minutes 34 seconds, the film unrolls how his desperate quest to conquer death ended up killing him at 49 and crumbling his empire in four years. Featuring handcrafted vector artwork for every asset, multiplane 3D parallax spatial staging, atmospheric signature glow and volumetric lighting, and an original audio soundscape of SFX, BGM, and underscores curated from free open archives, this film delivers an immersive cinematic documentary experience.',
+			'role_bn'     => 'রাইসুল সোহান — চিত্রনাট্যকার, পরিচালক, ভেক্টর ইলাস্ট্রেটর, আফটার ইফেক্টস অ্যানিমেটর ও সাউন্ড কম্পোজার',
+			'role_en'     => 'Raisul Sohan — Screenwriter, Director, Vector Illustrator, After Effects Animator & Sound Designer',
+			'context_bn'  => 'আফটার ইফেক্টস মোশন • কাস্টম ইলাস্ট্রেশন • ৩ডি প্যারালাক্স ও গ্লো • অরিজিনাল সাউন্ডস্কেপ • ১১:৩৪ মিনিট',
+			'context_en'  => 'After Effects Motion • Custom Illustration • 3D Parallax & Glow • Original Soundscape • 11:34 Mins',
+			'challenge_bn'=> "১৬টি পৃথক দৃশ্যে ও ৪৩টি ধারাবাহিক সিকোয়েন্সে ১১ মিনিট ৩৪ সেকেন্ডের একটি সুবিশাল ঐতিহাসিক ও মনস্তাত্ত্বিক ডকুমেন্টারি স্ক্র্যাচ থেকে এককভাবে নির্মাণ করার পেছনে ছিল বহুমুখী নান্দনিক ও কারিগরি চ্যালেঞ্জ:\n\n১. সুবিশাল বিশ্বনির্মাণ ও কাস্টম ভেক্টর ইলাস্ট্রেশন: শিয়ানইয়াংয়ের রাজপ্রাসাদ, যুদ্ধরত রাজ্যসমূহের রণক্ষেত্র, মানচিত্রের ভেতর লুকানো ছুরি দিয়ে জিং কের গুপ্তহত্যার চেষ্টা, অমরত্বের খোঁজে পূর্বে পারি জমানো জু ফুর সমুদ্রাভিযান, মাটির নিচের টেরাকোটা সৈন্যদল এবং প্রাচীন আলকেমি চুল্লির মতো বৈচিত্র্যময় ঐতিহাসিক দৃশ্যপটকে কোনো রেডিমেড স্টক ফাইল ছাড়া সম্পূর্ণ নিজস্ব শৈলীতে ভেক্টরে রূপ দেওয়া।\n২. আফটার ইফেক্টসে জটিল ৩ডি প্যারালাক্স স্পেশিয়াল আর্কিটেকচার: সাধারণ দ্বিমাত্রিক অ্যানিমেশনের একঘেয়েমি দূর করতে প্রতিটি দৃশ্যপটকে গভীরতার বহুস্তরে ভাগ করে আফটার ইফেক্টসের ৩ডি স্পেসে ভার্চুয়াল ক্যামেরা ও নাল কন্ট্রোলারে রিগ করা—যাতে ক্যামেরা মুভমেন্টের সাথে সাথে ফোরগ্রাউন্ডের ছায়াচিত্র, মধ্যভাগের চরিত্র ও পেছনের বিশাল স্থাপত্যের মধ্যে বাস্তবসম্মত পার্সপেক্টিভ শিফট ও সিনেমাটিক ডেপথ অফ ফিল্ড বজায় থাকে।\n৩. সিগনেচার গ্লো ও এটমোস্ফেরিক লাইটিং ডিজাইন: তরল পারদের উজ্জ্বল আভা, প্রাসাদের লণ্ঠনের আলো, যুদ্ধক্ষেত্রের আগুনের শিখা, এবং অন্ধকার ভূগর্ভস্থ সমাধির আলো-ছায়ার বৈপরীত্যে (chiaroscuro) সিনেমাটিক নাটকীয়তা ও ভিজ্যুয়াল গভীরতা ফুটিয়ে তোলা।\n৪. স্বকীয় সাউন্ড ডিজাইন ও আন্ডারস্কোর কম্পোজিশন: কোনো বাণিজ্যিক অডিও লাইব্রেরি ছাড়া কেবল উন্মুক্ত ফ্রি ও পাবলিক ডোমেন আর্কাইভ থেকে শত শত সাউন্ড ইফেক্টস (SFX)—যেমন তরবারির ঝনঝনানি, বাঁশের পুঁথির খসখস, পারদের ফোঁটা, ঘোড়ার খুরের আওয়াজ এবং পিরিয়ড মিউজিক ও মেলোড্রামাটিক আন্ডারস্কোর (BGM) খুঁজে বের করে প্রতিটি ভিজ্যুয়াল কাটের সাথে ফ্রেম-ধরে-ধরে নিজস্ব সাউন্ডস্কেপ কম্পোজ ও মিক্স করা।",
+			'challenge_en'=> "Creating an epic 11-minute 34-second historical and psychological animated documentary across 16 scenes and 43 sequences as a solo creator presented formidable artistic, technical, and acoustic hurdles:\n\n1. Expansive Worldbuilding & Custom Vector Illustration: Rather than relying on generic stock elements, every setting—the grand imperial halls of Xianyang, Warring States battlefields, Jing Ke's assassination attempt with a concealed dagger in a rolled map, Xu Fu's eastward sea expedition, subterranean terracotta armies, and ancient cinnabar furnaces—had to be illustrated from scratch in modular, motion-ready vector assets.\n2. Complex Multiplane 3D Parallax in After Effects: Escaping flat 2D conventions required decomposing every scene into dozens of isolated depth planes inside After Effects 3D space—animating virtual cameras to dolly, crane, and pan past foreground silhouettes, focal characters, and expansive architectural backgrounds with genuine optical depth of field and parallax perspective shifts.\n3. Signature Atmospheric Glow & Volumetric Lighting: Crafting dramatic chiaroscuro contrasts, luminous drops of molten mercury, lantern-lit imperial chambers, moonlit seas, and fiery terracotta pits with multi-pass glows and volumetric lighting to accentuate pivotal narrative turns.\n4. Independent Audio Scoring & Sound Design: With zero commercial audio budget, hundreds of sound effects (drawn swords, bamboo scrolls, dripping mercury, clattering fish wagons, galloping hooves) and atmospheric musical underscores had to be mined from free public domain repositories, edited, cleaned, and meticulously synchronized frame-by-frame with each visual cut.",
+			'solution_bn' => "১. দৃশ্যভিত্তিক ভেক্টর ইলাস্ট্রেশন পাইপলাইন: ১৬টি সিনের জন্য প্রয়োজনীয় শত শত আর্ট এসেট নিজে ভেক্টরে ড্রয়িং ও কালারিং করে আফটার ইফেক্টসের কম্পোজিশনে রিগ করার উপযোগী মডুলার লেয়ারে প্রস্তুত করা হয়েছে।\n\n২. অ্যাডোবি আফটার ইফেক্টসে ৩ডি ক্যামেরা রিগিং ও কিফ্রেম অর্কেস্ট্রেশন: প্রতিটি সিকোয়েন্সে ৩ডি লেয়ারিং, ওয়াইড ফোকাল লেন্থের ক্যামেরা, হ্যান্ডহেল্ড ড্রিফটিং ও স্মুথ প্যান/জুমের সমন্বয়ে তৈরি করা হয়েছে বাস্তবসম্মত গভীরতা। গ্রাফ এডিটরে ভেলোসিটি কার্ভ সূক্ষ্মভাবে টিউন করে প্রতিটি চরিত্র ও ক্যামেরার চলাচলে আনা হয়েছে সাবলীল গতি।\n\n৩. এটমোস্ফেরিক গ্লো, ভলিউমেট্রিক লাইট ও সিনেমাটিক টেক্সচার: একাধিক স্তরের সফট ও হাইলাইট গ্লো, এম্বিয়েন্ট শ্যাডো এবং পারফেক্ট কালার গ্রেডিংয়ের মাধ্যমে ফিল্মটিতে ফুটে উঠেছে প্রাচীন চীনের রাজকীয় অথচ বিষাদময় সিনেমাটিক আবহ।\n\n৪. ফ্রি সাউন্ড রিসোর্স থেকে স্বতন্ত্র সাউন্ড ডিজাইন ও অরিজিনাল অডিও স্কোরিং: পাবলিক ডোমেন ও ক্রিয়েটিভ কমন্স অডিও লাইব্রেরি তন্ন তন্ন করে খুঁজে শত শত সাউন্ড ইফেক্টস (SFX) সংগ্রহ করে প্রতিটি অ্যাকশনের সাথে নিখুঁতভাবে সিঙ্ক করা হয়েছে এবং ব্যাকগ্রাউন্ড মিউজিক (BGM) ও মেলোডিক আন্ডারস্কোর কাস্টম এডিটিংয়ের মাধ্যমে গল্পের টানটান উত্তেজনা সর্বোচ্চ পর্যায়ে নিয়ে যাওয়া হয়েছে।\n\n৫. সম্পূর্ণ ওপেন সোর্স ও অফলাইন-সক্ষম ব্রাউজার প্লেয়ার: ডেস্কটপ (১৬:৯) ও মোবাইল (৪:৫) উভয় ফরম্যাটে সম্পূর্ণ ফিল্মটি বা প্রতিটি দৃশ্য আলাদাভাবে ফ্রেম-স্টেপিং, কীবোর্ড শর্টকাট ও ফুলস্ক্রিন সহ সরাসরি ব্রাউজারে উপভোগ করার সুবিধা।",
+			'solution_en' => "1. Scene-by-Scene Vector Illustration Art Direction: Handcrafted hundreds of vector assets across 16 narrative scenes, structuring every character, palace, and prop into modular, motion-optimized layers for After Effects rigging.\n\n2. Multiplane 3D Camera Rigging & Graph Editor Choreography: Deployed multi-layered composition spaces in After Effects with virtual camera rigs, subtle camera shakes, and depth-of-field blurring. Tuned spatial Bézier curves and velocity envelopes in the Graph Editor for organic, natural motion pacing.\n\n3. Atmospheric Glow, Volumetric Lights & Filmic Tone: Engineered luminous glows for mercury and lanterns, directional light falloffs, and stylized color grading to evoke the grandeur and tragedy of China's First Empire.\n\n4. Curated Sound Design & Original Underscore Composition: Researched, edited, and layered hundreds of free public domain foley clips and ambient room tones with evocative musical underscores, painstakingly synchronized frame-by-frame to the visual cut points.\n\n5. Dual-Format Browser Playback Interface: Packaged the completed production into a standalone, zero-dependency web player supporting both 16:9 widescreen Desktop and 4:5 vertical Mobile presentations, featuring keyboard navigation, single-frame stepping, and full offline compatibility.",
+			'highlights_bn'=> array(
+				'রাইসুল সোহানের ১১ মিনিট ৩৪ সেকেন্ডের পূর্ণাঙ্গ সিনেমাটিক অ্যানিমেশন ফিল্ম',
+				'অ্যাডোবি আফটার ইফেক্টসে (Adobe After Effects) সম্পূর্ণ অ্যানিমেশন ও কম্পোজিটিং',
+				'১৬টি সম্পূর্ণ দৃশ্য ও ৪৩টি সিকোয়েন্সের প্রতিটি ক্যারেক্টার ও লোকেশনের নিজস্ব ভেক্টর ইলাস্ট্রেশন',
+				'মাল্টি-লেয়ার ৩ডি প্যারালাক্স ক্যামেরা ও সিনেমাটিক ডেপথ অফ ফিল্ড',
+				'সিগনেচার এটমোস্ফেরিক গ্লো, আলো-ছায়ার ড্রামাটিক কন্ট্রাস্ট ও সিনেমাটিক গ্রেডিং',
+				'ফ্রি অডিও রিসোর্স থেকে তন্ন তন্ন করে খুঁজে নিজে কম্পোজ করা অরিজিনাল SFX ও BGM',
+				'কোনো প্রি-মেড টেমপ্লেট ছাড়া ১০০% হ্যান্ডক্রাফটেড মোশন গ্রাফিক্স স্টোরিটেলিং',
+			),
+			'highlights_en'=> array(
+				'Complete 11:34 animated documentary film conceived, written, directed, and animated by Raisul Sohan',
+				'100% animated and composited in Adobe After Effects across 16 complete scenes and 43 sequences',
+				'Handcrafted vector illustrations for every palace, battlefield, character, and historical asset',
+				'Immersive multiplane 3D parallax depth and cinematic depth-of-field spatial staging',
+				'Atmospheric signature glow, volumetric lighting spills, and period color grading',
+				'Curated sound design: original SFX, BGM, and underscore composed from free audio archives',
+				'Zero third-party animation templates: bespoke keyframing and motion staging throughout',
+			),
+			'tags'        => array( 'Adobe After Effects', 'Motion Design', 'Illustration', '3D Parallax', 'Sound Design (SFX/BGM)', 'Documentary' ),
+			'accent'      => '#f2a33a',
+			'icon'        => 'video',
+			'image'       => get_template_directory_uri() . '/assets/img/nomolos-qin-shi-huang.webp',
+			'image_fit'   => 'cover',
+			'action_type' => 'video',
+			'action_bn'   => 'ফিল্মটি দেখুন',
+			'action_en'   => 'Watch Film',
+			'direct_url'  => 'https://raisulsohan.github.io/Nomolos_03_Qin_Shi_Huang_animation/',
+			'github_url'  => 'https://github.com/raisulsohan/Nomolos_03_Qin_Shi_Huang_animation',
+			'order'       => 3,
+		),
+		array(
 			'id'          => 'consciousness-animation',
 			'category'    => 'video',
 			'type_bn'     => 'আফটার ইফেক্টস মোশন অ্যানিমেশন ও অরিজিনাল ফিল্ম',
@@ -2580,11 +2629,24 @@ function rs_sync_new_portfolio_projects() {
 
 	$added = false;
 	if ( get_option( 'rs_portfolio_seeded_v1' ) ) {
-		foreach ( array( 'lazylord', 'lazykick', 'lazymotiontoolkit', 'nomolos-prohibition', 'nomolos-cobra-effect', 'consciousness-animation', 'lazypin', 'lingopie-promo', 'lazyeditmirror', 'lazymaplayers' ) as $slug ) {
+		$new_projects = array(
+			'lazylord'                => true,
+			'lazykick'                => true,
+			'lazymotiontoolkit'       => true,
+			'nomolos-prohibition'     => true,
+			'nomolos-cobra-effect'    => true,
+			'consciousness-animation' => true,
+			'lazypin'                 => true,
+			'lingopie-promo'          => true,
+			'lazyeditmirror'          => true,
+			'lazymaplayers'           => true,
+			'nomolos-qin-shi-huang'   => false,
+		);
+		foreach ( $new_projects as $slug => $as_first ) {
 			if ( ! get_option( 'rs_portfolio_added_' . $slug ) ) {
 				$added = true;
 			}
-			rs_add_portfolio_project_once( $slug );
+			rs_add_portfolio_project_once( $slug, $as_first );
 		}
 	}
 
@@ -2813,8 +2875,9 @@ function rs_seed_portfolio_demo( $slug, $wide, $tall ) {
  * Insert one default project, by id, if it has never been added.
  *
  * @param string $slug Project id in rs_get_default_portfolio_projects().
+ * @param bool   $as_first Whether to place the project at the top (featured). Defaults to true.
  */
-function rs_add_portfolio_project_once( $slug ) {
+function rs_add_portfolio_project_once( $slug, $as_first = true ) {
 	$flag = 'rs_portfolio_added_' . $slug;
 
 	if ( get_option( $flag ) ) {
@@ -2846,12 +2909,20 @@ function rs_add_portfolio_project_once( $slug ) {
 			'order'          => 'ASC',
 		) );
 
+		if ( $as_first ) {
+			$menu_order = $first ? (int) $first[0]->menu_order - 1 : 0;
+		} else {
+			/* Not featured: place behind whatever is currently first so the
+			   current featured project keeps its place. */
+			$menu_order = $first ? (int) $first[0]->menu_order + 1 : 1;
+		}
+
 		$post_id = wp_insert_post( array(
 			'post_type'   => 'rs_portfolio',
 			'post_status' => 'publish',
 			'post_name'   => $slug,
 			'post_title'  => $item['title_en'],
-			'menu_order'  => $first ? (int) $first[0]->menu_order - 1 : 0,
+			'menu_order'  => $menu_order,
 		) );
 
 		if ( $post_id && ! is_wp_error( $post_id ) ) {
