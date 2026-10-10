@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.35.2-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.36.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.36
+
+**LazyMapLayers 1.1 on the portfolio: the world in any year.**
+
+- **7.36.0: LazyMapLayers case study at 1.1.** The summary, the context line (v1.1), a new solution step and a new highlight, in both languages, add the historical borders: the states, empires and colonies of 56 moments from 123,000 BC to 2010 (historical-basemaps, GPL-3.0, with LazyMapLayers' own 1947 and 1971), a History Year slider that keys a shot through history, and the past in the Highlight tool, search, Auto labels and the feature browser. A "Historical Maps" tag joins the others. `rs_sync_lazymaplayers_v1_1()` writes the new text once into the project already on the site. The documentation picks up the manual's new chapter by itself.
 
 ## What's new in 7.35
 
