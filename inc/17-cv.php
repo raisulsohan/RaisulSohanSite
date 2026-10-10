@@ -304,7 +304,7 @@ function rs_cv_data( $post_id = 0 ) {
 
 		'stats'      => array(
 			array( 'label' => 'Years in motion', 'value' => '10+' ),
-			array( 'label' => 'Open-source tools', 'value' => '11' ),
+			array( 'label' => 'Open-source tools', 'value' => '12' ),
 			array( 'label' => 'Documentary films', 'value' => '3' ),
 			array( 'label' => 'Organisations served', 'value' => '12' ),
 		),
@@ -312,7 +312,7 @@ function rs_cv_data( $post_id = 0 ) {
 		'highlights' => array(
 			array( 'lead' => '100% on-time delivery', 'text' => 'across Vidiosa client campaigns; a new storyboard-and-feedback workflow cut turnaround by 15%.' ),
 			array( 'lead' => '200K+ organic views', 'text' => 'on campaigns where I directed the creative, with measurable audience engagement.' ),
-			array( 'lead' => '11 free open-source tools', 'text' => 'for Windows, Adobe CC, Figma and Chrome, alongside 1,100+ GitHub contributions in the past year.' ),
+			array( 'lead' => '12 free open-source tools', 'text' => 'for Windows, Adobe CC, Figma and Chrome, alongside 1,100+ GitHub contributions in the past year.' ),
 			array( 'lead' => '3 animated documentaries', 'text' => 'written, illustrated, animated and sound-designed for Nomolos and Bichitro Biggan.' ),
 		),
 
@@ -325,7 +325,7 @@ function rs_cv_data( $post_id = 0 ) {
 				'bullets' => array(
 					'Created **Nomolos** ([youtube.com/@nomolosfiles](https://www.youtube.com/@nomolosfiles)); wrote, illustrated, animated and sound-designed **Prohibition** (9:40) and **Cobra Effect** (8:49, 23 scenes).',
 					'Write and animate science stories for **Bichitro Biggan**; created **Consciousness** (4:08) with nine hand-drawn scenes, 3D parallax and volumetric lighting.',
-					'Build and maintain eleven free creative and desktop tools; built two bilingual PHP / JavaScript WordPress platforms: **bichitrobiggan.com** and **raisulsohan.com**.',
+					'Build and maintain twelve free creative and desktop tools; built two bilingual PHP / JavaScript WordPress platforms: **bichitrobiggan.com** and **raisulsohan.com**.',
 				),
 			),
 			array(
@@ -390,12 +390,7 @@ function rs_cv_data( $post_id = 0 ) {
 				'kind' => 'Adobe CEP panel + Figma plugin · TypeScript',
 				'text' => 'Transfers vector artwork between Figma, Photoshop, Illustrator and After Effects.',
 			),
-			array(
-				'name' => 'LazyMotionToolkit',
-				'links' => rs_cv_tool_links( 'LazyMotionToolkit', 'lazymotiontoolkit', 'LazyMotionToolkit' ),
-				'kind' => 'After Effects ScriptUI panel · ExtendScript',
-				'text' => 'Nine dockable tools for precomps, text boxes, fades, arrows, anchors and grids.',
-			),
+			rs_cv_tool_motion_and_typing(),
 			array(
 				'name' => 'LazyKick',
 				'links' => rs_cv_tool_links( 'LazyKick', 'lazykick', 'LazyKick' ),
@@ -1682,3 +1677,156 @@ function rs_cv_add_lazycat_v1() {
 	update_site_option( $flag, 1 );
 }
 add_action( 'init', 'rs_cv_add_lazycat_v1', 29 );
+
+/**
+ * LazyMotionToolkit and LazyTyper as one entry, the two After Effects
+ * animation helpers, so the tools list stays in even rows of two now that
+ * it holds twelve tools.
+ *
+ * @return array
+ */
+function rs_cv_tool_motion_and_typing() {
+	return array(
+		'name'  => 'LazyMotionToolkit · LazyTyper',
+		'links' => array(
+			array( 'label' => 'LazyMotionToolkit', 'url' => '/portfolio/lazymotiontoolkit/' ),
+			array( 'label' => 'LazyTyper', 'url' => '/portfolio/lazytyper/' ),
+		),
+		'kind'  => 'After Effects panels · ExtendScript & expressions',
+		'text'  => 'Nine dockable tools for precomps, text boxes, fades, arrows, anchors and grids, and one-click typing rigs that type like a person.',
+	);
+}
+
+/**
+ * Bring LazyTyper into a saved CV, in place.
+ *
+ * As in rs_cv_apply_lazycat_v1(), only text that still reads exactly as the
+ * theme wrote it is changed: the tool count goes from eleven to twelve, and
+ * the LazyMotionToolkit entry becomes the two After Effects helpers. A
+ * LazyMotionToolkit entry edited by hand keeps the edit, and LazyTyper
+ * follows it as an entry of its own.
+ *
+ * @param array $saved Saved CV data, changed in place.
+ * @return bool Whether anything changed.
+ */
+function rs_cv_apply_lazytyper_v1( &$saved ) {
+	$changed = false;
+
+	if ( isset( $saved['stats'] ) && is_array( $saved['stats'] ) ) {
+		foreach ( $saved['stats'] as &$stat ) {
+			if ( isset( $stat['label'], $stat['value'] ) && 'Open-source tools' === $stat['label'] && '11' === (string) $stat['value'] ) {
+				$stat['value'] = '12';
+				$changed       = true;
+			}
+		}
+		unset( $stat );
+	}
+
+	if ( isset( $saved['highlights'] ) && is_array( $saved['highlights'] ) ) {
+		foreach ( $saved['highlights'] as &$highlight ) {
+			if ( isset( $highlight['lead'] ) && '11 free open-source tools' === $highlight['lead'] ) {
+				$highlight['lead'] = '12 free open-source tools';
+				$changed           = true;
+			}
+		}
+		unset( $highlight );
+	}
+
+	if ( isset( $saved['experience'] ) && is_array( $saved['experience'] ) ) {
+		foreach ( $saved['experience'] as &$job ) {
+			foreach ( isset( $job['bullets'] ) && is_array( $job['bullets'] ) ? $job['bullets'] : array() as $i => $bullet ) {
+				$new = is_string( $bullet ) ? str_replace( 'Build and maintain eleven free creative and desktop tools;', 'Build and maintain twelve free creative and desktop tools;', $bullet ) : $bullet;
+				if ( $new !== $bullet ) {
+					$job['bullets'][ $i ] = $new;
+					$changed              = true;
+				}
+			}
+		}
+		unset( $job );
+	}
+
+	$tools  = isset( $saved['tools'] ) && is_array( $saved['tools'] ) ? array_values( $saved['tools'] ) : array();
+	$found  = false;
+	$motion = false;
+	foreach ( $tools as $i => $tool ) {
+		$links = isset( $tool['links'] ) && is_array( $tool['links'] ) ? $tool['links'] : array();
+		if ( ! empty( $tool['url'] ) ) {
+			$links[] = array( 'url' => $tool['url'] );
+		}
+		foreach ( $links as $link ) {
+			$url = isset( $link['url'] ) ? (string) $link['url'] : '';
+			if ( false !== stripos( $url, 'lazytyper' ) ) {
+				$found = true;
+			}
+			if ( false === $motion && false !== stripos( $url, 'lazymotiontoolkit' ) ) {
+				$motion = $i;
+			}
+		}
+	}
+
+	if ( ! $found ) {
+		$first_written = array(
+			'name'  => 'LazyMotionToolkit',
+			'links' => rs_cv_tool_links( 'LazyMotionToolkit', 'lazymotiontoolkit', 'LazyMotionToolkit' ),
+			'kind'  => 'After Effects ScriptUI panel · ExtendScript',
+			'text'  => 'Nine dockable tools for precomps, text boxes, fades, arrows, anchors and grids.',
+		);
+
+		/* == rather than ===: the same keys and values in any order, since a save may reorder them. */
+		if ( false !== $motion && $first_written == $tools[ $motion ] ) {
+			$tools[ $motion ] = rs_cv_tool_motion_and_typing();
+		} else {
+			array_splice(
+				$tools,
+				false !== $motion ? $motion + 1 : count( $tools ),
+				0,
+				array(
+					array(
+						'name'  => 'LazyTyper',
+						'links' => rs_cv_tool_links( 'LazyTyper', 'lazytyper', 'LazyTyper' ),
+						'kind'  => 'After Effects CEP panel · ExtendScript & expressions',
+						'text'  => 'One-click typing rigs that type like a person, with a cursor, pauses, erasing and baking.',
+					),
+				)
+			);
+		}
+
+		$saved['tools'] = $tools;
+		$changed        = true;
+	}
+
+	return $changed;
+}
+
+/**
+ * Run rs_cv_apply_lazytyper_v1() on the saved CV, once. A CV that was never
+ * saved shows the defaults, which already carry it.
+ */
+function rs_cv_add_lazytyper_v1() {
+	$flag = 'rs_cv_added_lazytyper_v1';
+	if ( get_site_option( $flag ) ) {
+		return;
+	}
+
+	$page  = null;
+	$saved = false;
+	if ( is_multisite() ) {
+		$saved = rs_cv_saved_data();
+	} else {
+		$page  = get_page_by_path( 'cv', OBJECT, 'page' );
+		$saved = $page ? get_post_meta( $page->ID, '_rs_cv_data', true ) : false;
+	}
+
+	if ( is_array( $saved ) && rs_cv_apply_lazytyper_v1( $saved ) ) {
+		if ( is_multisite() ) {
+			update_site_option( 'rs_cv_shared_data_v1', $saved );
+		} elseif ( $page ) {
+			update_post_meta( $page->ID, '_rs_cv_data', $saved );
+		}
+
+		rs_cv_purge_network_caches();
+	}
+
+	update_site_option( $flag, 1 );
+}
+add_action( 'init', 'rs_cv_add_lazytyper_v1', 30 );
