@@ -1851,6 +1851,55 @@ function rs_get_default_portfolio_projects() {
 			'order'       => 55,
 		),
 		array(
+			'id'          => 'lazycatcompanion',
+			'category'    => 'tools',
+			'type_bn'     => 'উইন্ডোজ ডেস্কটপ পেট ও প্রসিডিউরাল অ্যানিমেশন অ্যাপ',
+			'type_en'     => 'Windows Desktop Pet & Procedural Animation App',
+			'badge_bn'    => 'উইন্ডোজ ১০ ও ১১ • ওপেন সোর্স',
+			'badge_en'    => 'Windows 10 & 11 • Open Source',
+			'title_bn'    => 'Lazy Cat Companion — ডেস্কটপের কোণে ঘুমায়, আদরে চোখ বোজে, ক্লিক করলে লাফিয়ে আসে: পুরোটা কোডে আঁকা উইন্ডোজের বিড়াল',
+			'title_en'    => 'Lazy Cat Companion — A Code-Drawn Desktop Cat for Windows That Naps, Purrs and Leaps to Your Clicks',
+			'summary_bn'  => 'উইন্ডোজ ১০ ও ১১-এর স্ক্রিনের কোণে ঘুমিয়ে থাকা একটি ছোট্ট ডেস্কটপ বিড়াল: ডাবল-ক্লিক করলে জেগে উঠে আড়মোড়া ভাঙে ও হাই তোলে, কার্সর রাখলে খুশিতে চোখ বুজে আসে আর হার্ট ওঠে, ওয়ালপেপারে ক্লিক করলে মুখ ঘুরিয়ে লাফ দিয়ে সেখানে যায়, আর ঘাড় ধরে যেখানে খুশি নিয়ে যাওয়া যায়। রাইসুল সোহানের নিজের পোষা বাদামি-ধূসর ট্যাবি ও সাদা বিড়ালের আদলে তৈরি এই বিড়ালটি কোনো ছবি বা স্প্রাইট শিট থেকে নয়, C#, WPF ও .NET 10-এ সম্পূর্ণ কোড দিয়ে আঁকা—প্রতিটি ভঙ্গি কয়েক ডজন সংখ্যার একটি সেট, তাই এক ভঙ্গি থেকে আরেক ভঙ্গিতে প্রতিটি নড়াচড়া মসৃণভাবে মিশে যায় এবং লোমের রং হতে পারে যেকোনোটি।',
+			'summary_en'  => 'A tiny desktop cat for Windows 10 & 11 that naps in the corner of your screen, wakes with a stretch and a yawn when double-clicked, closes its eyes happily under your cursor as hearts float up, turns and leaps to any spot you click on the wallpaper, and can be carried around by the scruff. Modeled on Raisul Sohan\'s own brown tabby-and-white cat, it is drawn entirely in code with C#, WPF and .NET 10—no images or sprite sheets: every pose is a set of a few dozen numbers, so every movement blends smoothly into the next and the coat can be any color.',
+			'role_bn'     => 'একক ডেভেলপার — ক্যারেক্টার ডিজাইন, প্রসিডিউরাল অ্যানিমেশন ও উইন্ডোজ ডেস্কটপ ইঞ্জিনিয়ারিং',
+			'role_en'     => 'Solo Developer — Character Design, Procedural Animation & Windows Desktop Engineering',
+			'context_bn'  => 'উইন্ডোজ ১০ ও ১১ ডেস্কটপ অ্যাপ • C# / WPF / .NET 10 • v0.3.0',
+			'context_en'  => 'Windows 10 & 11 Desktop App • C# / WPF / .NET 10 • v0.3.0',
+			'challenge_bn'=> "ডেস্কটপ পেট মানেই সাধারণত কয়েকটি ফিক্সড ফ্রেমের স্প্রাইট অ্যানিমেশন, যা এক ভঙ্গি থেকে আরেক ভঙ্গিতে যাওয়ার সময় হঠাৎ লাফিয়ে বদলায়, একটি রঙেই আটকে থাকে এবং দেখতে প্রাণহীন লাগে। লক্ষ্য ছিল নিজের পোষা বিড়ালের মতো দেখতে এমন একটি বিড়াল তৈরি করা, যাকে সত্যিই জীবন্ত মনে হবে—শ্বাস নেবে, চোখ পিটপিট করবে, কান নাড়াবে, কার্সরের দিকে তাকাবে—অথচ কম্পিউটারের কাজে কোনো বাধা দেবে না।\n\nপ্রধান কারিগরি চ্যালেঞ্জসমূহ:\n১. ছবি ছাড়া পুরো বিড়াল আঁকা: বাদামি-ধূসর ট্যাবি ও সাদা লোম, ম্যাকারেল ডোরা, সবুজ চোখ, সাদা টাফট সহ বড় কান, ডগা গাঢ় লেজ আর কালো কলার—সবকিছু কেবল জ্যামিতি ও ব্রাশ দিয়ে এমনভাবে আঁকা, যাতে প্রতিটি অংশ যেকোনো ভঙ্গিতে বাঁকতে ও মিশতে পারে এবং লোমের কিনারা কাটআউটের মতো না দেখায়।\n২. ভঙ্গি থেকে ভঙ্গিতে মসৃণ রূপান্তর: ঘুম, স্ফিংক্স, আড়মোড়া, বসা, ঝাঁপের প্রস্তুতি, উড়ন্ত লাফ, অবতরণ, ঘাড় ধরে ঝোলা আর ১১ রকম বসার ভঙ্গির যেকোনো দুটির মাঝে হাঁটু যেন হঠাৎ উল্টে না যায় এবং লেজ মেঝে ভেদ করে না ঘোরে।\n৩. ওয়ালপেপার আর অন্য অ্যাপের ক্লিক আলাদা করা: বিড়াল কেবল ডেস্কটপ ওয়ালপেপারে করা ক্লিকে লাফাবে, অন্য কোনো উইন্ডোতে কাজ করার সময় নয়; আর বিড়ালের চারপাশের স্বচ্ছ অংশে করা ক্লিক নিচের অ্যাপে পৌঁছাতে হবে।\n৪. হালকা থাকা: সারাদিন খোলা থাকা একটি অ্যানিমেটেড উইন্ডো যেন সিপিইউ ও ব্যাটারি খরচ না করে, এবং কোনো অ্যাডমিন অনুমতি বা আলাদা .NET ইনস্টল ছাড়াই চলে।",
+			'challenge_en'=> "Desktop pets are usually a handful of fixed sprite frames: they snap from one pose to the next, come in one color, and feel lifeless. The goal was a cat that looks like the developer's own cat and genuinely feels alive—breathing, blinking, twitching its ears, watching the cursor—without ever getting in the way of real work.\n\nCore Technical Challenges:\n1. Drawing a Whole Cat Without Images: a brown tabby-and-white coat with mackerel stripes, green eyes, big tufted ears, a dark-tipped tail and a black collar, built purely from geometry and brushes so every part can bend and blend into any pose, with fur edges that never read as a clean cut-out.\n2. Smooth Pose-to-Pose Motion: blending between sleeping, sphinx, stretching, sitting, crouching, mid-air leaping, landing, dangling by the scruff and eleven ways of sitting without knees flipping or the tail sweeping through the floor.\n3. Telling Wallpaper Clicks from Work: leaping only for clicks on the desktop wallpaper, never for clicks inside other windows, while clicks on the transparent space around the cat still reach the app underneath.\n4. Staying Light: an animated window that is open all day must not burn CPU or battery, and must install without administrator rights or a separate .NET runtime.",
+			'solution_bn' => "১. প্যারামেট্রিক ভঙ্গি ও ব্লেন্ডিং: প্রতিটি ভঙ্গি (CatPose) কোমর, বুক, মাথা, চার পায়ের অবস্থান, কান, চোখ, মুখ, লেজের কোণ ও বাঁকসহ কয়েক ডজন সংখ্যার একটি সেট। দুটি ভঙ্গির প্রতিটি ফিল্ড আলাদাভাবে ইজ-ইন-আউট কার্ভে মেশে, তাই যেকোনো ভঙ্গি যেকোনো ভঙ্গিতে মসৃণভাবে রূপ নেয়; লেজ পেছন থেকে সামনে ঘোরার সময় দর্শকের দিকে মুখ করা অবস্থার মতো ছোট করে আঁকা হয়, যাতে মেঝে ভেদ না করে।\n\n২. কোডে আঁকা লোম ও শরীর: বাঁকানো যায় এমন ক্যাপসুল আকৃতির শরীর, ১,৬০০টি ছোট লোমের একটি টাইলযোগ্য টেক্সচার, প্রতিটি কিনারায় হ্যাশ-ভিত্তিক লোমের গুচ্ছ (যাতে ফ্রেমে ফ্রেমে না কাঁপে), ম্যাকারেল ডোরা, আইরিস ফাইবার সহ চোখ এবং ১৮ ভাগে গড়া লেজ। পা আঁকা হয় টু-বোন ইনভার্স কাইনেমেটিক্সে (কোসাইনের সূত্রে হাঁটুর অবস্থান), আর হাঁটু সবসময় একই দিকে বাঁকে বলে কখনো উল্টে যায় না।\n\n৩. জীবনের ছোট ছোট লক্ষণ: পোজ ক্লিপের ওপর আলাদা স্তরে শ্বাস-প্রশ্বাস, চোখ পিটপিট, কান নাড়া, লেজ দোলানো এবং কার্সরের দিকে তাকানো যোগ হয়; কার্সর কাছে এলে চোখের মণি বড় হয়ে শিকারি ভাব আসে, আর বিড়ালের ওপর কার্সর থামালে আধা সেকেন্ড পরপর একটি করে হার্ট ওঠে। লাফের উচ্চতা ও সময় দূরত্ব অনুযায়ী ঠিক হয়, শরীর গতির দিকে ঝোঁকে, আর নামার সময় স্কোয়াশ হয়।\n\n৪. স্বচ্ছ উইন্ডো ও স্মার্ট ক্লিক শনাক্তকরণ: বিড়াল একটি স্বচ্ছ, টপমোস্ট WPF উইন্ডোতে আঁকা, যার আঁকা অংশ ছাড়া বাকি সব জায়গার ক্লিক নিচের অ্যাপে চলে যায়। বিড়াল জেগে থাকলেই কেবল একটি লো-লেভেল মাউস হুক চালু হয়, আর WindowFromPoint দিয়ে যাচাই করা হয় ক্লিকটি ডেস্কটপ ওয়ালপেপারে (Progman/WorkerW) পড়েছে কিনা।\n\n৫. পারফরম্যান্স ও ইনস্টলার: কেবল লাফ বা ঘাড় ধরে নেওয়ার সময় ৬০ FPS, সাধারণ অবস্থায় ৩০ FPS আর ঘুমালে ১৫ FPS; ঘুমের z অক্ষরটিও একবারই জ্যামিতিতে তৈরি করে রাখা হয়। Inno Setup ইনস্টলারে আছে সেলফ-কনটেইনড, কম্প্রেসড একক EXE—কোনো অ্যাডমিন অনুমতি বা আলাদা .NET ইনস্টল লাগে না।\n\n৬. ট্রে মেনু ও নিজস্ব ডেমো রেন্ডারার: ট্রে আইকনটি বিড়ালের নিজের মুখ থেকে আঁকা; মেনু থেকে বসার ভঙ্গি, লোমের রং (ট্যাবি ও সাদা, ১০টি রং বা নিজের পছন্দের রং), আকার ও মুখের দিক বেছে নেওয়া যায়। --render-demo মোড অ্যাপের নিজের রেন্ডারার দিয়েই নকল ডেস্কটপে ১৫ সেকেন্ডের স্টোরিবোর্ড চালিয়ে ডেমোর প্রতিটি ফ্রেম ও সাউন্ডের কিউ তৈরি করে।",
+			'solution_en' => "1. Parametric Poses & Field-by-Field Blending: every pose (CatPose) is a few dozen numbers—hip, chest, head, the four feet, ears, eyes, mouth, tail angle and curl. Two poses blend field by field along an ease-in-out curve, so any pose morphs smoothly into any other; when the tail swings between behind and in front it is drawn short, as if pointing at the viewer, so it never sweeps through the floor.\n\n2. A Coat Drawn in Code: a bendable capsule body, a tileable grain of 1,600 tiny hairs, hash-seeded fur tufts along every edge (so they never flicker), mackerel stripes, eyes with iris fibers, and an 18-segment tail. Legs use two-bone inverse kinematics (the knee placed by the law of cosines), always bending to the same side so they can never snap across.\n\n3. Layered Signs of Life: breathing, blinking, ear twitches, tail swishes and following the cursor are layered over the pose clips; a nearby cursor widens the pupils into hunting mode, and resting on the cat sends up a heart every half second. Leaps size their height and duration from the distance, lean into the direction of travel and squash on landing.\n\n4. Transparent Window & Smart Click Detection: the cat lives in a transparent, topmost WPF window where everything but the drawn cat passes clicks through to the app underneath. A low-level mouse hook runs only while the cat is awake, and WindowFromPoint confirms that a click landed on the desktop wallpaper (Progman/WorkerW) before the cat leaps.\n\n5. Performance & Installer: 60 FPS only while leaping or being carried, 30 FPS otherwise and 15 FPS asleep; even the sleeping z is built once as geometry. Ships as a self-contained, compressed single EXE in a per-user Inno Setup installer, with no administrator rights or separate .NET install needed.\n\n6. Tray Menu & Built-in Demo Renderer: the tray icon is drawn from the cat's own face; its menu picks a way of sitting, the coat (tabby & white, 10 plain colors or a custom one), the size and which way it faces. A --render-demo mode runs a 15-second storyboard on a mock desktop through the app's own renderer, producing every frame of the demo and the cues for its synthesized soundtrack.",
+			'highlights_bn'=> array(
+				'ডাবল-ক্লিকে জেগে ওঠা, আড়মোড়া ভাঙা ও হাই তোলা; ঘুমালে মাথার ওপর z ওড়া',
+				'কার্সর রাখলে আদর: খুশিতে চোখ বোজা আর একে একে হার্ট ওঠা',
+				'ওয়ালপেপারে ক্লিক করলে মুখ ঘুরিয়ে, পেছন দুলিয়ে লাফ দিয়ে সেখানে যাওয়া',
+				'ঘাড় ধরে টেনে নেওয়া যায়, ছেড়ে দিলে সেখানেই বসে পড়ে',
+				'বসার ১১ রকম ভঙ্গি: থাবা চাটা, পা উঁচু করে গ্রুমিং, মানুষের মতো বসা ইত্যাদি',
+				'কোনো ছবি ছাড়া C#, WPF ও .NET 10-এ পুরোটা কোডে আঁকা, যেকোনো রঙের লোম',
+				'অ্যাডমিন অনুমতি ছাড়া ইনস্টল, হালকা পারফরম্যান্স এবং ১০০% ফ্রি ও ওপেন সোর্স (MIT)'
+			),
+			'highlights_en'=> array(
+				'Double-click to wake it: a stretch, a big yawn, then a tidy sit; floating z\'s while it sleeps',
+				'Pet it with the cursor for happy closed eyes and floating hearts',
+				'Click the wallpaper and it turns, wiggles and leaps to the spot in an arc',
+				'Carry it by the scruff and drop it anywhere on the screen',
+				'Eleven ways of sitting, from paw licking and leg-up grooming to lounging like a person',
+				'Drawn entirely in code with C#, WPF and .NET 10: no sprites, any coat color',
+				'No administrator rights, light on CPU, and 100% free and open source (MIT)'
+			),
+			'tags'        => array( 'Windows 10/11', 'C#', 'WPF', '.NET 10', 'Desktop Pet', 'Procedural Animation', 'Open Source' ),
+			'accent'      => '#7cb342',
+			'icon'        => 'terminal',
+			'image'       => get_template_directory_uri() . '/assets/img/lazycatcompanion.webp',
+			'image_fit'   => 'cover',
+			'action_type' => 'code',
+			'action_bn'   => 'ফ্রি ডাউনলোড',
+			'action_en'   => 'Download Free',
+			'direct_url'  => 'https://github.com/raisulsohan/LazyCatCompanion/releases/latest',
+			'github_url'  => 'https://github.com/raisulsohan/LazyCatCompanion',
+			'order'       => 56,
+		),
+		array(
 			'id'          => 'lingopie-promo',
 			'category'    => 'video',
 			'type_bn'     => 'আফটার ইফেক্টস মোশন ডিজাইন ও ক্লায়েন্ট প্রোমো',
@@ -2641,6 +2690,7 @@ function rs_sync_new_portfolio_projects() {
 			'lazyeditmirror'          => true,
 			'lazymaplayers'           => true,
 			'nomolos-qin-shi-huang'   => false,
+			'lazycatcompanion'        => false,
 		);
 		foreach ( $new_projects as $slug => $as_first ) {
 			if ( ! get_option( 'rs_portfolio_added_' . $slug ) ) {
@@ -2657,6 +2707,7 @@ function rs_sync_new_portfolio_projects() {
 	rs_seed_portfolio_demo( 'lazypin', 'lazypin-demo.html', 'lazypin-demo-4x5.html' );
 	rs_seed_portfolio_demo( 'lazyeditmirror', 'lazyeditmirror-demo.html', '' );
 	rs_seed_portfolio_demo( 'lazymaplayers', 'lazymaplayers-demo.html', '' );
+	rs_seed_portfolio_demo( 'lazycatcompanion', 'lazycat-demo.html', '' );
 
 	if ( $switched ) {
 		restore_current_blog();
