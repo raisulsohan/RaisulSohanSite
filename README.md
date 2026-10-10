@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.38.2-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.39.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.39
+
+**LazyTyper joins the portfolio.**
+
+- **7.39.0: LazyTyper on the portfolio, behind the featured project.** The After Effects panel for natural typing animation (v1.1, free, MIT) joins the tools with its complete bilingual case study, a WebP still of its demo with the text typed and the keyframes baked (`assets/img/lazytyper.webp`), a Download Free button to the latest GitHub release, and its 18.4-second demo with typing sounds in the demo player: `assets/demo/lazytyper-demo.html` is the page from the LazyTyper repository byte for byte, seeded by `rs_seed_portfolio_demo()`. That page has its own two-row play bar and no `#bar`, so the player now measures such a page by how far it runs past the frame (`measure()` in `page-portfolio.php`) and fits it on every resize; demos with a `#bar` are measured as before. Added with `as_first = false` in `rs_add_portfolio_project_once()`, so the featured project keeps its place. The documentation picks up the repository's `docs/development.md` by itself.
 
 ## What's new in 7.38
 

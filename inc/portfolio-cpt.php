@@ -2056,6 +2056,63 @@ function rs_get_default_portfolio_projects() {
 			'github_url'  => 'https://github.com/raisulsohan/LazyMapLayers',
 			'order'       => 8,
 		),
+		array(
+			'id'          => 'lazytyper',
+			'category'    => 'tools',
+			'type_bn'     => 'After Effects CEP প্যানেল ও টাইপিং ইঞ্জিন',
+			'type_en'     => 'After Effects CEP Panel & Typing Engine',
+			'badge_bn'    => 'ফ্রি ও ওপেন সোর্স • After Effects',
+			'badge_en'    => 'Free & Open Source • After Effects',
+			'title_bn'    => 'LazyTyper — After Effects-এ এক ক্লিকে মানুষের মতো স্বাভাবিক টাইপিং অ্যানিমেশন',
+			'title_en'    => 'LazyTyper — Natural Typing Animation for After Effects, in One Click',
+			'summary_bn'  => 'স্ক্রিনে লেখা মানুষের মতো করে টাইপ করানোর জন্য After Effects-এর একটি ফ্রি প্যানেল। একটি টেক্সট লেয়ার সিলেক্ট করে Create Typing Rig চাপলেই লেখা ফুটে উঠতে থাকে সত্যিকারের ছন্দে: চেনা শব্দে আঙুল ছোটে, ক্যাপিটাল আর চিহ্নে একটু আটকায়, কমার পর হালকা থামা, বাক্য শেষ হলে আরেকটু লম্বা, আর শেষ অক্ষরের ঠিক পরেই মিটমিট করে কার্সর। প্রতিটি অক্ষরের সময় ঠিক হয় তার আশপাশের অক্ষর দেখে, তাই লেখা বদলালেও ছন্দ থাকে স্বাভাবিক। Very Fast থেকে Hunt & Peck পর্যন্ত প্রিসেট, বিরতি, মুছে আবার লেখা আর কিফ্রেমে Bake; পুরো রিগটাই সাধারণ এক্সপ্রেশন, তাই যার কম্পিউটারে প্যানেল নেই, সেখানেও প্রজেক্ট চলে। MIT লাইসেন্সে ফ্রি ও ওপেন সোর্স।',
+			'summary_en'  => 'A free After Effects panel that types text on screen the way a person does. Select a text layer, click Create Typing Rig, and it types on with a real rhythm: quick through common words, a moment longer on capitals and symbols, a breath after a comma and a longer one after a full stop, with a blinking cursor right behind the last letter. Every character takes its time from its neighbours, so the rhythm stays natural when the text changes. Presets from Very Fast to Hunt & Peck, pauses, erasing and retyping, and baking to keyframes; a rig is plain expressions, so a project plays on a machine without the panel. Free and open source under MIT.',
+			'role_bn'     => 'একক ডেভেলপার ও ক্রিয়েটিভ টুলস ইঞ্জিনিয়ার',
+			'role_en'     => 'Solo Developer & Creative Tools Engineer',
+			'context_bn'  => 'Adobe After Effects CEP • ExtendScript ও ES3 এক্সপ্রেশন ইঞ্জিন • v1.1',
+			'context_en'  => 'Adobe After Effects CEP • ExtendScript & ES3 Expression Engine • v1.1',
+			'challenge_bn'=> "এক্সপ্লেইনার, বিজ্ঞাপন আর সোশ্যাল ভিডিওতে স্ক্রিনে টাইপ হওয়া লেখা লাগে প্রায় সবসময়: সার্চ বার, চ্যাটের মেসেজ, কোডের একটা লাইন। After Effects-এ সাধারণত এটা হয় টেক্সট অ্যানিমেটর বা কয়েকটা কিফ্রেম দিয়ে, কয়েক ফ্রেম পরপর একটা করে অক্ষর; তাতে প্রতিটি কী-র সময় হুবহু সমান, আর চোখ সঙ্গে সঙ্গে ধরে ফেলে যে এটা মেশিন। মানুষের টাইপের একটা ছন্দ আছে: চেনা শব্দ ঝটপট চলে আসে, ক্যাপিটাল বা চিহ্নে একটু সময় লাগে, কমার পর হালকা থামা, বাক্য শেষে আরেকটু লম্বা। হাতে কিফ্রেম বসিয়ে এই ছন্দ বানাতে এক লাইনেই বিকেল গড়িয়ে যায়, আর একটা শব্দ বদলালেই আবার গোড়া থেকে।\n\nপ্রযুক্তিগত চ্যালেঞ্জ:\n১. গতি নয়, ছন্দ: প্রতিটি অক্ষরের সময় আসতে হবে চারপাশের অক্ষর থেকে, লেখা নিজেই পড়ে নিয়ে, আর প্রতিবার রেন্ডারে একই থাকতে হবে।\n২. শুধু সাধারণ এক্সপ্রেশন: ইঞ্জিনকে চলতে হবে দুটো এক্সপ্রেশন ইঞ্জিনেই, পুরোনো ExtendScript ইঞ্জিনসহ, যে কেবল ES3 বোঝে আর না-থাকা প্রপার্টি পড়তে গেলেই থেমে যায়; তবেই প্যানেল ছাড়াও প্রজেক্ট চলবে।\n৩. লেখা কোথায় শেষ, কার্সর তা জানবে: এক্সপ্রেশন থেকে আলাদা কোনো অক্ষরের অবস্থান জানার উপায় নেই, অথচ কার্সরকে বসতে হবে শেষ টাইপ হওয়া অক্ষরের ঠিক পরে, লাইন ভেঙে নামা প্যারাগ্রাফে বা বড় হতে থাকা মাঝখানের লাইনেও।\n৪. হাতে বদলানো যায় এমন কী-স্ট্রোক: বিরতি, মুছে আবার লেখা, আর পুরো ছন্দকে সাধারণ কিফ্রেমে নামিয়ে আনা যাতে একটা একটা করে সরানো যায়, সবই একই ইঞ্জিন থেকে।",
+			'challenge_en'=> "Text typing on screen turns up in almost every explainer, ad and social video: a search bar, a chat message, a line of code. In After Effects it is usually a text animator or a few keyframes revealing one character every few frames, so every key takes the same time and the eye reads it as a machine at once. Real typing has a rhythm: common words come quickly, a capital or a symbol takes a moment, a comma brings a short breath and a full stop a longer one. Keyframing that by hand takes an afternoon per line, and starts over when a word changes.\n\nTechnical challenges:\n1. A rhythm, not a speed: each character's time has to come from the characters around it, read from the text itself, and be the same on every render.\n2. Plain expressions only: the engine has to run in both expression engines, including the legacy ExtendScript one, which knows only ES3 and stops on reading a property that does not exist, so a project plays without the panel.\n3. A cursor that knows where the text ends: an expression cannot ask where one character is, yet the cursor has to sit right after the last typed letter, on paragraph text that wraps and on centred lines that grow.\n4. Keystrokes you can edit: pauses, erasing and retyping, and the rhythm turned into ordinary keyframes that move one by one, all from the same engine.",
+			'solution_bn' => "১. এক ইঞ্জিন, সবখানে: পুরো টাইপিং ইঞ্জিন একটিমাত্র ES3 ফাংশন, lazyTyperRun। এর সোর্স হুবহু বসে রিগের এক্সপ্রেশনে, Node-এর টেস্ট চালায় ঠিক এই ফাংশনটাই, আর Bake একবার রেকর্ড মোডে চালিয়ে প্রতিটি কী-স্ট্রোকের তালিকা নেয়; তাই প্রিভিউ, প্লেব্যাক আর Bake-এর মধ্যে কখনো অমিল হয় না।\n\n২. প্রতিটি কী-র সময় আসে প্রতিবেশী থেকে: মূল গতি ঠিক হয় Frames Per Character বা পুরো লেখার Total Duration দিয়ে। ক্যাপিটাল, সংখ্যা, চিহ্ন, যতিচিহ্ন, বাক্যের শেষ, নতুন লাইন, শব্দের শুরু, লম্বা শব্দ আর দূরের অক্ষরে গতি কমে; পরপর একই অক্ষর, চেনা অক্ষর-জোড়া, চেনা শব্দ আর শব্দের ভেতরের ঝোঁকে বাড়ে; আর স্পেস, একই হাতে পরপর অক্ষর ও জমতে থাকা ক্লান্তি গতিকে দুই দিকেই টানতে পারে। Variance মাঝেমধ্যে কোনো কী ২৫–১৫০ শতাংশ দেরিতে আনে, কোনটা তা ঠিক করে একটি Random Seed; ফলে টাইপ লাগে স্বাভাবিক, অথচ প্রতিবার রেন্ডারে হুবহু একই। প্রতিটি কন্ট্রোলে কিফ্রেম দেওয়া যায়।\n\n৩. তিন রকম টাইপিস্ট, সাথে নিজের: Very Fast, Average আর Hunt & Peck ৩০ fps-এ সেকেন্ডে প্রায় ১৪, ৭ আর ২.৫টি অক্ষর টাইপ করে, যে গতি মানুষের হাতে সত্যিই সম্ভব; যেকোনো রিগের সেটিং নিজের প্রিসেট করে রাখা যায়, আর কোনো প্রিসেট সিলেক্ট করা লেখায় কেমন ছন্দ দেবে, প্যানেল তা এঁকে দেখায়।\n\n৪. বিরতি, মোছা আর নতুন করে লেখা: Pause নামের লেয়ার মার্কার টাইপিং থামিয়ে রাখে, মার্কারের শেষ প্রান্ত যতদূর টানা হয় ততক্ষণ। Stop typing, Erase (সবটা, বা শেষের কয়েকটি অক্ষর, একটা একটা ব্যাকস্পেসে), Source Text-এ নতুন কিফ্রেম, তারপর Start typing: একটা কথা মুছে তার জায়গায় আরেকটা।\n\n৫. দুই রকম রিগ: Dynamic রিগ টাইপ হওয়া অংশটুকু সরাসরি Source Text-এই দেখায়, তাই প্যারাগ্রাফ টেক্সট শব্দে শব্দে লাইন ভাঙে আর মাঝখানে রাখা লাইন মাঝখানেই থাকে। একটি লুকানো গাইড কপিতে Scale 0-এর টেক্সট অ্যানিমেটর শেষ টাইপ হওয়া অক্ষর ছাড়া বাকি সব অক্ষরকে শূন্য সাইজে নামিয়ে দেয়; sourceRectAtTime স্কেল করা অক্ষর মেনে চলে বলে সেই বক্সটাই কার্সরের জায়গা। Stable রিগ লেআউট স্থির রাখে আর না-টাইপ-হওয়া অক্ষর লুকায় একটি অ্যানিমেটরে, তাই মিশ্র ফন্ট, সাইজ ও রং অক্ষত থাকে; এর কার্সর চলে Create Shapes from Text দিয়ে মাপা বিন্দু ধরে। মাপার পর ফন্ট, সাইজ, ট্র্যাকিং, অ্যালাইনমেন্ট বা বক্স বদলালে ভার্সন ১.১ প্যানেলের ওপরে অ্যাম্বার রঙে জানিয়ে দেয়: এক ক্লিকেই Refresh।\n\n৬. আসল কার্সর লেয়ার: টেক্সটের সাথে প্যারেন্ট করা একটি শেপ লেয়ার; রং, ব্লিংকের গতি ও কোমলতা, টাইপের সময় স্থির থাকা, ডান দিকে বাড়া প্রস্থ, আলাদা করে ওপর-নিচ, চার কোণ একসাথে বা আলাদা গোল, আর অফসেট, সবই বদলানো যায়; সাথে Vertical, Underscore ও Box প্রিসেট আর নিজের প্রিসেট।\n\n৭. হাতে ছোঁয়া যায় এমন কিফ্রেম: Bake করলে Characters Shown হয়ে যায় হোল্ড কিফ্রেম, যার লেবেলের রং বলে দেয় কী টাইপ হলো (অক্ষর, সংখ্যা, যতিচিহ্ন, স্পেস, মোছা); যেকোনো কী-স্ট্রোক হাতে আগে-পরে সরানো যায়, লম্বা রিগও সঙ্গে সঙ্গে প্লে হয়, আর Shift+click-এ আবার আগের মতো। Bake হোক বা না হোক, রিগ মানে সাধারণ এক্সপ্রেশন কন্ট্রোল, একটি টেক্সট অ্যানিমেটর আর এক্সপ্রেশন, JavaScript ও পুরোনো ExtendScript দুই ইঞ্জিনেই; তাই LazyTyper নেই এমন কাউকে প্রজেক্ট পাঠালেও ঠিকঠাক চলে।\n\n৮. যত্ন করে বানানো, দুই জায়গায় পরীক্ষিত: হোস্ট স্ক্রিপ্ট ES3 ও ASCII, প্রতিটি কাজ এক undo ধাপে, শেষে লেয়ার সিলেকশন আগের মতো; আর প্যানেল After Effects-কে সিলেকশনের কথা জিজ্ঞেস করে কেবল মাউস ওপরে এলে, ফোকাস পেলে বা কোনো কাজের পরে, পেছনে চুপচাপ কখনো নয়। npm test হোস্ট, ইঞ্জিন আর ১৪টি এক্সপ্রেশনকে ES3 হিসেবে যাচাই করে এবং Node-এ ইঞ্জিনের ২২৪টি চেক চালায়; npm run test:ae After Effects 26.5-এর ভেতরে দুই এক্সপ্রেশন ইঞ্জিনেই রিগ বানিয়ে Bake করে, প্রতিটিতে ৯২টি চেক, টাইপিং Node-এর সাথে ফ্রেমে ফ্রেমে মেলে; npm run test:ui DevTools দিয়ে আসল প্যানেলের বোতাম চেপে ২৬টি চেক করে। সাইন করা প্যানেল উইন্ডোজ বা macOS-এ এক ডাবল-ক্লিকে ইনস্টল হয়, আর এই পেজের ডেমোটাও কোডে আঁকা, টাইপ করেছে একই ইঞ্জিন।",
+			'solution_en' => "1. One engine, everywhere: the typing engine is one ES3 function, lazyTyperRun. Its source is copied into the rig's expressions, the Node tests run the same function, and Bake runs it once in record mode to list every keystroke, so the preview, the playback and the bake can never drift apart.\n\n2. Every key timed by its neighbours: a base speed, in Frames Per Character or as a Total Duration, is slowed by capitals, numbers, symbols, punctuation, sentence ends, new lines, word starts, long words and hard-to-reach letters, sped up by repeated letters, common letter pairs, common words and momentum inside a word, and pushed either way by spaces, same-hand letters and fatigue. Variance makes a key come late by 25–150 % now and then, the keys picked by a random seed, so a take looks natural and renders the same every time. Every control can be keyframed.\n\n3. Three typists and your own: Very Fast, Average and Hunt & Peck type about 14, 7 and 2.5 characters a second at 30 fps, speeds a person could really type at; any rig's settings save as a preset of your own, and the panel draws the rhythm a preset gives the selected text.\n\n4. Pauses, erasing and retyping: a Pause layer marker holds the typing for as long as its end is dragged; Stop typing, Erase (everything, or the last few characters, backspace by backspace), a new Source Text keyframe and Start typing replace one phrase with another.\n\n5. Two rigs: a Dynamic rig shows the typed part in Source Text itself, so paragraph text wraps word by word and centred lines stay centred. A hidden guide copy with a Scale-0 text animator leaves only the last typed character with a size, and since sourceRectAtTime follows scaled characters, its box is where the cursor goes. A Stable rig keeps the layout fixed and hides untyped characters with an animator, so mixed fonts, sizes and colours survive; its cursor follows points measured with Create Shapes from Text. When the font, size, tracking, alignment or box changes after that, version 1.1 says so in amber at the top of the panel: one click refreshes.\n\n6. A real cursor layer: a shape layer parented to the text, with colour, blink rate and softness, solid while keys come in, a width that grows to the right, top and bottom set separately, all four corners rounded together or one by one, and offsets; Vertical, Underscore and Box presets and your own.\n\n7. Keyframes you can touch: Bake turns Characters Shown into hold keyframes labelled by what was typed (letters, numbers, punctuation, spaces, deleting), so any keystroke can be nudged by hand and a long rig plays instantly; Shift+click unbakes. Baked or not, a rig is ordinary expression controls, a text animator and expressions, in the JavaScript and the legacy ExtendScript engine alike, so a project sent to someone without LazyTyper still plays.\n\n8. Built with care, tested twice: the host script is ES3 and ASCII, every action is one undo step with the layer selection put back, and the panel asks After Effects about the selection only on pointer-over, on focus or after an action, never in the background. npm test checks the host, the engine and all 14 expressions as ES3 and runs 224 engine checks in Node; npm run test:ae builds and bakes rigs inside After Effects 26.5 in both expression engines, 92 checks in each, the typing matching Node frame for frame; npm run test:ui presses the real panel's buttons through DevTools, 26 checks. The signed panel installs with a double-click on Windows or macOS, and the demo on this page is drawn in code and typed by the same engine.",
+			'highlights_bn'=> array(
+				'টেক্সট লেয়ার সিলেক্ট, Create Typing Rig, তারপর প্লে: লেখা টাইপ হয় মানুষের মতো',
+				'প্রতিটি কী-র সময় প্রতিবেশী দেখে: ক্যাপিটাল, চিহ্ন, যতিচিহ্ন, বাক্যের শেষ, চেনা শব্দ ও অক্ষর-জোড়া, একই হাতের অক্ষর, ক্লান্তি',
+				'Random Seed-সহ Variance: টাইপ স্বাভাবিক, অথচ প্রতিটি রেন্ডারে একই',
+				'Very Fast, Average ও Hunt & Peck প্রিসেট (৩০ fps-এ সেকেন্ডে প্রায় ১৪, ৭ ও ২.৫ অক্ষর), সাথে নিজের প্রিসেট',
+				'Pause মার্কারে বিরতি; Erase-এ সবটা বা শেষের কয়েকটি অক্ষর মুছে আবার লেখা',
+				'Dynamic রিগ টাইপ করতে করতে লাইন ভাঙে, মাঝের লাইন মাঝেই রাখে; Stable রিগ মিশ্র ফন্ট ও রং ধরে রাখে',
+				'অক্ষরের ধরন অনুযায়ী রঙিন কিফ্রেমে Bake, যেকোনো কী-স্ট্রোক হাতে সরানো, Shift+click-এ Unbake',
+				'আসল কার্সর লেয়ার: ব্লিংক, প্রস্থ, কোণে কোণে গোলভাব; Vertical, Underscore ও Box প্রিসেট',
+				'দুই এক্সপ্রেশন ইঞ্জিনেই চলে; পুরোটা সাধারণ এক্সপ্রেশন, তাই প্যানেল ছাড়াও রিগ কাজ করে',
+				'এক্সপ্রেশন, টেস্ট আর Bake-এ একই ES3 ইঞ্জিন; Node-এ আর After Effects-এর ভেতরে পরীক্ষিত',
+				'সাইন করা প্যাকেজ, এক ডাবল-ক্লিকে ইনস্টল; MIT লাইসেন্সে ফ্রি ও ওপেন সোর্স'
+			),
+			'highlights_en'=> array(
+				'Select a text layer, click Create Typing Rig, press play: it types like a person',
+				'Every key timed by its neighbours: capitals, symbols, punctuation, sentence ends, common words and letter pairs, same-hand letters, fatigue',
+				'Variance with a random seed: natural, and the same take on every render',
+				'Very Fast, Average and Hunt & Peck presets (about 14, 7 and 2.5 characters a second at 30 fps), and your own',
+				'Pause markers; Erase everything or the last few characters, then retype',
+				'Dynamic rigs re-wrap and re-centre as they type; Stable rigs keep mixed fonts and colours',
+				'Bake to keyframes coloured by character type, nudge any keystroke, Shift+click to unbake',
+				'A real cursor layer: blink, width, roundness corner by corner; Vertical, Underscore and Box presets',
+				'Both expression engines; plain expressions, so a rig keeps working without the panel',
+				'One ES3 engine for the expressions, the tests and Bake; tested in Node and inside After Effects',
+				'A signed package that installs with a double-click; free and open source under MIT'
+			),
+			'tags'        => array( 'After Effects', 'Adobe CEP', 'ExtendScript', 'Expressions', 'Typing Animation', 'Text Animation', 'Open Source' ),
+			'accent'      => '#a78bfa',
+			'icon'        => 'extension',
+			'image'       => get_template_directory_uri() . '/assets/img/lazytyper.webp',
+			'image_fit'   => 'cover',
+			'action_type' => 'code',
+			'action_bn'   => 'ফ্রি ডাউনলোড',
+			'action_en'   => 'Download Free',
+			'direct_url'  => 'https://github.com/raisulsohan/LazyTyper/releases/latest',
+			'github_url'  => 'https://github.com/raisulsohan/LazyTyper',
+			'order'       => 9,
+		),
 	);
 }
 
@@ -2691,6 +2748,7 @@ function rs_sync_new_portfolio_projects() {
 			'lazymaplayers'           => true,
 			'nomolos-qin-shi-huang'   => false,
 			'lazycatcompanion'        => false,
+			'lazytyper'               => false,
 		);
 		foreach ( $new_projects as $slug => $as_first ) {
 			if ( ! get_option( 'rs_portfolio_added_' . $slug ) ) {
@@ -2708,6 +2766,7 @@ function rs_sync_new_portfolio_projects() {
 	rs_seed_portfolio_demo( 'lazyeditmirror', 'lazyeditmirror-demo.html', '' );
 	rs_seed_portfolio_demo( 'lazymaplayers', 'lazymaplayers-demo.html', '' );
 	rs_seed_portfolio_demo( 'lazycatcompanion', 'lazycat-demo.html', '' );
+	rs_seed_portfolio_demo( 'lazytyper', 'lazytyper-demo.html', '' );
 
 	if ( $switched ) {
 		restore_current_blog();

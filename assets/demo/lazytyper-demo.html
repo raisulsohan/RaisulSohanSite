@@ -1,0 +1,1818 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LazyTyper Demo</title>
+<!--
+  The README demo of LazyTyper, drawn in code on a canvas: no screen recording, no images.
+  Built by tools/demo/build.mjs from tools/demo/page.template.html: the typing engine
+  (client/engine.js), the rig definitions and presets (client/rig.js) and the panel colours
+  (client/style.css) are copied in, so every keystroke here comes from lazyTyperRun.
+-->
+<style>
+  :root {
+    --page: #0c0b12;
+    --bar: #15131f;
+    --bar-2: #2a2640;
+    --line: #312c48;
+    --text: #f1effa;
+    --muted: #8d87a8;
+    --accent: #a78bfa;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--page); color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; }
+  body { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+
+  .player { width: min(1280px, 100%); background: #15131f; border: 1px solid var(--line);
+    border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+  .player:fullscreen { width: 100vw; height: 100vh; border-radius: 0; border: 0;
+    display: flex; flex-direction: column; }
+  .stage { position: relative; aspect-ratio: 16 / 9; background: #141414; }
+  .player:fullscreen .stage { flex: 1; aspect-ratio: auto; min-height: 0; }
+  canvas { display: block; width: 100%; height: 100%; object-fit: contain; }
+
+  .overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; background: rgba(12, 11, 18, .25); }
+  .overlay.hidden { display: none; }
+  .bigplay { width: 84px; height: 84px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #7c3aed, #db2777); box-shadow: 0 10px 40px rgba(124, 58, 237, .45);
+    transition: transform .15s; }
+  .overlay:hover .bigplay { transform: scale(1.06); }
+
+  .controls { display: flex; flex-direction: column; gap: 6px; padding: 8px 12px 10px;
+    background: var(--bar); border-top: 1px solid var(--line); user-select: none; }
+  .row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .spacer { flex: 1; }
+
+  input[type=range] { -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; margin: 0; }
+  input[type=range]::-webkit-slider-runnable-track { height: 5px; border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent) 0 var(--p, 0%), var(--bar-2) var(--p, 0%) 100%); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; margin-top: -4.5px;
+    border-radius: 50%; background: #fff; border: 0; box-shadow: 0 0 0 3px rgba(167, 139, 250, .35); }
+  input[type=range]::-moz-range-track { height: 5px; border-radius: 3px; background: var(--bar-2); }
+  input[type=range]::-moz-range-progress { height: 5px; border-radius: 3px; background: var(--accent); }
+  input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 0; }
+  #seek { width: 100%; height: 16px; }
+  #vol { width: 80px; height: 16px; }
+
+  .btn { width: 34px; height: 32px; border: 0; border-radius: 7px; background: transparent; color: var(--text);
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  .btn:hover { background: var(--bar-2); }
+  .btn:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .btn svg { width: 18px; height: 18px; fill: currentColor; }
+  .btn.on { color: var(--accent); background: #2e2452; }
+  .readout { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); padding: 0 6px; white-space: nowrap; }
+  .readout b { color: var(--text); font-weight: 600; }
+  select { background: var(--bar-2); color: var(--text); border: 1px solid var(--line); border-radius: 6px;
+    font: 12px "Segoe UI", system-ui, sans-serif; height: 28px; padding: 0 6px; cursor: pointer; }
+  .keys { font-size: 11px; color: var(--muted); padding: 2px 4px 0; }
+  .keys kbd { font: 10px "Segoe UI", system-ui, sans-serif; background: var(--bar-2); border: 1px solid var(--line); border-radius: 4px;
+    padding: 0 4px; color: var(--text); }
+  @media (max-width: 640px) {
+    .keys { display: none; }
+    #vol { width: 60px; }
+    .readout.frames { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="player" id="player">
+  <div class="stage">
+    <canvas id="cv" width="1920" height="1080" aria-label="LazyTyper demo animation: in After Effects a search-bar text layer gets a typing rig in one click and types on with a natural rhythm; the preset changes to Hunt &amp; Peck and then Very Fast, “after effects” is erased and “premiere pro” typed in its place, and baking fills the timeline with keyframes coloured by character type"></canvas>
+    <div class="overlay" id="overlay" title="Play">
+      <div class="bigplay"><svg viewBox="0 0 24 24" width="34" height="34" fill="#fff"><path d="M8 5v14l11-7z"/></svg></div>
+    </div>
+  </div>
+  <div class="controls">
+    <input type="range" id="seek" min="0" max="18000" step="1" value="0" aria-label="Seek">
+    <div class="row">
+      <button class="btn" id="bPlay" title="Play / pause (Space, K)" aria-label="Play"></button>
+      <button class="btn" id="bRestart" title="Restart (Home)" aria-label="Restart"><svg viewBox="0 0 24 24"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg></button>
+      <button class="btn" id="bPrev" title="Previous frame (← or ,)" aria-label="Previous frame"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zM9.5 12 18 18V6z"/></svg></button>
+      <button class="btn" id="bNext" title="Next frame (→ or .)" aria-label="Next frame"><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
+      <span class="readout" id="time"><b>0:00.00</b> / 0:18.00</span>
+      <span class="readout frames" id="frames">Frame <b>1</b> / 540</span>
+      <span class="spacer"></span>
+      <select id="speed" title="Playback speed" aria-label="Playback speed">
+        <option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option>
+        <option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option>
+      </select>
+      <button class="btn on" id="bLoop" title="Loop (L)" aria-label="Loop"><svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2z"/></svg></button>
+      <button class="btn" id="bMute" title="Mute (M)" aria-label="Mute"></button>
+      <input type="range" id="vol" min="0" max="1" step="0.01" value="0.8" aria-label="Volume">
+      <button class="btn" id="bFull" title="Fullscreen (F)" aria-label="Fullscreen"><svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7zm-2-4h2V7h3V5H5zm12 7h-3v2h5v-5h-2zM14 5v2h3v3h2V5z"/></svg></button>
+    </div>
+    <div class="keys"><kbd>Space</kbd>/<kbd>K</kbd> play · <kbd>←</kbd><kbd>→</kbd> or <kbd>,</kbd><kbd>.</kbd> frame · <kbd>Shift</kbd>+<kbd>←</kbd><kbd>→</kbd> ±1 s · <kbd>Home</kbd>/<kbd>End</kbd> · <kbd>M</kbd> mute · <kbd>L</kbd> loop · <kbd>F</kbd> fullscreen</div>
+  </div>
+</div>
+
+<!-- client/engine.js, copied in by tools/demo/build.mjs -->
+<script>
+/*
+ * LazyTyper timing engine.
+ *
+ * One function, lazyTyperRun(io), decides how many characters of a text layer
+ * are showing at a given time. The panel copies its source (through
+ * Function.prototype.toString) into the rig's expressions, the Node tests call
+ * it directly, and the bake step runs it once with io.record set to get every
+ * keystroke. So it must stay plain ES3: it runs in After Effects' legacy
+ * ExtendScript expression engine as well as the JavaScript one. No let/const,
+ * arrow functions, Array.prototype.indexOf, forEach, JSON, getters or trailing
+ * commas, and only full-line comments inside the function (the expression
+ * builder strips them).
+ *
+ * io = {
+ *   time:   the time to answer for (seconds),
+ *   fd:     the comp's frame duration,
+ *   start:  when the layer starts (typing never runs before it),
+ *   num:    function (controlName, t) -> number (a control's value at t),
+ *   text:   function (t) -> string (the full text at t, before any expression),
+ *   pauses: [[from, to], ...] times when typing waits (pause markers),
+ *   record: true to get [[frameTime, count], ...] for every change instead of the count
+ * }
+ * Every field must be set: the legacy expression engine throws on reading a missing one.
+ *
+ * Typing model. Every character waits a number of frames before it appears:
+ * the base speed (Frames Per Character, or Total Duration shared out over the
+ * text) times a weight that the slow down / speed up controls and Variance
+ * set from the character and its neighbours. Typing only runs while the
+ * Typing checkbox is on and no pause marker covers the frame; the first
+ * character of each run appears at once. The characters shown are
+ * Start at Character + characters typed so far, kept between 0 and the text
+ * length, so lowering Start at Character while typing is off deletes text and
+ * typing on later continues from wherever the text is.
+ */
+function lazyTyperRun(io) {
+  var fd = io.fd > 0 ? io.fd : 1 / 30;
+  var num = io.num;
+  var pauses = io.pauses;
+  var PUNCT = ".,;:!?'\"-()[]\u2026\u2014\u2013\u2018\u2019\u201C\u201D\u00BF\u00A1\u0964\u0965\u060C\u061F\u3001\u3002";
+  var SYM = "@#$%^&*_+=<>{}|\\/~`";
+  var AFTER = ",;:\u060C\u3001";
+  var ENDS = ".!?\u0964\u0965\u061F\u3002";
+  var PAIRS = ",th,he,in,er,an,re,on,at,en,nd,ti,es,or,te,of,ed,is,it,al,ar,st,to,nt,ng,se,ha,as,ou,io,le,ve,co,me,de,hi,ri,ro,ic,ne,ea,ra,ce,";
+  var WORDS = ",the,and,to,of,a,in,is,it,you,that,for,on,with,as,was,i,be,at,this,have,are,he,she,we,they,but,not,or,my,your,so,if,do,can,will,just,all,an,by,from,";
+  var LEFT = "qwertasdfgzxcvb";
+  var RIGHT = "yuiophjklnm";
+
+  function isNL(c) { return c === "\r" || c === "\n" || c === "\u0003" || c === "\u2028" || c === "\u2029"; }
+  function isSpace(c) { return c === " " || c === "\t" || c === "\u00A0" || c === "\u3000" || c === "\u2009"; }
+  function isDigit(c) { return c >= "0" && c <= "9"; }
+  function isPunct(c) { return c !== "" && PUNCT.indexOf(c) >= 0; }
+  function isSym(c) { return c !== "" && SYM.indexOf(c) >= 0; }
+  function isLetter(c) {
+    if (c === "") return false;
+    if (c.toLowerCase() !== c.toUpperCase()) return true;
+    return c > "\u007F" && !isSpace(c) && !isNL(c) && !isPunct(c) && !isSym(c);
+  }
+  function isWord(c) { return isLetter(c) || isDigit(c); }
+  function hand(c) {
+    if (c === "") return -1;
+    if (LEFT.indexOf(c) >= 0) return 0;
+    if (RIGHT.indexOf(c) >= 0) return 1;
+    return -1;
+  }
+  function rnd(i, seed) {
+    var x = Math.sin(i * 12.9898 + seed * 78.233 + 1.618) * 43758.5453;
+    return x - Math.floor(x);
+  }
+  function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+  function on(t) {
+    if (num("Typing", t) < 0.5) return false;
+    for (var p = 0; p < pauses.length; p++) {
+      if (t >= pauses[p][0] - 1e-6 && t < pauses[p][1] - 1e-6) return false;
+    }
+    return true;
+  }
+
+  // How much longer (>1) or shorter (<1) than the base speed character i of s takes.
+  function weight(s, i, t) {
+    var c = s.charAt(i);
+    var p = i > 0 ? s.charAt(i - 1) : "";
+    var lc = c.toLowerCase();
+    var w = 1;
+    function slow(name, scale) { var v = num(name, t) / 100 * scale; if (v > 0) w *= 1 + v; }
+    function fast(name, scale) { var v = num(name, t) / 100 * scale; if (v > 0) w /= 1 + v; }
+    function either(name, scale) {
+      var v = num(name, t) / 100 * scale;
+      if (v > 0) w *= 1 + v;
+      else if (v < 0) w /= 1 - v;
+    }
+    var ws = i, we = i;
+    if (isWord(c)) {
+      while (ws > 0 && isWord(s.charAt(ws - 1))) ws--;
+      while (we < s.length && isWord(s.charAt(we))) we++;
+    }
+    var wordLen = we - ws;
+    var inWord = i - ws;
+
+    if (isLetter(c) && c !== lc) slow("Slow: Capitals", 1);
+    if (isDigit(c)) slow("Slow: Numbers", 1);
+    if (isSym(c)) slow("Slow: Symbols", 1);
+    if (isPunct(c)) slow("Slow: Punctuation", 1);
+    if (p !== "" && AFTER.indexOf(p) >= 0) slow("Slow: After Punctuation", 1);
+    if (p !== "" && ENDS.indexOf(p) >= 0) slow("Slow: Sentence End", 1);
+    if (p !== "" && isNL(p)) slow("Slow: New Line", 1);
+    if (isWord(c) && inWord === 0) slow("Slow: Word Start", 1);
+    if (isLetter(c) && wordLen > 6) slow("Slow: Long Words", Math.min(1, (wordLen - 6) / 6));
+    if ("qzxjkv".indexOf(lc) >= 0 && lc !== "") slow("Slow: Rare Letters", 1);
+
+    if (isLetter(c) && p !== "" && lc === p.toLowerCase()) fast("Fast: Repeated Letters", 1);
+    if (isLetter(c) && isLetter(p) && PAIRS.indexOf("," + (p + c).toLowerCase() + ",") >= 0) fast("Fast: Common Pairs", 1);
+    if (isWord(c) && WORDS.indexOf("," + s.substring(ws, we).toLowerCase() + ",") >= 0) fast("Fast: Common Words", 1);
+    if (isLetter(c) && inWord >= 2) fast("Fast: Word Momentum", Math.min(1, (inWord - 1) / 4));
+
+    if (isSpace(c)) either("Slow/Fast: Spaces", 1);
+    if (isLetter(c) && isLetter(p) && hand(lc) >= 0 && hand(lc) === hand(p.toLowerCase())) either("Slow/Fast: Same Hand", 1);
+    if (s.length > 1) either("Slow/Fast: Fatigue", i / (s.length - 1));
+
+    var variance = num("Variance", t) / 100;
+    if (variance > 0) {
+      var seed = num("Random Seed", t);
+      if (rnd(i, seed) < variance) w *= 1.25 + 1.25 * rnd(i + 0.37, seed);
+    }
+    return w;
+  }
+
+  var tdMode = false;
+  var unit = 1;
+  // Frames to wait before character i of s appears.
+  function frames(s, i, t) {
+    var base = tdMode ? unit : num("Frames Per Character", t);
+    return Math.max(0.02, base * weight(s, i, t));
+  }
+
+  var typed = 0;
+  var acc = 0;
+  var need = -1;
+  var needFor = -1;
+  var needText = null;
+  var running = false;
+  var shown = -1;
+  var log = [];
+  var start = io.start;
+  var n = Math.floor((io.time - start) / fd + 1e-4);
+  if (n < 0) n = -1;
+
+  for (var f = 0; f <= n; f++) {
+    var t = start + f * fd;
+    var s = io.text(t);
+    var len = s.length;
+    var startAt = Math.round(num("Start at Character", t));
+    var pos = clamp(startAt + typed, 0, len);
+    if (!on(t)) {
+      running = false;
+      acc = 0;
+      need = -1;
+    } else if (pos < len) {
+      if (!running) {
+        running = true;
+        tdMode = Math.round(num("Speed Mode", t)) === 2;
+        if (tdMode) {
+          // The run's first character appears at once, so the duration covers the rest.
+          var total = 0;
+          for (var q = pos + 1; q < len; q++) total += weight(s, q, t);
+          unit = Math.max(0, num("Total Duration", t)) / Math.max(1e-6, total);
+        }
+        need = -1;
+        acc = 1e9;
+      } else {
+        acc += 1;
+      }
+      var guard = 0;
+      while (pos < len && guard < 100000) {
+        guard++;
+        if (need < 0 || needFor !== pos || needText !== s) {
+          need = frames(s, pos, t);
+          needFor = pos;
+          needText = s;
+        }
+        if (acc >= 1e8) {
+          acc = 0;
+        } else if (acc + 1e-9 < need) {
+          break;
+        } else {
+          acc -= need;
+        }
+        typed++;
+        pos++;
+        need = -1;
+      }
+    } else {
+      acc = 0;
+      need = -1;
+    }
+    if (io.record) {
+      var now = clamp(startAt + typed, 0, len);
+      if (now !== shown) {
+        log.push([t, now]);
+        shown = now;
+      }
+    }
+  }
+  if (io.record) return log;
+  var last = io.text(io.time);
+  if (n < 0) return clamp(Math.round(num("Start at Character", io.time)), 0, last.length);
+  return clamp(Math.round(num("Start at Character", io.time)) + typed, 0, last.length);
+}
+
+if (typeof window !== "undefined") window.lazyTyperRun = lazyTyperRun;
+if (typeof module !== "undefined" && module.exports) module.exports = { lazyTyperRun: lazyTyperRun };
+</script>
+<!-- client/rig.js, copied in by tools/demo/build.mjs -->
+<script>
+/*
+ * LazyTyper rig definitions: the controls a rig adds, the built-in presets and
+ * the expressions the host writes into the layers.
+ *
+ * Plain ES5 (CEP 9's Chromium 61). Sets window.LazyTyperRig and, for the Node
+ * tests, module.exports. The expressions themselves are ES3 so they run in
+ * both of After Effects' expression engines; none of them uses the
+ * sourceText.style API, which the legacy engine does not have.
+ */
+(function () {
+  var engine = (typeof lazyTyperRun === "function") ? lazyTyperRun :
+    (typeof require === "function" ? require("./engine.js").lazyTyperRun : null);
+
+  var VERSION = "1.1.0";
+  var TAG = "LazyTyper";
+
+  /* Controls on the text layer, in the order they appear in Effect Controls. */
+  var TEXT_CONTROLS = [
+    { name: "Typing", type: "checkbox", value: 1, group: "typing" },
+    { name: "Start at Character", type: "slider", value: 0, group: "typing" },
+    { name: "Speed Mode", type: "dropdown", items: ["Frames Per Character", "Total Duration"], value: 1, group: "speed" },
+    { name: "Frames Per Character", type: "slider", value: 3, group: "speed" },
+    { name: "Total Duration", type: "slider", value: 90, group: "speed" },
+    { name: "Variance", type: "slider", value: 35, group: "speed" },
+    { name: "Random Seed", type: "slider", value: 1, group: "speed" },
+    { name: "Slow: Capitals", type: "slider", value: 60, group: "slow" },
+    { name: "Slow: Numbers", type: "slider", value: 60, group: "slow" },
+    { name: "Slow: Symbols", type: "slider", value: 120, group: "slow" },
+    { name: "Slow: Punctuation", type: "slider", value: 40, group: "slow" },
+    { name: "Slow: After Punctuation", type: "slider", value: 250, group: "slow" },
+    { name: "Slow: Sentence End", type: "slider", value: 500, group: "slow" },
+    { name: "Slow: New Line", type: "slider", value: 400, group: "slow" },
+    { name: "Slow: Word Start", type: "slider", value: 50, group: "slow" },
+    { name: "Slow: Long Words", type: "slider", value: 30, group: "slow" },
+    { name: "Slow: Rare Letters", type: "slider", value: 40, group: "slow" },
+    { name: "Fast: Repeated Letters", type: "slider", value: 30, group: "fast" },
+    { name: "Fast: Common Pairs", type: "slider", value: 30, group: "fast" },
+    { name: "Fast: Common Words", type: "slider", value: 20, group: "fast" },
+    { name: "Fast: Word Momentum", type: "slider", value: 20, group: "fast" },
+    { name: "Slow/Fast: Spaces", type: "slider", value: 0, group: "either" },
+    { name: "Slow/Fast: Same Hand", type: "slider", value: 20, group: "either" },
+    { name: "Slow/Fast: Fatigue", type: "slider", value: 10, group: "either" },
+    { name: "Characters Shown", type: "slider", value: 0, group: "output" }
+  ];
+
+  /* Controls on the cursor layer. Sizes are percentages of the font size. */
+  var CURSOR_CONTROLS = [
+    { name: "Text Layer", type: "layer" },
+    { name: "Guide Layer", type: "layer", dynamicOnly: true },
+    { name: "Cursor Color", type: "color", value: [1, 1, 1] },
+    { name: "Cursor Opacity", type: "slider", value: 100 },
+    { name: "Blink", type: "checkbox", value: 1 },
+    { name: "Blinks per Second", type: "slider", value: 1 },
+    { name: "Blink While Typing", type: "checkbox", value: 0 },
+    { name: "Blink Softness", type: "slider", value: 0 },
+    { name: "Width", type: "slider", value: 7 },
+    { name: "Top", type: "slider", value: 80 },
+    { name: "Bottom", type: "slider", value: 16 },
+    { name: "Roundness", type: "slider", value: 0 },
+    { name: "Individual Corners", type: "checkbox", value: 0 },
+    { name: "Top Left", type: "slider", value: 0 },
+    { name: "Top Right", type: "slider", value: 0 },
+    { name: "Bottom Right", type: "slider", value: 0 },
+    { name: "Bottom Left", type: "slider", value: 0 },
+    { name: "X Offset", type: "slider", value: 0 },
+    { name: "Y Offset", type: "slider", value: 0 }
+  ];
+
+  /* The typing controls a preset stores (everything but the start/stop and output controls). */
+  var TYPING_PRESET_KEYS = [];
+  for (var i = 0; i < TEXT_CONTROLS.length; i++) {
+    var g = TEXT_CONTROLS[i].group;
+    if (g !== "typing" && g !== "output") TYPING_PRESET_KEYS.push(TEXT_CONTROLS[i].name);
+  }
+  var CURSOR_PRESET_KEYS = ["Cursor Opacity", "Blink", "Blinks per Second", "Blink While Typing", "Blink Softness",
+    "Width", "Top", "Bottom", "Roundness", "Individual Corners", "Top Left", "Top Right", "Bottom Right", "Bottom Left",
+    "X Offset", "Y Offset"];
+
+  function preset(fpc, variance, slow, fast, either) {
+    return {
+      "Speed Mode": 1, "Frames Per Character": fpc, "Total Duration": 90, "Variance": variance, "Random Seed": 1,
+      "Slow: Capitals": slow[0], "Slow: Numbers": slow[1], "Slow: Symbols": slow[2], "Slow: Punctuation": slow[3],
+      "Slow: After Punctuation": slow[4], "Slow: Sentence End": slow[5], "Slow: New Line": slow[6],
+      "Slow: Word Start": slow[7], "Slow: Long Words": slow[8], "Slow: Rare Letters": slow[9],
+      "Fast: Repeated Letters": fast[0], "Fast: Common Pairs": fast[1], "Fast: Common Words": fast[2],
+      "Fast: Word Momentum": fast[3],
+      "Slow/Fast: Spaces": either[0], "Slow/Fast: Same Hand": either[1], "Slow/Fast: Fatigue": either[2]
+    };
+  }
+
+  var TYPING_PRESETS = [
+    /* At 30 fps: about 14, 7 and 2.5 characters a second (a very fast typist, an everyday
+       one sped up a little for the screen, and two fingers). */
+    { name: "Very Fast", builtIn: true, values: preset(2.2, 15, [30, 30, 60, 20, 150, 300, 250, 20, 0, 10], [40, 40, 30, 30], [-20, 10, 0]) },
+    { name: "Average", builtIn: true, values: preset(3, 35, [60, 60, 120, 40, 250, 500, 400, 50, 30, 40], [30, 30, 20, 20], [0, 20, 10]) },
+    { name: "Hunt & Peck", builtIn: true, values: preset(6, 60, [150, 120, 250, 80, 300, 600, 500, 100, 60, 100], [10, 10, 20, 0], [-30, 0, 20]) }
+  ];
+
+  function cursorPreset(width, top, bottom, round) {
+    return {
+      "Cursor Opacity": 100, "Blink": 1, "Blinks per Second": 1, "Blink While Typing": 0, "Blink Softness": 0,
+      "Width": width, "Top": top, "Bottom": bottom, "Roundness": round, "Individual Corners": 0,
+      "Top Left": round, "Top Right": round, "Bottom Right": round, "Bottom Left": round, "X Offset": 0, "Y Offset": 0
+    };
+  }
+  var CURSOR_PRESETS = [
+    { name: "Vertical", builtIn: true, values: cursorPreset(7, 80, 16, 0) },
+    { name: "Underscore", builtIn: true, values: cursorPreset(55, -6, 14, 0) },
+    { name: "Box", builtIn: true, values: cursorPreset(55, 80, 18, 8) }
+  ];
+
+  /* After Effects label colours (index 1-16) for baked keyframes. */
+  var LABELS = ["None", "Red", "Yellow", "Aqua", "Pink", "Lavender", "Peach", "Sea Foam", "Blue", "Green",
+    "Purple", "Orange", "Brown", "Fuchsia", "Cyan", "Sandstone", "Dark Green"];
+  var LABEL_HEX = ["#5a5a5a", "#b53838", "#e4d84c", "#a9cbc7", "#e5bcc9", "#a9a9ca", "#e7c19e", "#b3c7b3", "#677de0",
+    "#4aa44c", "#8e2c9a", "#e8920d", "#7f452a", "#f46dd6", "#3da2a5", "#a89677", "#1e401e"];
+  var DEFAULT_KEY_LABELS = { letters: 8, numbers: 2, punctuation: 13, spaces: 9, deleting: 1 };
+
+  /* ---------------- expressions ---------------- */
+
+  function engineSource() {
+    // Keep the function body only, minus full-line comments (strings never start a line).
+    return String(engine).replace(/^[ \t]*\/\/.*(\r?\n)/gm, "");
+  }
+
+  function header(what) {
+    return "// " + TAG + " " + VERSION + " - " + what + ". The LazyTyper panel writes this; Refresh Rig rewrites it.\n";
+  }
+
+  /*
+   * Text of a Source Text value in either engine: the JavaScript engine gives an object with
+   * .text, the legacy one a string. The legacy engine throws on a property that does not exist,
+   * so the expressions never read one without try, hasOwnProperty or a field they always set.
+   */
+  var STR_FN = "function LT_str(v) { var s; try { s = v.text; } catch (e) {} return typeof s === \"string\" ? s : \"\" + v; }\n";
+
+  /*
+   * The full text over time, as LT_text(t). textProp is "text.sourceText" or "thisProperty"
+   * (inside the Source Text expression, where valueAtTime and value give the text before the
+   * expression).
+   */
+  function textPart(textProp, staticText) {
+    return STR_FN +
+      "var LT_src = " + textProp + ";\n" +
+      "var LT_kt = [], LT_ks = [];\n" +
+      "for (var LT_i = 1; LT_i <= LT_src.numKeys; LT_i++) { var LT_tk = LT_src.key(LT_i).time; LT_kt.push(LT_tk); LT_ks.push(LT_str(LT_src.valueAtTime(LT_tk))); }\n" +
+      "var LT_s0 = LT_kt.length ? \"\" : LT_str(" + staticText + ");\n" +
+      "function LT_text(t) {\n" +
+      "  if (!LT_kt.length) return LT_s0;\n" +
+      "  var j = 0;\n" +
+      "  while (j + 1 < LT_kt.length && LT_kt[j + 1] <= t + 1e-6) j++;\n" +
+      "  return LT_ks[j];\n" +
+      "}\n";
+  }
+
+  /* LT_text plus control sampling, the pause markers and the engine itself. */
+  function preamble(textProp, staticText) {
+    return textPart(textProp, staticText) +
+      "var LT_L = thisLayer;\n" +
+      "var LT_cache = {};\n" +
+      "function LT_num(n, t) {\n" +
+      "  var c;\n" +
+      "  if (LT_cache.hasOwnProperty(n)) c = LT_cache[n];\n" +
+      "  else { var p = LT_L.effect(n)(1); c = { p: p, k: p.numKeys > 0, v: p.value }; LT_cache[n] = c; }\n" +
+      "  return c.k ? c.p.valueAtTime(t) : c.v;\n" +
+      "}\n" +
+      "var LT_P = [];\n" +
+      "for (var LT_m = 1; LT_m <= thisLayer.marker.numKeys; LT_m++) {\n" +
+      "  var LT_mk = thisLayer.marker.key(LT_m);\n" +
+      "  var LT_cm = \"\" + LT_mk.comment;\n" +
+      "  if (/^\\s*pause/i.test(LT_cm)) {\n" +
+      "    var LT_d = LT_mk.duration;\n" +
+      "    if (!(LT_d > 0)) { var LT_n = LT_cm.match(/[0-9.]+/); LT_d = (LT_n ? parseFloat(LT_n[0]) : 12) * thisComp.frameDuration; }\n" +
+      "    LT_P.push([LT_mk.time, LT_mk.time + LT_d]);\n" +
+      "  }\n" +
+      "}\n" +
+      engineSource() + "\n";
+  }
+
+  function runCall(record) {
+    return "lazyTyperRun({ time: time, fd: thisComp.frameDuration, start: thisLayer.inPoint, num: LT_num, text: LT_text, pauses: LT_P, record: " +
+      (record ? "true" : "false") + " })";
+  }
+
+  /* Stable rig: Characters Shown runs the engine (Source Text has no expression). */
+  function stableCount() {
+    return header("typing engine") + preamble("text.sourceText", "text.sourceText.value") + runCall(false);
+  }
+
+  /*
+   * Dynamic rig: Source Text runs the engine and Characters Shown reads its length back.
+   * It must not touch Characters Shown at all, or the two expressions would depend on each
+   * other, which After Effects resolves unpredictably. Bake swaps in dynamicTextBaked.
+   */
+  function dynamicText() {
+    return header("dynamic typing") + preamble("thisProperty", "value") +
+      "LT_text(time).substr(0, Math.max(0, " + runCall(false) + "))";
+  }
+
+  /* Dynamic rig, baked: Characters Shown holds keyframes and Source Text follows them. */
+  function dynamicTextBaked() {
+    return header("dynamic typing, baked") + textPart("thisProperty", "value") +
+      "LT_text(time).substr(0, Math.max(0, Math.round(effect(\"Characters Shown\")(1).value)))";
+  }
+
+  /* Dynamic rig: Characters Shown reads how much Source Text shows. */
+  function dynamicCount() {
+    return header("characters shown") + STR_FN + "LT_str(text.sourceText.value).length";
+  }
+
+  /* Bake: a temporary Source Text expression that lists every change as "time:count;". */
+  function recorder() {
+    return header("bake recorder") + preamble("thisProperty", "value") +
+      "var LT_e = " + runCall(true) + ";\n" +
+      "var LT_o = [];\n" +
+      "for (var LT_j = 0; LT_j < LT_e.length; LT_j++) LT_o.push(LT_e[LT_j][0].toFixed(6) + \":\" + LT_e[LT_j][1]);\n" +
+      "LT_o.join(\";\")";
+  }
+
+  var TRAILING_SCAN =
+    "function LT_nl(c) { return c === \"\\r\" || c === \"\\n\" || c === \"\\u0003\" || c === \"\\u2028\" || c === \"\\u2029\"; }\n" +
+    "function LT_sp(c) { return c === \" \" || c === \"\\t\" || c === \"\\u00A0\" || c === \"\\u3000\" || c === \"\\u2009\"; }\n";
+
+  /*
+   * A range selector's index skips line breaks, so a string position becomes a selector index
+   * by taking away the breaks before it.
+   */
+  var INDEX_FN = "function LT_index(s, k) { var n = 0; for (var i = 0; i < k && i < s.length; i++) if (LT_nl(s.charAt(i))) n++; return k - n; }\n";
+
+  /* Stable rig: the opacity range starts at the first character not typed yet. */
+  function stableSelectorStart() {
+    return header("typing range") + STR_FN + TRAILING_SCAN + INDEX_FN +
+      "LT_index(LT_str(text.sourceText.value), Math.round(effect(\"Characters Shown\")(1).value))";
+  }
+
+  /* Dynamic guide: shows what the text layer shows, in the guide's own (flattened) style. */
+  function guideText() {
+    return header("guide text") + STR_FN + "LT_str(parent.text.sourceText.value)";
+  }
+
+  /* Dynamic guide: a Subtract selector that leaves only the last character that has a shape. */
+  function guideSelector(end) {
+    return header("guide selector") + STR_FN + TRAILING_SCAN + INDEX_FN +
+      "var s = LT_str(text.sourceText.value);\n" +
+      "var j = s.length - 1;\n" +
+      "while (j >= 0 && (LT_nl(s.charAt(j)) || LT_sp(s.charAt(j)))) j--;\n" +
+      (end ? "j < 0 ? 0 : LT_index(s, j) + 1" : "j < 0 ? 0 : LT_index(s, j)");
+  }
+
+  function point3() {
+    return "value.length > 2 ? [x, y, 0] : [x, y]";
+  }
+
+  /*
+   * The three cursor expressions below carry data the host measures in After Effects, so
+   * they are templates: the host swaps each marker for its numbers.
+   *   LT_DATA     stable tables, "[time,size,[x0,y0,x1,y1,...]],...": one per Source Text
+   *               keyframe; point k is where the cursor sits after k characters
+   *   LT_METRICS  "var SIZE = .., LEAD = .., B0 = .., X0 = .., SPW = .., GAP = ..;"
+   *   LT_SIZES    "[time,size],...": the font size from each Source Text keyframe on
+   */
+  var DATA = "/*LT_DATA*/";
+  var METRICS = "/*LT_METRICS*/";
+  var SIZES = "/*LT_SIZES*/";
+
+  function stableCursorPosition() {
+    return header("stable cursor") +
+      "var LT_T = effect(\"Text Layer\")(\"Layer\");\n" +
+      "var LT_D = [" + DATA + "];\n" +
+      "var LT_e = LT_D[0];\n" +
+      "for (var i = 1; i < LT_D.length; i++) if (LT_D[i][0] <= time + 1e-6) LT_e = LT_D[i];\n" +
+      "var P = LT_e[2];\n" +
+      "var k = Math.round(LT_T.effect(\"Characters Shown\")(1).value);\n" +
+      "k = Math.max(0, Math.min(P.length / 2 - 1, k));\n" +
+      "var x = P[2 * k] + effect(\"X Offset\")(1).value;\n" +
+      "var y = P[2 * k + 1] + effect(\"Y Offset\")(1).value;\n" +
+      point3();
+  }
+
+  /* Dynamic cursor position, measured live from the guide layer. */
+  function dynamicCursorPosition() {
+    return header("dynamic cursor") + STR_FN + TRAILING_SCAN +
+      "var G = effect(\"Guide Layer\")(\"Layer\");\n" +
+      METRICS + "\n" +
+      "var s = LT_str(G.text.sourceText.value);\n" +
+      "var sp = 0, nl = 0, j = s.length - 1;\n" +
+      "while (j >= 0) {\n" +
+      "  var c = s.charAt(j);\n" +
+      "  if (LT_nl(c)) nl++;\n" +
+      "  else if (LT_sp(c)) { if (nl === 0) sp++; }\n" +
+      "  else break;\n" +
+      "  j--;\n" +
+      "}\n" +
+      "var line = 0, x = X0;\n" +
+      "if (j >= 0) {\n" +
+      "  var r = G.sourceRectAtTime(time, false);\n" +
+      "  if (r.width > 0 || r.height > 0) {\n" +
+      "    line = Math.max(0, Math.round((r.top + r.height / 2 - B0 + 0.35 * SIZE) / LEAD));\n" +
+      "    x = r.left + r.width + GAP;\n" +
+      "  }\n" +
+      "}\n" +
+      "if (nl > 0) { line += nl; x = X0; }\n" +
+      "x += sp * SPW + effect(\"X Offset\")(1).value;\n" +
+      "var y = B0 + line * LEAD + effect(\"Y Offset\")(1).value;\n" +
+      point3();
+  }
+
+  /* Cursor rectangle: width grows to the right, top and bottom from the baseline, corners rounded. */
+  function cursorPath() {
+    return header("cursor shape") +
+      "var LT_Z = [" + SIZES + "];\n" +
+      "var S = LT_Z[0][1];\n" +
+      "for (var i = 1; i < LT_Z.length; i++) if (LT_Z[i][0] <= time + 1e-6) S = LT_Z[i][1];\n" +
+      "var w = Math.max(0, effect(\"Width\")(1).value) / 100 * S;\n" +
+      "var y0 = -effect(\"Top\")(1).value / 100 * S;\n" +
+      "var y1 = effect(\"Bottom\")(1).value / 100 * S;\n" +
+      "if (y1 < y0) { var tmp = y0; y0 = y1; y1 = tmp; }\n" +
+      "var lim = Math.min(w, y1 - y0) / 2;\n" +
+      "var ind = effect(\"Individual Corners\")(1).value > 0.5;\n" +
+      "var all = effect(\"Roundness\")(1).value;\n" +
+      "function R(n) { var v = (ind ? effect(n)(1).value : all) / 100; return Math.max(0, Math.min(1, v)) * lim; }\n" +
+      "var a = R(\"Top Left\"), b = R(\"Top Right\"), c = R(\"Bottom Right\"), d = R(\"Bottom Left\");\n" +
+      "var K = 0.5523, x0 = 0, x1 = w;\n" +
+      "createPath(\n" +
+      "  [[x0 + a, y0], [x1 - b, y0], [x1, y0 + b], [x1, y1 - c], [x1 - c, y1], [x0 + d, y1], [x0, y1 - d], [x0, y0 + a]],\n" +
+      "  [[-a * K, 0], [0, 0], [0, -b * K], [0, 0], [c * K, 0], [0, 0], [0, d * K], [0, 0]],\n" +
+      "  [[0, 0], [b * K, 0], [0, 0], [0, c * K], [0, 0], [-d * K, 0], [0, 0], [0, -a * K]],\n" +
+      "  true)";
+  }
+
+  function cursorOpacity() {
+    return header("cursor blink") +
+      "var T = effect(\"Text Layer\")(\"Layer\");\n" +
+      "var o = effect(\"Cursor Opacity\")(1).value;\n" +
+      "if (effect(\"Blink\")(1).value > 0.5) {\n" +
+      "  var rate = Math.max(0.01, effect(\"Blinks per Second\")(1).value);\n" +
+      "  var busy = false;\n" +
+      "  if (effect(\"Blink While Typing\")(1).value < 0.5) {\n" +
+      "    var cs = T.effect(\"Characters Shown\")(1);\n" +
+      "    busy = Math.round(cs.value) !== Math.round(cs.valueAtTime(time - 0.4));\n" +
+      "  }\n" +
+      "  if (!busy) {\n" +
+      "    var ph = (time * rate) % 1;\n" +
+      "    if (ph < 0) ph += 1;\n" +
+      "    var soft = Math.max(0, Math.min(1, effect(\"Blink Softness\")(1).value / 100));\n" +
+      "    var hard = ph < 0.5 ? 1 : 0;\n" +
+      "    var wave = 0.5 + 0.5 * Math.cos(ph * 2 * Math.PI);\n" +
+      "    o *= hard * (1 - soft) + wave * soft;\n" +
+      "  }\n" +
+      "}\n" +
+      "o";
+  }
+
+  function cursorColor() {
+    return header("cursor colour") + "effect(\"Cursor Color\")(1)";
+  }
+
+  /* Everything the host needs to build or refresh a rig, in one object. */
+  function expressionSet() {
+    return {
+      version: VERSION,
+      stableCount: stableCount(),
+      dynamicText: dynamicText(),
+      dynamicTextBaked: dynamicTextBaked(),
+      dynamicCount: dynamicCount(),
+      recorder: recorder(),
+      stableSelectorStart: stableSelectorStart(),
+      guideText: guideText(),
+      guideSelectorStart: guideSelector(false),
+      guideSelectorEnd: guideSelector(true),
+      cursorOpacity: cursorOpacity(),
+      cursorColor: cursorColor(),
+      stableCursorPosition: stableCursorPosition(),
+      dynamicCursorPosition: dynamicCursorPosition(),
+      cursorPath: cursorPath()
+    };
+  }
+
+  var api = {
+    VERSION: VERSION,
+    TAG: TAG,
+    TEXT_CONTROLS: TEXT_CONTROLS,
+    CURSOR_CONTROLS: CURSOR_CONTROLS,
+    TYPING_PRESET_KEYS: TYPING_PRESET_KEYS,
+    CURSOR_PRESET_KEYS: CURSOR_PRESET_KEYS,
+    TYPING_PRESETS: TYPING_PRESETS,
+    CURSOR_PRESETS: CURSOR_PRESETS,
+    LABELS: LABELS,
+    LABEL_HEX: LABEL_HEX,
+    DEFAULT_KEY_LABELS: DEFAULT_KEY_LABELS,
+    engineSource: engineSource,
+    expressionSet: expressionSet
+  };
+  if (typeof window !== "undefined") window.LazyTyperRig = api;
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+})();
+</script>
+<script>
+"use strict";
+/* The panel colours: the :root variables of client/style.css, copied in by tools/demo/build.mjs. */
+const C = {"bg":"#15131f","bg-2":"#1a1726","card":"#1f1c2e","card-2":"#2a2640","input":"#110f1a","line":"#312c48","line-strong":"#463f66","text":"#f1effa","text-2":"#c3bedb","muted":"#8d87a8","violet":"#a78bfa","violet-strong":"#7c3aed","violet-soft":"#2e2452","cyan":"#22d3ee","cyan-strong":"#0891b2","cyan-soft":"#143a45","green":"#34d399","green-strong":"#059669","green-soft":"#173a30","amber":"#fbbf24","amber-strong":"#d97706","amber-soft":"#3d3218","pink":"#f472b6","pink-strong":"#db2777","pink-soft":"#43203a","bad":"#fb7185","bad-soft":"#43202a","radius":"10px"};
+const RIG = window.LazyTyperRig;
+const run = window.lazyTyperRun;
+
+/* ================================================================
+   Frame, fonts, colours
+   ================================================================ */
+const W = 960, H = 540, FPS = 30;
+let S = 2;                                   // device pixels per layout pixel (1 for the GIF frames)
+const cv = document.getElementById("cv");
+const ctx = cv.getContext("2d");
+const UI = '"Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif';
+const COMP_FONT = 'Arial, "Helvetica Neue", Helvetica, sans-serif';
+// After Effects' own chrome: a few flat greys and its blue
+const AE = { gap: "#141414", panel: "#232323", hi: "#3a3a3a", text: "#cccccc", dim: "#8a8a8a", blue: "#2d8ceb" };
+// the shot in the comp: a search bar
+const COMP = { bg: "#e9edf3", box: "#ffffff", edge: "#d3d9e2", ink: "#202124", icon: "#80868b" };
+const WHITE = "#ffffff";
+
+const TEXT0 = "how to make natural typing in after effects";
+const TEXT1 = "how to make natural typing in premiere pro";
+const ERASE = "after effects".length;            // 13 characters, erased backspace by backspace
+const ERASE_FRAMES = 12;
+const COMP_SECONDS = 7, COMP_FRAMES = COMP_SECONDS * FPS;
+
+/* ================================================================
+   The schedule, in frames at 30 fps. The comp's own time runs only while it plays.
+   ================================================================ */
+const F = {
+  wipeOut: 6,              // the end card from the previous loop slides away (frames 6..13)
+  ptrIn: 14,
+  selClick: 29,            // the Query layer is selected in the timeline
+  createClick: 45,         // Create Typing Rig
+  playA: 49,               // Average: comp 0..180
+  home1: 231, pop1: 235, pick1: 243, apply1: 251,
+  playH: 254,              // Hunt & Peck: comp 0..34
+  home2: 290, pop2: 292, pick2: 299, apply2: 306,
+  playV: 309,              // Very Fast: comp 0..92
+  stop: 404, erase: 414,
+  playE: 417,              // the erase: comp 92..104
+  src: 431, start: 444,
+  playR: 447,              // "premiere pro": comp 104..136
+  bake: 482,
+  wipeIn: 512,             // the end card (frames 512..517), the name types from 518
+  nameType: 518,
+  N: 552,
+};
+const STOP_C = 92, ERASE_C = STOP_C + ERASE_FRAMES;
+const PLAYS = [
+  { at: F.playA, from: 0, to: 180 },
+  { at: F.playH, from: 0, to: 34 },
+  { at: F.playV, from: 0, to: STOP_C },
+  { at: F.playE, from: STOP_C, to: ERASE_C },
+  { at: F.playR, from: ERASE_C, to: 136 },
+];
+const N = F.N, DUR = N / FPS;
+const CLICKS = [F.selClick, F.createClick, F.pop1, F.pick1, F.apply1, F.pop2, F.pick2, F.apply2, F.stop, F.erase, F.src, F.start, F.bake];
+
+/* ================================================================
+   The typing: lazyTyperRun with the presets of client/rig.js
+   ================================================================ */
+function presetValues(name) {
+  const v = {};
+  for (const c of RIG.TEXT_CONTROLS) v[c.name] = c.value;
+  Object.assign(v, RIG.TYPING_PRESETS.find((p) => p.name === name).values);
+  return v;
+}
+const holdAt = (keys, t) => { let v = keys[0][1]; for (const k of keys) if (k[0] <= t + 1e-6) v = k[1]; return v; };
+function linearAt(keys, t) {
+  if (t <= keys[0][0]) return keys[0][1];
+  for (let i = 1; i < keys.length; i++) {
+    if (t <= keys[i][0]) { const [t0, v0] = keys[i - 1], [t1, v1] = keys[i]; return v0 + (v1 - v0) * (t - t0) / (t1 - t0); }
+  }
+  return keys[keys.length - 1][1];
+}
+/*
+ * The keyframes the panel's buttons add, stage by stage, as host/host.jsx sets them:
+ * Stop typing keys Typing on at the layer start and off at the playhead; Erase keys Start at
+ * Character from 0 down by the characters over the frames; the new text is a Source Text
+ * keyframe (the old text keyed at 0); Start typing keys Typing on again.
+ */
+function rigKeys(stage) {
+  const k = { typing: [], start: [], src: [] };
+  if (stage >= 1) k.typing = [[0, 1], [STOP_C / FPS, 0]];
+  if (stage >= 2) k.start = [[STOP_C / FPS, 0], [ERASE_C / FPS, -ERASE]];
+  if (stage >= 3) k.src = [[0, TEXT0], [ERASE_C / FPS, TEXT1]];
+  if (stage >= 4) k.typing = k.typing.concat([[ERASE_C / FPS, 1]]);
+  return k;
+}
+function rigIO(preset, stage) {
+  const values = presetValues(preset), keys = rigKeys(stage);
+  return {
+    num: (n, t) => n === "Typing" && keys.typing.length ? holdAt(keys.typing, t)
+      : n === "Start at Character" && keys.start.length ? linearAt(keys.start, t) : values[n],
+    text: (t) => keys.src.length ? holdAt(keys.src, t) : TEXT0,
+    keys,
+  };
+}
+// Characters Shown at every comp frame, from one recording run of the engine (as Bake does).
+const countCache = {};
+function typing(preset, stage) {
+  const id = preset + "/" + stage;
+  if (countCache[id]) return countCache[id];
+  const io = rigIO(preset, stage);
+  const log = run({ time: COMP_FRAMES / FPS, fd: 1 / FPS, start: 0, num: io.num, text: io.text, pauses: [], record: true });
+  const at = new Array(COMP_FRAMES + 1).fill(0);
+  for (let f = 0, j = 0, cur = 0; f <= COMP_FRAMES; f++) {
+    while (j < log.length && Math.round(log[j][0] * FPS) <= f) cur = log[j++][1];
+    at[f] = cur;
+  }
+  return (countCache[id] = { at, log, io });
+}
+const countAt = (tp, c) => (c < 0 ? 0 : tp.at[Math.min(COMP_FRAMES, c)]);
+
+/* Bake: one keyframe per change, labelled like host/host.jsx bake() does with charClass(). */
+function charClass(c) {
+  if (c === "" || c === " " || c === "\t" || c === " " || c === "　" || c === " " || c === "\r" || c === "\n") return "spaces";
+  if (c >= "0" && c <= "9") return "numbers";
+  if ((c.toLowerCase() !== c.toUpperCase() || c.charCodeAt(0) > 127) && ".,;:!?'\"-()[]".indexOf(c) < 0) return "letters";
+  return "punctuation";
+}
+const BAKED = (() => {
+  const tp = typing("Very Fast", 4);
+  let prev = 0;
+  return tp.log.map(([t, v]) => {
+    const label = v < prev ? RIG.DEFAULT_KEY_LABELS.deleting : RIG.DEFAULT_KEY_LABELS[charClass(tp.io.text(t).charAt(v - 1))];
+    prev = v;
+    return { t, v, color: RIG.LABEL_HEX[label] };
+  });
+})();
+
+/* The state of the scene at a frame of the demo. */
+const appliedAt = (f) => (f >= F.apply2 ? "Very Fast" : f >= F.apply1 ? "Hunt & Peck" : "Average");
+const pickedAt = (f) => (f >= F.pick2 ? "Very Fast" : f >= F.pick1 ? "Hunt & Peck" : "Average");
+const stageAt = (f) => (f >= F.start ? 4 : f >= F.src ? 3 : f >= F.erase ? 2 : f >= F.stop ? 1 : 0);
+function compFrameAt(f) {
+  let c = 0;
+  for (const p of PLAYS) { if (f < p.at) break; c = Math.min(p.to, p.from + (f - p.at)); }
+  if ((f >= F.home1 && f < F.playH) || (f >= F.home2 && f < F.playV)) c = 0;
+  return c;
+}
+const playingAt = (f) => PLAYS.some((p) => f >= p.at && f < p.at + p.to - p.from);
+
+/* ================================================================
+   Drawing helpers (layout px; S device px each)
+   ================================================================ */
+const snap = (v) => Math.round(v * S) / S;
+const font = (px, weight = 400, fam = UI) => `${weight} ${px}px ${fam}`;
+let fmCache = {};
+function metrics(f) {
+  let m = fmCache[f];
+  if (!m) {
+    ctx.font = f;
+    const t = ctx.measureText("Hg");
+    m = fmCache[f] = { a: t.fontBoundingBoxAscent, d: t.fontBoundingBoxDescent };
+  }
+  return m;
+}
+function tw(s, px, weight = 400, fam = UI, ls = 0) {
+  ctx.font = font(px, weight, fam);
+  ctx.letterSpacing = ls + "px";
+  const w = ctx.measureText(s).width;
+  ctx.letterSpacing = "0px";
+  return w;
+}
+/* Text placed like CSS places a line: centred in a box of height h (a line box is 1.4 x the size). */
+function txt(s, x, top, h, px, weight, color, align = "left", fam = UI, ls = 0) {
+  const f = font(px, weight, fam);
+  const m = metrics(f);
+  ctx.font = f;
+  ctx.letterSpacing = ls + "px";
+  ctx.fillStyle = color;
+  ctx.textAlign = align;
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText(s, x, snap(top + (h - (m.a + m.d)) / 2 + m.a));
+  ctx.letterSpacing = "0px";
+}
+function rr(x, y, w, h, r) {
+  r = Math.max(0, Math.min(r, w / 2, h / 2));
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+/* A CSS box: background, optional 1px border, corner radius; edges snapped to device pixels. */
+function box(x, y, w, h, r, fill, border) {
+  const x0 = snap(x), y0 = snap(y), x1 = snap(x + w), y1 = snap(y + h);
+  if (border) {
+    rr(x0, y0, x1 - x0, y1 - y0, r); ctx.fillStyle = border; ctx.fill();
+    rr(x0 + 1, y0 + 1, x1 - x0 - 2, y1 - y0 - 2, r - 1); ctx.fillStyle = fill; ctx.fill();
+  } else {
+    rr(x0, y0, x1 - x0, y1 - y0, r); ctx.fillStyle = fill; ctx.fill();
+  }
+}
+function rect(x, y, w, h, color) { ctx.fillStyle = color; ctx.fillRect(snap(x), snap(y), snap(x + w) - snap(x), snap(y + h) - snap(y)); }
+function wrap(s, maxW, px, weight = 400) {
+  const words = s.split(" "), lines = [];
+  let line = "";
+  for (const w of words) {
+    const tryLine = line ? line + " " + w : w;
+    if (line && tw(tryLine, px, weight) > maxW) { lines.push(line); line = w; } else line = tryLine;
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+const ease = (u) => (u <= 0 ? 0 : u >= 1 ? 1 : u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2);
+function track(keys, f) {
+  if (f <= keys[0][0]) return keys[0].slice(1);
+  for (let i = 1; i < keys.length; i++) {
+    const [f0, ...a] = keys[i - 1], [f1, ...b] = keys[i];
+    if (f <= f1) { const u = ease((f - f0) / (f1 - f0)); return a.map((v, k) => v + (b[k] - v) * u); }
+  }
+  return keys[keys.length - 1].slice(1);
+}
+
+/* ================================================================
+   The LazyTyper panel, laid out like client/index.html + style.css at 300 px wide
+   (the numbers match the real panel's boxes in Chromium)
+   ================================================================ */
+const PX = 657, PY = 38, PW = 300, PH = 500;      // where the panel's page sits in the frame
+const CX = 24, CW = 255;                          // a card's content box
+let L = null;                                     // layout, made once the fonts are known
+
+function layoutPanel() {
+  const P = {};
+  P.status = { x: 10, y: 53.7, w: 280, h: 54.2 };
+  // 1 · Create rig
+  let top = P.status.y + P.status.h + 8, y = top + 11;
+  P.c1 = { y: top };
+  y += 26;
+  P.seg = { x: CX, y, w: CW, h: 51.5 };
+  y += 51.5 + 6;
+  P.chips = [];
+  const chips = [["+ Wraps word by word", 1], ["+ Re-centres as it types", 1], ["+ Text edits need no refresh", 1],
+    ["– One font style", 0], ["– Adds a hidden guide layer", 0]];
+  let rx = 0, row = 0;
+  for (const [label, pro] of chips) {
+    const w = tw(label, 10.5) + 14;
+    if (rx > 0 && rx + w + 4 > CW) { rx = 0; row++; }
+    P.chips.push({ x: CX + rx, y: y + row * 18.7 + 2, w, h: 16.7, label, pro });
+    rx += w + 4;
+  }
+  y += (row + 1) * 18.7 + 8;
+  const fw = (CW - 6) / 2;
+  P.f1 = { y };
+  P.selTyping = { x: CX, y: y + 17.7, w: fw, h: 26 };
+  P.selCursor = { x: CX + fw + 6, y: y + 17.7, w: fw, h: 26 };
+  y += 43.7 + 8;
+  P.btnCreate = { x: CX, y, w: CW, h: 34 };
+  y += 34;
+  P.c1.h = y + 12 - top;
+  // 2 · Typing speed
+  top = P.c1.y + P.c1.h + 8; y = top + 11;
+  P.c2 = { y: top };
+  y += 26;
+  const applyW = tw("Apply", 11, 600) + 22;
+  P.f2 = { y };
+  P.btnApplyTyping = { x: CX + CW - applyW, y: y + 17.7, w: applyW, h: 26 };
+  P.selPreset = { x: CX, y: y + 17.7, w: CW - applyW - 6, h: 26 };
+  y += 43.7 + 8;
+  P.rhythm = { x: CX, y, w: CW, h: 89, cx: CX + 8, cy: y + 7, cw: CW - 16, ch: 44 };
+  y += 89 + 8;
+  P.btnSaveTyping = { x: CX, y: y + 4, w: tw("Save as preset…", 11, 600) + 22, h: 26 };
+  y += 30;
+  P.c2.h = y + 12 - top;
+  // 3 · At the playhead
+  top = P.c2.y + P.c2.h + 8; y = top + 11;
+  P.c3 = { y: top };
+  y += 26;
+  P.btnStart = { x: CX, y, w: fw, h: 52 };
+  P.btnStop = { x: CX + fw + 6, y, w: fw, h: 52 };
+  y += 52 + 8;
+  P.pauseRow = { y };
+  y += 26 + 8;
+  // the Erase row wraps like the flex row it is: Erase [the last] [13] / characters over [12] frames
+  P.eraseRow = { y };
+  P.btnErase = { x: CX, y, w: tw("Erase", 11, 600) + 22, h: 26 };
+  y += 26 + 26;
+  P.c3.h = y + 12 - top;
+  // 4 · Rig
+  top = P.c3.y + P.c3.h + 8; y = top + 11;
+  P.c4 = { y: top };
+  y += 26;
+  const tw3 = (CW - 12) / 3;
+  P.btnRefresh = { x: CX, y, w: tw3, h: 52 };
+  P.btnBake = { x: CX + tw3 + 6, y, w: tw3, h: 52 };
+  P.btnRemove = { x: CX + 2 * (tw3 + 6), y, w: tw3, h: 52 };
+  y += 52 + 8;
+  P.note = { y };
+  y += 29.4;
+  P.c4.h = y + 12 - top;
+  // 5 · Cursor
+  top = P.c4.y + P.c4.h + 8; y = top + 11;
+  P.c5 = { y: top };
+  y += 26;
+  P.cursorChips = { y };
+  y += 44 + 8;
+  P.f5 = { y };
+  y += 43.7 + 8 + 30;
+  P.c5.h = y + 12 - top;
+  P.settings = { y: P.c5.y + P.c5.h + 8, h: 41 };
+  P.footer = { y: P.settings.y + 41 + 8 };
+  P.scrollB = Math.round(P.c2.y - 8);
+  P.scrollC = Math.round(P.c3.y - 8);
+  return P;
+}
+
+// The rhythm strip of client/main.js drawRhythm(), for a preset and a text.
+const rhythmCache = {};
+const CLASS_COLORS = { letters: "#a78bfa", numbers: "#fbbf24", punct: "#f472b6", spaces: "#34d399" };
+function classOf(c) {
+  if (c === " " || c === "\r" || c === "\n" || c === "\t" || c === "\u0003") return "spaces";
+  if (c >= "0" && c <= "9") return "numbers";
+  if (c.toLowerCase() !== c.toUpperCase() || c.charCodeAt(0) > 127) return "letters";
+  return "punct";
+}
+function rhythm(preset, text) {
+  const id = preset + "/" + text;
+  if (!rhythmCache[id]) {
+    const values = presetValues(preset);
+    rhythmCache[id] = run({ time: Math.max(10, text.length * 2), fd: 1 / FPS, start: 0, record: true, pauses: [],
+      num: (n) => values[n], text: () => text });
+  }
+  return rhythmCache[id];
+}
+function drawRhythm(R, preset, text, sample) {
+  box(R.x, R.y, R.w, R.h, 8, C.input, C.line);
+  const ev = rhythm(preset, text), w = R.cw, h = R.ch, x = R.cx, y = R.cy;
+  const end = ev[ev.length - 1][0] || 1;
+  rect(x, y + h - 10, w, 1, C.line);
+  const step = end > 20 ? 5 : end > 8 ? 2 : 1;
+  for (let s = 0; s <= end; s += step) {
+    const sx = Math.round(s / end * (w - 4)) + 2;
+    rect(x + sx, y + h - 12, 1, 4, C.muted);
+    if (s > 0 && sx < w - 14) {
+      ctx.font = font(9); ctx.fillStyle = C.muted; ctx.textAlign = "left";
+      ctx.fillText(s + "s", x + sx + 2, snap(y + h - 1));
+    }
+  }
+  let prevT = 0;
+  for (let i = 0; i < ev.length; i++) {
+    const [t, k] = ev[i];
+    const wait = i === 0 ? 0 : t - prevT;
+    prevT = t;
+    const bh = Math.max(4, Math.min(h - 14, 6 + wait * 60));
+    const bx = Math.round(t / end * (w - 4)) + 2;
+    rect(x + bx - 1, y + h - 11 - bh, 2, bh, CLASS_COLORS[classOf(text.charAt(k - 1))]);
+  }
+  // legend: four swatches, then the total on the next line at the right
+  let lx = x;
+  const ly = y + h + 4;
+  for (const [name, col] of [["Letters", "#a78bfa"], ["Numbers", "#fbbf24"], ["Punctuation", "#f472b6"], ["Spaces", "#34d399"]]) {
+    box(lx, ly + 4.5, 7, 7, 2, col);
+    txt(name, lx + 10, ly, 14, 10, 400, C.muted);
+    lx += 10 + tw(name, 10) + 8;
+  }
+  const total = (sample ? "sample · " : "") + end.toFixed(1) + " s · " + Math.round(text.length / Math.max(0.01, end)) + " char/s";
+  txt(total, x + w, ly + 14, 14, 10, 600, C["text-2"], "right");
+}
+
+function select(b, label, focused, accent) {
+  box(b.x, b.y, b.w, b.h, 7, C.input, focused ? accent : C.line);
+  txt(label, b.x + 8, b.y, b.h, 11.5, 400, C.text);
+  const ax = snap(b.x + b.w - 13), ay = snap(b.y + b.h / 2);
+  ctx.strokeStyle = C.text; ctx.lineWidth = 1.6; ctx.lineJoin = "round"; ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(ax - 4, ay - 2); ctx.lineTo(ax, ay + 2); ctx.lineTo(ax + 4, ay - 2); ctx.stroke();
+}
+function numInput(x, y, value) {
+  box(x, y, 52, 26, 7, C.input, C.line);
+  txt(value, x + 26, y, 26, 11.5, 400, C.text, "center");
+}
+/* .btn and its variants; hover and :active (1px down) as in style.css. */
+function button(b, label, kind, st, accent, soft) {
+  const hover = st.hover === b, pressed = st.pressed === b;
+  let bg = C["card-2"], br = C["line-strong"], fg = C.text, px = kind === "small" || kind === "ghost" || kind === "green" ? 11 : 11.5;
+  if (kind === "ghost") { bg = C.card; br = C.line; fg = C["text-2"]; }
+  if (kind === "green") { bg = C["green-soft"]; br = C["green-strong"]; fg = C.green; }
+  if (hover && kind !== "primary") {
+    br = accent; bg = soft;
+    if (kind === "green") { bg = C["green-strong"]; fg = WHITE; }
+  }
+  const y = b.y + (pressed ? 1 : 0);
+  if (kind === "primary") {
+    box(b.x, y, b.w, b.h, 8, C["violet-strong"]);
+    txt(label, b.x + b.w / 2, y, b.h, 12.5, 600, WHITE, "center");
+  } else {
+    box(b.x, y, b.w, b.h, 8, bg, br);
+    txt(label, b.x + b.w / 2, y, b.h, px, 600, fg, "center");
+  }
+}
+function tile(b, icon, label, st, accent, soft, danger) {
+  const hover = st.hover === b, pressed = st.pressed === b;
+  let bg = C["card-2"], br = C["line-strong"], fg = C.text, ic = danger ? C.bad : accent;
+  if (hover) { br = danger ? C.bad : accent; bg = danger ? C["bad-soft"] : soft; if (danger) fg = C.bad; }
+  const y = b.y + (pressed ? 1 : 0);
+  box(b.x, y, b.w, b.h, 8, bg, br);
+  const top = y + 1 + (b.h - 2 - 32.8) / 2;
+  txt(icon, b.x + b.w / 2, top, 15.4, 14, 400, ic, "center");
+  txt(label, b.x + b.w / 2, top + 17.4, 15.4, 11, 600, fg, "center");
+}
+function card(c, accent, soft, num, title) {
+  box(10, c.y, 280, c.h, 10, C.card, C.line);
+  ctx.save();
+  rr(snap(11), snap(c.y + 1), snap(289) - snap(11), snap(c.y + c.h - 1) - snap(c.y + 1), 9);
+  ctx.clip();
+  rect(11, c.y + 1, 3, c.h - 2, accent);
+  ctx.restore();
+  const hy = c.y + 11;
+  box(24, hy, 18, 18, 6, soft);
+  txt(num, 33, hy, 18, 10.5, 800, accent, "center");
+  txt(title, 49, hy, 18, 12.5, 700, C.text, "left", UI, 0.2);
+}
+const fieldLabel = (s, x, y) => txt(s, x, y, 14.7, 10.5, 600, C.muted, "left", UI, 0.2);
+
+function drawPanelPage(st) {
+  const P = L;
+  rect(0, 0, PW, 1300, C.bg);
+  // header
+  box(10, 12.85, 30, 30, 8, C["violet-strong"]);
+  txt("T", 23.5, 12.85, 30, 17, 800, WHITE, "center");
+  if ((st.f / FPS) % 1 < 0.5) box(31, 19.85, 2, 16, 1, WHITE);
+  txt("Lazy", 49, 10, 21, 15, 600, C.text, "left", UI, 0.2);
+  txt("Typer", 49 + tw("Lazy", 15, 600, UI, 0.2), 10, 21, 15, 800, C.violet, "left", UI, 0.2);
+  txt("Natural typing for After Effects", 49, 31, 14.7, 10.5, 400, C.muted);
+  const pillW = tw("JS", 10, 700, UI, 0.4) + 18;
+  box(290 - pillW, 17.85, pillW, 20, 10, C.bg, C["line-strong"]);
+  txt("JS", 290 - pillW / 2, 17.85, 20, 10, 700, C["text-2"], "center", UI, 0.4);
+  // status
+  const s = P.status;
+  box(s.x, s.y, s.w, s.h, 10, C["bg-2"], C.line);
+  const dot = st.rig ? C.green : st.selected ? C.cyan : C.muted;
+  box(21, s.y + 1 + 9 + 16.1 - 4.5, 9, 9, 4.5, dot);
+  txt(st.statusTitle, 39, s.y + 10, 16.8, 12, 600, C.text);
+  txt(st.statusSub, 39, s.y + 26.8, 15.4, 11, 400, C.muted);
+  if (st.meter > 0) rect(11, s.y + s.h - 4, 278 * st.meter, 3, C.green);
+  // 1 · Create rig
+  card({ y: P.c1.y, h: P.c1.h }, C.violet, C["violet-soft"], "1", "Create rig");
+  box(P.seg.x, P.seg.y, P.seg.w, P.seg.h, 9, C.input, C.line);
+  const segW = (CW - 2 - 6 - 3) / 2;
+  box(CX + 4, P.seg.y + 4, segW, 43.5, 7, C["violet-soft"], C.violet);
+  txt("Dynamic", CX + 4 + 8, P.seg.y + 10, 16.8, 12, 700, C.violet);
+  txt("Live layout", CX + 4 + 8, P.seg.y + 26.8, 14.7, 10.5, 400, C.muted);
+  txt("Stable", CX + 4 + segW + 3 + 8, P.seg.y + 10, 16.8, 12, 700, C.text);
+  txt("Locked layout", CX + 4 + segW + 3 + 8, P.seg.y + 26.8, 14.7, 10.5, 400, C.muted);
+  for (const c of P.chips) {
+    box(c.x, c.y, c.w, c.h, 9, c.pro ? C["green-soft"] : C["bad-soft"]);
+    txt(c.label, c.x + 7, c.y + 1, 14.7, 10.5, 400, c.pro ? C.green : C.bad);
+  }
+  fieldLabel("Typing style", CX, P.f1.y);
+  fieldLabel("Cursor", P.selCursor.x, P.f1.y);
+  select(P.selTyping, st.picked, false, C.violet);
+  select(P.selCursor, "Vertical", false, C.violet);
+  button(P.btnCreate, "Create Typing Rig", "primary", st);
+  // 2 · Typing speed
+  card({ y: P.c2.y, h: P.c2.h }, C.cyan, C["cyan-soft"], "2", "Typing speed");
+  if (st.selected) txt("for Query", 279, P.c2.y + 11, 18, 10.5, 400, C.muted, "right");
+  fieldLabel("Preset", CX, P.f2.y);
+  select(P.selPreset, st.picked, st.presetFocus, C.cyan);
+  button(P.btnApplyTyping, "Apply", "small", st, C.cyan, C["cyan-soft"]);
+  drawRhythm(P.rhythm, st.picked, st.selected ? TEXT0 : SAMPLE, !st.selected);
+  button(P.btnSaveTyping, "Save as preset…", "ghost", st, C.cyan, C["cyan-soft"]);
+  // 3 · At the playhead
+  card({ y: P.c3.y, h: P.c3.h }, C.green, C["green-soft"], "3", "At the playhead");
+  tile(P.btnStart, "▶", "Start typing", st, C.green, C["green-soft"]);
+  tile(P.btnStop, "❚❚", "Stop typing", st, C.green, C["green-soft"]);
+  let x = CX, y = P.pauseRow.y;
+  const pauseB = { x, y, w: tw("Add pause", 11, 600) + 22, h: 26 };
+  button(pauseB, "Add pause", "green", st, C.green, C["green-soft"]);
+  x += pauseB.w + 5;
+  txt("for", x, y, 26, 11, 400, C["text-2"]); x += tw("for", 11) + 5;
+  numInput(x, y, "15"); x += 57;
+  txt("frames", x, y, 26, 11, 400, C["text-2"]);
+  y = P.eraseRow.y;
+  button(P.btnErase, "Erase", "green", st, C.green, C["green-soft"]);
+  x = CX + P.btnErase.w + 5;
+  const eraseSel = { x, y, w: tw("everything", 11.5) + 35, h: 26 };
+  select(eraseSel, "the last", false, C.green);
+  numInput(eraseSel.x + eraseSel.w + 5, y, String(ERASE));
+  y += 26; x = CX;
+  txt("characters", x, y, 26, 11, 400, C["text-2"]); x += tw("characters", 11) + 5;
+  txt("over", x, y, 26, 11, 400, C["text-2"]); x += tw("over", 11) + 5;
+  numInput(x, y, String(ERASE_FRAMES)); x += 57;
+  txt("frames", x, y, 26, 11, 400, C["text-2"]);
+  // 4 · Rig
+  card({ y: P.c4.y, h: P.c4.h }, C.amber, C["amber-soft"], "4", "Rig");
+  tile(P.btnRefresh, "↻", "Refresh", st, C.amber, C["amber-soft"]);
+  tile(P.btnBake, "◆", st.baked ? "Unbake" : "Bake", st, C.amber, C["amber-soft"]);
+  tile(P.btnRemove, "✕", "Remove", st, C.amber, C["amber-soft"], true);
+  const note = wrap("Bake keyframes are coloured by what is typed. Shift+click Bake to unbake.", CW, 10.5);
+  note.forEach((line, i) => txt(line, CX, P.note.y + i * 14.7, 14.7, 10.5, 400, C.muted));
+  // 5 · Cursor (below the fold most of the time)
+  card({ y: P.c5.y, h: P.c5.h }, C.pink, C["pink-soft"], "5", "Cursor");
+  const cw3 = (CW - 12) / 3;
+  ["Vertical", "Underscore", "Box"].forEach((name, i) => {
+    const cx = CX + i * (cw3 + 6), cy = P.cursorChips.y;
+    box(cx, cy, cw3, 44, 8, i === 0 ? C["pink-soft"] : C.input, i === 0 ? C.pink : C.line);
+    txt("Ab", cx + cw3 / 2 - 3, cy + 4, 20, 15, 700, C.text, "center");
+    txt(name, cx + cw3 / 2, cy + 25, 13.3, 9.5, 400, C.muted, "center");
+  });
+  fieldLabel("Preset", CX, P.f5.y);
+  select({ x: CX, y: P.f5.y + 17.7, w: P.selPreset.w, h: 26 }, "Vertical", false, C.pink);
+  button({ x: P.btnApplyTyping.x, y: P.f5.y + 17.7, w: P.btnApplyTyping.w, h: 26 }, "Apply", "small", st, C.pink, C["pink-soft"]);
+  // settings
+  box(10, P.settings.y, 280, 41, 10, C.card, C.line);
+  box(24, P.settings.y + 11, 18, 18, 6, C["card-2"]);
+  txt("⚙", 33, P.settings.y + 11, 18, 10.5, 800, C["line-strong"], "center");
+  txt("Settings", 49, P.settings.y + 11, 18, 12.5, 700, C.text, "left", UI, 0.2);
+}
+
+/* The select's popup (Chromium draws it over the page). */
+const POP_ITEM = 19;
+function popupBox() {
+  const b = L.selPreset;
+  return { x: PX + b.x, y: PY + b.y + b.h + 1 - L.scrollB, w: b.w, h: POP_ITEM * 4 + 4 };
+}
+function drawPopup(st) {
+  const p = popupBox();
+  rect(p.x, p.y, p.w, p.h, C["line-strong"]);
+  rect(p.x + 1, p.y + 1, p.w - 2, p.h - 2, C.card);
+  txt("Built in", p.x + 7, p.y + 2, POP_ITEM, 11.5, 700, C.muted);
+  ["Very Fast", "Average", "Hunt & Peck"].forEach((name, i) => {
+    const iy = p.y + 2 + (i + 1) * POP_ITEM;
+    const on = st.popHover === name;
+    if (on) rect(p.x + 1, iy, p.w - 2, POP_ITEM, C["cyan-strong"]);
+    txt(name, p.x + 20, iy, POP_ITEM, 11.5, 400, on ? WHITE : C.text);
+  });
+}
+const popItemY = (name) => popupBox().y + 2 + (["Very Fast", "Average", "Hunt & Peck"].indexOf(name) + 1.5) * POP_ITEM;
+
+function drawToast(st) {
+  if (!st.toast) return;
+  const lines = wrap(st.toast, 280 - 4 - 20, 11.5);
+  const h = 2 + 16 + lines.length * 16.1;
+  const y = PY + PH - 10 - h, x = PX + 10;
+  box(x, y, 280, h, 8, C.green);
+  rr(snap(x + 3), snap(y + 1), snap(x + 279) - snap(x + 3), snap(y + h - 1) - snap(y + 1), 6);
+  ctx.fillStyle = C["card-2"]; ctx.fill();
+  ctx.save();
+  rr(snap(x), snap(y), snap(x + 280) - snap(x), snap(y + h) - snap(y), 8);
+  ctx.fillStyle = C["line-strong"];
+  // the 1px top, right and bottom border in line-strong (the left one is the 3px green)
+  rect(x + 8, y, 264, 1, C["line-strong"]);
+  rect(x + 8, y + h - 1, 264, 1, C["line-strong"]);
+  rect(x + 279, y + 8, 1, h - 16, C["line-strong"]);
+  ctx.restore();
+  lines.forEach((line, i) => txt(line, x + 13, y + 9 + i * 16.1, 16.1, 11.5, 400, C.text));
+}
+
+/* ================================================================
+   After Effects: menu, Composition viewer, Timeline
+   ================================================================ */
+const VIEW = { x: 2, y: 38, w: 652, h: 300 };
+const COMPV = { x: 8, y: 8, k: 1 / 3 };          // the comp at 33.3 %
+const TL = { x0: 200, x1: 646, top: 358, rows: 401, rowH: 17 };
+const tx = (sec) => TL.x0 + (TL.x1 - TL.x0) * sec / COMP_SECONDS;
+const timecode = (c) => `0:00:${String(Math.floor(c / FPS)).padStart(2, "0")}:${String(c % FPS).padStart(2, "0")}`;
+const SRC = { x: 340, base: 564, size: 68 };      // the query text in comp pixels
+
+function drawChrome() {
+  rect(0, 0, W, H, AE.gap);
+  const menu = ["File", "Edit", "Composition", "Layer", "Effect", "Animation", "View", "Window", "Help"];
+  let mx = 10;
+  for (const m of menu) { txt(m, mx, 0, 18, 11, 400, AE.dim); mx += tw(m, 11) + 14; }
+  // panels
+  rect(2, 20, 652, 336, AE.panel);
+  rect(2, 358, 652, 180, AE.panel);
+  rect(656, 20, 302, 518, AE.panel);
+  const tab = (x, y, name, sub) => {
+    txt(name, x, y, 18, 11, 600, AE.text);
+    if (sub) txt(sub, x + tw(name, 11, 600) + 6, y, 18, 11, 400, AE.dim);
+  };
+  tab(10, 20, "Composition", "Search Bar");
+  tab(10, 358, "Search Bar", "");
+  tab(664, 20, "LazyTyper", "");
+  for (const [x, y] of [[640, 20], [640, 358], [944, 20]]) txt("≡", x, y, 18, 12, 400, AE.dim, "center");
+}
+
+function drawComp(st) {
+  rect(VIEW.x, VIEW.y, VIEW.w, VIEW.h, AE.gap);
+  ctx.save();
+  ctx.beginPath(); ctx.rect(VIEW.x, VIEW.y, VIEW.w, VIEW.h); ctx.clip();
+  const k = COMPV.k, ox = COMPV.x, oy = COMPV.y;
+  const X = (v) => ox + v * k, Y = (v) => oy + v * k;
+  rect(X(0), Y(0), 1920 * k, 1080 * k, COMP.bg);
+  box(X(180), Y(466), 1560 * k, 148 * k, 74 * k, COMP.box, COMP.edge);
+  // magnifier
+  ctx.strokeStyle = COMP.icon; ctx.lineWidth = 2; ctx.lineCap = "round";
+  ctx.beginPath(); ctx.arc(X(262), Y(531), 22 * k, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(X(279), Y(548)); ctx.lineTo(X(297), Y(566)); ctx.stroke();
+  // the text layer
+  const px = SRC.size * k, x0 = X(SRC.x), base = snap(Y(SRC.base));
+  const shown = st.text.substr(0, st.count);
+  ctx.font = font(px, 400, COMP_FONT);
+  ctx.fillStyle = COMP.ink; ctx.textAlign = "left";
+  ctx.fillText(shown, x0, base);
+  const w = ctx.measureText(shown).width;
+  // the cursor layer (Vertical preset: 7 % wide, 80 % above the baseline, 16 % below)
+  if (st.cursor) {
+    const cx = snap(x0 + w + 0.03 * px);
+    rect(cx, base - 0.8 * px, Math.max(1, 0.07 * px), 0.96 * px, COMP.ink);
+  }
+  ctx.restore();
+  // viewer footer
+  txt("33.3%", 12, 338, 18, 10.5, 400, AE.dim);
+  txt(timecode(st.c), 70, 338, 18, 10.5, 600, AE.blue);
+  txt("Full", 140, 338, 18, 10.5, 400, AE.dim);
+}
+
+function keyIcon(x, y, kind, fill, s = 4.5) {
+  // linear: a diamond; hold: a diamond with a square right half
+  ctx.beginPath();
+  if (kind === "hold") { ctx.moveTo(x - s * 0.8, y); ctx.lineTo(x, y - s); ctx.lineTo(x + s * 0.7, y - s); ctx.lineTo(x + s * 0.7, y + s); ctx.lineTo(x, y + s); }
+  else { ctx.moveTo(x - s, y); ctx.lineTo(x, y - s); ctx.lineTo(x + s, y); ctx.lineTo(x, y + s); }
+  ctx.closePath();
+  ctx.lineWidth = 1.5; ctx.strokeStyle = AE.gap; ctx.stroke();
+  ctx.fillStyle = fill; ctx.fill();
+}
+
+function drawTimeline(st) {
+  // header: timecode, ruler, work area
+  txt(timecode(st.c), 10, 376, 22, 14, 600, AE.blue);
+  txt(String(st.c).padStart(5, "0") + " (30.00 fps)", 98, 376, 22, 9.5, 400, AE.dim);
+  rect(TL.x0, 379, TL.x1 - TL.x0, 4, AE.hi);
+  for (let h = 0; h <= COMP_SECONDS * 2; h++) {
+    const x = snap(tx(h / 2));
+    rect(x, h % 2 ? 395 : 391, 1, h % 2 ? 4 : 8, AE.dim);
+    if (h % 2 === 0 && h < COMP_SECONDS * 2) txt(String(h / 2).padStart(2, "0") + "s", x + 3, 384, 12, 9, 400, AE.dim);
+  }
+  rect(198, 376, 2, 162, AE.gap);
+  // rows
+  const rows = [];
+  if (st.rig) rows.push({ n: 1, name: "Query Cursor", type: "shape", label: 1 });
+  rows.push({ n: st.rig ? 2 : 1, name: "Query", type: "text", label: 1, open: st.rig, sel: st.selected });
+  if (st.rig) {
+    const v = st.stage >= 1 ? holdAt(st.keys.typing, st.c / FPS) : 1;
+    rows.push({ prop: "Typing", value: v > 0.5 ? "On" : "Off", keys: st.keys.typing.map((k) => [k[0], "hold"]) });
+    rows.push({ prop: "Start at Character", value: (st.stage >= 2 ? linearAt(st.keys.start, st.c / FPS) : 0).toFixed(2), keys: st.keys.start.map((k) => [k[0], "linear"]) });
+    rows.push({ prop: "Characters Shown", value: st.count.toFixed(2), baked: st.bakedUpTo });
+    rows.push({ prop: "Source Text", value: "", keys: st.keys.src.map((k) => [k[0], "hold"]) });
+  }
+  rows.push({ n: st.rig ? 4 : 2, name: "Search box", type: "shape", label: 8 });
+  rows.push({ n: st.rig ? 5 : 3, name: "Background", type: "solid", label: 1 });
+  ctx.save();
+  ctx.beginPath(); ctx.rect(2, 400, 652, 138); ctx.clip();
+  rows.forEach((r, i) => {
+    const y = TL.rows + i * TL.rowH, cy = y + TL.rowH / 2;
+    if (r.prop) {
+      const keyed = r.keys && r.keys.length || r.baked !== undefined && r.baked >= 0;
+      ctx.strokeStyle = keyed ? AE.blue : AE.dim; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(snap(40) + 0.5 / S, snap(cy) + 0.5 / S, 4, 0, Math.PI * 2); ctx.stroke();
+      txt(r.prop, 52, y, TL.rowH, 10.5, 400, AE.text);
+      if (r.value) txt(r.value, 192, y, TL.rowH, 10.5, 400, AE.blue, "right");
+      if (r.keys) for (const [t, kind] of r.keys) keyIcon(snap(tx(t)), snap(cy), kind, AE.text);
+      if (r.baked !== undefined) for (const k of BAKED) if (k.t <= r.baked) keyIcon(snap(tx(k.t)), snap(cy), "hold", k.color, 4);
+      return;
+    }
+    if (r.sel) rect(2, y, 196, TL.rowH, AE.hi);
+    ctx.fillStyle = AE.dim; ctx.beginPath();
+    if (r.open) { ctx.moveTo(8, cy - 2); ctx.lineTo(14, cy - 2); ctx.lineTo(11, cy + 2); }
+    else { ctx.moveTo(9, cy - 3); ctx.lineTo(13, cy); ctx.lineTo(9, cy + 3); }
+    ctx.fill();
+    txt(String(r.n), 24, y, TL.rowH, 10.5, 400, AE.dim, "center");
+    rect(32, cy - 4, 8, 8, RIG.LABEL_HEX[r.label]);
+    const icon = r.type === "text" ? "T" : r.type === "shape" ? "★" : "■";
+    txt(icon, 50, y, TL.rowH, r.type === "text" ? 11 : 9, 700, AE.dim, "center");
+    txt(r.name, 60, y, TL.rowH, 11, r.sel ? 600 : 400, r.sel ? WHITE : AE.text);
+    rect(tx(0), y + 3, tx(COMP_SECONDS) - tx(0), TL.rowH - 6, AE.hi);
+  });
+  ctx.restore();
+  // playhead
+  const px = snap(tx(st.c / FPS));
+  ctx.fillStyle = AE.blue;
+  ctx.beginPath(); ctx.moveTo(px - 4.5, 384); ctx.lineTo(px + 5.5, 384); ctx.lineTo(px + 5.5, 391); ctx.lineTo(px + 0.5, 396); ctx.lineTo(px - 4.5, 391); ctx.closePath(); ctx.fill();
+  rect(px, 396, 1, 142, AE.blue);
+}
+
+function drawTooltip(st) {
+  if (!st.tip) return;
+  // under the new Source Text keyframe
+  const s = "Source Text: “…typing in premiere pro”";
+  const kx = snap(tx(ERASE_C / FPS)), w = tw(s, 10.5) + 14, x = snap(kx - 18), y = TL.rows + 6 * TL.rowH + 3;
+  ctx.fillStyle = AE.dim;
+  ctx.beginPath(); ctx.moveTo(kx - 5, y + 0.5); ctx.lineTo(kx, y - 4.5); ctx.lineTo(kx + 5, y + 0.5); ctx.fill();
+  box(x, y, w, 20, 3, AE.panel, AE.dim);
+  txt(s, x + 7, y, 20, 10.5, 400, AE.text);
+}
+
+function drawPointer(x, y, ring) {
+  if (ring >= 0) {
+    ctx.strokeStyle = C.violet; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(x, y, 5 + ring * 1.6, 0, Math.PI * 2); ctx.stroke();
+  }
+  ctx.save();
+  ctx.translate(snap(x), snap(y));
+  ctx.beginPath();
+  ctx.moveTo(0, 0); ctx.lineTo(0, 16); ctx.lineTo(4, 12); ctx.lineTo(7, 18.5); ctx.lineTo(9.5, 17.5); ctx.lineTo(6.5, 11); ctx.lineTo(11.5, 11); ctx.closePath();
+  ctx.fillStyle = WHITE; ctx.fill();
+  ctx.lineWidth = 1; ctx.strokeStyle = "#000000"; ctx.lineJoin = "round"; ctx.stroke();
+  ctx.restore();
+}
+
+/* ================================================================
+   The end card (also the first frames, so the loop is seamless)
+   ================================================================ */
+const NAME = "LazyTyper";
+const NAME_LOG = (() => {
+  const values = presetValues("Very Fast");
+  return run({ time: 2, fd: 1 / FPS, start: 0, record: true, pauses: [], num: (n) => values[n], text: () => NAME });
+})();
+const nameCount = (k) => { let n = 0; for (const [t, v] of NAME_LOG) if (Math.round(t * FPS) <= k) n = v; return k < 0 ? 0 : n; };
+const NAME_END = Math.round(NAME_LOG[NAME_LOG.length - 1][0] * FPS);
+
+function drawCard(f, cover) {
+  // cover: [y0, y1] of the frame the card covers
+  const [c0, c1] = cover;
+  if (c1 <= c0) return;
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0, snap(c0), W, snap(c1) - snap(c0)); ctx.clip();
+  rect(0, 0, W, H, C.bg);
+  // card clock: runs on across the loop
+  const k = (f >= F.wipeIn ? f : f + N) - F.nameType;
+  const n = nameCount(k);
+  const lazyW = tw("Lazy", 60, 600, UI, 0.5), fullW = lazyW + tw("Typer", 60, 800, UI, 0.5);
+  const markS = 70, gap = 22, x0 = Math.round((W - (markS + gap + fullW)) / 2), my = 196;
+  box(x0, my, markS, markS, 18, C["violet-strong"]);
+  txt("T", x0 + markS / 2 - 4, my, markS, 40, 800, WHITE, "center");
+  box(x0 + markS - 22, my + 15, 4.5, 38, 2, WHITE);
+  const tx0 = x0 + markS + gap;
+  const shown = NAME.substr(0, n);
+  txt(shown.substr(0, 4), tx0, my, markS, 60, 600, C.text, "left", UI, 0.5);
+  if (n > 4) txt(shown.substr(4), tx0 + lazyW, my, markS, 60, 800, C.violet, "left", UI, 0.5);
+  const typedW = n <= 4 ? tw(shown, 60, 600, UI, 0.5) : lazyW + tw(shown.substr(4), 60, 800, UI, 0.5);
+  const busy = n !== nameCount(k - 12);
+  if (busy || ((k - NAME_END) / FPS) % 1 < 0.5) box(tx0 + typedW + 4, my + 12, 4, 50, 1, C.violet);
+  txt("free · After Effects", W / 2, 296, 34, 24, 400, C["text-2"], "center");
+  txt("github.com/raisulsohan/LazyTyper", W / 2, 334, 28, 18, 600, C.violet, "center");
+  ctx.restore();
+}
+
+/* ================================================================
+   One frame
+   ================================================================ */
+let PTR = null, SAMPLE = "Hello there! This is how the typing will feel, word by word.";
+function pointerKeys() {
+  const P = L;
+  const at = (b, scroll, dx = 0.5, dy = 0.55) => [PX + b.x + b.w * dx, PY + b.y - scroll + b.h * dy];
+  const B = P.scrollB, Cc = P.scrollC;
+  const query = [78, TL.rows + TL.rowH / 2 + 1];
+  const srcWatch = [41, TL.rows + 5 * TL.rowH + TL.rowH / 2 + 1];
+  const sel = at(P.selPreset, B, 0.45);
+  const apply = at(P.btnApplyTyping, B);
+  return [
+    [F.ptrIn, 330, 270],
+    [F.selClick - 2, ...query], [F.selClick + 3, ...query],
+    [F.createClick - 2, ...at(P.btnCreate, 0, 0.55)], [F.createClick + 4, ...at(P.btnCreate, 0, 0.55)],
+    [64, 800, 300], [76, 800, 300],
+    [100, sel[0] - 30, sel[1] + 70], [F.pop1 - 10, sel[0] - 30, sel[1] + 70],
+    [F.pop1 - 1, ...sel], [F.pop1 + 1, ...sel],
+    [F.pick1 - 2, sel[0] + 6, popItemY("Hunt & Peck")], [F.pick1 + 1, sel[0] + 6, popItemY("Hunt & Peck")],
+    [F.apply1 - 2, ...apply], [F.apply1 + 6, ...apply],
+    [F.playH + 20, apply[0] - 40, apply[1] + 30], [F.pop2 - 8, apply[0] - 40, apply[1] + 30],
+    [F.pop2 - 1, ...sel], [F.pop2 + 1, ...sel],
+    [F.pick2 - 2, sel[0] + 6, popItemY("Very Fast")], [F.pick2 + 1, sel[0] + 6, popItemY("Very Fast")],
+    [F.apply2 - 2, ...apply], [F.apply2 + 8, ...apply],
+    [F.playV + 40, apply[0] - 60, apply[1] + 120], [F.stop - 30, apply[0] - 60, apply[1] + 120],
+    [F.stop - 2, ...at(P.btnStop, B)], [F.stop + 2, ...at(P.btnStop, B)],
+    [F.erase - 2, ...at(P.btnErase, B)], [F.erase + 2, ...at(P.btnErase, B)],
+    [F.src - 2, ...srcWatch], [F.src + 3, ...srcWatch],
+    [F.start - 2, ...at(P.btnStart, B)], [F.start + 3, ...at(P.btnStart, B)],
+    [F.start + 8, 805, 250], [F.start + 22, 805, 250],
+    [F.bake - 2, ...at(P.btnBake, Cc)], [F.bake + 10, ...at(P.btnBake, Cc)],
+    [F.wipeIn, ...at(P.btnBake, Cc).map((v, i) => v + (i ? 60 : 40))],
+  ];
+}
+const SCROLL = () => [[0, 0], [66, 0], [76, L.scrollB], [F.start + 10, L.scrollB], [F.start + 20, L.scrollC]];
+const TOASTS = () => [
+  [F.createClick + 1, "Rigged Query."],
+  [F.apply1, "Applied “Hunt & Peck”."],
+  [F.apply2, "Applied “Very Fast”."],
+  [F.stop, "Typing stops here."],
+  [F.erase, `Typing stops here and the last ${ERASE} characters backspace away over ${ERASE_FRAMES} frames. Start typing again later to type on.`],
+  [F.start, "Typing starts here."],
+  [F.bake, `Baked Query (${BAKED.length} keyframes). Shift+click Bake to unbake.`],
+];
+
+function stateAt(f) {
+  const st = { f };
+  st.selected = f >= F.selClick;
+  st.rig = f > F.createClick;
+  st.c = compFrameAt(f);
+  st.stage = stageAt(f);
+  st.applied = appliedAt(f);
+  st.picked = pickedAt(f);
+  const tp = typing(st.applied, st.stage);
+  st.keys = tp.io.keys;
+  st.text = st.rig ? tp.io.text(st.c / FPS) : TEXT0;
+  st.count = st.rig ? countAt(tp, st.c) : TEXT0.length;
+  // cursor layer: solid while keys come in (Blink While Typing off), else 1 blink a second
+  if (st.rig) {
+    const busy = countAt(tp, st.c) !== countAt(tp, st.c - 12);
+    st.cursor = busy || ((st.c / FPS) % 1) < 0.5;
+  }
+  st.baked = f > F.bake;
+  st.bakedUpTo = st.baked ? COMP_SECONDS * Math.min(1, (f - F.bake - 1) / 12) : undefined;
+  if (st.baked && st.bakedUpTo <= 0) st.bakedUpTo = 0.001;
+  // panel
+  st.scroll = Math.round(track(SCROLL(), f)[0] * S) / S;
+  st.statusTitle = st.selected ? "Query" : "Select a text layer";
+  st.statusSub = !st.selected ? "In “Search Bar”." : !st.rig ? "Text layer, no rig yet." :
+    "Dynamic rig" + (st.baked ? " · baked" : "") + " · cursor · " + st.count + " / " + st.text.length + " characters";
+  st.meter = st.rig ? st.count / st.text.length : 0;
+  st.popOpen = (f >= F.pop1 && f < F.pick1) || (f >= F.pop2 && f < F.pick2);
+  st.presetFocus = (f >= F.pop1 && f < F.apply1) || (f >= F.pop2 && f < F.apply2);
+  const toast = TOASTS().filter(([t0]) => f >= t0 && f < t0 + 3.8 * FPS).pop();
+  st.toast = toast ? toast[1] : null;
+  st.tip = f >= F.src && f < F.start - 2;
+  // pointer and what it is over
+  const [x, y] = track(PTR, f);
+  st.ptr = { x, y };
+  const click = CLICKS.filter((c) => f >= c && f < c + 7).pop();
+  st.ring = click === undefined ? -1 : f - click;
+  const pressedAt = { [F.createClick]: L.btnCreate, [F.apply1]: L.btnApplyTyping, [F.apply2]: L.btnApplyTyping,
+    [F.stop]: L.btnStop, [F.erase]: L.btnErase, [F.start]: L.btnStart, [F.bake]: L.btnBake };
+  st.pressed = click !== undefined && f < click + 4 ? pressedAt[click] : null;
+  st.hover = null;
+  if (st.popOpen) {
+    const p = popupBox();
+    const i = Math.floor((y - p.y - 2) / POP_ITEM) - 1;
+    st.popHover = x >= p.x && x < p.x + p.w && i >= 0 && i < 3 ? ["Very Fast", "Average", "Hunt & Peck"][i] : st.picked;
+  } else if (x >= PX && x < PX + PW && y >= PY && y < PY + PH) {
+    const lx = x - PX, ly = y - PY + st.scroll;
+    for (const id of ["btnCreate", "btnApplyTyping", "btnSaveTyping", "btnStart", "btnStop", "btnErase", "btnRefresh", "btnBake", "btnRemove"]) {
+      const b = L[id];
+      if (lx >= b.x && lx < b.x + b.w && ly >= b.y && ly < b.y + b.h) st.hover = b;
+    }
+  }
+  return st;
+}
+
+function render(t) { renderFrame(Math.min(N - 1, Math.floor(t * FPS + 1e-6))); }
+function renderFrame(f) {
+  if (!L) init();
+  ctx.setTransform(S, 0, 0, S, 0, 0);
+  // the end card covers the frame at the start (sliding off downwards) and comes down at the end
+  let cover = null;
+  if (f < F.wipeOut) cover = [0, H];
+  else if (f < F.wipeOut + 8) cover = [H * ease((f - F.wipeOut + 1) / 8), H];
+  else if (f >= F.wipeIn) cover = [0, H * ease((f - F.wipeIn + 1) / 6)];
+  if (!cover || cover[1] - cover[0] < H) {
+    const st = stateAt(f);
+    drawChrome();
+    drawComp(st);
+    drawTimeline(st);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(PX, PY, PW, PH); ctx.clip();
+    ctx.translate(PX, PY - st.scroll);
+    drawPanelPage(st);
+    ctx.restore();
+    ctx.save();
+    ctx.beginPath(); ctx.rect(PX, PY, PW, PH); ctx.clip();
+    drawToast(st);
+    ctx.restore();
+    if (st.popOpen) drawPopup(st);
+    drawTooltip(st);
+    drawPointer(st.ptr.x, st.ptr.y, st.ring);
+  }
+  if (cover) drawCard(f, cover);
+}
+
+function init() {
+  ctx.setTransform(S, 0, 0, S, 0, 0);
+  L = layoutPanel();
+  PTR = pointerKeys();
+}
+function setScale(s) {
+  S = s;
+  cv.width = W * s;
+  cv.height = H * s;
+  fmCache = {};
+  L = null;
+  S_dirty();
+}
+
+/* ================================================================
+   Sound: keys, clicks and a little chime, rendered once offline from the same schedule
+   ================================================================ */
+let soundBuffer = null;
+async function buildSound() {
+  const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  if (!OAC) return;
+  const SR = 44100, oc = new OAC(1, Math.ceil(SR * (DUR + 0.5)), SR);
+  const master = oc.createGain(); master.gain.value = 0.9; master.connect(oc.destination);
+  let seed = 7;
+  const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  const noise = oc.createBuffer(1, SR, SR);
+  const nd = noise.getChannelData(0);
+  for (let i = 0; i < nd.length; i++) nd[i] = rnd() * 2 - 1;
+  function key(t, kind) {
+    const r = rnd();
+    const n = oc.createBufferSource(); n.buffer = noise;
+    const bp = oc.createBiquadFilter(); bp.type = "bandpass";
+    bp.frequency.value = kind === "space" ? 1500 : kind === "back" ? 2100 : 2600 + 900 * r; bp.Q.value = 1.3;
+    const g = oc.createGain();
+    const amp = (kind === "space" ? 0.5 : 0.38) * (0.85 + 0.3 * rnd());
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(amp, t + 0.002); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+    n.connect(bp).connect(g).connect(master); n.start(t, r * 0.8); n.stop(t + 0.07);
+    const o = oc.createOscillator(); o.type = "sine";
+    o.frequency.setValueAtTime(kind === "space" ? 150 : 230 + 40 * r, t); o.frequency.exponentialRampToValueAtTime(90, t + 0.04);
+    const g2 = oc.createGain(); g2.gain.setValueAtTime(0.0001, t); g2.gain.exponentialRampToValueAtTime(0.16, t + 0.003); g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+    o.connect(g2).connect(master); o.start(t); o.stop(t + 0.06);
+  }
+  function tick(t, f0, amp) {
+    const o = oc.createOscillator(); o.type = "triangle"; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f0 * 0.6, t + 0.03);
+    const g = oc.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(amp, t + 0.002); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+    o.connect(g).connect(master); o.start(t); o.stop(t + 0.05);
+  }
+  function chime(t, hz, len, amp) {
+    const o = oc.createOscillator(); o.type = "sine"; o.frequency.value = hz;
+    const g = oc.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(amp, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    o.connect(g).connect(master); o.start(t); o.stop(t + len + 0.02);
+  }
+  // keystrokes, frame by frame through every play (and the end card's name, both sides of the loop)
+  let prev = null;
+  for (let f = 0; f < N; f++) {
+    const st = { c: compFrameAt(f), applied: appliedAt(f), stage: stageAt(f) };
+    const rig = f > F.createClick;
+    const tp = typing(st.applied, st.stage);
+    const cnt = rig ? countAt(tp, st.c) : -1;
+    if (prev && playingAt(f - 1) && rig && prev.rig) {
+      const d = cnt - prev.cnt, txt = tp.io.text(st.c / FPS);
+      for (let i = 0; i < Math.abs(d); i++) {
+        const ch = txt.charAt((d > 0 ? prev.cnt + i : 0));
+        key(f / FPS + i * 0.014, d < 0 ? "back" : ch === " " ? "space" : "key");
+      }
+    }
+    prev = { cnt, rig };
+  }
+  for (let k = 1; k < 40; k++) {
+    const d = nameCount(k) - nameCount(k - 1);
+    if (d > 0) for (let i = 0; i < d; i++) key((F.nameType + k) / FPS + i * 0.014, "key");
+  }
+  for (const c of CLICKS) tick(c / FPS, 1900, 0.12);
+  // bake: four soft notes as the keyframes fill in
+  [72, 76, 79, 84].forEach((m, i) => chime((F.bake + 2 + i * 3) / FPS, 440 * Math.pow(2, (m - 69) / 12), 0.5, 0.05));
+  // end card
+  [67, 74, 79].forEach((m, i) => chime((F.wipeIn + 2 + i * 2) / FPS, 440 * Math.pow(2, (m - 69) / 12), 1.4, 0.035));
+  soundBuffer = await oc.startRendering();
+}
+
+/* ================================================================
+   Player
+   ================================================================ */
+const $ = (id) => document.getElementById(id);
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const seekEl = $("seek"), volEl = $("vol"), speedEl = $("speed");
+seekEl.max = String(Math.round(DUR * 1000));
+const ICON = {
+  play: '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
+  pause: '<svg viewBox="0 0 24 24"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>',
+  vol: '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>',
+  mute: '<svg viewBox="0 0 24 24"><path d="M16.5 12A4.5 4.5 0 0 0 14 8v2.2l2.4 2.4c.1-.2.1-.4.1-.6zM19 12c0 .9-.2 1.8-.5 2.6l1.5 1.5A9 9 0 0 0 14 3.2v2.1A7 7 0 0 1 19 12zM4.3 3 3 4.3 7.7 9H3v6h4l5 5v-6.7l4.3 4.3a7 7 0 0 1-2.3 1.1v2.1a9 9 0 0 0 3.7-1.8l2 2 1.3-1.3-9-9zM12 4 9.9 6.1 12 8.2z"/></svg>',
+};
+const ST = { t: 0, playing: false, speed: 1, loop: true, muted: false, vol: 0.8, wall0: 0, t0: 0, dirty: true };
+function S_dirty() { ST.dirty = true; }
+let actx = null, gainNode = null, src = null;
+
+function ensureAudio() {
+  if (actx) return;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  actx = new AC();
+  gainNode = actx.createGain();
+  gainNode.connect(actx.destination);
+  applyGain();
+}
+function applyGain() {
+  if (!gainNode) return;
+  gainNode.gain.cancelScheduledValues(0);
+  gainNode.gain.value = ST.muted ? 0 : ST.vol;
+}
+function stopAudio() { if (src) { try { src.stop(); } catch (e) {} src.disconnect(); src = null; } }
+function startAudio() {
+  stopAudio();
+  if (!ST.playing || !actx || !soundBuffer || ST.t >= DUR) return;
+  src = actx.createBufferSource();
+  src.buffer = soundBuffer;
+  src.playbackRate.value = ST.speed;
+  src.connect(gainNode);
+  src.start(0, ST.t);
+}
+function anchor() { ST.t0 = ST.t; ST.wall0 = performance.now(); }
+function play() {
+  if (ST.t >= DUR - 1e-6) ST.t = 0;
+  ensureAudio();
+  if (actx && actx.state === "suspended") actx.resume();
+  ST.playing = true; anchor(); startAudio(); ui();
+}
+function pause() { ST.playing = false; stopAudio(); ui(); }
+function toggle() { ST.playing ? pause() : play(); }
+function seek(nt) {
+  ST.t = clamp(nt, 0, DUR);
+  if (ST.playing) { anchor(); startAudio(); }
+  ST.dirty = true; ui();
+}
+const frameOf = (t) => Math.min(N - 1, Math.floor(t * FPS + 1e-6));
+function step(d) { pause(); seek(clamp(frameOf(ST.t) + d, 0, N - 1) / FPS); }
+function setSpeed(v) { ST.speed = v; speedEl.value = String(v); if (ST.playing) { anchor(); startAudio(); } }
+function setLoop(v) { ST.loop = v; $("bLoop").classList.toggle("on", v); }
+function setMute(v) { ST.muted = v; applyGain(); ui(); }
+function setVol(v) { ST.vol = clamp(v); volEl.value = ST.vol; if (ST.vol > 0 && ST.muted) ST.muted = false; applyGain(); ui(); }
+function fullscreen() {
+  const p = $("player");
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  else if (document.webkitFullscreenElement) document.webkitExitFullscreen();
+  else if (p.requestFullscreen) p.requestFullscreen().catch(() => {});
+  else if (p.webkitRequestFullscreen) p.webkitRequestFullscreen();
+}
+const fmt = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, "0")}`;
+let dragging = false, wasPlaying = false;
+function ui() {
+  $("bPlay").innerHTML = ST.playing ? ICON.pause : ICON.play;
+  $("bPlay").setAttribute("aria-label", ST.playing ? "Pause" : "Play");
+  $("overlay").classList.toggle("hidden", ST.playing || ST.t > 0);
+  $("bMute").innerHTML = ST.muted || ST.vol === 0 ? ICON.mute : ICON.vol;
+  $("bMute").classList.toggle("on", ST.muted);
+  $("time").innerHTML = `<b>${fmt(ST.t)}</b> / ${fmt(DUR)}`;
+  $("frames").innerHTML = `Frame <b>${frameOf(ST.t) + 1}</b> / ${N}`;
+  if (!dragging) seekEl.value = Math.round(ST.t * 1000);
+  seekEl.style.setProperty("--p", (ST.t / DUR * 100) + "%");
+  volEl.style.setProperty("--p", ((ST.muted ? 0 : ST.vol) * 100) + "%");
+}
+
+function loop(now) {
+  if (ST.playing) {
+    ST.t = ST.t0 + (now - ST.wall0) / 1000 * ST.speed;
+    if (ST.t >= DUR) {
+      if (ST.loop) { ST.t = ST.t % DUR; anchor(); startAudio(); }
+      else { ST.t = DUR; pause(); }
+    }
+    ST.dirty = true;
+  }
+  if (ST.dirty) { render(Math.min(ST.t, DUR - 1e-4)); ST.dirty = false; ui(); }
+  requestAnimationFrame(loop);
+}
+
+$("overlay").addEventListener("click", play);
+cv.addEventListener("click", toggle);
+$("bPlay").addEventListener("click", toggle);
+$("bRestart").addEventListener("click", () => seek(0));
+$("bPrev").addEventListener("click", () => step(-1));
+$("bNext").addEventListener("click", () => step(1));
+$("bLoop").addEventListener("click", () => setLoop(!ST.loop));
+$("bMute").addEventListener("click", () => setMute(!ST.muted));
+$("bFull").addEventListener("click", fullscreen);
+speedEl.addEventListener("change", () => setSpeed(parseFloat(speedEl.value)));
+volEl.addEventListener("input", () => setVol(parseFloat(volEl.value)));
+seekEl.addEventListener("pointerdown", () => { dragging = true; wasPlaying = ST.playing; if (ST.playing) pause(); });
+seekEl.addEventListener("input", () => seek(seekEl.value / 1000));
+const endDrag = () => { if (!dragging) return; dragging = false; if (wasPlaying) play(); };
+seekEl.addEventListener("pointerup", endDrag);
+seekEl.addEventListener("change", endDrag);
+document.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => b.blur()));
+
+document.addEventListener("keydown", (e) => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key;
+  let handled = true;
+  if (k === " " || k === "k" || k === "K") { if (!e.repeat) toggle(); }
+  else if (k === "ArrowLeft") e.shiftKey ? seek(ST.t - 1) : step(-1);
+  else if (k === "ArrowRight") e.shiftKey ? seek(ST.t + 1) : step(1);
+  else if (k === "," || k === "<") step(-1);
+  else if (k === "." || k === ">") step(1);
+  else if (k === "Home") seek(0);
+  else if (k === "End") { pause(); seek(DUR); }
+  else if (k === "m" || k === "M") setMute(!ST.muted);
+  else if (k === "l" || k === "L") setLoop(!ST.loop);
+  else if (k === "f" || k === "F") fullscreen();
+  else handled = false;
+  if (handled) { e.preventDefault(); e.stopPropagation(); }
+}, true);
+document.addEventListener("keyup", (e) => { if (e.key === " ") e.preventDefault(); }, true);
+
+window.__demo = { render, frame: renderFrame, setScale, get state() { return ST; }, ready: true, DUR, FPS, N, BAKED };
+buildSound().catch((err) => console.warn("sound", err));
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { fmCache = {}; L = null; ST.dirty = true; });
+ui();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

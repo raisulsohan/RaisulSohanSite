@@ -2815,6 +2815,53 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 		frame.style.height = Math.floor(w / ratio + bar) + 'px';
 	}
 
+	/* Every demo animation has its own play bar. Most name it #bar, and its
+	   height is measured. A page copied from a project's repository as it
+	   is (LazyTyper's: a padded card with a two-row bar) has none, so it is
+	   measured by how far it runs past the frame, starting from a guess too
+	   small for any bar; its scrollbar stays hidden while it is measured, or
+	   the narrower page would be measured. */
+	function measure() {
+		var doc = null;
+
+		try {
+			doc = frame ? frame.contentDocument : null;
+		} catch (err) {
+			return; /* another origin: the guess stays */
+		}
+
+		if (!doc || !doc.body) {
+			return;
+		}
+
+		var own = doc.getElementById('bar');
+
+		if (own) {
+			if (own.offsetHeight) {
+				bar = own.offsetHeight;
+				fit();
+			}
+			return;
+		}
+
+		var page = doc.documentElement;
+		var was  = page.style.overflow;
+		var over = 0;
+
+		page.style.overflow = 'hidden';
+		bar = 52;
+		fit();
+		for (var i = 0; i < 3; i++) {
+			over = page.scrollHeight - page.clientHeight;
+			if (over <= 0) {
+				break;
+			}
+			bar += over + (i ? 0 : 1);
+			fit();
+		}
+		page.style.overflow = was;
+	}
+
 	/* Turning a phone sideways swaps a demo animation to its other cut. */
 	function onResize() {
 		var want = Boolean(tallSrc) && portrait();
@@ -2825,6 +2872,7 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 		}
 
 		fit();
+		measure();
 	}
 
 	/* While the player is open the page's own shortcuts (the timeline's
@@ -2882,13 +2930,8 @@ $rs_any_try   = function_exists( 'rs_project_has_demo' ) && array_filter(
 		frame.title     = title;
 		frame.setAttribute('allow', 'fullscreen');
 		frame.addEventListener('load', function () {
+			measure();
 			try {
-				/* Every demo has its own play bar; measure it rather than guess. */
-				var own = frame.contentDocument.getElementById('bar');
-				if (own && own.offsetHeight) {
-					bar = own.offsetHeight;
-					fit();
-				}
 				frame.contentWindow.addEventListener('keydown', onFrameKey);
 				frame.contentWindow.focus();
 			} catch (err) {
