@@ -304,7 +304,7 @@ function rs_cv_data( $post_id = 0 ) {
 
 		'stats'      => array(
 			array( 'label' => 'Years in motion', 'value' => '10+' ),
-			array( 'label' => 'Open-source tools', 'value' => '10' ),
+			array( 'label' => 'Open-source tools', 'value' => '11' ),
 			array( 'label' => 'Documentary films', 'value' => '3' ),
 			array( 'label' => 'Organisations served', 'value' => '12' ),
 		),
@@ -312,7 +312,7 @@ function rs_cv_data( $post_id = 0 ) {
 		'highlights' => array(
 			array( 'lead' => '100% on-time delivery', 'text' => 'across Vidiosa client campaigns; a new storyboard-and-feedback workflow cut turnaround by 15%.' ),
 			array( 'lead' => '200K+ organic views', 'text' => 'on campaigns where I directed the creative, with measurable audience engagement.' ),
-			array( 'lead' => '10 free open-source tools', 'text' => 'for Windows, Adobe CC, Figma and Chrome, alongside 1,100+ GitHub contributions in the past year.' ),
+			array( 'lead' => '11 free open-source tools', 'text' => 'for Windows, Adobe CC, Figma and Chrome, alongside 1,100+ GitHub contributions in the past year.' ),
 			array( 'lead' => '3 animated documentaries', 'text' => 'written, illustrated, animated and sound-designed for Nomolos and Bichitro Biggan.' ),
 		),
 
@@ -325,7 +325,7 @@ function rs_cv_data( $post_id = 0 ) {
 				'bullets' => array(
 					'Created **Nomolos** ([youtube.com/@nomolosfiles](https://www.youtube.com/@nomolosfiles)); wrote, illustrated, animated and sound-designed **Prohibition** (9:40) and **Cobra Effect** (8:49, 23 scenes).',
 					'Write and animate science stories for **Bichitro Biggan**; created **Consciousness** (4:08) with nine hand-drawn scenes, 3D parallax and volumetric lighting.',
-					'Build and maintain ten free creative and desktop tools; built two bilingual PHP / JavaScript WordPress platforms: **bichitrobiggan.com** and **raisulsohan.com**.',
+					'Build and maintain eleven free creative and desktop tools; built two bilingual PHP / JavaScript WordPress platforms: **bichitrobiggan.com** and **raisulsohan.com**.',
 				),
 			),
 			array(
@@ -411,15 +411,7 @@ function rs_cv_data( $post_id = 0 ) {
 			rs_cv_tool_lazyeditmirror(),
 			rs_cv_tool_lazymaplayers(),
 			rs_cv_tool_browser_extensions(),
-			array(
-				'name' => 'LazyPin',
-				'links' => array(
-					array( 'label' => 'LazyPin', 'url' => '/portfolio/lazypin/' ),
-					array( 'label' => 'GitHub', 'url' => 'https://github.com/raisulsohan/LazyPin' ),
-				),
-				'kind' => 'Windows 10 & 11 utility · C# & Win32 API',
-				'text' => 'Seamless Always-On-Top pin button directly beside window caption controls.',
-			),
+			rs_cv_tool_windows_apps(),
 		),
 
 		'films'      => array(
@@ -458,7 +450,7 @@ function rs_cv_data( $post_id = 0 ) {
 			array(
 				'group' => 'Code & automation',
 				'items' => array(
-					'JavaScript (ES6+), TypeScript, Node.js, C# (Win32 API)',
+					'JavaScript (ES6+), TypeScript, Node.js, C# (Win32 API, WPF)',
 					'Adobe CEP, UXP, ExtendScript, ScriptUI; Figma Plugin API; Chrome extensions (Manifest V3)',
 					'PHP, WordPress theme architecture, HTML, CSS, Lottie',
 					'Git and GitHub, documentation, release management',
@@ -1523,3 +1515,170 @@ function rs_cv_tools_update_v1() {
 	update_site_option( $flag, 1 );
 }
 add_action( 'init', 'rs_cv_tools_update_v1', 27 );
+
+/**
+ * The two Windows apps as one entry, like the browser extensions, so the
+ * tools list stays in even rows of two now that it holds eleven tools.
+ *
+ * @return array
+ */
+function rs_cv_tool_windows_apps() {
+	return array(
+		'name'  => 'LazyPin · Lazy Cat Companion',
+		'links' => array(
+			array( 'label' => 'LazyPin', 'url' => '/portfolio/lazypin/' ),
+			array( 'label' => 'Lazy Cat Companion', 'url' => '/portfolio/lazycatcompanion/' ),
+		),
+		'kind'  => 'Windows 10 & 11 apps · C#, Win32 API & WPF',
+		'text'  => 'An Always-On-Top pin beside window caption buttons, and a code-drawn desktop cat that naps, purrs and leaps to your clicks.',
+	);
+}
+
+/**
+ * Bring Lazy Cat Companion into a saved CV, in place.
+ *
+ * As in rs_cv_apply_tools_update_v1(), only text that still reads exactly as
+ * the theme wrote it is changed: the tool count goes from ten to eleven, C#
+ * names WPF, and the LazyPin entry becomes the two Windows apps. A LazyPin
+ * entry edited by hand keeps the edit, and Lazy Cat Companion follows it as
+ * an entry of its own.
+ *
+ * @param array $saved Saved CV data, changed in place.
+ * @return bool Whether anything changed.
+ */
+function rs_cv_apply_lazycat_v1( &$saved ) {
+	$changed = false;
+
+	if ( isset( $saved['stats'] ) && is_array( $saved['stats'] ) ) {
+		foreach ( $saved['stats'] as &$stat ) {
+			if ( isset( $stat['label'], $stat['value'] ) && 'Open-source tools' === $stat['label'] && '10' === (string) $stat['value'] ) {
+				$stat['value'] = '11';
+				$changed       = true;
+			}
+		}
+		unset( $stat );
+	}
+
+	if ( isset( $saved['highlights'] ) && is_array( $saved['highlights'] ) ) {
+		foreach ( $saved['highlights'] as &$highlight ) {
+			if ( isset( $highlight['lead'] ) && '10 free open-source tools' === $highlight['lead'] ) {
+				$highlight['lead'] = '11 free open-source tools';
+				$changed           = true;
+			}
+		}
+		unset( $highlight );
+	}
+
+	if ( isset( $saved['experience'] ) && is_array( $saved['experience'] ) ) {
+		foreach ( $saved['experience'] as &$job ) {
+			foreach ( isset( $job['bullets'] ) && is_array( $job['bullets'] ) ? $job['bullets'] : array() as $i => $bullet ) {
+				$new = is_string( $bullet ) ? str_replace( 'Build and maintain ten free creative and desktop tools;', 'Build and maintain eleven free creative and desktop tools;', $bullet ) : $bullet;
+				if ( $new !== $bullet ) {
+					$job['bullets'][ $i ] = $new;
+					$changed              = true;
+				}
+			}
+		}
+		unset( $job );
+	}
+
+	if ( isset( $saved['skills'] ) && is_array( $saved['skills'] ) ) {
+		foreach ( $saved['skills'] as &$group ) {
+			foreach ( isset( $group['items'] ) && is_array( $group['items'] ) ? $group['items'] : array() as $i => $item ) {
+				if ( 'JavaScript (ES6+), TypeScript, Node.js, C# (Win32 API)' === $item ) {
+					$group['items'][ $i ] = 'JavaScript (ES6+), TypeScript, Node.js, C# (Win32 API, WPF)';
+					$changed              = true;
+				}
+			}
+		}
+		unset( $group );
+	}
+
+	$tools = isset( $saved['tools'] ) && is_array( $saved['tools'] ) ? array_values( $saved['tools'] ) : array();
+	$found = false;
+	$pin   = false;
+	foreach ( $tools as $i => $tool ) {
+		$links = isset( $tool['links'] ) && is_array( $tool['links'] ) ? $tool['links'] : array();
+		if ( ! empty( $tool['url'] ) ) {
+			$links[] = array( 'url' => $tool['url'] );
+		}
+		foreach ( $links as $link ) {
+			$url = isset( $link['url'] ) ? (string) $link['url'] : '';
+			if ( false !== stripos( $url, 'lazycatcompanion' ) ) {
+				$found = true;
+			}
+			if ( false === $pin && false !== stripos( $url, 'lazypin' ) ) {
+				$pin = $i;
+			}
+		}
+	}
+
+	if ( ! $found ) {
+		$first_written = array(
+			'name'  => 'LazyPin',
+			'links' => array(
+				array( 'label' => 'LazyPin', 'url' => '/portfolio/lazypin/' ),
+				array( 'label' => 'GitHub', 'url' => 'https://github.com/raisulsohan/LazyPin' ),
+			),
+			'kind'  => 'Windows 10 & 11 utility · C# & Win32 API',
+			'text'  => 'Seamless Always-On-Top pin button directly beside window caption controls.',
+		);
+
+		/* == rather than ===: the same keys and values in any order, since a save may reorder them. */
+		if ( false !== $pin && $first_written == $tools[ $pin ] ) {
+			$tools[ $pin ] = rs_cv_tool_windows_apps();
+		} else {
+			array_splice(
+				$tools,
+				false !== $pin ? $pin + 1 : count( $tools ),
+				0,
+				array(
+					array(
+						'name'  => 'Lazy Cat Companion',
+						'links' => rs_cv_tool_links( 'Lazy Cat Companion', 'lazycatcompanion', 'LazyCatCompanion' ),
+						'kind'  => 'Windows 10 & 11 desktop pet · C# & WPF',
+						'text'  => 'A code-drawn desktop cat that naps, purrs when petted and leaps to your clicks.',
+					),
+				)
+			);
+		}
+
+		$saved['tools'] = $tools;
+		$changed        = true;
+	}
+
+	return $changed;
+}
+
+/**
+ * Run rs_cv_apply_lazycat_v1() on the saved CV, once. A CV that was never
+ * saved shows the defaults, which already carry it.
+ */
+function rs_cv_add_lazycat_v1() {
+	$flag = 'rs_cv_added_lazycat_v1';
+	if ( get_site_option( $flag ) ) {
+		return;
+	}
+
+	$page  = null;
+	$saved = false;
+	if ( is_multisite() ) {
+		$saved = rs_cv_saved_data();
+	} else {
+		$page  = get_page_by_path( 'cv', OBJECT, 'page' );
+		$saved = $page ? get_post_meta( $page->ID, '_rs_cv_data', true ) : false;
+	}
+
+	if ( is_array( $saved ) && rs_cv_apply_lazycat_v1( $saved ) ) {
+		if ( is_multisite() ) {
+			update_site_option( 'rs_cv_shared_data_v1', $saved );
+		} elseif ( $page ) {
+			update_post_meta( $page->ID, '_rs_cv_data', $saved );
+		}
+
+		rs_cv_purge_network_caches();
+	}
+
+	update_site_option( $flag, 1 );
+}
+add_action( 'init', 'rs_cv_add_lazycat_v1', 29 );
