@@ -663,6 +663,43 @@ function rs_project_docs_link( $project, $is_en, $class = '' ) {
 	);
 }
 
+/**
+ * The address of a project's comparison with the tools like it: the page
+ * its docs/COMPARISON.md becomes. Empty when the project has none.
+ *
+ * @param array $project Project.
+ * @return string
+ */
+function rs_project_compare_url( $project ) {
+	$index = rs_project_docs( $project );
+
+	return ( $index && isset( $index['pages']['comparison'] ) ) ? rs_project_docs_url( $project['id'], 'comparison' ) : '';
+}
+
+/**
+ * The link to that comparison, beside the documentation link and dressed
+ * like it. Empty when the project has none.
+ *
+ * @param array  $project Project.
+ * @param bool   $is_en   English site.
+ * @param string $class   Extra class.
+ * @return string
+ */
+function rs_project_compare_link( $project, $is_en, $class = '' ) {
+	$url = rs_project_compare_url( $project );
+
+	if ( '' === $url ) {
+		return '';
+	}
+
+	return sprintf(
+		'<a class="rs-pf-docs-link%1$s" href="%2$s"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/></svg><span>%3$s</span></a>',
+		$class ? ' ' . esc_attr( $class ) : '',
+		esc_url( $url ),
+		esc_html( $is_en ? 'Compare' : 'তুলনা' )
+	);
+}
+
 /* =========================================================================
  * Rendering a page
  * ====================================================================== */

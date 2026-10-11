@@ -152,6 +152,10 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 				<?php if ( $pp_docs ) : ?>
 					<span><?php echo $pp_docs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside. ?></span>
 				<?php endif; ?>
+				<?php $pp_compare = function_exists( 'rs_project_compare_link' ) ? rs_project_compare_link( $pp, $rs_is_en ) : ''; ?>
+				<?php if ( $pp_compare ) : ?>
+					<span><?php echo $pp_compare; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside. ?></span>
+				<?php endif; ?>
 				<span><?php echo esc_html( $rs_is_en ? $pp['context_en'] : $pp['context_bn'] ); ?></span>
 			</p>
 			<?php if ( $pp_gh ) : ?>
@@ -968,6 +972,7 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 						<span class="rs-case-study-role" id="rs-modal-role"></span>
 						<span class="rs-case-study-sep">•</span>
 						<span class="rs-case-study-docs" id="rs-modal-docs" hidden><a class="rs-pf-docs-link" href=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4.5h6a4 4 0 0 1 4 4V21a3 3 0 0 0-3-3H2z"/><path d="M22 4.5h-6a4 4 0 0 0-4 4V21a3 3 0 0 1 3-3h7z"/></svg><span><?php echo esc_html( $rs_is_en ? 'Documentation' : 'ডকুমেন্টেশন' ); ?></span></a><span class="rs-case-study-sep">•</span></span>
+						<span class="rs-case-study-docs" id="rs-modal-compare" hidden><a class="rs-pf-docs-link" href=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/></svg><span><?php echo esc_html( $rs_is_en ? 'Compare' : 'তুলনা' ); ?></span></a><span class="rs-case-study-sep">•</span></span>
 						<span class="rs-case-study-context" id="rs-modal-context"></span>
 					</div>
 				</header>
@@ -1115,6 +1120,7 @@ foreach ( $projects as $p ) {
 		'github_url'  => ! empty( $p['github_url'] ) ? $p['github_url'] : '',
 		'url'         => function_exists( 'rs_project_url' ) ? rs_project_url( $p['id'] ) : '',
 		'docs'        => function_exists( 'rs_project_docs_entry_url' ) ? rs_project_docs_entry_url( $p ) : '',
+		'compare'     => function_exists( 'rs_project_compare_url' ) ? rs_project_compare_url( $p ) : '',
 		'before'      => ! empty( $p['before'] ) ? esc_url_raw( $p['before'] ) : '',
 		'after'       => ! empty( $p['after'] ) ? esc_url_raw( $p['after'] ) : '',
 		'try'         => function_exists( 'rs_project_has_demo' ) && rs_project_has_demo( $p['id'] ) && function_exists( 'rs_project_url' ) ? rs_project_url( $p['id'] ) . '#try' : '',
@@ -1439,6 +1445,14 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE ); // phpcs:ignore Wor
 		if (docsEl) {
 			docsEl.hidden = !p.docs;
 			docsEl.querySelector('a').href = p.docs || '';
+		}
+
+		/* And the comparison with tools like it, when the docs have one. */
+		var compareEl = document.getElementById('rs-modal-compare');
+
+		if (compareEl) {
+			compareEl.hidden = !p.compare;
+			compareEl.querySelector('a').href = p.compare || '';
 		}
 		contextEl.textContent  = p.context;
 		summaryEl.textContent  = p.summary;
