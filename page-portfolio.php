@@ -174,6 +174,18 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 						<?php echo esc_html( $rs_is_en ? 'Watch demo' : 'ডেমো দেখুন' ); ?>
 					</button>
 				<?php endif; ?>
+				<?php if ( ! empty( $pp['tutorial'] ) ) : ?>
+					<a class="rs-pf-btn rs-pf-btn--ghost rs-pf-btn--video" href="<?php echo esc_url( $pp['tutorial'] ); ?>" target="_blank" rel="noopener noreferrer">
+						<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12 31 31 0 0 0 1 16.8a3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .5-4.8 31 31 0 0 0-.5-4.8zM9.7 15.1V8.9l5.6 3.1z"/></svg>
+						<?php echo esc_html( $rs_is_en ? 'Video tutorial' : 'ভিডিও টিউটোরিয়াল' ); ?>
+					</a>
+				<?php endif; ?>
+				<?php if ( ! empty( $pp['playlist'] ) ) : ?>
+					<a class="rs-pf-btn rs-pf-btn--ghost rs-pf-btn--video" href="<?php echo esc_url( $pp['playlist'] ); ?>" target="_blank" rel="noopener noreferrer">
+						<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12 31 31 0 0 0 1 16.8a3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .5-4.8 31 31 0 0 0-.5-4.8zM9.7 15.1V8.9l5.6 3.1z"/></svg>
+						<?php echo esc_html( $rs_is_en ? 'Tutorial playlist' : 'টিউটোরিয়াল প্লেলিস্ট' ); ?>
+					</a>
+				<?php endif; ?>
 				<?php if ( ! empty( $pp['github_url'] ) && $pp['github_url'] !== $pp['direct_url'] ) : ?>
 					<a class="rs-pf-btn rs-pf-btn--ghost" href="<?php echo esc_url( $pp['github_url'] ); ?>" target="_blank" rel="noopener noreferrer">GitHub</a>
 				<?php endif; ?>
@@ -1055,6 +1067,14 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 						<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.2v13.6L18.8 12z"/></svg>
 						<span><?php echo esc_html( $rs_is_en ? 'Watch demo' : 'ডেমো দেখুন' ); ?></span>
 					</button>
+					<a href="#" class="rs-portfolio-btn rs-portfolio-btn--secondary rs-portfolio-btn--video" id="rs-modal-tutorial-btn" target="_blank" rel="noopener noreferrer" style="display: none;">
+						<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12 31 31 0 0 0 1 16.8a3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .5-4.8 31 31 0 0 0-.5-4.8zM9.7 15.1V8.9l5.6 3.1z"/></svg>
+						<span><?php echo esc_html( $rs_is_en ? 'Video tutorial' : 'ভিডিও টিউটোরিয়াল' ); ?></span>
+					</a>
+					<a href="#" class="rs-portfolio-btn rs-portfolio-btn--secondary rs-portfolio-btn--video" id="rs-modal-playlist-btn" target="_blank" rel="noopener noreferrer" style="display: none;">
+						<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12 31 31 0 0 0 1 16.8a3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .5-4.8 31 31 0 0 0-.5-4.8zM9.7 15.1V8.9l5.6 3.1z"/></svg>
+						<span><?php echo esc_html( $rs_is_en ? 'Tutorial playlist' : 'টিউটোরিয়াল প্লেলিস্ট' ); ?></span>
+					</a>
 					<a href="#" class="rs-portfolio-btn rs-portfolio-btn--secondary" id="rs-modal-github-btn" target="_blank" rel="noopener noreferrer" style="display: none;">
 						<span>GitHub</span>
 						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1118,6 +1138,8 @@ foreach ( $projects as $p ) {
 		'action_label'=> $rs_is_en ? $p['action_en'] : $p['action_bn'],
 		'direct_url'  => $p['direct_url'],
 		'github_url'  => ! empty( $p['github_url'] ) ? $p['github_url'] : '',
+		'tutorial'    => ! empty( $p['tutorial'] ) ? esc_url_raw( $p['tutorial'] ) : '',
+		'playlist'    => ! empty( $p['playlist'] ) ? esc_url_raw( $p['playlist'] ) : '',
 		'url'         => function_exists( 'rs_project_url' ) ? rs_project_url( $p['id'] ) : '',
 		'docs'        => function_exists( 'rs_project_docs_entry_url' ) ? rs_project_docs_entry_url( $p ) : '',
 		'compare'     => function_exists( 'rs_project_compare_url' ) ? rs_project_compare_url( $p ) : '',
@@ -1358,6 +1380,8 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE ); // phpcs:ignore Wor
 	var actionBtn       = document.getElementById('rs-modal-action-btn');
 	var actionLabel     = document.getElementById('rs-modal-action-label');
 	var githubBtn       = document.getElementById('rs-modal-github-btn');
+	var tutorialBtn     = document.getElementById('rs-modal-tutorial-btn');
+	var playlistBtn     = document.getElementById('rs-modal-playlist-btn');
 	var demoBtn         = document.getElementById('rs-modal-demo-btn');
 	var tryLink         = document.getElementById('rs-modal-try');
 	var topBtn          = document.getElementById('rs-case-study-top');
@@ -1513,6 +1537,12 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE ); // phpcs:ignore Wor
 		actionLabel.textContent = p.action_label;
 
 		// Only show secondary GitHub button if GitHub URL is distinct from the primary action link
+		[[tutorialBtn, p.tutorial], [playlistBtn, p.playlist]].forEach(function(pair) {
+			if (!pair[0]) return;
+			pair[0].href = pair[1] || '#';
+			pair[0].style.display = pair[1] ? 'inline-flex' : 'none';
+		});
+
 		if (p.github_url && githubBtn && p.github_url !== p.direct_url) {
 			githubBtn.href = p.github_url;
 			githubBtn.style.display = 'inline-flex';

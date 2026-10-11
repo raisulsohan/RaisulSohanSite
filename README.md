@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.41.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.42.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.42
+
+**A project can show its video tutorials.**
+
+- **7.42.0: Video tutorial and tutorial playlist.** Two optional addresses in the portfolio editor, *Tutorial video URL* and *Tutorial playlist URL* (`_rs_portfolio_tutorial`, `_rs_portfolio_playlist`), each become a button with YouTube's play mark beside the project's other buttons, on its page and in the case-study pop-up (Video tutorial / ভিডিও টিউটোরিয়াল, Tutorial playlist / টিউটোরিয়াল প্লেলিস্ট). LazyMapLayers is the first: its complete tutorial and its playlist, given once by `rs_seed_portfolio_tutorials()` in `inc/portfolio-cpt.php` without overwriting addresses set in the editor.
 
 ## What's new in 7.41
 

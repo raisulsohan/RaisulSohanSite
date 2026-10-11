@@ -109,6 +109,8 @@ function rs_portfolio_meta_box_html( $post ) {
 	}
 	$direct_url   = get_post_meta( $post->ID, '_rs_portfolio_direct_url', true );
 	$github_url   = get_post_meta( $post->ID, '_rs_portfolio_github_url', true );
+	$tutorial_url = get_post_meta( $post->ID, '_rs_portfolio_tutorial', true );
+	$playlist_url = get_post_meta( $post->ID, '_rs_portfolio_playlist', true );
 	$before_img   = get_post_meta( $post->ID, '_rs_portfolio_before', true );
 	$after_img    = get_post_meta( $post->ID, '_rs_portfolio_after', true );
 	$demo_url     = get_post_meta( $post->ID, '_rs_portfolio_demo', true );
@@ -331,6 +333,16 @@ function rs_portfolio_meta_box_html( $post ) {
 			<div class="rs-meta-field">
 				<label for="rs_portfolio_github_url">GitHub Repository URL (ঐচ্ছিক)</label>
 				<input type="url" name="rs_portfolio_github_url" id="rs_portfolio_github_url" value="<?php echo esc_attr( $github_url ); ?>" placeholder="https://github.com/..." />
+			</div>
+
+			<div class="rs-meta-field">
+				<label for="rs_portfolio_tutorial">Tutorial video URL (টিউটোরিয়াল ভিডিও, ঐচ্ছিক)</label>
+				<input type="url" name="rs_portfolio_tutorial" id="rs_portfolio_tutorial" value="<?php echo esc_attr( $tutorial_url ); ?>" placeholder="https://youtu.be/..." />
+			</div>
+
+			<div class="rs-meta-field">
+				<label for="rs_portfolio_playlist">Tutorial playlist URL (টিউটোরিয়াল প্লেলিস্ট, ঐচ্ছিক)</label>
+				<input type="url" name="rs_portfolio_playlist" id="rs_portfolio_playlist" value="<?php echo esc_attr( $playlist_url ); ?>" placeholder="https://www.youtube.com/playlist?list=..." />
 			</div>
 		</div>
 
@@ -586,6 +598,8 @@ function rs_save_portfolio_meta( $post_id ) {
 		'rs_portfolio_image'      => '_rs_portfolio_image',
 		'rs_portfolio_direct_url' => '_rs_portfolio_direct_url',
 		'rs_portfolio_github_url' => '_rs_portfolio_github_url',
+		'rs_portfolio_tutorial'   => '_rs_portfolio_tutorial',
+		'rs_portfolio_playlist'   => '_rs_portfolio_playlist',
 		'rs_portfolio_before'     => '_rs_portfolio_before',
 		'rs_portfolio_after'      => '_rs_portfolio_after',
 		'rs_portfolio_demo'       => '_rs_portfolio_demo',
@@ -1058,6 +1072,8 @@ function rs_get_portfolio_projects() {
 				'action_en'    => get_post_meta( $p->ID, '_rs_portfolio_action_en', true ) ?: 'View Details',
 				'direct_url'   => get_post_meta( $p->ID, '_rs_portfolio_direct_url', true ) ?: home_url( '/' ),
 				'github_url'   => get_post_meta( $p->ID, '_rs_portfolio_github_url', true ) ?: '',
+				'tutorial'     => get_post_meta( $p->ID, '_rs_portfolio_tutorial', true ) ?: '',
+				'playlist'     => get_post_meta( $p->ID, '_rs_portfolio_playlist', true ) ?: '',
 				'before'       => get_post_meta( $p->ID, '_rs_portfolio_before', true ) ?: '',
 				'after'        => get_post_meta( $p->ID, '_rs_portfolio_after', true ) ?: '',
 				'demo'         => rs_portfolio_theme_asset( rs_portfolio_theme_url( get_post_meta( $p->ID, '_rs_portfolio_demo', true ) ) ),
@@ -2830,6 +2846,8 @@ function rs_sync_new_portfolio_projects() {
 	rs_seed_portfolio_demo( 'lazycatcompanion', 'lazycat-demo.html', '' );
 	rs_seed_portfolio_demo( 'lazytyper', 'lazytyper-demo.html', '' );
 
+	rs_seed_portfolio_tutorials( 'lazymaplayers', 'https://youtu.be/FkpwM74xt-s', 'https://www.youtube.com/playlist?list=PLdM39o5SFdHk' );
+
 	if ( $switched ) {
 		restore_current_blog();
 	}
@@ -3041,6 +3059,48 @@ function rs_seed_portfolio_demo( $slug, $wide, $tall ) {
 	}
 
 	update_option( $flag, 1 );
+}
+
+/**
+ * Give a project its video tutorial and tutorial playlist once, the way
+ * rs_seed_portfolio_demo() gives it a demo: never over addresses already set
+ * in the editor, and again on a later load if the project does not exist yet.
+ *
+ * @param string $slug     Project id.
+ * @param string $video    The tutorial video's address, or ''.
+ * @param string $playlist The tutorial playlist's address, or ''.
+ */
+function rs_seed_portfolio_tutorials( $slug, $video, $playlist ) {
+	$flag = 'rs_portfolio_tutorials_' . $slug;
+
+	if ( get_option( $flag ) ) {
+		return;
+	}
+
+	$ids = get_posts( array(
+		'post_type'      => 'rs_portfolio',
+		'name'           => $slug,
+		'posts_per_page' => 1,
+		'post_status'    => 'any',
+		'fields'         => 'ids',
+	) );
+
+	if ( ! $ids ) {
+		return; /* try again once the project exists */
+	}
+
+	if ( '' !== $video && ! get_post_meta( $ids[0], '_rs_portfolio_tutorial', true ) ) {
+		update_post_meta( $ids[0], '_rs_portfolio_tutorial', $video );
+	}
+	if ( '' !== $playlist && ! get_post_meta( $ids[0], '_rs_portfolio_playlist', true ) ) {
+		update_post_meta( $ids[0], '_rs_portfolio_playlist', $playlist );
+	}
+
+	update_option( $flag, 1 );
+
+	if ( function_exists( 'rs_purge_host_cache_soon' ) ) {
+		rs_purge_host_cache_soon();
+	}
 }
 
 /**

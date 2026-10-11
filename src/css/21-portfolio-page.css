@@ -3022,6 +3022,15 @@ button.rs-pf-page:hover {
 	height: 13px;
 }
 
+/* A video tutorial or tutorial playlist on YouTube: its play mark in YouTube's red. */
+.rs-pf-btn--video svg,
+.rs-portfolio-btn--video svg {
+	flex: none;
+	width: 16px;
+	height: 16px;
+	color: #ff3d3d;
+}
+
 .rs-pf-card__demo svg {
 	color: var(--pf-brand3);
 	color: color-mix(in srgb, var(--a, #8f74ff) 60%, #fff);
