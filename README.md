@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.43.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.44.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.44
+
+**LazyMapLayers for EffectCraft at 1.2.**
+
+- **7.44.0: 621 expressions.** The LazyMapLayers case study says that all 621 kinds of expression the panel writes (369 before 1.2's arrow rig) match After Effects in EffectCraft, and that twelve gaps were reported to EffectCraft, several already fixed there; both editions. A site seeded before gets the solution and highlights once (`rs_sync_lazymaplayers_effectcraft_v2()` in `inc/portfolio-cpt.php`, behind the `rs_portfolio_synced_lazymaplayers_effectcraft_v2` option).
 
 ## What's new in 7.43
 
