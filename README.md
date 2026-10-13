@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.45.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.46.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.46
+
+**KFC Sniper joins the portfolio.**
+
+- **7.46.0: KFC Sniper on the portfolio, behind the featured project.** The 30-second fan-made spec ad (a rooftop sniper who fires drumsticks) joins the videos with its complete bilingual case study: a 2D cel film drawn entirely in HTML5 Canvas 2D with no image files, 25 shots from a character sheet and a 26-panel storyboard, music synthesized in code under 53 CC0 SFX cues, 16:9 and 4:5 at 60 fps. The card is a WebP still of the CHOMP! punch-in at 12.40 s (`assets/img/kfc-sniper.webp`); Watch Animation opens the film's own player on GitHub Pages. Added with `as_first = false` in `rs_add_portfolio_project_once()`, so the featured project keeps its place. The case study says in both editions that it is not an official KFC ad and not affiliated with KFC.
 
 ## What's new in 7.45
 
