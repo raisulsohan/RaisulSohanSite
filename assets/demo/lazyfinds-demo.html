@@ -636,7 +636,7 @@ const OPENS = [
       <h4>Drum does not turn</h4><div class="bar" style="width:92%"></div><div class="bar" style="width:84%"></div><div class="bar" style="width:46%"></div></div></div>
      <div class="ear"></div>`},
   {id: "audio", te: B(18), tr: B(20), bg: "#ffffff", cw: 1600, ch: 8, tgt: () => ({x: 160, y: 556, w: 1600, h: 8, r: 4}), html: ""},
-  {id: "video", te: B(22), tr: B(28), bg: "#0b0e1a", screen: 1, tgt: t => scr2w(lerpR(BAND, FULL, spr(t - B(24), 12, .86)), camAt(t)),
+  {id: "video", te: B(22), tr: B(28), bg: "#0b0e1a", screen: 1, tgt: t => scr2w(lerpR(BAND, FULL, spr(t - B(24), 24, .9)), camAt(t)),
    html: `<div id="vStrip"></div><canvas id="vLive" width="1920" height="1080"></canvas>
      <div class="vUi L" style="width:1920px;height:1080px">
       <div class="L" style="left:60px;top:52px">${chip("video", "new_year_eve.mp4", "")}</div>
