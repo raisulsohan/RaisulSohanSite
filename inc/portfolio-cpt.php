@@ -2192,6 +2192,61 @@ function rs_get_default_portfolio_projects() {
 			'github_url'  => 'https://github.com/raisulsohan/KFC-Sniper',
 			'order'       => 10,
 		),
+		array(
+			'id'          => 'lazyfinds',
+			'category'    => 'tools',
+			'type_bn'     => 'উইন্ডোজ ডেস্কটপ সার্চ অ্যাপ ও অন-ডিভাইস এআই',
+			'type_en'     => 'Windows Desktop Search App & On-Device AI',
+			'badge_bn'    => 'উইন্ডোজ ১০ ও ১১ • ফ্রি ও ওপেন সোর্স',
+			'badge_en'    => 'Windows 10 & 11 • Free & Open Source',
+			'title_bn'    => 'lazyFinds — ফাইলের নাম নয়, ভেতরে কী আছে তা লিখে খুঁজুন: ছবি, PDF, রেকর্ডিং, ভিডিও আর কোড, বাংলা ও ইংরেজিতে',
+			'title_en'    => 'lazyFinds — Search Your PC by What\'s Inside Your Files: Photos, PDFs, Recordings, Video and Code, in English and Bengali',
+			'summary_bn'  => 'ফাইলের নাম মনে থাকে না, মনে থাকে ভেতরে কী ছিল। lazyFinds উইন্ডোজের একটি ফ্রি অ্যাপ, যেটা ছবি, স্ক্রিনশট, PDF, ডকুমেন্ট, অডিও, ভিডিও আর কোড খোঁজে তাদের ভেতরের জিনিস দিয়ে। যেকোনো অ্যাপ থেকে Ctrl+Alt+Space চাপুন, তারপর লিখুন "a bicycle in the park" বা "পার্কে সাইকেল": ছবিটা চলে আসে। "washing machine won\'t drain" লিখলে ম্যানুয়াল খোলে ২ নম্বর পাতায়, "how volcanoes form" লিখলে রেকর্ডিং বাজে ঠিক সেই মুহূর্ত থেকে, আর "বিদ্যুৎ বিল" লিখলে আসে বাংলা বিলের স্ক্রিনশট। ইংরেজি হরফে লেখা বাংলাও (Banglish) বাংলায় খোঁজা হয়, আর Name মোডে পুরো পিসির প্রায় দশ লাখ ফাইল-ফোল্ডারের নামের যেকোনো অংশ খোঁজা যায় টাইপ করতে করতেই। Google DeepMind-এর EmbeddingGemma 2 চলে llama.cpp-এ, পুরোটাই আপনার পিসিতে: কোনো অ্যাকাউন্ট নেই, ক্লাউড নেই, টেলিমেট্রি নেই। MIT লাইসেন্সে ফ্রি ও ওপেন সোর্স।',
+			'summary_en'  => 'You remember what was in a file, not what you named it. lazyFinds is a free Windows app that searches photos, screenshots, PDFs, documents, audio, video and code by what is inside them. Press Ctrl+Alt+Space in any app and type "a bicycle in the park" or "পার্কে সাইকেল": the photo comes up. "washing machine won\'t drain" opens the manual at page 2, "how volcanoes form" plays the recording from that moment, and "বিদ্যুৎ বিল" finds the Bengali bill screenshot. Bengali typed in English letters (Banglish) is searched in Bengali, and Name mode finds any part of any of the PC\'s roughly one million file and folder names as you type. Google DeepMind\'s EmbeddingGemma 2 runs on llama.cpp, all on your PC: no account, no cloud, no telemetry. Free and open source under MIT.',
+			'role_bn'     => 'একক ডেভেলপার — সার্চ ইঞ্জিন, অন-ডিভাইস এআই ও উইন্ডোজ ডেস্কটপ ইঞ্জিনিয়ারিং',
+			'role_en'     => 'Solo Developer — Search Engine, On-Device AI & Windows Desktop Engineering',
+			'context_bn'  => 'উইন্ডোজ ১০ ও ১১ • Python, PySide6 • EmbeddingGemma 2 ও llama.cpp (CUDA, Vulkan, CPU) • SQLite FTS5 • v0.1.5',
+			'context_en'  => 'Windows 10 & 11 • Python, PySide6 • EmbeddingGemma 2 & llama.cpp (CUDA, Vulkan, CPU) • SQLite FTS5 • v0.1.5',
+			'challenge_bn'=> "উইন্ডোজের সার্চ ফাইল খোঁজে নাম দিয়ে, অথচ IMG_20230814_193211.jpg বা final_FINAL_v2.pdf নাম কারও মনে থাকে না। মনে থাকে ছবিতে কী ছিল, ম্যানুয়ালের কোন সমস্যার কথা, রেকর্ডিংয়ের কোন কথাটা। ক্লাউডের সার্চ এটা পারে, কিন্তু তার জন্য নিজের সব ফাইল অন্য কারও সার্ভারে তুলতে হয়। আর বাংলায় খোঁজা, বা বাংলা কথা ইংরেজি হরফে লেখা, প্রায় কোনো টুলই বোঝে না।\n\nপ্রযুক্তিগত চ্যালেঞ্জ:\n১. এক জায়গায় সব ধরনের ফাইল: ছবি, পাতা, অনুচ্ছেদ, শব্দের টুকরো আর ভিডিওর শট একই মাপে তুলনা করতে হবে, যাতে কোনো এক ধরন তালিকা দখল না করে।\n২. পুরোটা পিসিতেই: মডেল চলবে যেকোনো জিপিইউ-তে, বা জিপিইউ ছাড়াই, আর তার ভেক্টর মিলতে হবে Google-এর অফিসিয়াল মডেলের সাথে।\n৩. বাংলা প্রথম শ্রেণির ভাষা: বাংলা শব্দের বিভক্তি, বাংলা সংখ্যা (৮৮১২৭৫ লিখলে 881275-ও মিলবে), আর ইংরেজি হরফে লেখা বাংলা।\n৪. ঠিক জায়গায় খোলা: শুধু ফাইল নয়, PDF-এর ঠিক পাতা, অডিও-ভিডিওর ঠিক মুহূর্ত, কোডের ঠিক লাইন।",
+			'challenge_en'=> "Windows search finds files by name, yet nobody remembers IMG_20230814_193211.jpg or final_FINAL_v2.pdf. People remember what the photo showed, which problem the manual covered, what was said in a recording. Cloud search can do that, but only after every file is uploaded to someone else's server. And searching in Bengali, or Bengali typed in English letters, is something almost no tool understands.\n\nTechnical challenges:\n1. Every kind of file in one list: photos, pages, passages, stretches of sound and video shots have to compete fairly, so that no one kind fills the results.\n2. All on the PC: the model has to run on any GPU, or none, and its vectors have to match Google's official model.\n3. Bengali as a first-class language: Bengali word endings, Bengali digits (881275 has to find ৮৮১২৭৫), and Bengali typed in Latin letters.\n4. Opening the right place: not just the file, but the PDF at its page, sound and video at the moment, and code at its line.",
+			'solution_bn' => "১. এক মডেল, সব মাধ্যম: Google DeepMind-এর EmbeddingGemma 2 লেখা, ছবি, শব্দ আর ভিডিওকে এক ভেক্টর-জগতে রাখে। ছবি পড়া হয় যা দেখায় তা দিয়ে, স্ক্রিনশট আর স্ক্যান তাদের লেখা দিয়েও (Windows OCR, বাংলার জন্য Tesseract), PDF পাতা ধরে, ডকুমেন্ট বাক্যের শেষে কাটা প্রায় ৩০০ টোকেনের অংশে, শব্দ ২০ সেকেন্ডের জানালায়, ভিডিও প্রতিটি শটের একটি ফ্রেম আর সাউন্ডট্র্যাক দিয়ে, আর কোড সংজ্ঞা ধরে কাটা ব্লকে।\n\n২. পিসিতেই চলে, পরীক্ষিত: মডেল চলে llama.cpp-এ, NVIDIA-তে CUDA, অন্য যেকোনো জিপিইউ-তে Vulkan, বা শুধু প্রসেসরে। প্রতিটি ব্যাকএন্ডের ভেক্টর মেলানো হয় Google-এর অফিসিয়াল মডেলের সাথে (সবচেয়ে খারাপ cosine ০.৯৯৮); যে ব্যাকএন্ড পাস করে না, সেটা ব্যবহার হয় না। সার্ভার চলে 127.0.0.1-এ র‍্যান্ডম পোর্ট আর কী নিয়ে, অ্যাপ বন্ধ হলে সাথে বন্ধ হয়।\n\n৩. অর্থ আর হুবহু শব্দ একসাথে: প্রতিটি অংশের ভেক্টর আর প্রতিটি শব্দের FTS5 ইনডেক্স থাকে SQLite-এ। অর্থের স্কোর মাপা হয় প্রতিটি ধরনের নিজের মিডিয়ান থেকে, তাই পাতা, ছবি আর শব্দ সমান সুযোগ পায়; দুই তালিকা মেলানো হয় reciprocal rank fusion দিয়ে, আর ORD-77A91X-এর মতো কোড যে ফাইলে হুবহু আছে, সেটা আসে সবার আগে।\n\n৪. বাংলা ও Banglish: বাংলা শব্দের বিভক্তি ছেঁটে মেলানো হয় (টমেটোর → টমেটো), বাংলা সংখ্যা ইংরেজি সংখ্যা হিসেবেও খোঁজা যায়। ইংরেজি হরফে লেখা বাংলা ধ্বনির নিয়মে বাংলা বানানে রূপ নেয়, Tesseract-এর ৪০,০০০ শব্দের বাংলা অভিধানের সাহায্যে: \"atoshbaji\" খুঁজে দেয় আতশবাজির ভিডিও। পুরোটা অফলাইনে, কয়েক মিলিসেকেন্ডে; চাইলে Ctrl+B-তে যেমন লেখা তেমনই খোঁজা।\n\n৫. ঠিক জায়গায় খোলে: Enter চাপলে PDF খোলে মেলা পাতায়, অডিও-ভিডিও বাজে মেলা মুহূর্ত থেকে, কোড খোলে VS Code-এ ঠিক লাইনে; Space-এ প্রিভিউ, Ctrl+Enter-এ File Explorer-এ দেখায়।\n\n৬. Name মোড: Tab চাপলে পুরো পিসির সব ফাইল-ফোল্ডারের নাম (ভেতরের জিনিস নয়), সাধারণ পিসিতে প্রায় দশ লাখ, অ্যাডমিন অনুমতি ছাড়া এক মিনিটের কম সময়ে পড়া হয়, তারপর ড্রাইভ দেখে হালনাগাদ থাকে। নামের যেকোনো অংশ মেলে (\"ract si\" → contract_signed.docx), প্রতিটি খোঁজে ১৫–৪০ মিলিসেকেন্ড।\n\n৭. নিরাপদ ও হালকা: শুধু বেছে নেওয়া ফোল্ডার পড়ে; উইন্ডোজের নিজস্ব ফোল্ডার, AppData, node_modules, লুকানো ফাইল, শুধু অনলাইনে থাকা OneDrive ফাইল আর পাসওয়ার্ড বা কী-এর মতো দেখতে কিছুই পড়ে না। ফাইল কখনো বদলায়, সরায় বা আপলোড করে না। প্রথমবারের পর নতুন ফাইল কয়েক সেকেন্ডেই খোঁজা যায়, আর কাজ না থাকলে মডেল বন্ধ হয়ে যায়।\n\n৮. পরীক্ষিত ও সহজ ইনস্টল: ৩২টি পরীক্ষার প্রশ্নে (৯টি বাংলায়) ৩২টিই প্রথমে আসে, ৮টির ৮টিই ঠিক পাতা বা মুহূর্তে, CUDA, Vulkan আর CPU তিনটিতেই। প্রায় ৩ MB-এর ওয়েব ইনস্টলার অ্যাপ নামিয়ে SHA-256 মিলিয়ে নেয় আর অ্যাডমিন অনুমতি ছাড়াই ইনস্টল করে; ইন্টারনেট ছাড়া পিসির জন্য আছে অফলাইন ইনস্টলার। এই পেজের প্রোমো ফিল্মটাও পুরোটা কোডে আঁকা।",
+			'solution_en' => "1. One model for every medium: Google DeepMind's EmbeddingGemma 2 puts text, pictures, sound and video into one shared space. Photos are read by what they show, screenshots and scans by their words too (Windows OCR, Tesseract for Bengali), PDFs page by page, documents in passages of about 300 tokens cut at sentence ends, sound in 20-second windows, video by one frame per shot and its soundtrack, and code in blocks cut at definitions.\n\n2. On the PC, and checked: the model runs on llama.cpp, with CUDA on NVIDIA, Vulkan on any other GPU, or on the processor alone. Each backend's vectors are checked against Google's official model (worst cosine 0.998); a backend that fails is not used. The server listens on 127.0.0.1 with a random port and key, and dies with the app.\n\n3. Meaning and exact words together: a vector for every piece and an FTS5 index of every word live in SQLite. Meaning is measured from each kind's own median, so a page, a photo and a stretch of sound compete fairly; the two rankings are joined by reciprocal rank fusion, and a file holding a code like ORD-77A91X exactly comes first.\n\n4. Bengali and Banglish: Bengali words lose their endings to match (টমেটোর → টমেটো), and Bengali digits are searched as digits too. Bengali typed in Latin letters becomes Bengali spellings by phonetic rules, steered by the 40,000 words of Tesseract's Bengali dictionary: \"atoshbaji\" finds the fireworks video. All offline, in a few milliseconds; Ctrl+B searches a query as typed.\n\n5. Opens at the right place: Enter opens a PDF at the matching page, plays sound and video from the matching moment, and opens code in VS Code at its line; Space previews, Ctrl+Enter shows the file in File Explorer.\n\n6. Name mode: Tab switches to the names (never the contents) of every file and folder on the PC, about a million on a typical PC, read in under a minute without admin rights and kept up to date by watching the drives. Any part of a name matches (\"ract si\" → contract_signed.docx), in 15–40 ms a search.\n\n7. Safe and light: it reads only the folders you choose, and never Windows' own folders, AppData, node_modules, hidden items, OneDrive files that live only online, or anything that looks like a key or password store. It never changes, moves or uploads a file. After the first pass, new files are searchable a few seconds after they land, and the model quits when there is nothing to do.\n\n8. Tested, and easy to install: 32 test queries (9 in Bengali) all come first, 8 of 8 at the right page or moment, on CUDA, Vulkan and the CPU alike. A web installer of about 3 MB downloads the app, checks its SHA-256 and installs it without admin rights; an offline installer covers a PC without internet. The promo film on this page is drawn entirely in code too.",
+			'highlights_bn'=> array(
+				'যেকোনো অ্যাপ থেকে Ctrl+Alt+Space, তারপর লিখুন ফাইলে কী আছে',
+				'ছবি, স্ক্রিনশট, PDF, ডকুমেন্ট, অডিও, ভিডিও আর কোড, এক তালিকায়',
+				'বাংলা ও ইংরেজিতে খোঁজা; বাংলা সংখ্যা আর ইংরেজি হরফে লেখা বাংলাও (Banglish)',
+				'PDF খোলে ঠিক পাতায়, অডিও-ভিডিও বাজে ঠিক মুহূর্ত থেকে, কোড খোলে ঠিক লাইনে',
+				'অর্থ আর হুবহু শব্দ একসাথে: ORD-77A91X-এর মতো কোড হুবহু মেলে',
+				'Name মোড: প্রায় দশ লাখ নামের যেকোনো অংশ, ১৫–৪০ মিলিসেকেন্ডে',
+				'Google DeepMind-এর EmbeddingGemma 2, llama.cpp-এ: CUDA, Vulkan বা শুধু CPU',
+				'পুরোটা পিসিতে: অ্যাকাউন্ট নেই, ক্লাউড নেই, টেলিমেট্রি নেই',
+				'৩২টি পরীক্ষার প্রশ্নের ৩২টিই প্রথমে (৯টি বাংলায়)',
+				'প্রায় ৩ MB-এর ইনস্টলার, অ্যাডমিন অনুমতি ছাড়াই; MIT লাইসেন্সে ফ্রি ও ওপেন সোর্স'
+			),
+			'highlights_en'=> array(
+				'Ctrl+Alt+Space in any app, then describe what is in the file',
+				'Photos, screenshots, PDFs, documents, audio, video and code in one list',
+				'Search in English and Bengali, Bengali digits and Bengali typed in English letters (Banglish)',
+				'Opens a PDF at its page, sound and video at the moment, code at its line',
+				'Meaning and exact words together: a code like ORD-77A91X matches exactly',
+				'Name mode: any part of about a million names, in 15–40 ms',
+				'Google DeepMind\'s EmbeddingGemma 2 on llama.cpp: CUDA, Vulkan or the CPU alone',
+				'All on your PC: no account, no cloud, no telemetry',
+				'32 of 32 test queries found first (9 in Bengali)',
+				'A 3 MB installer that needs no admin rights; free and open source under MIT'
+			),
+			'tags'        => array( 'Windows 10/11', 'Python', 'On-Device AI', 'Semantic Search', 'llama.cpp', 'Bengali', 'Open Source' ),
+			'accent'      => '#4f8cff',
+			'icon'        => 'terminal',
+			'image'       => get_template_directory_uri() . '/assets/img/lazyfinds.webp',
+			'image_fit'   => 'cover',
+			'action_type' => 'code',
+			'action_bn'   => 'ফ্রি ডাউনলোড',
+			'action_en'   => 'Download Free',
+			'direct_url'  => 'https://github.com/raisulsohan/lazyFinds/releases/latest',
+			'github_url'  => 'https://github.com/raisulsohan/lazyFinds',
+			'order'       => 11,
+		),
 	);
 }
 
@@ -3067,6 +3122,7 @@ function rs_sync_new_portfolio_projects() {
 			'lazycatcompanion'        => false,
 			'lazytyper'               => false,
 			'kfc-sniper'              => false,
+			'lazyfinds'               => false,
 		);
 		foreach ( $new_projects as $slug => $as_first ) {
 			if ( ! get_option( 'rs_portfolio_added_' . $slug ) ) {
@@ -3085,6 +3141,7 @@ function rs_sync_new_portfolio_projects() {
 	rs_seed_portfolio_demo( 'lazymaplayers', 'lazymaplayers-demo.html', '' );
 	rs_seed_portfolio_demo( 'lazycatcompanion', 'lazycat-demo.html', '' );
 	rs_seed_portfolio_demo( 'lazytyper', 'lazytyper-demo.html', '' );
+	rs_seed_portfolio_demo( 'lazyfinds', 'lazyfinds-demo.html', '' );
 
 	rs_seed_portfolio_tutorials( 'lazymaplayers', 'https://youtu.be/FkpwM74xt-s', 'https://www.youtube.com/playlist?list=PLdM39o5SFdHk' );
 

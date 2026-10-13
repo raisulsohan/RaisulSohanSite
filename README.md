@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.46.2-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.47.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.47
+
+**lazyFinds joins the portfolio.**
+
+- **7.47.0: lazyFinds on the portfolio, behind the featured project.** The Windows app that searches a PC by what is inside its files (photos, screenshots, PDFs, documents, audio, video and code, in English and Bengali, with Banglish and a Name mode; EmbeddingGemma 2 on llama.cpp, all on the PC; v0.1.5, free, MIT) joins the tools with its complete bilingual case study, a WebP still of its launch film on the "find it" beat at 3.0 s (`assets/img/lazyfinds.webp`), a Download Free button to the latest GitHub release, and its 28-second launch film with sound in the demo player: `assets/demo/lazyfinds-demo.html` is `promo/lazyFinds-promo-v2.html` from the lazyFinds folder, with one change, so the mix embedded in the page (`MIX_DATA`) is the soundtrack from the start instead of a fallback after `audio/mix.wav` fails, which the theme does not ship. Seeded by `rs_seed_portfolio_demo()` and added with `as_first = false` in `rs_add_portfolio_project_once()`, so the featured project keeps its place. The documentation picks up the repository's `docs/macos-plan.md` by itself.
 
 ## What's new in 7.46
 
