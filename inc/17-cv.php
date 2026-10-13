@@ -423,6 +423,7 @@ function rs_cv_data( $post_id = 0 ) {
 				'text'  => 'A 4:08 science film with nine illustrated scenes, multiplane 3D parallax, volumetric lighting and original sound design.',
 			),
 			rs_cv_lingopie_film(),
+			rs_cv_kfc_sniper_film(),
 			rs_cv_lazyeditmirror_work(),
 			array(
 				'title' => 'Showreel',
@@ -1830,3 +1831,83 @@ function rs_cv_add_lazytyper_v1() {
 	update_site_option( $flag, 1 );
 }
 add_action( 'init', 'rs_cv_add_lazytyper_v1', 30 );
+
+/**
+ * KFC Sniper as a selected-work entry: the fan-made spec ad drawn in code.
+ *
+ * @return array
+ */
+function rs_cv_kfc_sniper_film() {
+	return array(
+		'title' => 'KFC Sniper',
+		'url'   => '/portfolio/kfc-sniper/',
+		'meta'  => 'Spec ad · 2D cel animation in code, 0:30',
+		'text'  => 'A fan-made spec ad drawn entirely in HTML5 Canvas with no image files: seven rigged characters, 25 shots from a 26-panel storyboard and music synthesized in code. 16:9 and 4:5 at 60 fps.',
+	);
+}
+
+/**
+ * Add KFC Sniper to a CV that was already saved, once.
+ *
+ * As in rs_cv_add_lingopie_v1(): a saved CV replaces the defaults whole, so
+ * the entry goes into the saved copy too, after Lingopie, or else before the
+ * Showreel, or else at the end, unless it is already there.
+ */
+function rs_cv_add_kfc_sniper_v1() {
+	$flag = 'rs_cv_added_kfc_sniper_v1';
+	if ( get_site_option( $flag ) ) {
+		return;
+	}
+
+	$page  = null;
+	$saved = false;
+	if ( is_multisite() ) {
+		$saved = rs_cv_saved_data();
+	} else {
+		$page  = get_page_by_path( 'cv', OBJECT, 'page' );
+		$saved = $page ? get_post_meta( $page->ID, '_rs_cv_data', true ) : false;
+	}
+
+	if ( is_array( $saved ) ) {
+		$films    = isset( $saved['films'] ) && is_array( $saved['films'] ) ? array_values( $saved['films'] ) : array();
+		$found    = false;
+		$lingopie = false;
+		$showreel = false;
+
+		foreach ( $films as $i => $film ) {
+			$url = isset( $film['url'] ) ? (string) $film['url'] : '';
+			if ( false !== stripos( $url, 'kfc-sniper' ) ) {
+				$found = true;
+			}
+			if ( false === $lingopie && false !== stripos( $url, 'Lingopie-promo-animation' ) ) {
+				$lingopie = $i;
+			}
+			if ( false === $showreel && isset( $film['title'] ) && 'Showreel' === $film['title'] ) {
+				$showreel = $i;
+			}
+		}
+
+		if ( ! $found ) {
+			if ( false !== $lingopie ) {
+				$at = $lingopie + 1;
+			} elseif ( false !== $showreel ) {
+				$at = $showreel;
+			} else {
+				$at = count( $films );
+			}
+			array_splice( $films, $at, 0, array( rs_cv_kfc_sniper_film() ) );
+			$saved['films'] = $films;
+
+			if ( is_multisite() ) {
+				update_site_option( 'rs_cv_shared_data_v1', $saved );
+			} elseif ( $page ) {
+				update_post_meta( $page->ID, '_rs_cv_data', $saved );
+			}
+
+			rs_cv_purge_network_caches();
+		}
+	}
+
+	update_site_option( $flag, 1 );
+}
+add_action( 'init', 'rs_cv_add_kfc_sniper_v1', 31 );
