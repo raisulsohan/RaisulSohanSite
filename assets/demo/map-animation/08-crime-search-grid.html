@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Search Grid Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="lib/kit.js?v=415f4781"></script>
+<script src="audio/vo-env.js?v=d3018d45"></script>
+<script src="lib/player.js?v=fc9ee7d5"></script>
+</head>
+<body>
+<script>
+// 08 · Crime documentary: missing-person search — topographic terrain, last known location, probability rings,
+// sector grid cleared by a helicopter, then a find outside the search zone. Terrain and case are fictional.
+MapPlayer({
+  title: '08 · Search grid',
+  vo: ['audio/08-vo.mp3'],
+  // with a voice: 'Every sector, cleared' runs the sweep; 'a backpack turned up' on the find; '2.4 km' on the distance line; 'where no one was looking' on the end title
+  voWarp: [[2.4, 3.0], [4.76, 7.0], [7.0, 7.6], [8.6, 8.3], [9.1, 8.8]],
+  score: {
+    bpm: 84, root: 38, seed: 81, chords: [[0, 7, 12, 15], [-4, 3, 8, 15], [-2, 5, 10, 14], [-5, 2, 7, 14]],
+    drone: .05, pad: .022, padCut: 500, pulse: .035, pulseFrom: 3.0, wet: .55,
+    cues: [[.1, 'whoosh', 1.0, .15], [.4, 'type', 16, 1.0, .12], [.65, 'hit', .3], [.7, 'blip', .8, .12], [1.2, 'shimmer', .06], [2.0, 'whoosh', 1.0, .14],
+      [3.0, 'rotor', 4.2, .22, 11], ...Array.from({ length: 14 }, (_, i) => [3.28 + i * .28, 'tick', .09]),
+      [7.0, 'blip', 1.3, .14], [7.2, 'blip', 1.3, .14], [7.4, 'blip', 1.3, .14], [7.35, 'whoosh', 1.1, .3], [7.9, 'hit', .55], [8.8, 'note', 50, .15, 3], [8.8, 'hit', .4]]
+  },
+  async setup(stage, { W, H, VERT }) {
+    await K.fonts(['400 20px "Share Tech Mono"', '700 60px Oswald', '500 22px Oswald']);
+    const cv = K.canvas(W, H); stage.appendChild(cv); const g = cv.getContext('2d');
+    const { ease: E, prog, lerp, clamp } = K;
+
+    // ── terrain: seeded value-noise fBm, a carved river valley, contours
+    // 4:5 sees more height: the terrain also grows Y0 rows above y = 0 (world coordinates stay the same)
+    const NX = 205, NY = 125, S = 12, R = K.rng(808), Y0 = VERT ? 36 : 0, NYT = NY + Y0;
+    const lat = Array.from({ length: 41 * 24 }, () => R());
+    const vn = (x, y, f) => {
+      const gx = x * f, gy = y * f, ix = Math.floor(gx), iy = Math.floor(gy), fx = gx - ix, fy = gy - iy, sm = u => u * u * (3 - 2 * u);
+      const at = (i, j) => lat[((j % 24) + 24) % 24 * 41 + ((i % 41) + 41) % 41];
+      return lerp(lerp(at(ix, iy), at(ix + 1, iy), sm(fx)), lerp(at(ix, iy + 1), at(ix + 1, iy + 1), sm(fx)), sm(fy));
+    };
+    const river = K.smoothLine([[-5, 64], [30, 56], [62, 66], [96, 58], [128, 47], [165, 54], [210, 62]], 14);
+    const hv = new Float64Array(NX * NYT);
+    for (let yy = 0; yy < NYT; yy++) for (let x = 0; x < NX; x++) {
+      const y = yy - Y0;
+      let h = 0, a = .55, f = .045; for (let o = 0; o < 5; o++) { h += a * vn(x + o * 13, y + o * 7, f); a *= .5; f *= 2; }
+      let d = 1e9; for (const p of river.pts) d = Math.min(d, Math.hypot(p[0] - x, p[1] - y));
+      hv[yy * NX + x] = h - .22 * Math.exp(-((d / 7) ** 2));
+    }
+    const [hmin, hmax] = d3.extent(hv);
+    const th = d3.range(hmin + .02, hmax, .022);
+    const conts = d3.contours().size([NX, NYT]).thresholds(th)(Array.from(hv));
+    const ipath = d3.geoPath(d3.geoIdentity().scale(S).translate([0, -Y0 * S]));
+    const CP = conts.map((c, i) => ({ p: new Path2D(ipath(c) || ''), idx: i % 5 === 0 }));
+    const dem = K.canvas(NX, NYT); {
+      const d = dem.getContext('2d'), id = d.createImageData(NX, NYT);
+      for (let y = 0; y < NYT; y++) for (let x = 0; x < NX; x++) {
+        const h = (hv[y * NX + x] - hmin) / (hmax - hmin), hs = clamp(.5 + ((hv[Math.max(0, y - 1) * NX + Math.max(0, x - 1)] || 0) - (hv[Math.min(NYT - 1, y + 1) * NX + Math.min(NX - 1, x + 1)] || 0)) * 7);
+        const c = d3.rgb(d3.interpolateRgb('#061009', '#1e3a26')(h)), k = .65 + .7 * hs;
+        id.data.set([c.r * k, c.g * k, c.b * k, 255], (y * NX + x) * 4);
+      }
+      d.putImageData(id, 0, 0);
+    }
+    const riverW = river.pts.map(([x, y]) => [x * S, y * S]);
+    const trail = K.smoothLine([[18, 12], [44, 22], [64, 31], [80, 41], [104, 36], [134, 22], [158, 18]], 10).pts.map(([x, y]) => [x * S, y * S]);
+
+    // ── case geometry (world px = screen px at zoom 1; ≈3.2 m per px, so LKL→FIND ≈ 2.4 km)
+    const LKL = [936, 480], FIND = [1610, 820];
+    const GX = 420, GY = 180, CW = 180, CH = 150, COLS = 6, ROWS = 4;
+    const sectors = []; for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) sectors.push({ c, r, x: GX + c * CW, y: GY + r * CH, name: 'ABCDEF'[c] + (r + 1) });
+    const order = sectors.slice().sort((a, b) => Math.hypot(a.x + CW / 2 - LKL[0], a.y + CH / 2 - LKL[1]) - Math.hypot(b.x + CW / 2 - LKL[0], b.y + CH / 2 - LKL[1])).slice(0, 14);
+    const T0 = 3.0, DT = .28;
+    const heli = t => {   // lawnmower path through the ordered sectors
+      const k = clamp(Math.floor((t - T0) / DT), 0, order.length - 1), u = clamp((t - T0) / DT - k), s = order[k];
+      const passes = 3, lane = Math.min(passes - 1, Math.floor(u * passes)), lu = u * passes - lane;
+      const y = s.y + CH * (lane + .5) / passes, x = s.x + 20 + (CW - 40) * (lane % 2 ? 1 - lu : lu);
+      return { x, y, k, s };
+    };
+    const grain = K.grainTile(31, 256, 80), scan = K.canvas(W, H); { const s = scan.getContext('2d'); s.fillStyle = 'rgba(0,0,0,.2)'; for (let y = 0; y < H; y += 3) s.fillRect(0, y, W, 1); }
+    const hatch = (() => { const c = K.canvas(14, 14), h = c.getContext('2d'); h.strokeStyle = 'rgba(120,220,130,.35)'; h.lineWidth = 1.5; h.beginPath(); h.moveTo(0, 14); h.lineTo(14, 0); h.stroke(); return g.createPattern(c, 'repeat'); })();
+    const mono = (s, x, y, o = {}) => K.text(g, s, x, y, { font: `400 ${o.size || 20}px "Share Tech Mono"`, color: o.color || 'rgba(170,230,160,.9)', align: o.align, alpha: o.alpha ?? 1, spacing: o.spacing ?? 1 });
+    const AMB = '#e3a93f', RED = '#ff3b3b';
+
+    // 4:5: the grid fills the width; the camera opens out to show the find before it pushes in
+    const cam = VERT ? t => ({
+      cx: K.track([[0, 960], [6.9, 975], [7.6, 1240], [8.5, FIND[0] - 40], [10, FIND[0] - 30, 'outSine']], t),
+      cy: K.track([[0, 540], [6.9, 540], [7.6, 620], [8.5, FIND[1] - 60], [10, FIND[1] - 50, 'outSine']], t),
+      z: K.track([[0, .95], [6.9, .96, 'inOutSine'], [7.6, .78], [8.5, 1.75], [10, 1.65, 'outSine']], t),
+    }) : t => ({
+      cx: K.track([[0, 960], [7.3, 990], [8.5, FIND[0] - 60], [10, FIND[0] - 40, 'outSine']], t),
+      cy: K.track([[0, 540], [7.3, 560], [8.5, FIND[1] - 30], [10, FIND[1] - 20, 'outSine']], t),
+      z: K.track([[0, 1.0], [7.3, 1.05, 'inOutSine'], [8.5, 2.0], [10, 1.85, 'outSine']], t),
+    });
+
+    return (t, frame) => {
+      const C = cam(t);
+      g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#020604'; g.fillRect(0, 0, W, H);
+      g.translate(W / 2, H / 2); g.scale(C.z, C.z); g.translate(-C.cx, -C.cy);
+      const M = g.getTransform(), toS = p => { const q = M.transformPoint(new DOMPoint(p[0], p[1])); return [q.x, q.y]; };
+      const iz = 1 / C.z;
+
+      // terrain reveal (scan from top)
+      const rv = E.inOut(prog(t, 0, 1.0));
+      const TY = -Y0 * S;
+      g.save(); g.beginPath(); g.rect(-10, TY - 10, NX * S + 20, (NYT * S + 20) * rv); g.clip();
+      g.imageSmoothingQuality = 'high'; g.drawImage(dem, 0, TY, NX * S, NYT * S);
+      CP.forEach(c => { g.strokeStyle = c.idx ? 'rgba(130,190,120,.55)' : 'rgba(90,150,95,.35)'; g.lineWidth = (c.idx ? 1.8 : 1) * iz; g.stroke(c.p); });
+      K.polyline(g, riverW); g.strokeStyle = 'rgba(60,150,170,.75)'; g.lineWidth = 7; g.lineCap = g.lineJoin = 'round'; g.stroke();
+      g.setLineDash([10 * iz, 8 * iz]); K.polyline(g, trail); g.strokeStyle = 'rgba(220,190,120,.55)'; g.lineWidth = 2.2 * iz; g.stroke(); g.setLineDash([]);
+      g.restore();
+      if (rv < 1) { const y = TY + (NYT * S + 20) * rv - 10; g.fillStyle = 'rgba(150,255,160,.5)'; g.fillRect(-10, y - 2, NX * S + 20, 3); }
+
+      // probability rings
+      [[110, '75%'], [210, '50%'], [330, '25%']].forEach(([r, lab], i) => {
+        const u = E.out(prog(t, 1.2 + i * .25, 2.0 + i * .25)); if (u <= 0) return;
+        g.beginPath(); g.arc(LKL[0], LKL[1], r * u, 0, 7); g.setLineDash([8 * iz, 7 * iz]); g.strokeStyle = `rgba(227,169,63,${.75 - i * .15})`; g.lineWidth = 2 * iz; g.stroke(); g.setLineDash([]);
+        if (i === 0) { g.fillStyle = 'rgba(227,169,63,.08)'; g.fill(); }
+      });
+      // sector grid
+      const gp = E.inOut(prog(t, 2.0, 2.9));
+      if (gp > 0) {
+        g.strokeStyle = 'rgba(227,169,63,.55)'; g.lineWidth = 1.5 * iz; g.beginPath();
+        for (let c = 0; c <= COLS; c++) { g.moveTo(GX + c * CW, GY); g.lineTo(GX + c * CW, GY + ROWS * CH * gp); }
+        for (let r = 0; r <= ROWS; r++) { g.moveTo(GX, GY + r * CH); g.lineTo(GX + COLS * CW * gp, GY + r * CH); }
+        g.stroke();
+      }
+      // cleared sectors + current sector + helicopter trail
+      const hp = t >= T0 ? heli(t) : null;
+      order.forEach((s, k) => {
+        if (t < T0 + (k + 1) * DT) return;
+        const a = prog(t, T0 + (k + 1) * DT, T0 + (k + 1) * DT + .2);
+        g.save(); g.globalAlpha = a; g.fillStyle = 'rgba(80,200,110,.10)'; g.fillRect(s.x, s.y, CW, CH); g.fillStyle = hatch; g.fillRect(s.x, s.y, CW, CH); g.restore();
+      });
+      if (hp && t < T0 + order.length * DT) {
+        const s = hp.s; g.strokeStyle = AMB; g.lineWidth = 3 * iz; g.strokeRect(s.x + 2, s.y + 2, CW - 4, CH - 4);
+        const tr = []; for (let d = 0; d <= 24; d++) { const tt = t - d * .012; if (tt < T0) break; const q = heli(tt); tr.push([q.x, q.y]); }
+        if (tr.length > 1) { K.polyline(g, tr); g.strokeStyle = 'rgba(227,169,63,.6)'; g.lineWidth = 2 * iz; g.stroke(); }
+        const sp = g.createRadialGradient(hp.x, hp.y, 0, hp.x, hp.y, 70); sp.addColorStop(0, 'rgba(255,240,190,.28)'); sp.addColorStop(1, 'rgba(255,240,190,0)'); g.fillStyle = sp; g.beginPath(); g.arc(hp.x, hp.y, 70, 0, 7); g.fill();
+      }
+
+      // ── screen space
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      if (gp > 0) sectors.forEach(s => { const [x, y] = toS([s.x + 8, s.y + 22]); mono(s.name, x, y, { size: 15, color: 'rgba(227,169,63,.8)', alpha: gp }); });
+      order.forEach((s, k) => { const a = prog(t, T0 + (k + 1) * DT, T0 + (k + 1) * DT + .2); if (a > 0 && t < 7.4) { const [x, y] = toS([s.x + CW / 2, s.y + CH / 2 + 6]); mono('CLEARED', x, y, { size: 15, align: 'center', color: 'rgba(150,240,150,.85)', alpha: a * (1 - prog(t, 7.0, 7.4)) }); } });
+      if (hp && t < T0 + order.length * DT + .1) {   // helicopter icon
+        const [x, y] = toS([hp.x, hp.y]);
+        g.save(); g.translate(x, y); g.fillStyle = '#ffe9b0'; g.beginPath(); g.ellipse(0, 0, 6, 10, 0, 0, 7); g.fill(); g.fillRect(-1.5, 8, 3, 14);
+        g.rotate(t * 40); g.strokeStyle = 'rgba(255,233,176,.8)'; g.lineWidth = 2.5; g.beginPath(); g.moveTo(-20, 0); g.lineTo(20, 0); g.moveTo(0, -20); g.lineTo(0, 20); g.stroke(); g.restore();
+        mono('AIR-1', x + 26, y - 14, { size: 15, color: '#ffe9b0' });
+      }
+      // last known location
+      const lu = prog(t, .6, .9);
+      if (lu > 0) {
+        const [x, y] = toS(LKL), k = E.outBack(lu);
+        g.save(); g.translate(x, y); g.scale(k, k);
+        g.beginPath(); g.arc(0, 0, 9, 0, 7); g.fillStyle = AMB; g.fill(); g.beginPath(); g.arc(0, 0, 16, 0, 7); g.strokeStyle = AMB; g.lineWidth = 2; g.stroke();
+        g.restore();
+        mono('LAST KNOWN LOCATION', x + 24, y - 10, { size: 18, color: '#ffd38a', alpha: Math.min(1, lu * 2) });
+        mono('OCT 14 · 16:20', x + 24, y + 12, { size: 15, color: 'rgba(255,211,138,.75)', alpha: Math.min(1, lu * 2) });
+      }
+      // the find
+      const fp = prog(t, 7.0, 7.1);
+      if (fp > 0) {
+        const [x, y] = toS(FIND), bl = t < 7.9 ? Math.floor(t * 10) % 2 : 1, pu = ((t - 7) * 1.4) % 1;
+        if (t > 7.9) { g.beginPath(); g.arc(x, y, 14 + 40 * pu, 0, 7); g.strokeStyle = `rgba(255,59,59,${1 - pu})`; g.lineWidth = 2.5; g.stroke(); }
+        if (bl) { g.beginPath(); g.arc(x, y, 10, 0, 7); g.fillStyle = RED; g.fill(); g.beginPath(); g.arc(x, y, 4, 0, 7); g.fillStyle = '#fff'; g.fill(); }
+        const dl = E.inOut(prog(t, 7.6, 8.3));
+        if (dl > 0) {
+          const [lx, ly] = toS(LKL), ex = lerp(lx, x, dl), ey = lerp(ly, y, dl);
+          g.setLineDash([10, 8]); g.strokeStyle = 'rgba(255,90,90,.85)'; g.lineWidth = 2.5; g.beginPath(); g.moveTo(lx, ly); g.lineTo(ex, ey); g.stroke(); g.setLineDash([]);
+          if (dl >= 1) { g.save(); g.translate((lx + x) / 2, (ly + y) / 2); g.rotate(Math.atan2(y - ly, x - lx)); K.text(g, '2.4 KM', 0, -12, { font: '500 26px Oswald', color: '#ff8a8a', align: 'center', spacing: 2, stroke: 'rgba(0,0,0,.7)', strokeW: 6 }); g.restore(); }
+        }
+        const bu = E.out(prog(t, 7.9, 8.3));
+        if (bu > 0) {
+          g.save(); g.globalAlpha = bu; const bx = x + 40, by = y - 150;
+          g.fillStyle = 'rgba(10,4,4,.85)'; g.fillRect(bx, by, 380, 112); g.strokeStyle = RED; g.lineWidth = 2; g.strokeRect(bx, by, 380, 112); g.fillStyle = RED; g.fillRect(bx, by, 6, 112);
+          mono('ITEM RECOVERED', bx + 24, by + 38, { size: 24, color: '#ff8a8a', spacing: 3 });
+          mono('BACKPACK  ·  EAST RIDGE', bx + 24, by + 68, { size: 17, color: 'rgba(255,220,220,.85)' });
+          mono('OUTSIDE ALL SEARCH ZONES', bx + 24, by + 94, { size: 15, color: 'rgba(255,160,160,.75)' });
+          g.strokeStyle = RED; g.beginPath(); g.moveTo(x + 10, y - 8); g.lineTo(bx, by + 112); g.stroke();
+          g.restore();
+        }
+      }
+
+      // HUD
+      const ha = E.out(prog(t, .3, .8));
+      const typed = (s, a, b) => s.slice(0, Math.floor(s.length * prog(t, a, b)));
+      K.text(g, typed('SEARCH OPERATION', .4, 1.0), 84, 112, { font: '700 54px Oswald', color: '#e8f5e0', spacing: 4, shadow: ['rgba(0,0,0,.8)', 12] });
+      mono(typed('MISSING HIKER  ·  RIDGE COUNTY  ·  DAY 3', .9, 1.4), 88, 146, { size: 18, color: 'rgba(170,230,160,.8)', spacing: 2 });
+      const el = clamp((t - T0) / (order.length * DT)) * 72, pct = Math.round(clamp((t - T0) / (order.length * DT)) * 61);
+      g.save(); g.globalAlpha = ha;
+      g.fillStyle = 'rgba(2,8,4,.7)'; g.fillRect(W - 420, 64, 340, 148); g.strokeStyle = 'rgba(170,230,160,.3)'; g.strokeRect(W - 420, 64, 340, 148);
+      mono('ELAPSED', W - 396, 100, { size: 15, color: 'rgba(170,230,160,.6)', spacing: 3 });
+      mono(`T+ ${String(Math.floor(el)).padStart(2, '0')}:${String(Math.floor((el % 1) * 60)).padStart(2, '0')}:00`, W - 396, 134, { size: 30, color: '#e8f5e0' });
+      mono('AREA SEARCHED', W - 396, 172, { size: 15, color: 'rgba(170,230,160,.6)', spacing: 3 });
+      g.fillStyle = 'rgba(170,230,160,.15)'; g.fillRect(W - 396, 184, 200, 8); g.fillStyle = '#7fdc8a'; g.fillRect(W - 396, 184, 200 * pct / 61 * .61, 8);
+      mono(`${pct}%`, W - 180, 194, { size: 20, color: '#e8f5e0' });
+      g.fillStyle = 'rgba(170,230,160,.7)'; g.fillRect(88, H - 92, 157 * C.z, 3); mono('500 M', 88, H - 102, { size: 15 });
+      mono('44.21°N  110.48°W', W - 88, H - 88, { size: 15, align: 'right', color: 'rgba(170,230,160,.6)' });
+      g.restore();
+      // end title
+      const et = E.out(prog(t, 8.8, 9.2));
+      if (et > 0) {
+        g.fillStyle = `rgba(0,0,0,${.55 * et})`; g.fillRect(0, H - 190, W, 110);
+        K.text(g, 'FOUND WHERE NO ONE WAS LOOKING', W / 2, H - 120, { font: `700 ${VERT ? 38 : 46}px Oswald`, color: '#fff', align: 'center', spacing: 5, alpha: et });
+      }
+
+      g.drawImage(scan, 0, 0);
+      K.drawGrain(g, grain, W, H, frame, .08);
+      K.vignette(g, W, H, .5, 'rgba(0,6,2,.75)');
+    };
+  }
+});
+</script>
+</body>
+</html>

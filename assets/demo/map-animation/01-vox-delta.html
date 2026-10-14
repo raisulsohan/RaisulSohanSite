@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vox Delta Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script src="lib/kit.js?v=415f4781"></script>
+<script src="audio/vo-env.js?v=d3018d45"></script>
+<script src="lib/player.js?v=fc9ee7d5"></script>
+</head>
+<body>
+<script>
+// 01 · Vox-style explainer: paper map, a country that lifts off the page, rivers that draw themselves, halftone, callout card.
+MapPlayer({
+  title: '01 · Vox explainer',
+  vo: ['audio/01-vo.mp3'],
+  // with a voice: 'Three great rivers' starts the rivers; their names land on the labels; 'almost all of it is Bangladesh' on the halftone + card
+  voWarp: [[2.9, 2.4], [7.8, 5.7], [8.6, 6.2]],
+  score: {
+    bpm: 96, root: 60, seed: 11, chords: [[0, 4, 7, 11], [-3, 0, 4, 7], [-7, -3, 0, 4], [-5, -1, 2, 7]],
+    pad: .028, padCut: 1300, pluck: .065, bass: .1, bassFrom: 2.5, hats: .025, hatsFrom: 5,
+    cues: [[.35, 'whoosh', .6, .2], [1.0, 'pop', 1, .32], [1.12, 'pop', 1.5, .2], [2.4, 'whoosh', 2.2, .35], [2.7, 'shimmer', .07],
+      [5.1, 'pop', 1.2, .18], [5.3, 'pop', 1.35, .18], [5.5, 'pop', 1.5, .18], [5.7, 'pop', 1.8, .2], [5.9, 'shimmer', .1],
+      [6.3, 'hit', .55], [7.0, 'whoosh', .7, .25],
+      ...Array.from({ length: 12 }, (_, i) => [7.35 + i * .1, 'tick', .12]), [8.6, 'pop', 2, .25]]
+  },
+  async setup(stage, { W, H, VERT }) {
+    await K.fonts(['800 76px "Barlow Condensed"', '700 26px "Barlow Condensed"', '600 24px Barlow', 'italic 600 26px Barlow', 'italic 500 30px Barlow', '500 24px Barlow']);
+    const [full, lo] = await Promise.all([K.loadWorld('50m'), K.loadWorld('110m')]);
+    const world = K.region(full, [55, 0, 112, 42]);
+    const cv = K.canvas(W, H); stage.appendChild(cv); const g = cv.getContext('2d');
+    const proj = d3.geoMercator().translate([W / 2, VERT ? H * .5 : H / 2]).clipExtent([[-40, -40], [W + 40, H + 40]]);
+    const path = d3.geoPath(proj, g), svgPath = d3.geoPath(proj);
+    const BD = K.byId(world.countries, '050');
+    const paper = K.paper(W, H, 21), grain = K.grainTile(5);
+    const { ease: E, prog, lerp, lerpLog } = K;
+
+    const RIV = {
+      ganges: K.smoothLine([[78.2, 29.9], [79.6, 27.5], [80.33, 26.45], [81.88, 25.43], [83.0, 25.32], [85.14, 25.6], [87.0, 25.25], [87.92, 24.8], [88.6, 24.37], [89.3, 24.0], [89.75, 23.78], [90.2, 23.48], [90.62, 23.2], [90.75, 22.75], [90.9, 22.2]], 12),
+      brahma: K.smoothLine([[95.4, 28.1], [94.9, 27.48], [93.8, 26.95], [92.8, 26.62], [91.74, 26.18], [90.6, 26.15], [89.98, 26.02], [89.75, 25.4], [89.75, 24.6], [89.7, 24.1], [89.75, 23.78]], 12),
+      meghna: K.smoothLine([[92.6, 24.95], [91.9, 24.9], [91.2, 24.5], [90.98, 24.05], [90.75, 23.6], [90.62, 23.2]], 12),
+    };
+    const DELTA = [[87.9, 24.7], [89.0, 24.45], [90.2, 24.7], [91.2, 24.3], [91.7, 23.3], [91.3, 22.3], [90.5, 21.7], [89.0, 21.5], [87.9, 21.5], [87.6, 22.4]];
+
+    // camera: drift → fly in → settle (each stage starts where the last one stopped)
+    const cam = t => {
+      const a = E.inOutSine(prog(t, 0, 2.4)), b = E.inOut(prog(t, 2.4, 5.4)), c = E.inOutSine(prog(t, 5.4, 10));
+      let lon = lerp(84.0, 85.6, a), lat = 24.6, s = lerpLog(2500, 2900, a);
+      lon = lerp(lon, 90.0, b); lat = lerp(lat, 23.85, b); s = lerpLog(s, 8800, b);
+      lon = lerp(lon, 90.15, c); lat = lerp(lat, 23.95, c); s = lerpLog(s, 8700, c);
+      return { lon, lat, s: s * (VERT ? .86 : 1) };
+    };
+    const nearAngle = (line, ll) => {
+      let bi = 0, bd = 1e9; line.pts.forEach((p, i) => { const d = (p[0] - ll[0]) ** 2 + (p[1] - ll[1]) ** 2; if (d < bd) { bd = d; bi = i; } });
+      const a = proj(line.pts[Math.max(0, bi - 3)]), b = proj(line.pts[Math.min(line.pts.length - 1, bi + 3)]), p = proj(line.pts[bi]);
+      let ang = Math.atan2(b[1] - a[1], b[0] - a[0]); if (ang > Math.PI / 2) ang -= Math.PI; if (ang <= -Math.PI / 2) ang += Math.PI;
+      return { p, ang };
+    };
+    const popIn = (t, t0, d = .35) => { const u = prog(t, t0, t0 + d); return { a: E.out(u), s: u <= 0 ? 0 : E.outBack(u) }; };
+
+    function river(line, p, w) {
+      if (p <= 0) return;
+      const pts = K.partial(line, p).map(proj);
+      g.lineJoin = g.lineCap = 'round';
+      K.polyline(g, pts); g.strokeStyle = 'rgba(255,255,255,.95)'; g.lineWidth = w + 5; g.stroke();
+      K.polyline(g, pts); g.strokeStyle = '#2f80cf'; g.lineWidth = w; g.stroke();
+      if (p < 1) { const h = pts[pts.length - 1]; g.beginPath(); g.arc(h[0], h[1], w * 1.3, 0, 7); g.fillStyle = '#fff'; g.fill(); g.beginPath(); g.arc(h[0], h[1], w * .8, 0, 7); g.fillStyle = '#2f80cf'; g.fill(); }
+    }
+
+    return (t, frame) => {
+      const C = cam(t); proj.center([C.lon, C.lat]).scale(C.s);
+      const z = C.s / 2500, rw = 2.6 + 1.5 * Math.log2(z), landP = new Path2D(svgPath(world.land) || '');
+
+      // water + land (soft drop shadow gives the cut-paper depth)
+      g.fillStyle = '#b5d1d8'; g.fillRect(0, 0, W, H);
+      const wg = g.createLinearGradient(0, 0, 0, H); wg.addColorStop(0, 'rgba(255,255,255,.18)'); wg.addColorStop(1, 'rgba(0,40,60,.12)');
+      g.fillStyle = wg; g.fillRect(0, 0, W, H);
+      g.save(); g.shadowColor = 'rgba(30,70,85,.38)'; g.shadowBlur = 28; g.shadowOffsetY = 8;
+      g.fillStyle = '#f3ecdc'; g.fill(landP); g.restore();
+      g.strokeStyle = 'rgba(95,135,140,.45)'; g.lineWidth = 1.3; g.stroke(landP);
+      g.beginPath(); path(world.borders); g.strokeStyle = '#d2c4a6'; g.lineWidth = 1.7; g.setLineDash([]); g.stroke();
+
+      // Bangladesh lifts off the page, then settles
+      const pu = prog(t, 1.0, 1.9);
+      let lift = pu <= 0 ? 0 : E.outBack(pu) * 16;
+      lift = lerp(lift, 4, E.inOut(prog(t, 2.2, 3.0)));
+      g.save(); g.translate(0, -lift); g.beginPath(); path(BD);
+      g.shadowColor = `rgba(70,45,0,${.4 * E.out(pu)})`; g.shadowBlur = 8 + lift * 1.2; g.shadowOffsetY = lift + 2;
+      g.fillStyle = d3.interpolateRgb('#f3ecdc', '#ffcc2e')(E.out(pu)); g.fill();
+      g.shadowColor = 'transparent'; g.strokeStyle = '#fff'; g.lineWidth = 2.5; g.stroke(); g.restore();
+
+      // halftone delta, wiping out from the river mouth
+      const hw = E.inOut(prog(t, 6.2, 7.8));
+      if (hw > 0) {
+        const M = proj([90.8, 22.2]), Rw = hw * 1500, poly = DELTA.map(proj);
+        g.save(); g.clip(landP); K.polyline(g, poly); g.closePath(); g.clip();
+        g.fillStyle = 'rgba(28,120,150,.55)'; g.beginPath();
+        const sp = 13;
+        for (let y = -sp; y < H + sp; y += sp) for (let x = -sp + ((y / sp) % 2 ? sp / 2 : 0); x < W + sp; x += sp) {
+          const d = Math.hypot(x - M[0], y - M[1]), r = 3.6 * K.clamp((Rw - d) / 180);
+          if (r > .2) { g.moveTo(x + r, y); g.arc(x, y, r, 0, 7); }
+        }
+        g.fill();
+        K.polyline(g, poly); g.closePath(); g.setLineDash([10, 7]); g.strokeStyle = `rgba(20,90,115,${.7 * hw})`; g.lineWidth = 2.5; g.stroke(); g.setLineDash([]);
+        g.restore();
+      }
+
+      // rivers
+      river(RIV.ganges, E.inOutSine(prog(t, 2.5, 5.2)), rw);
+      river(RIV.brahma, E.inOutSine(prog(t, 2.8, 5.4)), rw);
+      river(RIV.meghna, E.inOutSine(prog(t, 3.6, 5.6)), rw * .85);
+
+      // neighbour labels (wide shot only)
+      const ca = E.out(prog(t, .3, .9)) * (1 - prog(t, 2.6, 3.5));
+      if (ca > 0) for (const [n, ll] of [['INDIA', [79.5, 22.5]], ['PAKISTAN', [68.8, 27.6]], ['NEPAL', [84.1, 28.3]], ['BHUTAN', [90.45, 27.5]], ['MYANMAR', [95.9, 21.6]], ['CHINA', [88, 32.4]]]) {
+        const p = proj(ll); K.text(g, n, p[0], p[1], { font: '700 26px "Barlow Condensed"', color: '#9a8e78', align: 'center', spacing: 8, alpha: ca });
+      }
+      const ba = E.out(prog(t, 1.4, 2.0)) * (1 - prog(t, 3.6, 4.3));
+      if (ba > 0) { const p = proj([90.2, 21.75]); K.text(g, 'BANGLADESH', p[0], p[1], { font: '800 30px "Barlow Condensed"', color: '#1d1a14', align: 'center', spacing: 7, alpha: ba, base: 'top' }); }
+
+      // river + place labels
+      for (const [n, line, ll, t0] of [['GANGES', RIV.ganges, [87.4, 25.1], 5.1], ['BRAHMAPUTRA', RIV.brahma, [89.75, 25.05], 5.3], ['MEGHNA', RIV.meghna, [91.45, 24.62], 5.5]]) {
+        const { a, s } = popIn(t, t0); if (a <= 0) continue;
+        const { p, ang } = nearAngle(line, ll);
+        g.save(); g.translate(p[0], p[1]); g.rotate(ang); g.translate(0, -rw - 14); g.scale(s, s);
+        K.text(g, n, 0, 0, { font: 'italic 600 27px Barlow', color: '#1b5c94', align: 'center', spacing: 3, alpha: a, stroke: 'rgba(255,255,255,.95)', strokeW: 7 });
+        g.restore();
+      }
+      { const { a } = popIn(t, 4.8, .8); if (a > 0) { const p = proj([89.2, 21.25]); K.text(g, 'BAY  OF  BENGAL', p[0], p[1], { font: 'italic 500 30px Barlow', color: '#4f8090', align: 'center', spacing: 9, alpha: a }); } }
+      { const { a, s } = popIn(t, 5.7); if (a > 0) {
+        const p = proj([90.41, 23.81]);
+        g.save(); g.translate(p[0], p[1]); g.scale(s, s);
+        g.beginPath(); g.arc(0, 0, 9, 0, 7); g.fillStyle = '#fff'; g.fill(); g.beginPath(); g.arc(0, 0, 5.5, 0, 7); g.fillStyle = '#1d1a14'; g.fill();
+        K.text(g, 'Dhaka', 16, 8, { font: '600 26px Barlow', color: '#1d1a14', alpha: a, stroke: 'rgba(255,255,255,.9)', strokeW: 6 });
+        g.restore();
+      } }
+
+      // title: yellow marker swipe, then the words
+      const kx = 84, ky = 96, tsc = lerp(1, .68, E.inOut(prog(t, 2.4, 3.4)));
+      g.save(); g.translate(40, 30); g.scale(tsc, tsc); g.translate(-40, -30);
+      K.text(g, 'BANGLADESH  ·  SOUTH ASIA', kx + 4, ky - 18, { font: '600 24px Barlow', color: '#6d6455', spacing: 4, alpha: E.out(prog(t, .2, .7)) });
+      g.font = '800 76px "Barlow Condensed"'; if ('letterSpacing' in g) g.letterSpacing = '1px';
+      const tw = g.measureText("THE WORLD'S LARGEST DELTA").width;
+      const sw = E.inOut(prog(t, .35, .95));
+      if (sw > 0) { g.fillStyle = '#ffcc2e'; g.beginPath(); g.moveTo(kx - 12, ky + 6); g.lineTo(kx - 12 + (tw + 30) * sw, ky + 2); g.lineTo(kx - 10 + (tw + 28) * sw, ky + 80); g.lineTo(kx - 14, ky + 84); g.fill(); }
+      const rv = E.out(prog(t, .55, 1.15));
+      if (rv > 0) { g.save(); g.beginPath(); g.rect(kx - 20, ky - 10, (tw + 50) * rv, 110); g.clip(); K.text(g, "THE WORLD'S LARGEST DELTA", kx, ky + 70, { font: '800 76px "Barlow Condensed"', color: '#14120e', spacing: 1 }); g.restore(); }
+      g.restore();
+
+      // locator globe
+      { const { a, s } = popIn(t, 5.7, .5); if (a > 0) {
+        const cx = W - 148, cy = 152, r = 94;
+        g.save(); g.translate(cx, cy); g.scale(s, s); g.translate(-cx, -cy); g.globalAlpha = a;
+        const p2 = d3.geoOrthographic().rotate([-86, -18]).scale(r).translate([cx, cy]), path2 = d3.geoPath(p2, g);
+        g.beginPath(); g.arc(cx, cy, r + 7, 0, 7); g.fillStyle = '#fff'; g.shadowColor = 'rgba(0,0,0,.25)'; g.shadowBlur = 16; g.shadowOffsetY = 4; g.fill(); g.shadowColor = 'transparent';
+        g.beginPath(); g.arc(cx, cy, r, 0, 7); g.fillStyle = '#b5d1d8'; g.fill();
+        g.beginPath(); path2(lo.land); g.fillStyle = '#f3ecdc'; g.fill();
+        g.beginPath(); path2(BD); g.fillStyle = '#ffb800'; g.fill();
+        const cs = [[0, 0], [W, 0], [W, H], [0, H]].map(c => p2(proj.invert(c)));
+        K.polyline(g, cs); g.closePath(); g.strokeStyle = '#e0352b'; g.lineWidth = 2.5; g.stroke();
+        g.restore();
+      } }
+
+      // callout card
+      { const u = E.out(prog(t, 7.0, 7.5)); if (u > 0) {
+        const x = VERT ? (W - 520) / 2 : 1330, y = (VERT ? H - 268 : 772) + (1 - u) * 50, w = 520, h = 214;
+        g.save(); g.globalAlpha = u;
+        g.shadowColor = 'rgba(40,30,10,.28)'; g.shadowBlur = 30; g.shadowOffsetY = 10; g.fillStyle = '#fffdf7'; g.fillRect(x, y, w, h); g.shadowColor = 'transparent';
+        g.fillStyle = '#ffcc2e'; g.fillRect(x, y, 12, h);
+        K.text(g, 'GANGES–BRAHMAPUTRA DELTA', x + 40, y + 52, { font: '700 26px "Barlow Condensed"', color: '#6d6455', spacing: 3 });
+        const n = 105000 * E.out(prog(t, 7.35, 8.6));
+        K.text(g, K.fmt(n), x + 38, y + 140, { font: '800 92px "Barlow Condensed"', color: '#14120e' });
+        g.font = '800 92px "Barlow Condensed"'; const nw = g.measureText(K.fmt(n)).width;
+        K.text(g, 'km²', x + 52 + nw, y + 140, { font: '700 44px "Barlow Condensed"', color: '#14120e' });
+        K.text(g, 'Shared by Bangladesh and India', x + 40, y + 186, { font: '500 24px Barlow', color: '#5a5448' });
+        g.restore();
+      } }
+
+      // paper, grain, vignette
+      g.save(); g.globalCompositeOperation = 'overlay'; g.globalAlpha = .5; g.drawImage(paper, 0, 0); g.restore();
+      K.drawGrain(g, grain, W, H, frame, .05);
+      K.vignette(g, W, H, .6, 'rgba(70,50,20,.28)');
+    };
+  }
+});
+</script>
+</body>
+</html>

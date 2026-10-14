@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dossier Route Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Anton&family=Caveat:wght@700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script src="lib/kit.js?v=415f4781"></script>
+<script src="audio/vo-env.js?v=d3018d45"></script>
+<script src="lib/player.js?v=fc9ee7d5"></script>
+</head>
+<body>
+<script>
+// 07 · Crime documentary: case dossier — grey printed map, red escape route with dated stops, mugshot card, redactions.
+// The subject and case are fictional.
+const STOPS = [
+  { name: 'PARIS', ll: [2.35, 48.86], date: 'MAR 03', note: 'LEAVES APARTMENT', t: 1.6, lab: [16, -18] },
+  { name: 'BRUSSELS', ll: [4.35, 50.85], date: 'MAR 05', note: 'CASH WITHDRAWAL', t: 3.0, lab: [16, -18] },
+  { name: 'AMSTERDAM', ll: [4.90, 52.37], date: 'MAR 06', note: 'HOSTEL CHECK-IN', t: 4.0, lab: [-16, -18, 'right'] },
+  { name: 'HAMBURG', ll: [9.99, 53.55], date: 'MAR 09', note: 'CCTV · CENTRAL STATION', t: 5.4, lab: [16, 30] },
+  { name: 'COPENHAGEN', ll: [12.57, 55.68], date: 'MAR 11', note: 'LAST CONFIRMED SIGHTING', t: 6.8, lab: [18, 28] },
+];
+MapPlayer({
+  title: '07 · Case dossier',
+  vo: ['audio/07-vo.mp3'],
+  // with a voice: each city lands as it is named; 'Copenhagen' on the last stop; 'Where he went next' pulls back; 'no one knows' brings the '?'
+  voWarp: [[1.2, 1.6], [2.17, 3.0], [3.21, 4.0], [4.26, 5.4], [9.1, 6.8], [10.58, 8.6], [12.13, 9.4]],
+  score: {
+    bpm: 76, root: 40, seed: 71, chords: [[0, 3, 7, 10], [-4, 0, 3, 8], [-2, 2, 5, 9], [-5, -2, 2, 7]],
+    drone: .045, pad: .022, padCut: 600, pulse: .04, pulseFrom: 2.0, wet: .5,
+    cues: [[.3, 'hit', .45], [.5, 'type', 14, 1.1, .15], [1.2, 'scribble', .25, .12], [.9, 'whoosh', .5, .15],
+      ...STOPS.map((s, i) => [s.t, 'note', [64, 67, 63, 60, 58][i], .13]), ...STOPS.map(s => [s.t + .12, 'hit', .28]),
+      [2.0, 'whoosh', 1.0, .12], [3.2, 'whoosh', .8, .12], [4.2, 'whoosh', 1.2, .12], [5.6, 'whoosh', 1.2, .12],
+      [7.0, 'scribble', .7, .2], [8.2, 'whoosh', 1.2, .3], [9.0, 'hit', .6], [9.05, 'tick', .25], [9.1, 'note', 46, .15, 3]]
+  },
+  async setup(stage, { W, H, VERT }) {
+    await K.fonts(['400 30px "Special Elite"', '400 60px Anton', '700 40px Caveat']);
+    const world = K.region(await K.loadWorld('50m'), [-11, 40, 32, 64]);
+    const cv = K.canvas(W, H); stage.appendChild(cv); const g = cv.getContext('2d');
+    const proj = d3.geoMercator().translate([W / 2, VERT ? H * .38 : H / 2]).clipExtent([[-30, -30], [W + 30, H + 30]]);
+    const path = d3.geoPath(proj, g), svg = d3.geoPath(proj), grat = d3.geoGraticule().step([5, 5])();
+    const { ease: E, prog, lerp } = K;
+    const paper = K.paper(W, H, 41, 1.4), grain = K.grainTile(29, 256, 60);
+    const hatch = (() => { const c = K.canvas(10, 10), h = c.getContext('2d'); h.strokeStyle = 'rgba(70,64,56,.42)'; h.lineWidth = 1.2; h.beginPath(); h.moveTo(-2, 12); h.lineTo(12, -2); h.moveTo(-2, 2); h.lineTo(2, -2); h.moveTo(8, 12); h.lineTo(12, 8); h.stroke(); return g.createPattern(c, 'repeat'); })();
+    const OTHER = [['LONDON', [-0.13, 51.51]], ['BERLIN', [13.4, 52.52]], ['FRANKFURT', [8.68, 50.11]], ['MUNICH', [11.58, 48.14]], ['OSLO', [10.75, 59.91]], ['STOCKHOLM', [18.07, 59.33]], ['WARSAW', [21.01, 52.23]], ['PRAGUE', [14.42, 50.08]], ['ZURICH', [8.54, 47.37]]];
+    const legs = STOPS.slice(1).map((s, i) => ({ a: STOPS[i].ll, b: s.ll, t0: STOPS[i].t + .4, t1: s.t, gi: d3.geoInterpolate(STOPS[i].ll, s.ll) }));
+    const circ = []; { const r = K.rng(15); for (let i = 0; i <= 120; i++) { const a = -2.2 + i / 120 * Math.PI * 2.2, rr = 62 * (1 + .06 * Math.sin(3 * a)) + (r() - .5) * 2 + i * .05; circ.push([Math.cos(a) * rr * 1.25, Math.sin(a) * rr]); } }
+    const typed = (s, t, a, b) => s.slice(0, Math.floor(s.length * prog(t, a, b)));
+    const tw = (s, x, y, o = {}) => K.text(g, s, x, y, { font: `400 ${o.size || 24}px "Special Elite"`, color: o.color || '#26231e', align: o.align, alpha: o.alpha ?? 1, spacing: o.spacing ?? 1 });
+
+    const cam = t => ({
+      lon: K.track([[0, 7.5], [1.4, 6.0], [2.0, 2.9], [3.0, 4.1], [4.0, 4.9], [5.4, 8.6], [6.8, 11.7], [8.2, 12.3], [9.4, 9.5], [10, 9.4, 'outSine']], t),
+      lat: K.track([[0, 52.2], [1.4, 51.8], [2.0, 49.5], [3.0, 50.6], [4.0, 51.9], [5.4, 53.1], [6.8, 55.1], [8.2, 55.4], [9.4, 53.6], [10, 53.6, 'outSine']], t),
+      s: Math.exp(K.track([[0, Math.log(3900)], [1.4, Math.log(4300)], [2.0, Math.log(7600)], [6.8, Math.log(7600)], [8.2, Math.log(9800)], [9.4, Math.log(3750)], [10, Math.log(3700), 'outSine']], t)),
+    });
+    // anchor: 0 = centred on x, 1 = left edge at x, -1 = right edge at x
+    function stampBox(txt, x, y, r, u, size = 26, color = '#b5121b', anchor = 0) {
+      if (u <= 0) return;
+      const s = lerp(1.8, 1, E.out(u));
+      g.font = `400 ${size}px Anton`; if ('letterSpacing' in g) g.letterSpacing = '3px'; const w = g.measureText(txt).width + 24;
+      g.save(); g.translate(x + anchor * w / 2, y); g.rotate(r); g.scale(s, s); g.globalAlpha = Math.min(1, u * 3) * .9;
+      g.strokeStyle = color; g.lineWidth = 3; g.strokeRect(-w / 2, -size * .8, w, size * 1.5);
+      g.fillStyle = color; g.textAlign = 'center'; g.fillText(txt, 0, size * .38);
+      g.restore();
+    }
+
+    return (t, frame) => {
+      const C = cam(t); if (VERT) { C.s *= .88; proj.translate([W / 2, H * lerp(.38, .54, E.inOut(prog(t, 8.2, 9.4)))]); }
+      proj.center([C.lon, C.lat]).scale(C.s);
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      g.fillStyle = '#e9e4d7'; g.fillRect(0, 0, W, H);
+      g.beginPath(); path(grat); g.strokeStyle = 'rgba(120,112,98,.28)'; g.lineWidth = 1; g.stroke();
+      const landP = new Path2D(svg(world.land) || '');
+      g.fillStyle = '#d7d1c3'; g.fill(landP); g.fillStyle = hatch; g.fill(landP);
+      g.strokeStyle = '#3f3a33'; g.lineWidth = 1.6; g.stroke(landP);
+      g.beginPath(); path(world.borders); g.setLineDash([7, 5]); g.strokeStyle = 'rgba(70,64,56,.8)'; g.lineWidth = 1.3; g.stroke(); g.setLineDash([]);
+
+      // other cities (context)
+      for (const [n, ll] of OTHER) { const [x, y] = proj(ll); g.beginPath(); g.arc(x, y, 4, 0, 7); g.fillStyle = '#3f3a33'; g.fill(); tw(n, x + 9, y + 5, { size: 17, color: 'rgba(60,55,48,.75)' }); }
+
+      // route
+      g.lineCap = 'round';
+      for (const L of legs) {
+        const p = E.inOutSine(prog(t, L.t0, L.t1)); if (p <= 0) continue;
+        const pts = d3.range(0, 41).map(i => proj(L.gi(i / 40 * p)));
+        g.setLineDash([14, 9]); K.polyline(g, pts); g.strokeStyle = '#b5121b'; g.lineWidth = 4.5; g.stroke(); g.setLineDash([]);
+        if (p < 1) {
+          const h = pts[pts.length - 1], q = pts[Math.max(0, pts.length - 3)], a = Math.atan2(h[1] - q[1], h[0] - q[0]);
+          g.save(); g.translate(...h); g.rotate(a); g.beginPath(); g.moveTo(14, 0); g.lineTo(-8, -10); g.lineTo(-8, 10); g.closePath(); g.fillStyle = '#b5121b'; g.fill(); g.restore();
+        }
+      }
+      // stops
+      STOPS.forEach((s, i) => {
+        const u = prog(t, s.t, s.t + .3); if (u <= 0) return;
+        const [x, y] = proj(s.ll), k = E.outBack(u), [dx, dy, al] = s.lab;
+        g.beginPath(); g.arc(x, y, 13 * k, 0, 7); g.strokeStyle = '#b5121b'; g.lineWidth = 3; g.stroke();
+        g.beginPath(); g.arc(x, y, 5 * k, 0, 7); g.fillStyle = '#b5121b'; g.fill();
+        const a = Math.min(1, u * 2);
+        tw(s.name, x + dx, y + dy, { size: 30, align: al, alpha: a, spacing: 3, color: '#1d1a16' });
+        tw(s.note, x + dx, y + dy + 26, { size: 17, align: al, alpha: a, color: '#4a443b' });
+        g.font = '400 30px "Special Elite"'; if ('letterSpacing' in g) g.letterSpacing = '3px'; const nw = g.measureText(s.name).width, sw = al === 'right' ? -1 : 1;
+        stampBox(s.date, x + dx + sw * (nw + 16), y + dy - 10, (i % 2 ? .06 : -.07), prog(t, s.t + .12, s.t + .32), 22, '#b5121b', sw);
+      });
+      // last sighting: marker circle + onward "?"
+      const cp = E.inOutSine(prog(t, 7.0, 7.7)), Cph = proj(STOPS[4].ll);
+      if (cp > 0) {
+        const pts = circ.slice(0, Math.max(2, Math.floor(circ.length * cp))).map(([x, y]) => [Cph[0] + x * C.s / 9800, Cph[1] + y * C.s / 9800]);
+        g.lineJoin = 'round'; K.polyline(g, pts); g.strokeStyle = 'rgba(181,18,27,.85)'; g.lineWidth = 6; g.stroke();
+      }
+      const op = E.inOut(prog(t, 8.6, 9.4));
+      if (op > 0) {
+        const tgt = proj([15.5, 57.4]), pts = d3.range(0, 31).map(i => { const u = i / 30 * op; return [lerp(Cph[0], tgt[0], u), lerp(Cph[1], tgt[1], u) - Math.sin(Math.PI * u) * 40]; });
+        g.setLineDash([6, 10]); K.polyline(g, pts); g.strokeStyle = 'rgba(181,18,27,.7)'; g.lineWidth = 3; g.stroke(); g.setLineDash([]);
+        if (op >= 1) { const qa = E.outBack(prog(t, 9.4, 9.6)); g.save(); g.translate(tgt[0] + 20, tgt[1] - 10); g.scale(qa, qa); K.text(g, '?', 0, 0, { font: '700 90px Caveat', color: '#b5121b', align: 'center' }); g.restore(); }
+      }
+
+      // dossier header (screen)
+      const hx = 84, hy = 100;
+      g.fillStyle = 'rgba(233,228,215,.85)'; g.fillRect(hx - 24, hy - 56, 560, 190);
+      g.strokeStyle = 'rgba(40,36,30,.6)'; g.lineWidth = 1.5; g.strokeRect(hx - 24, hy - 56, 560, 190);
+      tw(typed('SUBJECT:  J. DOE', t, .5, .9), hx, hy, { size: 28, spacing: 2 });
+      tw(typed('CASE:     #0417-E', t, .9, 1.2), hx, hy + 38, { size: 24 });
+      tw(typed('ALIAS:    "THE TRAVELLER"', t, 1.0, 1.25), hx, hy + 72, { size: 24 });
+      tw(typed('STATUS:   AT LARGE', t, 1.3, 1.6), hx, hy + 106, { size: 24, color: '#b5121b' });
+      const rd = E.inOut(prog(t, 1.25, 1.45)); if (rd > 0) { g.fillStyle = '#141210'; g.fillRect(hx + 136, hy + 50, 300 * rd, 30); }
+      stampBox('CONFIDENTIAL', W - (VERT ? 230 : 300), 110, -.08, prog(t, .3, .5), 46);
+
+      // mugshot card
+      const mu = E.out(prog(t, .8, 1.3));
+      if (mu > 0) {
+        const x = 84 - (1 - mu) * 380, y = H - 420;
+        g.save(); g.translate(x + 140, y + 170); g.rotate(-.03);
+        g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = 18; g.shadowOffsetY = 8; g.fillStyle = '#f1ede3'; g.fillRect(-140, -170, 280, 340); g.shadowColor = 'transparent';
+        g.fillStyle = '#c9c4b8'; g.fillRect(-124, -154, 248, 240);
+        for (let k = 0; k <= 6; k++) { const yy = -150 + k * 38; g.fillStyle = 'rgba(40,36,30,.5)'; g.fillRect(-124, yy, k % 2 ? 248 : 30, 1.5); tw(`${6 - Math.floor(k / 2)}'${k % 2 ? 6 : 0}`, 118, yy + 14, { size: 13, align: 'right', color: 'rgba(40,36,30,.7)' }); }
+        g.fillStyle = '#2b2925'; g.beginPath(); g.ellipse(0, -52, 46, 56, 0, 0, 7); g.fill(); g.beginPath(); g.moveTo(-110, 86); g.quadraticCurveTo(-100, 8, 0, 6); g.quadraticCurveTo(100, 8, 110, 86); g.fill();
+        g.fillStyle = '#141210'; g.fillRect(-90, 30, 180, 44); tw('J. DOE  ·  0417', 0, 60, { size: 20, color: '#e9e4d7', align: 'center' });
+        tw('NO CONFIRMED PHOTO', 0, 128, { size: 16, align: 'center', color: '#4a443b' });
+        g.strokeStyle = '#8a8f96'; g.lineWidth = 4; g.beginPath(); g.roundRect(-30, -190, 22, 70, 11); g.stroke();
+        g.restore();
+      }
+      // next destination (redacted)
+      const nd = E.out(prog(t, 8.6, 9.0));
+      if (nd > 0) {
+        const nx = W - (VERT ? 440 : 560);
+        tw('NEXT DESTINATION:', nx, H - 120, { size: 26, alpha: nd, color: '#1d1a16' });
+        tw('STOCKHOLM?', nx, H - 84, { size: 26, alpha: nd, color: '#b5121b' });
+        const rr = E.inOut(prog(t, 9.0, 9.15)); if (rr > 0) { g.fillStyle = '#141210'; g.fillRect(nx - 6, H - 108, 230 * rr, 32); }
+      }
+
+      g.save(); g.globalCompositeOperation = 'multiply'; g.globalAlpha = .9; g.globalCompositeOperation = 'overlay'; g.drawImage(paper, 0, 0); g.restore();
+      K.drawGrain(g, grain, W, H, frame, .07);
+      K.vignette(g, W, H, .55, 'rgba(40,30,15,.42)');
+    };
+  }
+});
+</script>
+</body>
+</html>

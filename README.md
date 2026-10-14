@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.47.3-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.48.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.48
+
+**The map animation demos get their own page.**
+
+- **7.48.0: /map-animation-demo/.** Twelve map animations with voice-over (explainer and data maps, crime documentary maps, the Vox-style Manhattan recreation and Dhaka at night, Shifting Shores, and the Korean War front map) play in one player at `/map-animation-demo/` and `/en/map-animation-demo/`, the same English page on both editions with the English address as canonical. `inc/18-map-animation-demo.php` answers the address with a rewrite rule (added on the version bump, no WordPress page needed) and serves `parts/map-animation-demo.php`, a page of its own outside the site's header: the player with 16:9 / 4:5, posterize and the demo keys, the cards, and a floating **Work with me** button that copies the email address and shows the WhatsApp number. The demos live in `assets/demo/map-animation/`, copied from the working folder by `node scripts/map-demo-sync.js`, which stamps the local scripts with a content hash (the `.htaccess` and the service worker cache scripts for a long time), points Shifting Shores at its files beside it, ships its score as a 192 kbps MP3 instead of two WAVs, and starts its volume at 25 % like the others. The portfolio's hero gains a **Map animation** button to the page.
 
 ## What's new in 7.47
 
@@ -534,13 +540,14 @@ raisul-sohan/
 ├── style.css              Theme header only (the stylesheet is built, see below)
 ├── functions.php          Constants, then loads every inc/NN-*.php in order
 ├── inc/
-│   ├── 01-theme-setup.php … 17-cv.php   The theme, one file per area
+│   ├── 01-theme-setup.php … 18-map-animation-demo.php   The theme, one file per area
 │   ├── github-updater.php Self-updater: checks GitHub for new versions
 │   └── portfolio-cpt.php  Portfolio post type, meta boxes, admin reorder
 ├── src/
 │   ├── css/               Stylesheet sources, one file per section (built in name order)
 │   └── js/                JavaScript sources, one file per feature (share one closure)
 ├── scripts/build.js       Joins and minifies src/ into assets/*.min.*
+├── scripts/map-demo-sync.js   Copies the map animation demos into assets/demo/map-animation/
 ├── assets/
 │   ├── style.min.css      Built stylesheet (committed; do not edit by hand)
 │   ├── app.min.js         Built JavaScript (committed; do not edit by hand)
@@ -548,6 +555,7 @@ raisul-sohan/
 │   ├── fonts.css          Self-hosted @font-face declarations
 │   ├── fonts/             Noto Serif and Noto Sans Bengali (woff2 files)
 │   ├── img/               Portfolio artwork
+│   ├── demo/              Demo animations; map-animation/ is played by /map-animation-demo/
 │   └── cv/                The CV as a PDF, linked from /cv/
 ├── header.php / footer.php   Document header, footer and modal shells
 ├── index.php / single.php / page.php / 404.php   Templates

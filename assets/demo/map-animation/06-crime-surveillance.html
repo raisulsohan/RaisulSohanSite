@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Surveillance Track Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<script src="lib/kit.js?v=415f4781"></script>
+<script src="lib/city.js?v=3eafbebb"></script>
+<script src="audio/vo-env.js?v=d3018d45"></script>
+<script src="lib/player.js?v=fc9ee7d5"></script>
+</head>
+<body>
+<script>
+// 06 · Crime documentary: surveillance reconstruction — night map, timestamped route, CCTV stills, cell-tower triangulation, SIGNAL LOST.
+// The city and subject are fictional.
+const EV = [
+  { T: .8, clock: 21 * 60 + 14, time: '21:14', txt: 'LEAVES OFFICE', icon: 'pin' },
+  { T: 2.6, clock: 21 * 60 + 47, time: '21:47', txt: 'ATM WITHDRAWAL', icon: '$', cam: 'CAM 03' },
+  { T: 4.2, clock: 22 * 60 + 3, time: '22:03', txt: 'CCTV — 5TH AVE', icon: 'cam', cam: 'CAM 07' },
+  { T: 6.4, clock: 22 * 60 + 31, time: '22:31', txt: 'PHONE GOES OFFLINE', icon: 'phone' },
+];
+MapPlayer({
+  title: '06 · Surveillance',
+  vo: ['audio/06-vo.mp3'],
+  // with a voice: each time stamp in the voice lands on its event on the map; 'went silent' on SIGNAL LOST
+  voWarp: [[0.3, 0.75], [2.9, 2.6], [5.75, 4.2], [9.1, 6.4], [12.3, 8.9]],
+  score: {
+    bpm: 100, root: 41, seed: 61, chords: [[0, 3, 7, 12], [-2, 3, 7, 10], [-4, 0, 3, 8], [-5, -1, 2, 7]],
+    drone: .045, pad: .02, padCut: 650, pulse: .045, pulseFrom: .8, hats: .018, hatsFrom: .8, wet: .45,
+    cues: [[.2, 'glitch', .25, .18], ...EV.map((e, i) => [e.T, 'blip', 1 + i * .15, .13]), [2.65, 'glitch', .18, .14], [4.25, 'glitch', .18, .14],
+      ...Array.from({ length: 22 }, (_, i) => [.9 + i * .25, 'tick', .05]), [6.8, 'riser', 1.9, .22], [7.0, 'blip', .7, .1], [7.2, 'blip', .8, .1], [7.4, 'blip', .9, .1],
+      [8.75, 'hit', .7], [8.9, 'glitch', .6, .32], [9.0, 'note', 46, .14, 3]]
+  },
+  async setup(stage, { W, H, VERT }) {
+    await K.fonts(['400 22px "Share Tech Mono"', '700 90px Oswald', '500 22px Oswald']);
+    const cv = K.canvas(W, H); stage.appendChild(cv); const g = cv.getContext('2d');
+    const { ease: E, prog, lerp, clamp } = K;
+    const city = K.city(11, 3400, 2000);
+    const nx = x => city.xs.reduce((b, v) => Math.abs(v - x) < Math.abs(b - x) ? v : b), ny = y => city.ys.reduce((b, v) => Math.abs(v - y) < Math.abs(b - y) ? v : b);
+    const ROUTE = [[500, 380], [1150, 380], [1150, 760], [1750, 760], [1750, 860], [2150, 860]].map(([x, y]) => [nx(x), ny(y)]);
+    const cum = [0]; for (let i = 1; i < ROUTE.length; i++) cum.push(cum[i - 1] + Math.hypot(ROUTE[i][0] - ROUTE[i - 1][0], ROUTE[i][1] - ROUTE[i - 1][1]));
+    const EVL = [0, cum[2], cum[3], cum[5]];          // length along the route where each event happens
+    const END = ROUTE[ROUTE.length - 1];
+    const TOWERS = [[-430, -310], [400, -350], [60, 420]].map(([dx, dy]) => [END[0] + dx, END[1] + dy]);
+    const grain = K.grainTile(23, 256, 90);
+    const scan = K.canvas(W, H); { const s = scan.getContext('2d'); s.fillStyle = 'rgba(0,0,0,.22)'; for (let y = 0; y < H; y += 3) s.fillRect(0, y, W, 1); }
+
+    const atLen = L => {
+      L = clamp(L, 0, cum[cum.length - 1]);
+      for (let i = 1; i < cum.length; i++) if (L <= cum[i]) { const u = (L - cum[i - 1]) / (cum[i] - cum[i - 1]), a = ROUTE[i - 1], b = ROUTE[i]; return { p: [lerp(a[0], b[0], u), lerp(a[1], b[1], u)], ang: Math.atan2(b[1] - a[1], b[0] - a[0]), i }; }
+    };
+    const lenAt = t => {
+      if (t <= EV[0].T) return 0;
+      for (let k = 1; k < EV.length; k++) if (t <= EV[k].T) return lerp(EVL[k - 1], EVL[k], E.inOutSine(prog(t, EV[k - 1].T + (k > 1 ? .35 : 0), EV[k].T)));
+      return EVL[EVL.length - 1];
+    };
+    const clockAt = t => {
+      if (t <= EV[0].T) return EV[0].clock * 60;
+      for (let k = 1; k < EV.length; k++) if (t <= EV[k].T) return lerp(EV[k - 1].clock, EV[k].clock, prog(t, EV[k - 1].T, EV[k].T)) * 60;
+      return EV[3].clock * 60 + (t - EV[3].T) * 4;
+    };
+    const fmtClock = s => `${String(Math.floor(s / 3600)).padStart(2, '0')}:${String(Math.floor(s / 60) % 60).padStart(2, '0')}:${String(Math.floor(s) % 60).padStart(2, '0')}`;
+
+    // CCTV stills (fictional, abstract)
+    const still = seed => {
+      const c = K.canvas(340, 192), s = c.getContext('2d'), R = K.rng(seed);
+      const bg = s.createLinearGradient(0, 0, 0, 192); bg.addColorStop(0, '#1b2224'); bg.addColorStop(1, '#353d3b'); s.fillStyle = bg; s.fillRect(0, 0, 340, 192);
+      s.fillStyle = '#0d1112'; s.beginPath(); s.moveTo(0, 192); s.lineTo(120, 70); s.lineTo(220, 70); s.lineTo(340, 192); s.fill();
+      const l = s.createRadialGradient(250, 40, 0, 250, 40, 140); l.addColorStop(0, 'rgba(230,240,220,.55)'); l.addColorStop(1, 'rgba(230,240,220,0)'); s.fillStyle = l; s.fillRect(0, 0, 340, 192);
+      s.fillStyle = '#050707'; const fx = 140 + R() * 60; s.beginPath(); s.ellipse(fx, 96, 7, 8, 0, 0, 7); s.fill(); s.beginPath(); s.moveTo(fx - 12, 108); s.lineTo(fx + 12, 108); s.lineTo(fx + 9, 150); s.lineTo(fx - 9, 150); s.fill();
+      const id = s.getImageData(0, 0, 340, 192), d = id.data;
+      for (let i = 0; i < d.length; i += 4) { const v = d[i] * .3 + d[i + 1] * .6 + d[i + 2] * .1 + (R() - .5) * 46; d[i] = v * .85; d[i + 1] = v * 1.05; d[i + 2] = v * .9; }
+      s.putImageData(id, 0, 0); return c;
+    };
+    const STILL = [still(4), still(9)];
+
+    const cam = t => {
+      const f = atLen(lenAt(Math.max(0, t - .5))).p, end = prog(t, 6.6, 7.7), mid = [(TOWERS[0][0] + TOWERS[1][0] + TOWERS[2][0]) / 3, (TOWERS[0][1] + TOWERS[1][1] + TOWERS[2][1]) / 3];
+      const e = E.inOut(end);
+      const z = K.track([[0, .9], [.8, .92], [1.9, 1.25], [6.5, 1.3], [7.7, .92], [10, .98, 'inOutSine']], t);
+      // keep the view inside the drawn city (rotation needs a margin)
+      const mx = W * .62 / z - 150, my = H * .7 / z - 150;
+      return { cx: clamp(lerp(f[0], mid[0], e), mx, city.Wd - mx), cy: clamp(lerp(f[1], mid[1], e), my, city.Hd - my), z, a: -.1 + .02 * Math.sin(t * .4) };
+    };
+    let M;
+    const toS = p => { const q = M.transformPoint(new DOMPoint(p[0], p[1])); return [q.x, q.y]; };
+    const mono = (s, x, y, o = {}) => K.text(g, s, x, y, { font: `400 ${o.size || 20}px "Share Tech Mono"`, color: o.color || 'rgba(140,235,230,.9)', align: o.align, alpha: o.alpha ?? 1, spacing: o.spacing ?? 1 });
+    function icon(kind, x, y, a) {
+      g.save(); g.globalAlpha = a; g.translate(x, y);
+      g.fillStyle = 'rgba(6,16,20,.9)'; g.strokeStyle = '#ff3b4a'; g.lineWidth = 2; g.beginPath(); g.roundRect(-17, -17, 34, 34, 6); g.fill(); g.stroke();
+      g.strokeStyle = g.fillStyle = '#ff6b76'; g.lineWidth = 2.2;
+      if (kind === '$') K.text(g, '$', 0, 8, { font: '700 24px Oswald', color: '#ff6b76', align: 'center' });
+      else if (kind === 'cam') { g.strokeRect(-10, -6, 14, 11); g.beginPath(); g.moveTo(4, -2); g.lineTo(11, -6); g.lineTo(11, 7); g.lineTo(4, 3); g.stroke(); }
+      else if (kind === 'phone') { g.strokeRect(-6, -11, 12, 22); g.beginPath(); g.moveTo(-12, 12); g.lineTo(12, -12); g.stroke(); }
+      else { g.beginPath(); g.arc(0, -3, 6, 0, 7); g.stroke(); g.beginPath(); g.moveTo(0, 3); g.lineTo(0, 11); g.stroke(); }
+      g.restore();
+    }
+
+    return (t, frame) => {
+      const C = cam(t);
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      g.translate(W / 2, H / 2); g.rotate(C.a); g.scale(C.z, C.z); g.translate(-C.cx, -C.cy);
+      M = g.getTransform();
+      K.drawCity(g, city, { bg: '#060c11', bld: '#0e1a22', park: '#0b1a15', lot: '#0a141a', water: '#02070a', waterEdge: '#0f3644', minor: '#132b34', major: '#1d4a56', glow: 'rgba(40,160,180,.07)', bridge: '#1d4a56' });
+
+      // tower rings (world units)
+      const tw = prog(t, 6.6, 6.9);
+      if (tw > 0) TOWERS.forEach((T, i) => {
+        const d = Math.hypot(END[0] - T[0], END[1] - T[1]), r = d * E.out(prog(t, 6.85 + i * .15, 7.8 + i * .15));
+        if (r <= 0) return;
+        g.beginPath(); g.arc(T[0], T[1], r, 0, 7); g.strokeStyle = 'rgba(80,220,255,.13)'; g.lineWidth = 80; g.stroke();
+        g.strokeStyle = 'rgba(120,235,255,.55)'; g.lineWidth = 2 / C.z; g.setLineDash([14 / C.z, 10 / C.z]); g.stroke(); g.setLineDash([]);
+      });
+
+      // route trail
+      const L = lenAt(t), hd = atLen(L), lost = t > 8.9;
+      if (t >= EV[0].T) {
+        const pts = ROUTE.slice(0, hd.i).concat([hd.p]);
+        g.lineCap = g.lineJoin = 'round';
+        K.polyline(g, pts); g.strokeStyle = 'rgba(255,45,61,.18)'; g.lineWidth = 26; g.stroke();
+        K.polyline(g, pts); g.strokeStyle = '#ff2d3d'; g.lineWidth = 6; g.stroke();
+      }
+
+      // ── screen space from here
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      // event icons + labels
+      EV.forEach((e, k) => {
+        const a = E.out(prog(t, e.T, e.T + .3)); if (a <= 0) return;
+        const [x, y] = toS(atLen(EVL[k]).p);
+        icon(e.icon, x, y - 44, a);
+        g.strokeStyle = `rgba(255,59,74,${a})`; g.lineWidth = 1.5; g.beginPath(); g.moveTo(x, y - 27); g.lineTo(x, y - 8); g.stroke();
+        mono(e.time, x + 26, y - 50, { color: '#ff6b76', size: 20, alpha: a });
+        mono(e.txt, x + 26, y - 28, { size: 16, alpha: a * .9 });
+      });
+      // towers
+      if (tw > 0) TOWERS.forEach((T, i) => {
+        const [x, y] = toS(T), a = E.outBack(prog(t, 6.6 + i * .1, 6.9 + i * .1));
+        g.save(); g.translate(x, y); g.scale(a, a); g.strokeStyle = '#7fe9ff'; g.lineWidth = 2.5;
+        g.beginPath(); g.moveTo(-12, 18); g.lineTo(0, -16); g.lineTo(12, 18); g.moveTo(-7, 4); g.lineTo(7, 4); g.stroke();
+        for (const r of [10, 18]) { g.beginPath(); g.arc(0, -16, r, -2.4, -.75); g.stroke(); }
+        g.restore(); mono(`TOWER ${String.fromCharCode(65 + i)}`, x, y + 44, { align: 'center', size: 16, alpha: a });
+      });
+      // last known area
+      const la = prog(t, 7.9, 8.8);
+      if (la > 0) {
+        const [x, y] = toS(END), r = lerp(190, 70, E.inOut(la)) * C.z;
+        g.beginPath(); g.arc(x, y, r, 0, 7); g.fillStyle = `rgba(255,45,61,${.12 * Math.min(1, la * 3)})`; g.fill();
+        g.setLineDash([10, 8]); g.strokeStyle = '#ff3b4a'; g.lineWidth = 2.5; g.stroke(); g.setLineDash([]);
+        mono('LAST KNOWN AREA  ±80 M', x, y + r + 30, { align: 'center', color: '#ff6b76', size: 18, alpha: Math.min(1, la * 3) });
+      }
+      // subject marker
+      if (t >= EV[0].T - .2 && !(lost && Math.floor(t * 8) % 2)) {
+        const [x, y] = toS(hd.p), pu = (t * 1.6) % 1, ma = lost ? 1 - prog(t, 9.4, 9.8) : 1;
+        g.save(); g.globalAlpha = ma;
+        g.beginPath(); g.arc(x, y, 12 + 30 * pu, 0, 7); g.strokeStyle = `rgba(255,59,74,${1 - pu})`; g.lineWidth = 2; g.stroke();
+        const gl = g.createRadialGradient(x, y, 0, x, y, 30); gl.addColorStop(0, 'rgba(255,90,100,.9)'); gl.addColorStop(1, 'rgba(255,40,60,0)'); g.fillStyle = gl; g.beginPath(); g.arc(x, y, 30, 0, 7); g.fill();
+        g.beginPath(); g.arc(x, y, 8, 0, 7); g.fillStyle = '#fff'; g.fill();
+        if (t < EV[3].T) { g.translate(x, y); g.rotate(hd.ang + C.a); g.beginPath(); g.moveTo(24, 0); g.lineTo(14, -7); g.lineTo(14, 7); g.closePath(); g.fillStyle = '#ff3b4a'; g.fill(); }
+        g.restore();
+      }
+      // CCTV popups
+      [[1, 0], [2, 1]].forEach(([k, si]) => {
+        const e = EV[k], u = prog(t, e.T, e.T + 1.5); if (u <= 0 || u >= 1) return;
+        const a = Math.min(1, u * 8, (1 - u) * 6), [x, y] = toS(atLen(EVL[k]).p), bx = clamp(x + 70, 40, W - 420), by = clamp(y - 300, VERT ? 230 : 150, H - (VERT ? 470 : 280));
+        const jit = u < .08 ? (K.hash(frame) - .5) * 20 : 0;
+        g.save(); g.globalAlpha = a; g.translate(bx + jit, by);
+        g.fillStyle = 'rgba(4,10,12,.92)'; g.fillRect(-6, -34, 352, 236); g.strokeStyle = 'rgba(120,235,230,.6)'; g.lineWidth = 1.5; g.strokeRect(-6, -34, 352, 236);
+        g.drawImage(STILL[si], 0, 0);
+        g.drawImage(scan, 0, 0, 340, 192, 0, 0, 340, 192);
+        mono(`${e.cam}  ·  ${e.time}:${String(17 + k * 12).padStart(2, '0')}`, 4, -12, { size: 17 });
+        if (Math.floor(t * 3) % 2) { g.fillStyle = '#ff2d3d'; g.beginPath(); g.arc(318, -18, 6, 0, 7); g.fill(); }
+        g.strokeStyle = '#ff3b4a'; g.lineWidth = 2; g.strokeRect(118 + k * 12, 70, 70, 96);
+        mono('SUBJECT?', 120 + k * 12, 186, { size: 14, color: '#ff6b76' });
+        g.restore();
+      });
+
+      // timeline panel
+      const pa = E.out(prog(t, .5, 1.0));
+      g.save(); g.globalAlpha = pa;
+      const px = VERT ? 64 : 1500, py = VERT ? H - 350 : 200;
+      g.fillStyle = 'rgba(3,9,12,.78)'; g.fillRect(px - 24, py - 50, 380, 66 + EV.length * 70); g.strokeStyle = 'rgba(120,235,230,.25)'; g.strokeRect(px - 24, py - 50, 380, 66 + EV.length * 70);
+      mono('SUBJECT MOVEMENTS', px, py - 18, { size: 18, spacing: 3 });
+      EV.forEach((e, k) => {
+        const a = E.out(prog(t, e.T, e.T + .3)), y = py + 30 + k * 70, cur = t >= e.T && (k === EV.length - 1 || t < EV[k + 1].T);
+        if (cur) { g.fillStyle = 'rgba(255,45,61,.18)'; g.fillRect(px - 24, y - 30, 380, 62); g.fillStyle = '#ff2d3d'; g.fillRect(px - 24, y - 30, 4, 62); }
+        mono(e.time, px, y, { size: 24, color: a > 0 ? '#ff6b76' : 'rgba(140,235,230,.25)' });
+        mono(a > 0 ? e.txt : '— — —', px + 90, y, { size: 18, color: `rgba(200,240,240,${a > 0 ? .9 : .25})` });
+      });
+      g.restore();
+
+      // HUD
+      g.strokeStyle = 'rgba(140,235,230,.6)'; g.lineWidth = 2;
+      for (const [x, y, sx, sy] of [[40, 40, 1, 1], [W - 40, 40, -1, 1], [40, H - 40, 1, -1], [W - 40, H - 40, -1, -1]]) { g.beginPath(); g.moveTo(x, y + sy * 46); g.lineTo(x, y); g.lineTo(x + sx * 46, y); g.stroke(); }
+      if (Math.floor(t * 2) % 2 === 0) { g.fillStyle = '#ff2d3d'; g.beginPath(); g.arc(92, 96, 9, 0, 7); g.fill(); }
+      mono('REC', 110, 103, { color: '#ff6b76', size: 22 });
+      mono('SURVEILLANCE RECONSTRUCTION', 92, 140, { size: 22, spacing: 3 });
+      mono('SUBJECT 01  ·  RIVERSIDE', 92, 168, { size: 17, color: 'rgba(140,235,230,.6)', spacing: 2 });
+      mono(fmtClock(clockAt(t)), W - 92, 108, { size: 40, align: 'right', color: '#e8fbfa' });
+      mono('LOCAL TIME  ·  OCT 14', W - 92, 140, { size: 16, align: 'right', color: 'rgba(140,235,230,.6)', spacing: 2 });
+      const sbx = VERT ? W - 92 - 200 * C.z : 92; g.fillStyle = 'rgba(140,235,230,.7)'; g.fillRect(sbx, H - 96, 200 * C.z, 3); mono('200 M', sbx, H - 106, { size: 15 });
+
+      // SIGNAL LOST
+      const sl = prog(t, 8.9, 9.1);
+      if (sl > 0) {
+        for (let i = 0; i < 7; i++) {   // horizontal glitch slices
+          if (t > 9.35) break;
+          const y = Math.floor(K.hash(frame * 13 + i) * H), h = 10 + K.hash(frame * 7 + i) * 50, dx = (K.hash(frame * 3 + i) - .5) * 120;
+          g.drawImage(cv, 0, y, W, h, dx, y, W, h);
+        }
+        const ox = t < 9.4 ? (K.hash(frame) - .5) * 14 : 0;
+        g.globalCompositeOperation = 'lighter';
+        K.text(g, 'SIGNAL LOST', W / 2 - 6 + ox, H / 2 - 120, { font: '700 110px Oswald', color: 'rgba(255,0,40,.8)', align: 'center', spacing: 10 });
+        K.text(g, 'SIGNAL LOST', W / 2 + 6 - ox, H / 2 - 120, { font: '700 110px Oswald', color: 'rgba(0,220,255,.6)', align: 'center', spacing: 10 });
+        g.globalCompositeOperation = 'source-over';
+        K.text(g, 'SIGNAL LOST', W / 2, H / 2 - 120, { font: '700 110px Oswald', color: '#fff', align: 'center', spacing: 10, alpha: .9 });
+        mono('22:31:06  ·  LAST PING TOWER B', W / 2, H / 2 - 70, { align: 'center', size: 22, color: '#ff6b76', spacing: 3 });
+      }
+
+      g.drawImage(scan, 0, 0);
+      K.drawGrain(g, grain, W, H, frame, .08);
+      K.vignette(g, W, H, .5, 'rgba(0,4,6,.75)');
+    };
+  }
+});
+</script>
+</body>
+</html>

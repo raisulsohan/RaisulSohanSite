@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evidence Board Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Caveat:wght@600;700&family=Playfair+Display:ital,wght@0,900;1,400&family=Anton&display=swap" rel="stylesheet">
+<script src="lib/kit.js?v=415f4781"></script>
+<script src="lib/city.js?v=3eafbebb"></script>
+<script src="audio/vo-env.js?v=d3018d45"></script>
+<script src="lib/player.js?v=fc9ee7d5"></script>
+</head>
+<body>
+<script>
+// 05 · Crime documentary: detective evidence board — city map pinned to cork, polaroids, red string, clipping, UNSOLVED stamp.
+// The city, case and newspaper are fictional.
+MapPlayer({
+  title: '05 · Evidence board',
+  vo: ['audio/05-vo.mp3'],
+  // with a voice: 'last seen' on the LAST SEEN note; 'His car turned up' on the clipping; 'He never did' on UNSOLVED
+  voWarp: [[3.3, 3.3], [4.7, 5.15], [6.55, 6.6], [8.75, 8.2]],
+  score: {
+    bpm: 70, root: 38, seed: 51, chords: [[0, 3, 7, 10], [-2, 2, 5, 10], [-4, 0, 3, 7], [-5, -2, 2, 7]],
+    drone: .05, pad: .022, padCut: 520, wet: .55,
+    cues: [...Array.from({ length: 10 }, (_, i) => [i + .02, 'tick', .07]), [.6, 'type', 10, 1.0, .16], [1.7, 'type', 18, 1.0, .12],
+      [1.0, 'hit', .22], [1.02, 'tick', .25], [1.0, 'note', 62, .12], [2.0, 'hit', .22], [2.02, 'tick', .25], [2.0, 'note', 65, .12],
+      [2.9, 'hit', .22], [2.92, 'tick', .25], [2.9, 'note', 61, .13], [3.5, 'scribble', .8, .08], [4.3, 'scribble', .7, .08],
+      [5.2, 'tick', .2], [5.4, 'scribble', .6, .22], [6.0, 'scribble', .25, .18], [6.0, 'note', 57, .12], [6.6, 'whoosh', .6, .25],
+      [8.2, 'boom', .65], [8.2, 'note', 50, .13, 3]]
+  },
+  async setup(stage, { W, H, VERT }) {
+    await K.fonts(['400 30px "Special Elite"', '700 30px Caveat', '900 44px "Playfair Display"', 'italic 400 18px "Playfair Display"', '400 80px Anton']);
+    const cv = K.canvas(W, H); stage.appendChild(cv); const g = cv.getContext('2d');
+    const { ease: E, prog, lerp } = K;
+    const city = K.city(7);
+
+    // ── board geometry (board units ≈ screen px at zoom 1)
+    // 4:5: a taller board, photos above and below the map
+    const BX = -160, BY = VERT ? -560 : -120, BW = 2240, BH = VERT ? 2200 : 1320, BS = VERT ? 1.3 : 1.6;
+    const P = { x: 330, y: 150, w: 1180, h: 760, rot: -.021 }, PC = [P.x + P.w / 2, P.y + P.h / 2];
+    const CROP = { x: 300, y: 250, s: .59 };
+    const rot = (x, y, a, c) => { const dx = x - c[0], dy = y - c[1]; return [c[0] + dx * Math.cos(a) - dy * Math.sin(a), c[1] + dx * Math.sin(a) + dy * Math.cos(a)]; };
+    const onMap = (wx, wy) => rot(P.x + (wx - CROP.x) * CROP.s, P.y + (wy - CROP.y) * CROP.s, P.rot, PC);
+    const nearest = (x, y) => { const i = city.xs.reduce((b, v, k) => Math.abs(v - x) < Math.abs(city.xs[b] - x) ? k : b, 0), j = city.ys.reduce((b, v, k) => Math.abs(v - y) < Math.abs(city.ys[b] - y) ? k : b, 0); return [city.xs[i], city.ys[j]]; };
+    const bx = [...city.majX].map(i => city.xs[i]).reduce((b, v) => Math.abs(v - 1300) < Math.abs(b - 1300) ? v : b);
+    const by = city.river.pts.reduce((b, p) => Math.abs(p[0] - bx) < Math.abs(b[0] - bx) ? p : b)[1];
+    const LOC = { home: onMap(...nearest(650, 480)), ware: onMap(...nearest(1950, 860)), bridge: onMap(bx, by) };
+
+    // ── static board: cork + printed city map
+    const board = K.canvas(BW * BS, BH * BS);
+    {
+      const b = board.getContext('2d'), R = K.rng(3);
+      b.fillStyle = '#8b6a44'; b.fillRect(0, 0, board.width, board.height);
+      const cork = K.paper(board.width, board.height, 9, 2.2);
+      b.globalCompositeOperation = 'overlay'; b.drawImage(cork, 0, 0); b.globalCompositeOperation = 'source-over';
+      for (let i = 0; i < 60000; i++) { b.fillStyle = R() < .6 ? `rgba(40,25,10,${.15 + R() * .3})` : `rgba(220,180,120,${.1 + R() * .2})`; const s = 1 + R() * 3; b.fillRect(R() * board.width, R() * board.height, s, s); }
+      b.setTransform(BS, 0, 0, BS, -BX * BS, -BY * BS);
+      // a few old, unrelated notes for clutter
+      const CLUTTER = VERT ? [[-80, -420, 230, 160, -.06, '#e9e3d2'], [1580, -460, 210, 140, .06, '#efe9da'], [1620, 1100, 180, 160, -.05, '#f1d65c'], [40, 1180, 260, 120, .03, '#ece6d6'], [1580, 600, 210, 140, .06, '#efe9da']]
+        : [[1640, 640, 210, 140, .06, '#efe9da'], [-60, 640, 230, 160, -.08, '#e9e3d2'], [1700, 960, 180, 160, -.05, '#f1d65c'], [80, 980, 260, 120, .03, '#ece6d6']];
+      for (const [x, y, w, h, r, c] of CLUTTER) {
+        b.save(); b.translate(x + w / 2, y + h / 2); b.rotate(r); b.shadowColor = 'rgba(0,0,0,.4)'; b.shadowBlur = 14; b.shadowOffsetY = 6;
+        b.fillStyle = c; b.fillRect(-w / 2, -h / 2, w, h); b.shadowColor = 'transparent';
+        b.strokeStyle = 'rgba(40,40,60,.35)'; b.lineWidth = 2; for (let k = 0; k < 4; k++) { b.beginPath(); b.moveTo(-w / 2 + 18, -h / 2 + 34 + k * 26); b.lineTo(-w / 2 + 18 + (w - 50) * (.5 + R() * .5), -h / 2 + 34 + k * 26 + (R() - .5) * 4); b.stroke(); }
+        b.restore();
+      }
+      // map paper
+      b.save(); b.translate(...PC); b.rotate(P.rot); b.translate(-PC[0], -PC[1]);
+      b.shadowColor = 'rgba(0,0,0,.5)'; b.shadowBlur = 30; b.shadowOffsetY = 12; b.fillStyle = '#ece8dd'; b.fillRect(P.x, P.y, P.w, P.h); b.shadowColor = 'transparent';
+      b.save(); b.beginPath(); b.rect(P.x + 26, P.y + 26, P.w - 52, P.h - 52); b.clip();
+      b.translate(P.x, P.y); b.scale(CROP.s, CROP.s); b.translate(-CROP.x, -CROP.y);
+      K.drawCity(b, city, { bg: '#dcd6c9', bld: '#c9c2b2', park: '#c4cfb0', lot: '#d3cdbf', water: '#a9b9c0', minor: '#f4f1e9', major: '#fffdf7', bridge: '#fffdf7' });
+      b.font = '600 22px "Special Elite"'; b.fillStyle = 'rgba(90,82,70,.85)'; b.textAlign = 'center';
+      for (const n of city.names.slice(0, 9)) {
+        if (n.v) { b.save(); b.translate(n.x, 560 + (n.x % 300)); b.rotate(-Math.PI / 2); b.fillText(n.name, 0, 7); b.restore(); }
+        else b.fillText(n.name, 900 + (n.y % 500), n.y + 7);
+      }
+      b.restore();
+      b.strokeStyle = '#6f685c'; b.lineWidth = 2; b.strokeRect(P.x + 26, P.y + 26, P.w - 52, P.h - 52);
+      b.fillStyle = '#ece8dd'; b.fillRect(P.x + 40, P.y + 40, 330, 50); b.strokeRect(P.x + 40, P.y + 40, 330, 50);
+      b.font = '400 24px "Special Elite"'; b.fillStyle = '#4b453c'; b.textAlign = 'left'; b.fillText('RIVERSIDE — CITY MAP', P.x + 56, P.y + 74);
+      // folds
+      for (const fx of [P.x + P.w / 3, P.x + P.w * 2 / 3]) { b.fillStyle = 'rgba(0,0,0,.07)'; b.fillRect(fx, P.y, 3, P.h); b.fillStyle = 'rgba(255,255,255,.25)'; b.fillRect(fx + 3, P.y, 2, P.h); }
+      b.fillStyle = 'rgba(0,0,0,.06)'; b.fillRect(P.x, P.y + P.h / 2, P.w, 3);
+      // age: paper texture, yellowing at the edges, a coffee ring
+      b.save(); b.beginPath(); b.rect(P.x, P.y, P.w, P.h); b.clip();
+      b.globalCompositeOperation = 'overlay'; b.globalAlpha = .8; b.drawImage(K.paper(P.w, P.h, 33, 1.6), P.x, P.y); b.globalAlpha = 1;
+      b.globalCompositeOperation = 'multiply';
+      const yg = b.createRadialGradient(PC[0], PC[1], P.h * .3, PC[0], PC[1], P.w * .65); yg.addColorStop(0, 'rgba(255,255,255,0)'); yg.addColorStop(1, 'rgba(200,170,110,.55)');
+      b.fillStyle = yg; b.fillRect(P.x, P.y, P.w, P.h);
+      b.strokeStyle = 'rgba(120,80,40,.35)'; b.lineWidth = 9; b.filter = 'blur(2px)'; b.beginPath(); b.arc(P.x + P.w - 190, P.y + 160, 78, .3, 5.9); b.stroke();
+      b.lineWidth = 3; b.beginPath(); b.arc(P.x + P.w - 186, P.y + 164, 70, 0, 6.28); b.stroke(); b.filter = 'none';
+      b.restore();
+      b.restore();
+    }
+
+    // ── props drawn once
+    const photo = kind => {
+      const c = K.canvas(400, 380), p = c.getContext('2d'), R = K.rng(kind.length * 17);
+      const sky = p.createLinearGradient(0, 0, 0, 380); sky.addColorStop(0, '#1a1d22'); sky.addColorStop(1, '#3b3a36'); p.fillStyle = sky; p.fillRect(0, 0, 400, 380);
+      p.fillStyle = '#0b0c0e';
+      if (kind === 'home') {
+        p.beginPath(); p.moveTo(60, 380); p.lineTo(60, 210); p.lineTo(200, 110); p.lineTo(340, 210); p.lineTo(340, 380); p.fill();
+        p.fillStyle = '#e8c27a'; p.fillRect(230, 240, 50, 46); p.fillStyle = 'rgba(232,194,122,.25)'; p.beginPath(); p.arc(255, 262, 70, 0, 7); p.fill();
+        p.fillStyle = '#0b0c0e'; p.fillRect(110, 280, 50, 100);
+      } else if (kind === 'ware') {
+        p.fillRect(20, 150, 360, 230); p.strokeStyle = '#1d2024'; p.lineWidth = 3; for (let x = 30; x < 380; x += 14) { p.beginPath(); p.moveTo(x, 155); p.lineTo(x, 380); p.stroke(); }
+        p.fillStyle = '#26282b'; p.fillRect(140, 250, 120, 130);
+        const l = p.createRadialGradient(330, 120, 0, 330, 120, 160); l.addColorStop(0, 'rgba(255,230,180,.7)'); l.addColorStop(1, 'rgba(255,230,180,0)'); p.fillStyle = l; p.fillRect(150, 0, 250, 300);
+        p.font = '700 34px Anton'; p.fillStyle = 'rgba(200,200,190,.5)'; p.fillText('7', 192, 230);
+      } else {
+        p.fillStyle = '#2b2e31'; p.fillRect(0, 260, 400, 120);
+        p.strokeStyle = '#0b0c0e'; p.lineWidth = 16; p.beginPath(); p.moveTo(-10, 200); p.quadraticCurveTo(200, 100, 410, 200); p.stroke();
+        p.lineWidth = 10; p.beginPath(); p.moveTo(-10, 210); p.lineTo(410, 210); p.stroke();
+        for (let x = 30; x < 400; x += 46) { p.lineWidth = 4; p.beginPath(); p.moveTo(x, 210); p.lineTo(x, 155 + Math.abs(x - 200) * .25); p.stroke(); }
+        for (let i = 0; i < 14; i++) { p.strokeStyle = `rgba(180,190,200,${.08 + R() * .1})`; p.lineWidth = 2; const y = 275 + i * 7; p.beginPath(); p.moveTo(R() * 200, y); p.lineTo(200 + R() * 200, y); p.stroke(); }
+        const f = p.createLinearGradient(0, 120, 0, 300); f.addColorStop(0, 'rgba(160,165,170,0)'); f.addColorStop(1, 'rgba(160,165,170,.35)'); p.fillStyle = f; p.fillRect(0, 0, 400, 380);
+      }
+      const id = p.getImageData(0, 0, 400, 380), d = id.data;
+      for (let i = 0; i < d.length; i += 4) { const v = (d[i] * .3 + d[i + 1] * .59 + d[i + 2] * .11) + (R() - .5) * 34; d[i] = v * 1.08; d[i + 1] = v * 1.0; d[i + 2] = v * .88; }
+      p.putImageData(id, 0, 0); K.vignette(p, 400, 380, .4, 'rgba(0,0,0,.6)');
+      return c;
+    };
+    const PH = { home: photo('home'), ware: photo('ware'), bridge: photo('bridge') };
+    const stamp = (() => {
+      const c = K.canvas(760, 240), s = c.getContext('2d'), R = K.rng(8);
+      s.strokeStyle = s.fillStyle = '#b3141c'; s.lineWidth = 12; s.beginPath(); s.roundRect(14, 14, 732, 212, 18); s.stroke();
+      s.lineWidth = 4; s.beginPath(); s.roundRect(34, 34, 692, 172, 10); s.stroke();
+      s.font = '400 150px Anton'; s.textAlign = 'center'; s.textBaseline = 'middle'; if ('letterSpacing' in s) s.letterSpacing = '14px'; s.fillText('UNSOLVED', 386, 126);
+      s.globalCompositeOperation = 'destination-out';
+      for (let i = 0; i < 2600; i++) { s.globalAlpha = .3 + R() * .7; s.beginPath(); s.arc(R() * 760, R() * 240, R() * 2.6, 0, 7); s.fill(); }
+      for (let i = 0; i < 14; i++) { s.globalAlpha = .5; s.lineWidth = 1 + R() * 3; s.beginPath(); const y = R() * 240; s.moveTo(R() * 300, y); s.lineTo(300 + R() * 460, y + (R() - .5) * 20); s.stroke(); }
+      return c;
+    })();
+    const clip = (() => {
+      const c = K.canvas(440, 320), n = c.getContext('2d'), R = K.rng(12);
+      n.beginPath(); n.moveTo(4, 8); for (let x = 4; x <= 436; x += 12) n.lineTo(x, 4 + R() * 8); for (let y = 8; y <= 316; y += 12) n.lineTo(432 + R() * 8, y); for (let x = 436; x >= 4; x -= 12) n.lineTo(x, 308 + R() * 9); for (let y = 316; y >= 8; y -= 12) n.lineTo(R() * 8, y); n.closePath();
+      n.fillStyle = '#ebe5d2'; n.fill(); n.save(); n.clip();
+      n.font = '400 13px "Special Elite"'; n.fillStyle = '#5a554b'; n.fillText('THE RIVERSIDE HERALD  ·  OCT 16', 24, 32); n.fillRect(24, 40, 392, 1.5);
+      n.font = '900 40px "Playfair Display"'; n.fillStyle = '#1b1915'; n.fillText('LOCAL MAN', 24, 92); n.fillText('MISSING', 24, 136);
+      n.font = 'italic 400 17px "Playfair Display"'; n.fillStyle = '#3d3a33'; n.fillText('Police search riverfront after car', 24, 170); n.fillText('found abandoned near Elm St bridge', 24, 192);
+      n.fillStyle = 'rgba(60,57,50,.45)'; for (let k = 0; k < 4; k++) for (let col = 0; col < 2; col++) n.fillRect(24 + col * 200, 214 + k * 22, 170 - R() * 40, 8);
+      n.fillStyle = '#2a2925'; n.fillRect(300, 56, 116, 96); n.drawImage(PH.bridge, 300, 56, 116, 96);
+      n.restore(); return c;
+    })();
+    const grain = K.grainTile(19, 256, 70);
+    const circ = []; { const r = K.rng(5); for (let i = 0; i <= 120; i++) { const a = -2.4 + i / 120 * Math.PI * 2.2, rr = 74 * (1 + .06 * Math.sin(3 * a + 1)) + (r() - .5) * 2 + i * .05; circ.push([Math.cos(a) * rr * 1.25, Math.sin(a) * rr]); } }
+
+    // ── drawing helpers (board units)
+    function pin(x, y, u, col = '#c3161f') {
+      if (u <= 0) return;
+      const s = 1 + (1 - E.out(u)) * .8, sh = 4 + 14 * (1 - E.out(u));
+      g.save(); g.globalAlpha = Math.min(1, u * 3);
+      const sg = g.createRadialGradient(x + sh, y + sh * 1.2, 0, x + sh, y + sh * 1.2, 16 * s); sg.addColorStop(0, 'rgba(0,0,0,.45)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = sg; g.beginPath(); g.arc(x + sh, y + sh * 1.2, 16 * s, 0, 7); g.fill();
+      const hg = g.createRadialGradient(x - 4 * s, y - 4 * s, 1, x, y, 12 * s); hg.addColorStop(0, '#ff8a8a'); hg.addColorStop(.35, col); hg.addColorStop(1, '#5a070b');
+      g.fillStyle = hg; g.beginPath(); g.arc(x, y, 11 * s, 0, 7); g.fill();
+      g.restore();
+    }
+    function string(a, b, p, w = 3) {
+      if (p <= 0) return;
+      const d = Math.hypot(b[0] - a[0], b[1] - a[1]), c = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + d * .07 + 8], N = 48, pts = [];
+      for (let i = 0; i <= N * p; i++) { const u = i / N; pts.push([(1 - u) ** 2 * a[0] + 2 * u * (1 - u) * c[0] + u * u * b[0], (1 - u) ** 2 * a[1] + 2 * u * (1 - u) * c[1] + u * u * b[1]]); }
+      g.lineCap = 'round';
+      g.save(); g.translate(5, 8); K.polyline(g, pts); g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = w; g.stroke(); g.restore();
+      K.polyline(g, pts); g.strokeStyle = '#a40f18'; g.lineWidth = w; g.stroke();
+      g.save(); g.translate(-.6, -.6); K.polyline(g, pts); g.strokeStyle = 'rgba(255,110,110,.5)'; g.lineWidth = 1; g.stroke(); g.restore();
+    }
+    function polaroid(img, x, y, r, cap, u) {
+      if (u <= 0) return null;
+      const w = 230, h = 268, k = E.out(u);
+      g.save(); g.translate(x + w / 2, y + h / 2 - (1 - k) * 30); g.rotate(r + (1 - k) * .1); g.globalAlpha = Math.min(1, u * 2);
+      g.shadowColor = 'rgba(0,0,0,.55)'; g.shadowBlur = 22 - 8 * k; g.shadowOffsetY = 10 + 10 * (1 - k); g.fillStyle = '#f2efe6'; g.fillRect(-w / 2, -h / 2, w, h); g.shadowColor = 'transparent';
+      g.drawImage(img, -w / 2 + 14, -h / 2 + 14, w - 28, 196);
+      K.text(g, cap, 0, h / 2 - 22, { font: '700 30px Caveat', color: '#1d2a5a', align: 'center' });
+      g.restore();
+      return rot(x + w / 2, y + 12, r, [x + w / 2, y + h / 2]);    // where its pin goes
+    }
+
+    const cam = VERT ? t => ({
+      cx: K.track([[0, 920], [1.0, 920], [2.0, 580], [3.0, 1190], [4.8, 920], [6.2, LOC.bridge[0] + 20], [7.6, 1000], [10, 960, 'inOutSine']], t),
+      cy: K.track([[0, 520], [1.0, 520], [2.0, 130], [3.0, 170], [4.8, 520], [6.2, LOC.bridge[1] + 60], [7.6, 760], [10, 590, 'inOutSine']], t),
+      z: K.track([[0, .74], [1.0, .76], [2.0, .95], [3.0, .95], [4.8, .8], [6.2, 1.35], [7.6, .82], [10, .8, 'inOutSine']], t),
+    }) : t => ({
+      cx: K.track([[0, 980], [1.0, 980], [2.0, 820], [3.0, 1120], [4.8, 980], [6.2, LOC.bridge[0] + 20], [7.6, 1080], [10, 1040, 'inOutSine']], t),
+      cy: K.track([[0, 560], [1.0, 560], [2.0, 470], [3.0, 480], [4.8, 540], [6.2, LOC.bridge[1] + 30], [7.6, 600], [10, 570, 'inOutSine']], t),
+      z: K.track([[0, .9], [1.0, .92], [2.0, 1.02], [3.0, 1.05], [4.8, .98], [6.2, 1.55], [7.6, 1.1], [10, 1.2, 'inOutSine']], t),
+    });
+    const flick = t => { const f = Math.floor(t * 24); return (K.hash(f + 3) < .1 ? .12 : 0) + ((t > .2 && t < .45) || (t > 6.9 && t < 7.05) ? .25 * K.hash(f) : 0); };
+
+    return (t, frame) => {
+      const C = cam(t), sk = Math.max(0, 1 - (t - 8.2) / .45) * (t >= 8.2 ? 1 : 0);
+      const sx = sk * 14 * Math.sin(t * 90), sy = sk * 10 * Math.cos(t * 77);
+      g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
+      g.setTransform(C.z, 0, 0, C.z, W / 2 - C.cx * C.z + sx, H / 2 - C.cy * C.z + sy);
+
+      const blur = 10 * (1 - E.out(prog(t, 0, 1.3)));
+      if (blur > .2) g.filter = `blur(${blur.toFixed(1)}px)`;
+      g.drawImage(board, BX, BY, BW, BH);
+
+      // photos, short strings, pins
+      const items = VERT ? [
+        ['home', PH.home, 300, -300, -.09, 'HOME · 9:30 PM', .85],
+        ['ware', PH.ware, 1200, -280, .07, 'WAREHOUSE 7', 1.85],
+        ['bridge', PH.bridge, 470, 980, .04, 'ELM ST BRIDGE', 2.75],
+      ] : [
+        ['home', PH.home, 60, 190, -.09, 'HOME · 9:30 PM', .85],
+        ['ware', PH.ware, 1560, 230, .07, 'WAREHOUSE 7', 1.85],
+        ['bridge', PH.bridge, 520, 800, .04, 'ELM ST BRIDGE', 2.75],
+      ];
+      for (const [k, img, x, y, r, cap, t0] of items) {
+        const pp = polaroid(img, x, y, r, cap, prog(t, t0, t0 + .4));
+        if (pp) { string(pp, LOC[k], E.inOut(prog(t, t0 + .35, t0 + .65)), 2); pin(pp[0], pp[1], prog(t, t0 + .3, t0 + .45), '#2a62c9'); }
+        pin(...LOC[k], prog(t, t0 + .15, t0 + .35));
+      }
+      string(LOC.home, LOC.ware, E.inOut(prog(t, 3.5, 4.3)));
+      string(LOC.ware, LOC.bridge, E.inOut(prog(t, 4.3, 5.0)));
+      for (const k of ['home', 'ware', 'bridge']) if (t > 3.5) pin(...LOC[k], 1);
+
+      // sticky note + marker circle + question mark
+      const nu = prog(t, 5.15, 5.45);
+      if (nu > 0) {
+        const x = LOC.bridge[0] + 70, y = LOC.bridge[1] + 40, k = E.out(nu);
+        g.save(); g.translate(x + 85, y + 75); g.rotate(-.1 + (1 - k) * .15); g.globalAlpha = Math.min(1, nu * 2);
+        g.shadowColor = 'rgba(0,0,0,.45)'; g.shadowBlur = 14; g.shadowOffsetY = 6 + 10 * (1 - k); g.fillStyle = '#f3d455'; g.fillRect(-85, -75, 170, 150); g.shadowColor = 'transparent';
+        K.text(g, 'LAST SEEN', 0, -18, { font: '700 32px Caveat', color: '#1d2a5a', align: 'center' });
+        K.text(g, '11:42 PM', 0, 26, { font: '700 44px Caveat', color: '#a40f18', align: 'center' });
+        g.strokeStyle = '#a40f18'; g.lineWidth = 3; g.beginPath(); g.moveTo(-52, 38); g.quadraticCurveTo(0, 46, 54, 36); g.stroke();
+        g.restore(); pin(x + 85, y + 8, prog(t, 5.3, 5.45), '#e0b318');
+      }
+      const cp = E.inOutSine(prog(t, 5.4, 6.0));
+      if (cp > 0) {
+        const pts = circ.slice(0, Math.max(2, Math.floor(circ.length * cp))).map(([x, y]) => [LOC.bridge[0] + x, LOC.bridge[1] + y]);
+        g.lineCap = g.lineJoin = 'round'; K.polyline(g, pts); g.strokeStyle = 'rgba(190,20,25,.9)'; g.lineWidth = 6; g.stroke();
+      }
+      const qa = E.outBack(prog(t, 6.0, 6.25));
+      if (qa > 0) { g.save(); g.translate(LOC.bridge[0] - 120, LOC.bridge[1] - 60); g.rotate(-.15); g.scale(qa, qa); K.text(g, '?', 0, 0, { font: '700 110px Caveat', color: '#b3141c', align: 'center' }); g.restore(); }
+
+      // newspaper clipping
+      const cu = E.out(prog(t, 6.6, 7.1));
+      if (cu > 0) {
+        const [ccx, ccy] = VERT ? [1290, 1210] : [1530, 840];
+        g.save(); g.translate(ccx, ccy + (1 - cu) * 120); g.rotate(.05 - (1 - cu) * .12); g.globalAlpha = Math.min(1, cu * 2);
+        g.shadowColor = 'rgba(0,0,0,.5)'; g.shadowBlur = 20; g.shadowOffsetY = 10; g.drawImage(clip, -220, -160); g.shadowColor = 'transparent';
+        g.restore(); pin(ccx, ccy - 144 + (1 - cu) * 120, prog(t, 6.95, 7.1));
+      }
+
+      // UNSOLVED stamp
+      const su = prog(t, 8.2, 8.36);
+      if (su > 0) {
+        const s = lerp(2.3, 1, E.out(su));
+        g.save(); g.translate(1000, 470); g.rotate(-.17); g.scale(s, s); g.globalAlpha = .88 * Math.min(1, su * 3); g.globalCompositeOperation = 'multiply';
+        g.drawImage(stamp, -380, -120); g.restore();
+      }
+      g.filter = 'none';
+
+      // screen space: lamp light, flicker, title, grain
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      const lp = g.createRadialGradient(W * .45, H * .4, 80, W * .5, H * .5, W * .72);
+      lp.addColorStop(0, 'rgba(255,190,120,.05)'); lp.addColorStop(.55, 'rgba(10,5,0,.38)'); lp.addColorStop(1, 'rgba(0,0,0,.9)');
+      g.fillStyle = lp; g.fillRect(0, 0, W, H);
+      const fl = flick(t); if (fl > 0) { g.fillStyle = `rgba(0,0,0,${fl})`; g.fillRect(0, 0, W, H); }
+      const ta = E.out(prog(t, .5, .9)) * (1 - prog(t, 4.6, 5.2));
+      if (ta > 0) {
+        g.fillStyle = `rgba(180,20,28,${ta})`; g.fillRect(84, H - 196, 6, 104);
+        const typed = (s, a, b) => s.slice(0, Math.floor(s.length * prog(t, a, b)));
+        K.text(g, typed('CASE #0417', .6, 1.6), 112, H - 140, { font: '400 64px "Special Elite"', color: '#f3eee2', alpha: ta, shadow: ['rgba(0,0,0,.8)', 12] });
+        K.text(g, typed('RIVERSIDE  ·  OCT 14  ·  11:42 PM', 1.7, 2.7), 116, H - 100, { font: '400 26px "Special Elite"', color: 'rgba(243,238,226,.8)', alpha: ta, shadow: ['rgba(0,0,0,.8)', 10] });
+      }
+      K.drawGrain(g, grain, W, H, frame, .09);
+    };
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Korean War Front</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;1,700;1,800&display=swap" rel="stylesheet">
+<script src="lib/kit.js?v=415f4781"></script>
+<script src="lib/player.js?v=fc9ee7d5"></script>
+<script src="data/korea/geo.js?v=7ad4aba1"></script>
+<script src="audio/vo-env.js?v=d3018d45"></script>
+</head>
+<body>
+<script>
+// 12 · War front-line map (the "every day" history-map style): shaded relief, two sides in red and blue,
+// a front of waving flags that moves with a running date, explosions along the line, event cards and a territory counter.
+// Topic: the Korean War, 1950–1953. Front lines are simplified from standard campaign maps (approximate).
+// Terrain: AWS Terrain Tiles (Mapzen; SRTM, GMTED, ETOPO1). Borders: Natural Earth 10m. Built by data/korea/build.mjs.
+(() => {
+  const GEO = window.KOREA_GEO, { clamp, lerp, prog, ease: E } = K;
+
+  // ── Web Mercator at zoom 8: the world space of the whole film (1 unit = 1 px of relief-z8.jpg)
+  const MX = lon => (lon + 180) / 360 * 65536;
+  const MY = lat => (1 - Math.asinh(Math.tan(lat * Math.PI / 180)) / Math.PI) / 2 * 65536;
+  const LAT = y => Math.atan(Math.sinh(Math.PI * (1 - 2 * y / 65536))) * 180 / Math.PI;
+  const P = ([lon, lat]) => [MX(lon), MY(lat)];
+  const DAY = 864e5, D = s => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d); };
+  const START = D('1950-06-25'), END_D = D('1953-07-27');
+  const MON = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const fmt = ms => { const d = new Date(ms); return `${d.getUTCDate()} ${MON[d.getUTCMonth()]} ${d.getUTCFullYear()}`; };
+
+  // ── the clock: film seconds → calendar date (each key eases into its date)
+  // the date reaches each card's date as the card comes in, holds a moment, then runs on (front lines follow the date)
+  const TL = [[0, '1950-06-25'], [4.0, '1950-06-25'], [5.4, '1950-06-28', 'inOutSine'], [5.9, '1950-06-28'], [7.1, '1950-08-01', 'inOutSine'],
+    [8.6, '1950-09-08', 'outSine'], [9.25, '1950-09-15', 'outSine'], [9.8, '1950-09-15'], [10.8, '1950-09-30', 'inOutSine'], [11.5, '1950-10-19', 'lin'],
+    [12.0, '1950-10-19'], [13.4, '1950-11-24', 'inOutSine'], [14.4, '1950-11-27', 'lin'], [16.15, '1951-01-04', 'inOutSine'], [16.6, '1951-01-04'],
+    [17.2, '1951-01-15', 'outSine'], [17.85, '1951-03-15', 'inOutSine'], [18.3, '1951-03-15'], [19.0, '1951-06-15', 'outSine'],
+    [22.0, '1953-07-27', 'inOutSine'], [26, '1953-07-27']].map(([t, d, e]) => [t, D(d), e]);
+  const dateAt = t => K.track(TL, t);
+
+  // ── front lines (lon, lat), west to east; the south side of each line is held by the South and the UN.
+  // Both ends lie out at sea; the map clips the fills to Korea's coast.
+  const N = 72;
+  const resample = pts => {
+    const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+    const out = []; let j = 0;
+    for (let i = 0; i < N; i++) {
+      const s = cum[cum.length - 1] * i / (N - 1); while (j < cum.length - 2 && cum[j + 1] < s) j++;
+      const u = (s - cum[j]) / (cum[j + 1] - cum[j] || 1); out.push([lerp(pts[j][0], pts[j + 1][0], u), lerp(pts[j][1], pts[j + 1][1], u)]);
+    }
+    return out;
+  };
+  const FRONTS = [
+    ['1950-06-25', [[123.6, 38.0], [126.0, 38.0], [128.0, 38.0], [129.6, 38.0]]],                                                   // the 38th parallel
+    ['1950-06-28', [[123.6, 37.5], [126.3, 37.45], [126.8, 37.42], [127.2, 37.5], [127.8, 37.6], [128.4, 37.75], [129.0, 37.75], [129.6, 37.75]]],   // Seoul falls
+    ['1950-07-05', [[123.6, 37.0], [126.6, 37.0], [127.05, 37.1], [127.6, 37.2], [128.2, 37.3], [128.8, 37.2], [129.6, 37.1]]],   // Osan
+    ['1950-07-20', [[123.6, 36.2], [126.5, 36.15], [127.0, 36.25], [127.4, 36.3], [127.9, 36.6], [128.4, 36.6], [128.9, 36.55], [129.6, 36.5]]],   // Taejon
+    ['1950-08-01', [[127.6, 34.4], [127.75, 34.9], [127.9, 35.2], [128.1, 35.5], [128.3, 35.9], [128.45, 36.2], [128.8, 36.35], [129.2, 36.4], [129.6, 36.4]]],
+    ['1950-09-14', [[128.3, 34.6], [128.4, 35.05], [128.45, 35.35], [128.45, 35.65], [128.38, 35.95], [128.55, 36.12], [128.9, 36.18], [129.2, 36.1], [129.36, 36.04], [129.8, 36.0]]],   // Pusan Perimeter
+    ['1950-09-23', [[127.6, 34.5], [127.9, 35.2], [128.15, 35.6], [128.3, 36.0], [128.6, 36.4], [129.0, 36.5], [129.6, 36.5]]],   // the breakout
+    ['1950-09-30', [[123.6, 37.85], [126.0, 37.8], [126.7, 37.85], [127.3, 37.95], [128.0, 38.0], [128.6, 38.05], [129.6, 38.05]]],
+    ['1950-10-19', [[123.6, 39.45], [124.9, 39.5], [125.6, 39.4], [126.2, 39.45], [126.9, 39.5], [127.3, 39.95], [127.9, 40.15], [128.9, 40.15]]],   // Pyongyang taken
+    ['1950-11-24', [[123.6, 39.75], [124.6, 39.85], [125.3, 39.9], [125.9, 40.25], [126.5, 40.4], [127.1, 40.55], [127.6, 40.9], [128.2, 41.45], [128.9, 41.65], [129.6, 41.9], [130.4, 41.95]]],   // near the Yalu
+    ['1950-12-15', [[123.6, 38.05], [126.3, 38.0], [127.0, 38.1], [127.6, 38.2], [128.2, 38.4], [128.7, 38.6], [129.5, 38.7]]],
+    ['1951-01-15', [[123.6, 36.95], [126.8, 36.95], [127.3, 37.1], [127.9, 37.2], [128.5, 37.3], [129.1, 37.35], [129.7, 37.35]]],   // Seoul lost again
+    ['1951-03-15', [[123.6, 37.7], [126.6, 37.7], [127.0, 37.62], [127.5, 37.7], [128.1, 37.8], [128.7, 38.0], [129.5, 38.0]]],   // Seoul retaken
+    ['1951-06-15', [[123.6, 37.6], [126.1, 37.7], [126.6, 37.75], [126.85, 38.0], [127.2, 38.2], [127.6, 38.25], [128.0, 38.3], [128.3, 38.45], [128.6, 38.65], [129.4, 38.7]]],
+    ['1953-07-27', [[123.6, 37.55], [126.1, 37.65], [126.55, 37.72], [126.68, 37.95], [126.95, 38.1], [127.25, 38.25], [127.55, 38.3], [127.9, 38.28], [128.1, 38.32], [128.3, 38.55], [128.37, 38.62], [129.3, 38.66]]],   // the armistice line
+  ].map(([d, pts]) => [D(d), resample(pts.map(P))]);
+  const STALE0 = D('1951-07-01'), STALE1 = D('1953-07-01');
+  function frontAt(date) {
+    let i = 0; while (i < FRONTS.length - 2 && FRONTS[i + 1][0] <= date) i++;
+    const [d0, A] = FRONTS[i], [d1, B] = FRONTS[i + 1], u = clamp((date - d0) / (d1 - d0));
+    const L = A.map((p, k) => [lerp(p[0], B[k][0], u), lerp(p[1], B[k][1], u)]);
+    // two years of stalemate: the trench line only breathes
+    const w = Math.sin(Math.PI * clamp((date - STALE0) / (STALE1 - STALE0)));
+    if (w > 0) { const ph = (date - STALE0) / DAY / 40; for (let k = 1; k < N - 1; k++) L[k][1] += w * 4 * Math.sin(k * .9 + ph) * Math.sin(k * .37 - ph * .7); }
+    return L;
+  }
+  // the Inchon beachhead: a second blue area that grows until the main front reaches it
+  const POCKET_C = P([126.78, 37.42]), PK = [[D('1950-09-15'), 0], [D('1950-09-16'), 20], [D('1950-09-22'), 62], [D('1950-09-28'), 140], [D('1950-10-04'), 160]];
+  const pocketR = date => date < PK[0][0] || date > D('1950-10-04') ? 0 : K.track(PK.map(([d, r]) => [d, r, 'lin']), date);
+
+  // ── explosions along the front (seeded: the same frame every time)
+  const R0 = K.rng(1950), BLASTS = [];
+  for (let t = 3.6; t < 22.2;) { BLASTS.push({ t, s: R0(), off: R0() - .5, sz: .65 + R0() * .7, seed: (R0() * 1e9) | 0 }); t += .14 + R0() * .32; }
+  for (let i = 0; i < 12; i++) BLASTS.push({ t: 13.95 + i * .07 + R0() * .05, s: .05 + .9 * R0(), off: -.4 + R0() * .5, sz: .9 + R0() * .5, seed: (R0() * 1e9) | 0 });
+  BLASTS.sort((a, b) => a.t - b.t);
+  const blastCues = BLASTS.filter((b, i) => i % 2 === 0).map(b => [b.t, 'hit', (b.t > 13.9 && b.t < 14.9 ? .5 : 1) * (.05 + b.sz * .07)]);
+
+  // ── event cards: [in, out, side, date line, headline, sub]
+  const CARDS = [
+    [3.5, 5.25, 'r', '25 JUN 1950', 'North Korea invades', 'Tanks cross the 38th parallel at dawn'],
+    [5.4, 6.95, 'r', '28 JUN 1950', 'Seoul falls', 'Three days into the war'],
+    [7.1, 9.05, 'b', 'AUG 1950', 'The Pusan Perimeter', 'UN forces hold the last corner of the south'],
+    [9.25, 11.0, 'b', '15 SEP 1950', 'Inchon landing', 'UN troops land far behind the front'],
+    [11.5, 13.2, 'b', '19 OCT 1950', 'Pyongyang taken', 'The UN pushes on toward the Yalu'],
+    [13.7, 15.8, 'r', 'NOV 1950', 'China strikes back', 'Chinese armies attack across the Yalu'],
+    [16.15, 17.6, 'r', '4 JAN 1951', 'Seoul falls again', 'The UN pulls back south of the Han'],
+    [17.85, 19.4, 'b', 'MAR 1951', 'Seoul retaken', 'The front settles near the 38th parallel'],
+    [19.6, 21.9, 'n', '1951 – 1953', 'Stalemate', 'Two years of trench war for a few kilometres'],
+    [22.3, 26.5, 'w', '27 JUL 1953', 'Armistice', 'The front line becomes the DMZ, still the border today'],
+  ];
+
+  MapPlayer({
+    title: '12 · Korean War front',
+    DUR: 26,
+    vo: ['audio/12-vo.mp3'],
+    // with the voice (it starts 0.3 s in): each card lands on its line — [clock s, animation s]
+    // "June 1950" · "In three days" · "By August" · "Then, Inchon" · "The UN takes Pyongyang" · "But China" · "Seoul falls again" · "and is retaken" · "Then two years" · "July 1953"
+    voWarp: [[4.1, 2.45], [4.6, 3.45], [9.1, 5.45], [11.8, 7.15], [15.35, 9.3], [19.5, 11.55], [22.95, 13.75], [24.95, 16.2], [26.7, 17.9], [29.1, 19.65], [33.05, 22.35]],
+    score: {
+      bpm: 96, root: 38, seed: 53, chords: [[0, 3, 7, 12], [-4, 3, 8, 12], [-2, 5, 10, 14], [-5, 2, 7, 14]],
+      drone: .05, pad: .02, padCut: 650, wet: .45, master: .85,
+      pulse: .03, pulseFrom: 3.4, kick: .2, kickFrom: 3.4, hats: .012, hatsFrom: 5.4, bedTo: 22.3,
+      cues: [[.1, 'whoosh', 1.6, .2], [.35, 'note', 50, .1, 3], [2.3, 'whoosh', 1.1, .18], [3.42, 'boom', .5],
+        ...CARDS.map(c => [c[0] + .02, 'pop', c[2] === 'r' ? .7 : 1, .13]),
+        [9.0, 'whoosh', 1.0, .16], [9.7, 'boom', .45], [12.4, 'riser', 1.55, .2], [13.98, 'boom', .7], [16.1, 'hit', .3],
+        [22.3, 'shimmer', .1], [22.35, 'note', 62, .14, 3.2], [22.9, 'note', 57, .11, 3], [23.5, 'note', 50, .1, 3.5],
+        ...blastCues],
+    },
+    async setup(stage, { W, H, VERT }) {
+      await K.fonts(['800 60px "Barlow Condensed"', '700 30px "Barlow Condensed"', '600 24px "Barlow Condensed"', '500 22px "Barlow Condensed"', 'italic 800 40px "Barlow Condensed"', 'italic 700 30px "Barlow Condensed"']);
+      const cv = K.canvas(W, H); stage.appendChild(cv); const g = cv.getContext('2d');
+      const terr = K.canvas(W, H), tg = terr.getContext('2d');
+      const u = Math.min(W, H) / 1080;
+      const FONT = (w, px, it) => `${it ? 'italic ' : ''}${w} ${Math.round(px * u)}px "Barlow Condensed", "Arial Narrow", sans-serif`;
+
+      // ── relief images: zoom 5 (East Asia) under zoom 8 (Korea); the zoom-8 sheet gets feathered edges
+      const img = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error(src)); i.src = src; });
+      const [i5, i8] = await Promise.all([img('data/korea/relief-z5.jpg'), img('data/korea/relief-z8.jpg')]);
+      const z5 = GEO.z5, z8 = GEO.z8;
+      const sheet = K.canvas(z8.W, z8.H), sg = sheet.getContext('2d'); sg.drawImage(i8, 0, 0);
+      { const q = 8, m = K.canvas(z8.W / q, z8.H / q), mg = m.getContext('2d'); mg.filter = 'blur(9px)'; mg.fillStyle = '#fff'; mg.fillRect(20, 20, m.width - 40, m.height - 40);
+        sg.globalCompositeOperation = 'destination-in'; sg.drawImage(m, 0, 0, z8.W, z8.H); sg.globalCompositeOperation = 'source-over'; }
+
+      // ── Korea: one path for the clip, its bounds, and a distance-to-coast field (flags and blasts stay on land)
+      const kPath = new Path2D(); let kx0 = 1e9, ky0 = 1e9, kx1 = -1e9, ky1 = -1e9;
+      for (const r of [...GEO.korea.north, ...GEO.korea.south]) {
+        r.forEach(([x, y], i) => { i ? kPath.lineTo(x, y) : kPath.moveTo(x, y); kx0 = Math.min(kx0, x); ky0 = Math.min(ky0, y); kx1 = Math.max(kx1, x); ky1 = Math.max(ky1, y); });
+        kPath.closePath();
+      }
+      const CELL = 6, gx0 = kx0 - 30, gy0 = ky0 - 30, GW = Math.ceil((kx1 - kx0 + 60) / CELL), GH = Math.ceil((ky1 - ky0 + 60) / CELL);
+      const dist = new Float32Array(GW * GH);
+      {
+        const m = K.canvas(GW, GH), mg = m.getContext('2d'); mg.setTransform(1 / CELL, 0, 0, 1 / CELL, -gx0 / CELL, -gy0 / CELL); mg.fill(kPath);
+        const a = mg.getImageData(0, 0, GW, GH).data;
+        for (let i = 0; i < GW * GH; i++) dist[i] = a[i * 4 + 3] > 127 ? 1e6 : 0;
+        const pass = (x, y, dx, dy, w) => { const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < GW && ny < GH) dist[y * GW + x] = Math.min(dist[y * GW + x], dist[ny * GW + nx] + w); };
+        for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) { pass(x, y, -1, 0, 1); pass(x, y, 0, -1, 1); pass(x, y, -1, -1, 1.414); pass(x, y, 1, -1, 1.414); }
+        for (let y = GH - 1; y >= 0; y--) for (let x = GW - 1; x >= 0; x--) { pass(x, y, 1, 0, 1); pass(x, y, 0, 1, 1); pass(x, y, 1, 1, 1.414); pass(x, y, -1, 1, 1.414); }
+      }
+      const inland = (x, y) => {
+        const fx = (x - gx0) / CELL - .5, fy = (y - gy0) / CELL - .5, ix = Math.floor(fx), iy = Math.floor(fy);
+        if (ix < 0 || iy < 0 || ix >= GW - 1 || iy >= GH - 1) return 0;
+        const ax = fx - ix, ay = fy - iy, at = (i, j) => dist[j * GW + i];
+        return lerp(lerp(at(ix, iy), at(ix + 1, iy), ax), lerp(at(ix, iy + 1), at(ix + 1, iy + 1), ax), ay) * CELL;
+      };
+
+      // ── territory paint (also used, small, to measure who holds how much)
+      const RED = '#d8392c', BLUE = '#2f66d6', EAST = MX(137), SOUTH = MY(30), JEJU = P([126.55, 33.38]);
+      const linePath = L => { const p = new Path2D(); L.forEach(([x, y], i) => i ? p.lineTo(x, y) : p.moveTo(x, y)); return p; };
+      const southOf = L => { const p = linePath(L), A = L[0], B = L[L.length - 1]; p.lineTo(EAST, B[1]); p.lineTo(EAST, SOUTH); p.lineTo(A[0], SOUTH); p.closePath(); return p; };
+      const pocketPath = r => {
+        const p = new Path2D();
+        for (let i = 0; i <= 40; i++) { const a = i / 40 * Math.PI * 2, rr = r * (1 + .16 * Math.sin(3 * a + 1) + .08 * Math.sin(5 * a + 2)); const x = POCKET_C[0] + Math.cos(a) * rr * 1.15, y = POCKET_C[1] + Math.sin(a) * rr; i ? p.lineTo(x, y) : p.moveTo(x, y); }
+        p.closePath(); return p;
+      };
+      function paint(c, L, pr) {
+        c.save(); c.clip(kPath);
+        c.fillStyle = RED; c.fillRect(kx0 - 50, ky0 - 50, kx1 - kx0 + 100, ky1 - ky0 + 100);
+        c.fillStyle = BLUE; c.fill(southOf(L)); if (pr > 0) c.fill(pocketPath(pr));
+        c.beginPath(); c.arc(...JEJU, 140, 0, 7); c.fill();   // Jeju stayed in the South's hands all war
+        c.restore();
+      }
+      const MQ = 8, mc = K.canvas(Math.ceil((kx1 - kx0) / MQ) + 2, Math.ceil((ky1 - ky0) / MQ) + 2), mcg = mc.getContext('2d', { willReadFrequently: true });
+      const rowW = Array.from({ length: mc.height }, (_, y) => Math.cos(LAT(ky0 + (y + .5) * MQ) * Math.PI / 180) ** 2);   // Mercator area: cos² of latitude
+      function share(L, pr) {
+        mcg.setTransform(1, 0, 0, 1, 0, 0); mcg.clearRect(0, 0, mc.width, mc.height);
+        mcg.setTransform(1 / MQ, 0, 0, 1 / MQ, -kx0 / MQ, -ky0 / MQ); paint(mcg, L, pr);
+        const d = mcg.getImageData(0, 0, mc.width, mc.height).data; let all = 0, blue = 0;
+        for (let y = 0; y < mc.height; y++) for (let x = 0; x < mc.width; x++) { const k = (y * mc.width + x) * 4; if (d[k + 3] > 127) { all += rowW[y]; if (d[k + 2] > d[k]) blue += rowW[y]; } }
+        return all ? blue / all : .45;
+      }
+
+      // ── flags (drawn once, sliced to wave)
+      const FW = 72, FH = 48;
+      const star = (c, x, y, r, rot = -Math.PI / 2) => { c.beginPath(); for (let i = 0; i < 10; i++) { const a = rot + i * Math.PI / 5, rr = i % 2 ? r * .4 : r; c.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } c.closePath(); c.fill(); };
+      const flag = paintFn => { const c = K.canvas(FW, FH), x = c.getContext('2d'); paintFn(x); x.strokeStyle = 'rgba(0,0,0,.35)'; x.lineWidth = 2; x.strokeRect(1, 1, FW - 2, FH - 2); return c; };
+      const FLAGS = {
+        dprk: flag(c => { c.fillStyle = '#024fa2'; c.fillRect(0, 0, FW, FH); c.fillStyle = '#fff'; c.fillRect(0, 8, FW, 32); c.fillStyle = '#ed1c27'; c.fillRect(0, 9.5, FW, 29);
+          c.fillStyle = '#fff'; c.beginPath(); c.arc(25, 24, 10, 0, 7); c.fill(); c.fillStyle = '#ed1c27'; star(c, 25, 24.5, 9.5); }),
+        rok: flag(c => { c.fillStyle = '#fff'; c.fillRect(0, 0, FW, FH);
+          const x0 = 36, y0 = 24, r = 11; c.fillStyle = '#cd2e3a'; c.beginPath(); c.arc(x0, y0, r, Math.PI, 0); c.fill(); c.fillStyle = '#0047a0'; c.beginPath(); c.arc(x0, y0, r, 0, Math.PI); c.fill();
+          c.fillStyle = '#cd2e3a'; c.beginPath(); c.arc(x0 - r / 2, y0, r / 2, 0, 7); c.fill(); c.fillStyle = '#0047a0'; c.beginPath(); c.arc(x0 + r / 2, y0, r / 2, 0, 7); c.fill();
+          c.fillStyle = '#111'; for (const [x, y, a] of [[13, 10, .6], [59, 10, -.6], [13, 38, -.6], [59, 38, .6]]) { c.save(); c.translate(x, y); c.rotate(a); for (let k = -1; k <= 1; k++) c.fillRect(-6, k * 3.6 - 1.1, 12, 2.2); c.restore(); } }),
+        usa: flag(c => { for (let i = 0; i < 13; i++) { c.fillStyle = i % 2 ? '#fff' : '#b22234'; c.fillRect(0, i * FH / 13, FW, FH / 13 + .5); }
+          c.fillStyle = '#3c3b6e'; c.fillRect(0, 0, 30, 26); c.fillStyle = '#fff'; for (let y = 0; y < 4; y++) for (let x = 0; x < 5; x++) { c.beginPath(); c.arc(3.5 + x * 5.8 + (y % 2) * 2.5, 3.5 + y * 6, 1.2, 0, 7); c.fill(); } }),
+        un: flag(c => { c.fillStyle = '#4b92db'; c.fillRect(0, 0, FW, FH); c.strokeStyle = '#fff'; c.lineWidth = 2;
+          c.beginPath(); c.arc(36, 23, 10, 0, 7); c.stroke(); c.beginPath(); c.moveTo(26, 23); c.lineTo(46, 23); c.moveTo(36, 13); c.lineTo(36, 33); c.stroke();
+          c.beginPath(); c.arc(36, 23, 5, 0, 7); c.stroke(); c.beginPath(); c.arc(36, 23, 15, 2.2, 3.9); c.stroke(); c.beginPath(); c.arc(36, 23, 15, -.75, .95); c.stroke(); }),
+        prc: flag(c => { c.fillStyle = '#de2910'; c.fillRect(0, 0, FW, FH); c.fillStyle = '#ffde00'; star(c, 12, 12, 7.5);
+          for (const [x, y] of [[24, 4.8], [28.8, 9.6], [28.8, 16.8], [24, 21.6]]) star(c, x, y, 2.6, Math.atan2(12 - y, 12 - x)); }),
+      };
+      const FL_W = 36 * u, FL_H = 24 * u, POLE = 50 * u;
+      function drawFlag(img, x, y, sc, ph) {
+        if (sc <= .02) return;
+        const w = FL_W * sc, h = FL_H * sc, top = y - POLE * sc;
+        g.fillStyle = 'rgba(0,0,0,.28)'; g.beginPath(); g.ellipse(x, y, 5 * u * sc, 2 * u * sc, 0, 0, 7); g.fill();
+        g.strokeStyle = '#2a2420'; g.lineWidth = 2.2 * u * sc; g.beginPath(); g.moveTo(x, y); g.lineTo(x, top - 2 * u * sc); g.stroke();
+        const n = 9;
+        for (let j = 0; j < n; j++) {
+          const a = j / n, dy = Math.sin(ph - j * .8) * 2.2 * u * sc * (a + .15);
+          g.drawImage(img, j * FW / n, 0, FW / n + .6, FH, x + w * a, top + dy, w / n + .8, h);
+          const sh = Math.cos(ph - j * .8);
+          if (sh < 0) { g.fillStyle = `rgba(0,0,0,${(-sh * .2).toFixed(3)})`; g.fillRect(x + w * a, top + dy, w / n + .8, h); }
+        }
+      }
+
+      // ── layout per frame shape
+      // cards: 4:5 grows rightward from cx, 16:9 grows leftward from its right edge cr; cw = smallest width, cmax = largest
+      const HUD = VERT ? { x: 34, y: 34, w: 372, cx: 34, cy: 1138, cw: 470, cmax: 1012, cAnchor: 'bottom' }
+                       : { x: 56, y: 52, w: 400, cr: 1866, cy: 430, cw: 520, cmax: 620, cAnchor: 'top' };
+      const camK = {
+        lon: [[0, 123.8], [3.0, 127.6, 'inOutQuint'], [5.2, 127.8], [8.4, 128.3], [9.3, 127.7], [10.6, 127.4], [13.2, 127.2], [14.4, 127.0], [17.2, 127.6], [19.0, 127.7], [22.0, 127.6], [26, 127.7, 'inOutSine']],
+        lat: [[0, 37.0], [3.0, 38.0, 'inOutQuint'], [5.2, 37.4], [8.4, 36.4], [9.3, 36.6], [10.6, 37.6], [13.2, 39.4], [14.4, 39.9], [17.2, 38.0], [19.0, 38.0], [22.0, 38.2], [26, 38.25, 'inOutSine']],
+        span: [[0, VERT ? 9800 : 7000], [3.0, 2700, 'inOutQuint'], [5.2, 2500], [8.4, 2050], [9.3, 2150], [10.6, 2450], [13.2, 2750], [14.4, 2550], [17.2, 2650], [19.0, 2500], [22.0, 2350], [26, 2150, 'inOutSine']],
+      };
+      // 16:9 shows Korea a little larger (its height is the limit)
+      const camAt = t => {
+        const span = Math.exp(K.track(camK.span.map(([a, v, e]) => [a, Math.log(v), e]), t));
+        const s = H / span * (VERT ? 1 : 1.12);
+        let cx = MX(K.track(camK.lon, t)), cy = MY(K.track(camK.lat, t));
+        const sk = prog(t, 13.98, 14.9); if (sk > 0 && sk < 1) { const a = 9 * u * (1 - sk) ** 2 / s; cx += Math.sin(t * 91) * a; cy += Math.cos(t * 77) * a; }
+        return { s, ox: W / 2 - cx * s, oy: H / 2 - cy * s };
+      };
+      let cam;
+      const toS = (x, y) => [x * cam.s + cam.ox, y * cam.s + cam.oy];
+      const world = c => c.setTransform(cam.s, 0, 0, cam.s, cam.ox, cam.oy);
+      const screen = c => c.setTransform(1, 0, 0, 1, 0, 0);
+
+      function text(str, x, y, { font, fill = '#fff', stroke, sw = 0, align = 'left', base = 'alphabetic', alpha = 1, track = 0, shadow }) {
+        if (alpha <= 0) return;
+        g.save(); g.globalAlpha = alpha; g.font = font; g.textAlign = align; g.textBaseline = base; g.letterSpacing = track ? track * u + 'px' : '0px';
+        if (shadow) { g.shadowColor = shadow; g.shadowBlur = 10 * u; g.shadowOffsetY = 2 * u; }
+        if (stroke) { g.strokeStyle = stroke; g.lineWidth = sw * u; g.lineJoin = 'round'; g.strokeText(str, x, y); g.shadowColor = 'transparent'; }
+        g.fillStyle = fill; g.fillText(str, x, y); g.restore();
+      }
+      const rrect = (x, y, w, h, r) => { g.beginPath(); g.roundRect(x, y, w, h, r); };
+      const wrap = (str, maxW) => { const out = []; let line = ''; for (const w of str.split(' ')) { const tryL = line ? line + ' ' + w : w; if (g.measureText(tryL).width > maxW && line) { out.push(line); line = w; } else line = tryL; } if (line) out.push(line); return out; };
+
+      // arrow along a quadratic curve (world points), drawn up to fraction k
+      function arrow(a, c, b, k, col, alpha, wpx) {
+        if (k <= 0 || alpha <= 0) return;
+        const pts = []; for (let i = 0; i <= 40; i++) { const t = i / 40 * k, m = 1 - t; pts.push(toS(m * m * a[0] + 2 * m * t * c[0] + t * t * b[0], m * m * a[1] + 2 * m * t * c[1] + t * t * b[1])); }
+        const [ex, ey] = pts[pts.length - 1], [px, py] = pts[pts.length - 3], ang = Math.atan2(ey - py, ex - px), hw = wpx * 1.6, hl = wpx * 2.2;
+        g.save(); g.globalAlpha = alpha; g.lineCap = 'round'; g.lineJoin = 'round';
+        const head = () => { g.beginPath(); g.moveTo(ex + Math.cos(ang) * hl * .55, ey + Math.sin(ang) * hl * .55); g.lineTo(ex + Math.cos(ang + 2.5) * hw, ey + Math.sin(ang + 2.5) * hw); g.lineTo(ex + Math.cos(ang - 2.5) * hw, ey + Math.sin(ang - 2.5) * hw); g.closePath(); };
+        const body = () => { g.beginPath(); pts.slice(0, -2).forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); };
+        g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = wpx + 5 * u; body(); g.stroke(); head(); g.lineWidth = 5 * u; g.stroke();
+        g.strokeStyle = col; g.lineWidth = wpx; body(); g.stroke(); g.fillStyle = col; head(); g.fill();
+        g.restore();
+      }
+      function blast(x, y, k, sz, seed) {
+        const R = K.rng(seed), r = 16 * u * sz;
+        g.save();
+        for (let i = 0; i < 4; i++) {   // smoke rises and spreads
+          const dx = (R() - .5) * r * 1.4, dy = -E.out(k) * r * (1 + R() * 1.2), rr = r * (.6 + 1.2 * E.out(k)) * (.7 + R() * .5), a = .5 * (1 - k) * clamp(k * 6);
+          const sx = x + dx, sy = y + dy, c = `${48 + i * 9},${44 + i * 8},${40 + i * 7}`, gr = g.createRadialGradient(sx, sy, 0, sx, sy, rr);
+          gr.addColorStop(0, `rgba(${c},${a.toFixed(3)})`); gr.addColorStop(.6, `rgba(${c},${(a * .6).toFixed(3)})`); gr.addColorStop(1, `rgba(${c},0)`);
+          g.fillStyle = gr; g.beginPath(); g.arc(sx, sy, rr, 0, 7); g.fill();
+        }
+        const kf = k / .3; if (kf < 1) {   // fireball
+          const gr = g.createRadialGradient(x, y, 0, x, y, r * (.6 + kf));
+          gr.addColorStop(0, `rgba(255,248,210,${1 - kf})`); gr.addColorStop(.4, `rgba(255,160,40,${(1 - kf) * .9})`); gr.addColorStop(1, 'rgba(220,60,10,0)');
+          g.fillStyle = gr; g.beginPath(); g.arc(x, y, r * (.6 + kf), 0, 7); g.fill();
+        }
+        g.restore();
+      }
+
+      const LABELS = [
+        ['CHINA', [124.4, 42.3], 'land'], ['USSR', [131.4, 43.45], 'land'], ['JAPAN', [132.8, 34.75], 'land'],
+        ['YELLOW SEA', [124.0, 35.6], 'sea'], ['SEA OF JAPAN', [131.0, 39.0], 'sea'], ['(EAST SEA)', [131.0, 38.72], 'sea2'],
+      ];
+      const CITIES = [['SEOUL', [126.98, 37.57], 1, 'r'], ['PYONGYANG', [125.75, 39.02], 1, 'r'], ['PUSAN', [129.04, 35.10], 0, 'r'], ['INCHON', [126.63, 37.46], 0, 'l']];
+      const grain = K.grainTile(12, 256, 50);
+      let lastShare = null;
+
+      return (t, frame) => {
+        cam = camAt(t);
+        const date = dateAt(t), L = frontAt(date), pr = pocketR(date);
+        screen(g); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+        g.fillStyle = '#1c4f8c'; g.fillRect(0, 0, W, H);
+
+        // relief
+        world(g); g.imageSmoothingQuality = 'high';
+        g.drawImage(i5, z5.x0 * 8, z5.y0 * 8, z5.W * 8, z5.H * 8);
+        g.drawImage(sheet, z8.x0, z8.y0);
+        g.strokeStyle = 'rgba(60,40,30,.55)'; g.lineWidth = 1.6 / cam.s; g.setLineDash([6 / cam.s, 4 / cam.s]);
+        for (const b of GEO.borders) { g.beginPath(); b.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke(); }
+        g.setLineDash([]);
+
+        // territories, multiplied into the relief so the mountains show through
+        const fillA = E.inOut(prog(t, 2.3, 3.3));
+        if (fillA > 0) {
+          screen(tg); tg.clearRect(0, 0, W, H); world(tg); paint(tg, L, pr);
+          screen(g); g.globalCompositeOperation = 'multiply'; g.globalAlpha = fillA * .95; g.drawImage(terr, 0, 0); g.globalCompositeOperation = 'source-over';
+          // a pale wash keeps the colours bright, not muddy
+          g.globalCompositeOperation = 'soft-light'; g.globalAlpha = fillA * .35; g.drawImage(terr, 0, 0); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
+          // the front line itself
+          world(g); g.save(); g.clip(kPath); g.lineJoin = 'round';
+          const lp = linePath(L);
+          g.globalAlpha = fillA; g.strokeStyle = 'rgba(20,10,10,.45)'; g.lineWidth = 6 / cam.s; g.stroke(lp);
+          g.strokeStyle = 'rgba(255,248,236,.95)'; g.lineWidth = 2.2 / cam.s; g.stroke(lp);
+          if (pr > 0) { const pp = pocketPath(pr); g.strokeStyle = 'rgba(20,10,10,.45)'; g.lineWidth = 6 / cam.s; g.stroke(pp); g.strokeStyle = 'rgba(255,248,236,.95)'; g.lineWidth = 2.2 / cam.s; g.stroke(pp); }
+          g.restore(); g.globalAlpha = 1;
+        }
+        screen(g);   // everything below is drawn in screen pixels
+
+        // the 38th parallel: at the start, and again at the end for comparison
+        const p38 = Math.max(prog(t, 2.5, 3.1) * (1 - prog(t, 5.4, 6.2)), .7 * prog(t, 23.6, 24.4));
+        if (p38 > 0) {
+          const [ax, ay] = toS(MX(124.0), MY(38)), [bx] = toS(MX(130.0), MY(38));
+          g.save(); g.globalAlpha = p38; g.strokeStyle = '#fff'; g.lineWidth = 2.5 * u; g.setLineDash([12 * u, 8 * u]); g.beginPath(); g.moveTo(ax, ay); g.lineTo(ax + (bx - ax) * E.out(clamp(p38 * 1.4)), ay); g.stroke(); g.restore();
+          text('38th PARALLEL', ax - 10 * u, ay + 8 * u, { font: FONT(700, 24, true), stroke: 'rgba(0,0,0,.6)', sw: 4, align: 'right', alpha: p38 });
+        }
+        // the DMZ at the end
+        const pd = prog(t, 22.6, 23.4);
+        if (pd > 0) {
+          g.save(); g.globalAlpha = pd; world(g); g.clip(kPath); screen(g);
+          for (const side of [-1, 1]) {
+            g.beginPath(); L.forEach(([x, y], i) => { const a = L[Math.max(0, i - 1)], b = L[Math.min(N - 1, i + 1)], nx = -(b[1] - a[1]), ny = b[0] - a[0], nl = Math.hypot(nx, ny) || 1, [sx, sy] = toS(x, y); const X = sx + nx / nl * 7 * u * side, Y = sy + ny / nl * 7 * u * side; i ? g.lineTo(X, Y) : g.moveTo(X, Y); });
+            g.strokeStyle = '#ffe9a8'; g.lineWidth = 2 * u; g.setLineDash([10 * u, 6 * u]); g.stroke();
+          }
+          g.restore();
+        }
+
+        // labels and cities
+        const labA = prog(t, 2.4, 3.1);
+        for (const [s, ll, kind] of LABELS) {
+          const [x, y] = toS(...P(ll));
+          if (kind === 'land') text(s, x, y, { font: FONT(800, 34, true), fill: 'rgba(255,255,255,.92)', stroke: 'rgba(60,40,20,.55)', sw: 5, align: 'center', track: 4, alpha: labA });
+          else text(s, x, y, { font: FONT(700, kind === 'sea2' ? 20 : 27, true), fill: 'rgba(225,244,255,.85)', align: 'center', track: kind === 'sea2' ? 2 : 5, alpha: labA, shadow: 'rgba(0,20,60,.5)' });
+        }
+        const nameA = prog(t, 2.6, 3.2) * (1 - prog(t, 5.2, 6.0));
+        if (nameA > 0) {
+          for (const [s, ll] of [['NORTH KOREA', [126.9, 40.15]], ['SOUTH KOREA', [128.1, 36.3]]]) { const [x, y] = toS(...P(ll)); text(s, x, y, { font: FONT(800, 38, true), stroke: 'rgba(0,0,0,.5)', sw: 6, align: 'center', track: 3, alpha: nameA }); }
+        }
+        const cityA = prog(t, 2.8, 3.4);
+        if (cityA > 0) for (const [s, ll, cap, side] of CITIES) {
+          const [x, y] = toS(...P(ll));
+          g.save(); g.globalAlpha = cityA;
+          if (cap) { g.fillStyle = '#fff'; g.strokeStyle = '#111'; g.lineWidth = 3 * u; g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = (i % 2 ? 4 : 10) * u; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } g.closePath(); g.stroke(); g.fill(); }
+          else { g.fillStyle = '#fff'; g.strokeStyle = '#111'; g.lineWidth = 2.5 * u; g.beginPath(); g.arc(x, y, 5.5 * u, 0, 7); g.stroke(); g.fill(); }
+          g.restore();
+          text(s, x + (side === 'l' ? -14 : 14) * u, y + 8 * u, { font: FONT(700, 25), stroke: 'rgba(0,0,0,.75)', sw: 5, align: side === 'l' ? 'right' : 'left', track: 1, alpha: cityA });
+        }
+
+        // Inchon: the fleet and its arrow; China: three arrows over the Yalu
+        const ia = prog(t, 9.0, 9.9), iFade = 1 - prog(t, 11.0, 11.6);
+        if (ia > 0 && iFade > 0) {
+          const A = P([125.2, 36.75]), C = P([125.7, 37.55]), B = P([126.5, 37.45]);
+          arrow(A, C, B, E.inOut(ia), BLUE, iFade, 13 * u);
+          for (let i = 0; i < 5; i++) {
+            const k = clamp(E.out(prog(t, 8.9 + i * .1, 9.9 + i * .1)) * .92 - i * .03);
+            if (k <= 0) continue;
+            const m = 1 - k, x = m * m * A[0] + 2 * m * k * C[0] + k * k * B[0], y = m * m * A[1] + 2 * m * k * C[1] + k * k * B[1];
+            const [sx, sy] = toS(x + (i - 2) * 9, y + ((i % 2) * 2 - 1) * 14);
+            g.save(); g.globalAlpha = iFade; g.translate(sx, sy); g.rotate(-.35 + k * .5); g.fillStyle = '#39424e'; g.strokeStyle = '#fff'; g.lineWidth = 1.5 * u;
+            g.beginPath(); g.moveTo(-13 * u, -3 * u); g.lineTo(11 * u, -3 * u); g.lineTo(15 * u, 0); g.lineTo(11 * u, 3 * u); g.lineTo(-13 * u, 3 * u); g.closePath(); g.fill(); g.stroke();
+            g.fillRect(-4 * u, -6 * u, 7 * u, 4 * u); g.restore();
+          }
+        }
+        const ca = prog(t, 13.75, 14.55), cFade = 1 - prog(t, 15.9, 16.5);
+        if (ca > 0 && cFade > 0) {
+          [[[124.9, 41.0], [125.0, 40.4], [125.6, 39.75]], [[126.3, 41.5], [126.2, 40.8], [126.5, 40.1]], [[127.5, 41.75], [127.3, 41.2], [127.6, 40.55]]]
+            .forEach(([a, c, b], i) => arrow(P(a), P(c), P(b), E.out(clamp(ca * 1.25 - i * .12)), '#c4161c', cFade, 15 * u));
+        }
+
+        // explosions on the front (positions fixed by the line at the moment of each blast)
+        for (const b of BLASTS) {
+          const k = (t - b.t) / 1.6; if (k < 0 || k >= 1) continue;
+          const Lb = frontAt(dateAt(b.t)), f = b.s * (N - 1), i = Math.min(N - 2, Math.floor(f)), a = f - i;
+          const x = lerp(Lb[i][0], Lb[i + 1][0], a), y = lerp(Lb[i][1], Lb[i + 1][1], a);
+          const nx = -(Lb[i + 1][1] - Lb[i][1]), ny = Lb[i + 1][0] - Lb[i][0], nl = Math.hypot(nx, ny) || 1;
+          const wx = x + nx / nl * b.off * 70, wy = y + ny / nl * b.off * 70;
+          if (inland(wx, wy) < 10) continue;
+          const [sx, sy] = toS(wx, wy); blast(sx, sy, k, b.sz, b.seed);
+        }
+
+        // flags along the front: Korea's own first, then the allies march in (US and UN from late June, China in November)
+        if (fillA > 0) {
+          const cum = [0]; for (let i = 1; i < N; i++) cum.push(cum[i - 1] + Math.hypot(L[i][0] - L[i - 1][0], L[i][1] - L[i - 1][1]));
+          const total = cum[N - 1], DS = 78, items = [];
+          const at = s => { let i = 0; while (i < N - 2 && cum[i + 1] < s) i++; const a = (s - cum[i]) / (cum[i + 1] - cum[i] || 1), dx = L[i + 1][0] - L[i][0], dy = L[i + 1][1] - L[i][1], l = Math.hypot(dx, dy) || 1;
+            return [lerp(L[i][0], L[i + 1][0], a), lerp(L[i][1], L[i + 1][1], a), -dy / l, dx / l]; };
+          const row = (phase, off, type, t0, rate) => {
+            for (let k = 0; (k + phase) * DS < total; k++) {
+              const [x, y, nx, ny] = at((k + phase) * DS), wx = x + nx * off / cam.s, wy = y + ny * off / cam.s;
+              let sc = clamp((inland(wx, wy) - 4) / 16) * fillA;
+              if (t0 != null) sc *= E.outBack(prog(t, t0 + k * rate, t0 + k * rate + .4));
+              if (sc > .02) items.push([wx, wy, typeof type === 'function' ? type(k) : type, sc, k]);
+            }
+          };
+          row(.25, 13 * u, 'rok', 2.8, .03);
+          row(.75, 13 * u, k => k % 2 ? 'un' : 'usa', 4.9, .05);
+          row(.75, -13 * u, 'dprk', 2.8, .03);
+          row(.25, -13 * u, 'prc', 13.8, .05);
+          if (pr > 0) { const pa = 1 - prog(date, D('1950-09-27'), D('1950-09-30')); for (let k = 0; k < 3; k++) { const a = .35 + k * .6; items.push([POCKET_C[0] + Math.cos(a) * pr * 1.15, POCKET_C[1] + Math.sin(a) * pr, k % 2 ? 'usa' : 'un', clamp(pr / 40) * pa, k]); } }
+          items.map(([x, y, ty, sc, k]) => { const [sx, sy] = toS(x, y); return [sx, sy, ty, sc, k]; }).sort((a, b) => a[1] - b[1])
+            .forEach(([sx, sy, ty, sc, k]) => drawFlag(FLAGS[ty], sx, sy, sc, t * 7 + k * 1.3 + sx * .01));
+        }
+
+        // China's arrival: a red flash
+        const fl = prog(t, 13.98, 14.6); if (fl > 0 && fl < 1) { g.fillStyle = `rgba(200,20,20,${(.22 * (1 - fl) ** 2).toFixed(3)})`; g.fillRect(0, 0, W, H); }
+        K.vignette(g, W, H, .62, 'rgba(0,8,20,.42)');
+
+        // ── HUD: territory panel and the date
+        const hudA = prog(t, 2.9, 3.5);
+        if (hudA > 0) {
+          const sh = fillA > 0 ? share(L, pr) : .45; lastShare = sh;
+          const x = HUD.x * u, y = HUD.y * u - (1 - E.out(hudA)) * 20 * u, w = HUD.w * u, h = 192 * u;
+          g.save(); g.globalAlpha = hudA;
+          g.fillStyle = 'rgba(10,14,22,.8)'; rrect(x, y, w, h, 14 * u); g.fill(); g.strokeStyle = 'rgba(255,255,255,.1)'; g.lineWidth = 1.5 * u; g.stroke();
+          g.restore();
+          text('TERRITORY HELD', x + 20 * u, y + 34 * u, { font: FONT(700, 20), fill: '#9aa6b8', track: 3, alpha: hudA });
+          const chinaA = E.out(prog(t, 13.8, 14.3)), allyA = E.out(prog(t, 4.9, 5.4));
+          const rows = [[['dprk', 1], ['prc', chinaA]], [['rok', 1], ['usa', allyA], ['un', allyA]]];
+          rows.forEach((fl, r) => {
+            const ry = y + (66 + r * 52) * u; let fx = x + 20 * u;
+            g.save(); g.globalAlpha = hudA;
+            for (const [ty, a] of fl) { if (a <= 0) continue; const fw = 39 * u * a; g.drawImage(FLAGS[ty], fx, ry - 13 * u, fw, 26 * u); fx += fw + 7 * u * a; }
+            g.restore();
+            text(r ? (allyA > .5 ? 'SOUTH + UN' : 'SOUTH KOREA') : (chinaA > .5 ? 'NORTH + CHINA' : 'NORTH KOREA'), fx + 6 * u, ry + 9 * u, { font: FONT(600, 26), fill: '#e8ecf3', alpha: hudA });
+            const v = r ? sh : 1 - sh;
+            text(Math.round(v * 100) + '%', x + w - 20 * u, ry + 13 * u, { font: FONT(800, 42), fill: r ? '#8fb3ff' : '#ff8f84', align: 'right', alpha: hudA });
+          });
+          const by = y + 156 * u, bw = w - 40 * u;
+          g.save(); g.globalAlpha = hudA; g.fillStyle = RED; rrect(x + 20 * u, by, bw, 12 * u, 6 * u); g.fill();
+          g.fillStyle = BLUE; g.save(); rrect(x + 20 * u, by, bw, 12 * u, 6 * u); g.clip(); g.fillRect(x + 20 * u + bw * (1 - sh), by, bw * sh, 12 * u); g.restore();
+          g.restore();
+          // date
+          const dy = y + h + 66 * u, day = Math.round((date - START) / DAY) + 1;
+          text(fmt(date), x + 4 * u, dy, { font: FONT(800, 66), stroke: '#000', sw: 9, alpha: hudA, track: 1 });
+          text(`DAY ${day.toLocaleString('en-US')}`, x + 6 * u, dy + 34 * u, { font: FONT(700, 26), fill: '#ffd36b', stroke: '#000', sw: 6, alpha: hudA, track: 3 });
+        }
+
+        // ── event cards
+        for (const [t0, t1, side, dl, head, sub] of CARDS) {
+          const a = E.out(prog(t, t0, t0 + .35)) * (1 - E.inOut(prog(t, t1 - .3, t1)));
+          if (a <= 0) continue;
+          const col = { r: '#e5483b', b: '#4f86ff', n: '#c9ced8', w: '#ffe9a8' }[side];
+          // the card is as wide as its headline needs; only past cmax does the headline get smaller
+          const pad = 24 * u, inner = pad * 2 + 14 * u, H1 = head.toUpperCase();
+          g.font = FONT(800, 58); g.letterSpacing = u + 'px'; const hw = g.measureText(H1).width; g.letterSpacing = '0px';
+          const w = clamp(hw + inner, HUD.cw * u, HUD.cmax * u), hs = Math.min(1, (w - inner) / hw);
+          g.font = FONT(500, 27); const lines = wrap(sub, w - pad * 2 - 10 * u);
+          const h = pad * 2 + 30 * u + 56 * u + lines.length * 32 * u;
+          const x = (HUD.cr ? HUD.cr * u - w : HUD.cx * u) - (1 - a) * 40 * u, y = HUD.cAnchor === 'bottom' ? HUD.cy * u - h : HUD.cy * u;
+          g.save(); g.globalAlpha = a; g.fillStyle = 'rgba(10,14,22,.84)'; rrect(x, y, w, h, 14 * u); g.fill();
+          g.fillStyle = col; g.fillRect(x, y + 14 * u, 7 * u, h - 28 * u); g.restore();
+          text(dl, x + pad + 6 * u, y + pad + 22 * u, { font: FONT(700, 24), fill: col, track: 3, alpha: a });
+          text(H1, x + pad + 4 * u, y + pad + 80 * u, { font: FONT(800, 58 * hs), fill: '#fff', alpha: a, track: hs });
+          lines.forEach((ln, i) => text(ln, x + pad + 6 * u, y + pad + 120 * u + i * 32 * u, { font: FONT(500, 27), fill: '#c9d0dc', alpha: a }));
+        }
+
+        // ── title
+        const ta = E.out(prog(t, .15, .9)) * (1 - E.inOut(prog(t, 2.3, 2.9)));
+        if (ta > 0) {
+          const gr = g.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * .6); gr.addColorStop(0, `rgba(0,6,16,${.55 * ta})`); gr.addColorStop(1, 'rgba(0,6,16,0)');
+          g.fillStyle = gr; g.fillRect(0, 0, W, H);
+          const k = 1 + .04 * prog(t, 0, 2.9);
+          g.save(); g.translate(W / 2, H / 2); g.scale(k, k); g.translate(-W / 2, -H / 2);
+          text('1950 – 1953', W / 2, H / 2 - 92 * u, { font: FONT(700, 34), fill: '#ffd36b', align: 'center', track: 10, alpha: ta });
+          text('THE KOREAN WAR', W / 2, H / 2 + 20 * u, { font: FONT(800, VERT ? 128 : 150), stroke: 'rgba(0,0,0,.55)', sw: 10, align: 'center', track: 2, alpha: ta });
+          text('THE FRONT LINE, MONTH BY MONTH', W / 2, H / 2 + 76 * u, { font: FONT(600, 32), fill: '#dfe6f2', align: 'center', track: 6, alpha: ta });
+          g.restore();
+        }
+        K.drawGrain(g, grain, W, H, frame, .05);
+      };
+    },
+  });
+})();
+</script>
+</body>
+</html>

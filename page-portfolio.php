@@ -325,6 +325,10 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 					<?php echo $rs_arrow_right; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
 				</a>
 				<a class="rs-pf-btn rs-pf-btn--ghost" href="#rs-pf-contact"><?php echo esc_html( $rs_is_en ? 'Get in touch' : 'যোগাযোগ' ); ?></a>
+				<a class="rs-pf-btn rs-pf-btn--ghost" href="<?php echo esc_url( rs_map_demo_url() ); ?>">
+					<?php echo wp_kses( rs_icon( 'globe', 17 ), rs_svg_tags() ); ?>
+					Map animation
+				</a>
 			</div>
 
 			<dl class="rs-pf__stats rs-pf-rise rs-pf-rise--3">

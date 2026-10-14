@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shifting Shores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Caveat:wght@700&family=Inter:wght@400;500;600&family=Special+Elite&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<!-- voice-over data (length, level, speech envelope) from map animation demo/audio/build_vo.py -->
+<script src="audio/vo-env.js?v=d3018d45"></script>
+<style>
+  :root { --sw:1920px; --sh:1080px; --bg:#0e0e0e; --ink:#ece46b; --ui:#e8e8e8; --ui-dim:#9a9a9a; --accent:#ece46b; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; background:var(--bg); overflow:hidden; }
+  #app { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--bg); }
+  #viewport { position:relative; overflow:hidden; flex:none; }
+  #stage { position:absolute; left:0; top:0; width:var(--sw); height:var(--sh); overflow:hidden; transform-origin:0 0; background:#2a1d14; }
+  .scene { position:absolute; left:0; top:0; width:var(--sw); height:var(--sh); }
+  .cam { position:absolute; left:0; top:0; width:1920px; height:1080px; }   /* world layers keep 16:9 coordinates; the camera frames them */
+  .cam { transform-origin:0 0; }
+  .abs { position:absolute; }
+
+  /* ---------- scene 1 : studio + TV ---------- */
+  #backdrop { position:absolute; inset:-200px; background:radial-gradient(ellipse 60% 62% at 50% 42%, #b98a5c, #2f2117); }
+  #floor { position:absolute; left:-200px; right:-200px; top:820px; height:460px; background:linear-gradient(to bottom, rgba(20,12,6,0), rgba(20,12,6,0.55)); }
+  #tvShadow { position:absolute; left:470px; top:800px; width:980px; height:90px; border-radius:50%; background:radial-gradient(closest-side, rgba(0,0,0,0.6), rgba(0,0,0,0)); }
+  #tv { position:absolute; left:540px; top:240px; width:840px; height:600px; }
+  #tv .cabinet { position:absolute; inset:0; border-radius:38px; background:linear-gradient(170deg, #6a4430, #3a2416); box-shadow:0 34px 60px rgba(0,0,0,0.5), 0 4px 0 rgba(255,220,180,0.08); }
+  #tv .bezel { position:absolute; left:34px; top:34px; width:570px; height:470px; border-radius:30px; background:#1b1814; box-shadow:0 0 0 6px #2a2019; }
+  #screen { position:absolute; left:28px; top:28px; width:514px; height:414px; border-radius:46px / 38px; overflow:hidden; background:#060a0a; }
+  #screenContent { position:absolute; inset:0; transform-origin:50% 50%; }
+  #tvMapWrap { position:absolute; inset:0; transform-origin:50% 50%; }
+  #tvMap { position:absolute; left:0; top:0; width:514px; height:414px; }
+  #tvTitle { position:absolute; left:26px; top:22px; font-family:'Special Elite', monospace; font-size:27px; color:#1d1d1d; letter-spacing:1px; background:#fbf8ef; padding:4px 10px 2px; border:2px solid #1d1d1d; white-space:pre; }
+  #screen .scan { position:absolute; inset:0; background:repeating-linear-gradient(to bottom, rgba(0,0,0,0.22) 0px, rgba(0,0,0,0.22) 2px, rgba(0,0,0,0) 2px, rgba(0,0,0,0) 4px); }
+  #screen .svig { position:absolute; inset:0; background:radial-gradient(ellipse 70% 70% at 50% 50%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.62)); }
+  #screen .glare { position:absolute; left:-40px; top:-60px; width:360px; height:260px; border-radius:50%; background:radial-gradient(closest-side, rgba(255,255,255,0.20), rgba(255,255,255,0)); }
+  #screenWhite { position:absolute; inset:0; background:#eaf6f2; opacity:0; }
+  #tv .panel { position:absolute; left:630px; top:34px; width:176px; height:470px; border-radius:20px; background:#2b1d14; }
+  #tv .brand { position:absolute; left:0; width:176px; top:22px; text-align:center; font-family:'Barlow Condensed', sans-serif; font-weight:700; font-size:26px; letter-spacing:5px; color:#d8c6a6; }
+  .knob { position:absolute; left:40px; width:96px; height:96px; border-radius:50%; background:radial-gradient(circle at 38% 32%, #8b8b86, #262624); box-shadow:0 6px 10px rgba(0,0,0,0.5); }
+  .knob .tick { position:absolute; left:45px; top:8px; width:6px; height:30px; border-radius:3px; background:#e9e4d6; }
+  .knob-label { position:absolute; left:0; width:176px; text-align:center; font-family:'Barlow Condensed', sans-serif; font-weight:600; font-size:15px; letter-spacing:3px; color:#b9a88c; }
+  .grille { position:absolute; left:26px; width:124px; height:6px; border-radius:3px; background:#17100b; }
+  .tvbtn { position:absolute; top:528px; width:46px; height:22px; border-radius:6px; background:#20160f; }
+  #led { position:absolute; left:575px; top:532px; width:14px; height:14px; border-radius:50%; background:#5a1d14; }
+  .leg { position:absolute; top:592px; width:70px; height:44px; border-radius:0 0 14px 14px; background:#24170f; }
+  #note { position:absolute; left:452px; top:650px; width:214px; height:200px; background:#f2d85b; box-shadow:0 14px 22px rgba(0,0,0,0.38); padding:26px 18px; font-family:'Caveat', cursive; font-weight:700; font-size:44px; line-height:46px; color:#2a2620; transform-origin:50% 0%; }
+  .hand { position:absolute; font-family:'Caveat', cursive; font-weight:700; color:var(--ink); white-space:nowrap; padding:0 18px 10px 6px; }
+  #hw1 { left:1440px; top:150px; font-size:128px; line-height:140px; transform:rotate(-7deg); }
+  #hw2 { left:1555px; top:285px; font-size:128px; line-height:140px; transform:rotate(-7deg); }
+
+  /* ---------- scene 2-4 : desk + paper maps ---------- */
+  #desk { position:absolute; left:-900px; top:-700px; }
+  .paper { position:absolute; left:0; top:0; width:1100px; height:748px; background:#f8f5ec; box-shadow:0 22px 44px rgba(0,0,0,0.48), 0 3px 6px rgba(0,0,0,0.32); }
+  .paper .mapsvg { position:absolute; left:30px; top:30px; width:1040px; height:688px; }
+  .fold { position:absolute; background:rgba(0,0,0,0.10); }
+  .fold.v { left:549px; top:0; width:2px; height:748px; }
+  .fold.h { left:0; top:373px; width:1100px; height:2px; }
+  .foldl { position:absolute; background:rgba(255,255,255,0.35); }
+  .foldl.v { left:552px; top:0; width:2px; height:748px; }
+  .foldl.h { left:0; top:376px; width:1100px; height:2px; }
+  .tape { position:absolute; width:250px; height:78px; background:rgba(234,222,190,0.88); box-shadow:0 2px 4px rgba(0,0,0,0.18); font-family:'Caveat', cursive; font-weight:700; font-size:60px; line-height:78px; text-align:center; color:#22201c; }
+  #tapeA { left:-30px; top:-34px; transform:rotate(-4deg); }
+  #tapeB { left:-24px; top:-36px; transform:rotate(3deg); }
+  .islandNote { left:286px; font-size:36px; line-height:40px; color:#fff4a8; filter:drop-shadow(0 2px 2px rgba(0,0,0,0.45)); }
+  #islandNote1 { top:522px; }
+  #islandNote2 { top:562px; }
+  #sameCoast { font-size:96px; line-height:104px; color:#fff4a8; filter:drop-shadow(0 3px 3px rgba(0,0,0,0.5)); transform:rotate(-5deg); }
+  #stamp { position:absolute; left:690px; top:560px; padding:6px 22px 2px; border:7px solid #c8372d; border-radius:10px; color:#c8372d; font-family:'Barlow Condensed', sans-serif; font-weight:700; font-size:68px; letter-spacing:6px; line-height:74px; mix-blend-mode:multiply; opacity:0; }
+  #cup { position:absolute; left:-60px; top:830px; width:300px; height:300px; }
+  #cup .saucer { position:absolute; inset:0; border-radius:50%; background:#e9e3d6; box-shadow:0 18px 30px rgba(0,0,0,0.45); }
+  #cup .handle { position:absolute; left:226px; top:128px; width:74px; height:44px; border-radius:22px; background:#f3efe6; box-shadow:0 6px 10px rgba(0,0,0,0.3); }
+  #cup .body { position:absolute; left:45px; top:45px; width:210px; height:210px; border-radius:50%; background:#f6f3eb; box-shadow:0 8px 14px rgba(0,0,0,0.3); }
+  #cup .coffee { position:absolute; left:65px; top:65px; width:170px; height:170px; border-radius:50%; background:radial-gradient(circle at 42% 38%, #7a4a28, #2f190c); }
+  #pencil { position:absolute; left:-100px; top:62px; width:600px; height:34px; transform:rotate(6deg); transform-origin:50% 50%; }
+  #pencil .shadow { position:absolute; left:6px; top:14px; width:590px; height:30px; border-radius:6px; background:rgba(0,0,0,0.35); filter:blur(6px); }
+  #pencil .wood { position:absolute; left:0; top:0; width:70px; height:34px; background:#e6c294; clip-path:polygon(0% 50%, 100% 0%, 100% 100%); }
+  #pencil .lead { position:absolute; left:0; top:12px; width:22px; height:10px; background:#2e2e2e; clip-path:polygon(0% 50%, 100% 0%, 100% 100%); }
+  #pencil .shaft { position:absolute; left:70px; top:0; width:440px; height:34px; background:#f0b72f; }
+  #pencil .facet1 { position:absolute; left:70px; top:0; width:440px; height:9px; background:#f7cc58; }
+  #pencil .facet2 { position:absolute; left:70px; top:24px; width:440px; height:10px; background:#d29a1c; }
+  #pencil .ferrule { position:absolute; left:510px; top:-1px; width:44px; height:36px; background:#bfc1bd; border-radius:3px; }
+  #pencil .eraser { position:absolute; left:554px; top:0; width:46px; height:34px; background:#e98f8a; border-radius:0 9px 9px 0; }
+  #shake { position:absolute; left:0; top:0; width:var(--sw); height:var(--sh); }
+
+  /* ---------- stage overlays ---------- */
+  #crtOverlay { position:absolute; inset:0; background:repeating-linear-gradient(to bottom, rgba(0,0,0,0.28) 0px, rgba(0,0,0,0.28) 3px, rgba(0,0,0,0) 3px, rgba(0,0,0,0) 6px); opacity:0; pointer-events:none; }
+  #flash { position:absolute; inset:0; background:#fffbea; opacity:0; pointer-events:none; }
+  #vignette { position:absolute; inset:0; background:radial-gradient(ellipse 75% 75% at 50% 50%, rgba(0,0,0,0) 58%, rgba(0,0,0,0.42)); pointer-events:none; }
+  #grain { position:absolute; left:0; top:0; opacity:0.10; mix-blend-mode:overlay; pointer-events:none; }
+
+  /* ---------- player (outside the stage, hidden in clean mode) ---------- */
+  #player { flex:none; width:100%; height:64px; display:flex; align-items:center; gap:8px; padding:0 16px; background:#151515; border-top:1px solid #262626; color:var(--ui); font:500 13px/1 'Inter', system-ui, sans-serif; user-select:none; }
+  #player button { flex:none; width:36px; height:36px; display:grid; place-items:center; border:0; border-radius:8px; background:transparent; color:var(--ui); cursor:pointer; padding:0; }
+  #player button:hover { background:#262626; }
+  #player button:focus-visible, #player input:focus-visible, #player select:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+  #player button.on { color:var(--accent); }
+  #player svg { width:20px; height:20px; fill:currentColor; }
+  .mono { font-variant-numeric:tabular-nums; white-space:nowrap; color:var(--ui-dim); }
+  .mono b { color:var(--ui); font-weight:600; }
+  #seek { flex:1 1 auto; min-width:80px; }
+  #vol { width:80px; flex:none; }
+  #player input[type=range] { accent-color:var(--accent); height:20px; cursor:pointer; }
+  #speed, #postFps { flex:none; background:#222; color:var(--ui); border:1px solid #333; border-radius:6px; height:30px; padding:0 4px; font:inherit; cursor:pointer; }
+  #player button.txt { width:auto; padding:0 10px; gap:6px; display:flex; align-items:center; border:1px solid #2c2c2c; font:600 12px/1 'Inter', system-ui, sans-serif; letter-spacing:.5px; }
+  #player button.txt.on { color:var(--accent); border-color:var(--accent); background:#262410; }
+  html.embed .hide-embed { display:none !important; }
+  #soundHint { flex:none; color:var(--accent); font-size:12px; white-space:nowrap; }
+  @media (max-width: 900px) { #bPost span { display:none; } }
+  @media (max-width: 760px) { #tFrame, #vol, #soundHint, #postFps { display:none; } #player { gap:2px; padding:0 8px; } }
+  html.clean #player { display:none; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="viewport">
+    <div id="stage">
+
+      <!-- ===== SCENE 1 : retro TV in a studio ===== -->
+      <section id="sc1" class="scene">
+        <div id="cam1" class="cam">
+          <div id="backdrop"></div>
+          <div id="floor"></div>
+          <svg id="stands" class="abs" width="1920" height="1080" style="left:0;top:0;overflow:visible"></svg>
+          <div id="tvShadow"></div>
+          <svg id="antenna" class="abs" width="1920" height="1080" style="left:0;top:0;overflow:visible"></svg>
+          <div id="tv">
+            <div class="cabinet"></div>
+            <div class="bezel">
+              <div id="screen">
+                <div id="screenContent">
+                  <div id="tvMapWrap"><svg id="tvMap" viewBox="400 282 620 500" preserveAspectRatio="xMidYMid slice"></svg></div>
+                  <div id="tvTitle"></div>
+                </div>
+                <div class="scan"></div>
+                <div class="svig"></div>
+                <div class="glare"></div>
+                <div id="screenWhite"></div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="brand">MERIDIAN</div>
+              <div class="knob" style="top:84px"><div class="tick"></div></div>
+              <div class="knob-label" style="top:190px">CHANNEL</div>
+              <div class="knob" id="knob2" style="top:226px"><div class="tick"></div></div>
+              <div class="knob-label" style="top:332px">VOLUME</div>
+              <div class="grille" style="top:372px"></div>
+              <div class="grille" style="top:388px"></div>
+              <div class="grille" style="top:404px"></div>
+              <div class="grille" style="top:420px"></div>
+              <div class="grille" style="top:436px"></div>
+            </div>
+            <div class="tvbtn" style="left:70px"></div>
+            <div class="tvbtn" style="left:128px"></div>
+            <div class="tvbtn" style="left:186px"></div>
+            <div class="tvbtn" style="left:244px"></div>
+            <div id="led"></div>
+            <div class="leg" style="left:96px"></div>
+            <div class="leg" style="left:674px"></div>
+          </div>
+          <div id="note">the coast<br>moved?!</div>
+          <div id="hw1" class="hand">Proof on</div>
+          <div id="hw2" class="hand">paper</div>
+          <svg id="arrow1svg" class="abs" width="1920" height="1080" style="left:0;top:0;overflow:visible"></svg>
+        </div>
+      </section>
+
+      <!-- ===== SCENES 2-4 : top-down desk with paper maps ===== -->
+      <section id="sc2" class="scene">
+        <div id="shake">
+          <div id="world" class="cam">
+            <svg id="desk" width="3900" height="2800"></svg>
+            <div id="mapA" class="paper">
+              <svg class="mapsvg" id="mapAsvg" viewBox="0 0 1300 860"></svg>
+              <div class="fold v"></div><div class="foldl v"></div>
+              <div class="fold h"></div><div class="foldl h"></div>
+              <svg class="abs" width="120" height="60" style="left:150px;top:-22px;overflow:visible"><path d="M14 46 L14 12 Q14 2 26 2 L96 2 Q108 2 108 14 L108 40 Q108 52 96 52 L34 52 Q24 52 24 42 L24 18 Q24 12 32 12 L88 12 Q96 12 96 20 L96 38" fill="none" stroke="#b9bdc1" stroke-width="5" stroke-linecap="round"/></svg>
+              <div id="tapeA" class="tape">1973</div>
+              <div id="islandNote1" class="hand islandNote">this island</div>
+              <div id="islandNote2" class="hand islandNote">keeps growing</div>
+            </div>
+            <div id="mapB" class="paper">
+              <svg class="mapsvg" id="mapBsvg" viewBox="0 0 1300 860"></svg>
+              <div class="fold v"></div><div class="foldl v"></div>
+              <div class="fold h"></div><div class="foldl h"></div>
+              <div id="tapeB" class="tape">2023</div>
+              <div id="stamp">NEW LAND</div>
+            </div>
+            <div id="pencil">
+              <div class="shadow"></div>
+              <div class="wood"></div><div class="lead"></div>
+              <div class="shaft"></div><div class="facet1"></div><div class="facet2"></div>
+              <div class="ferrule"></div><div class="eraser"></div>
+            </div>
+            <div id="cup"><div class="saucer"></div><div class="handle"></div><div class="body"></div><div class="coffee"></div></div>
+            <svg id="annoSvg" class="abs" width="3000" height="2000" style="left:0;top:0;overflow:visible"></svg>
+            <div id="sameCoast" class="hand">same coast?</div>
+          </div>
+        </div>
+        <div id="crtOverlay"></div>
+      </section>
+
+      <div id="flash"></div>
+      <div id="vignette"></div>
+      <svg id="grain" width="1920" height="1080">
+        <filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+        <rect width="1920" height="1080" filter="url(#noise)"/>
+      </svg>
+    </div>
+  </div>
+
+  <div id="player" role="toolbar" aria-label="Player controls">
+    <button id="bPlay" title="Play / pause (Space, K)" aria-label="Play or pause"><svg viewBox="0 0 24 24"><path id="icoPlay" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button>
+    <button id="bRestart" title="Restart (Home)" aria-label="Restart"><svg viewBox="0 0 24 24"><path d="M12 5a7 7 0 1 1-6.6 9.3l1.9-.6A5 5 0 1 0 12 7v3L7.5 6 12 2z"/></svg></button>
+    <button id="bPrev" title="Previous frame (← or ,)" aria-label="Previous frame"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM19 5v14L9 12z"/></svg></button>
+    <button id="bNext" title="Next frame (→ or .)" aria-label="Next frame"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM5 5v14l10-7z"/></svg></button>
+    <span id="tTime" class="mono"><b>0:00.00</b> / 0:21.00</span>
+    <input id="seek" type="range" min="0" max="630" step="1" value="0" aria-label="Seek">
+    <span id="tFrame" class="mono">f <b>0</b> / 630</span>
+    <select id="speed" title="Playback speed" aria-label="Playback speed">
+      <option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option>
+      <option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option>
+    </select>
+    <button id="bPost" class="txt" title="Posterize time: picture steps at a lower frame rate, like After Effects (P)" aria-label="Posterize time"><svg viewBox="0 0 24 24"><path d="M3 20v-4h5v-4h5V8h5V4h3v3h-3v4h-5v4H8v4H3z"/></svg><span>POSTERIZE</span></button>
+    <select id="postFps" title="Posterize frame rate" aria-label="Posterize frame rate"><option value="12">12 fps</option><option value="8">8 fps</option><option value="6">6 fps</option></select>
+    <button id="bAr" class="txt hide-embed" title="Switch frame: 16:9 / 4:5">16:9</button>
+    <button id="bLoop" class="on" title="Loop (L)" aria-label="Loop"><svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2zM17 17H7v-3l-4 4 4 4v-3h12v-6h-2z"/></svg></button>
+    <button id="bMute" title="Mute (M)" aria-label="Mute"><svg viewBox="0 0 24 24"><path id="icoVol" d="M4 9h4l5-4v14l-5-4H4zM16 8.5a5 5 0 0 1 0 7l-1.4-1.4a3 3 0 0 0 0-4.2zM18.4 6a8.5 8.5 0 0 1 0 12L17 16.6a6.5 6.5 0 0 0 0-9.2z"/></svg></button>
+    <input id="vol" type="range" min="0" max="1" step="0.01" value="0.25" aria-label="Volume">
+    <span id="soundHint">click for sound</span>
+    <button id="bFs" title="Fullscreen (F)" aria-label="Fullscreen"><svg viewBox="0 0 24 24"><path d="M4 4h6v2H6v4H4zM14 4h6v6h-2V6h-4zM4 14h2v4h4v2H4zM18 14h2v6h-6v-2h4z"/></svg></button>
+  </div>
+</div>
+
+<audio id="score" src="audio/score-vo.mp3" data-start="0" preload="auto"></audio>
+
+<script>
+// The animation is built on 21 s. With the voice (map animation demo/audio/11-vo.*) the whole piece plays slower,
+// evenly, to the voice length; the score is then score-vo.wav: the same music stretched (pitch kept) and ducked under the words.
+const BASE = 21;
+const VD = (window.VO_DATA && window.VO_DATA['11']) || null;
+const DURATION = VD ? VD.total : BASE;
+const FPS = 30;
+const CLEAN = navigator.webdriver === true || /[?&](clean|codeflow)\b/.test(location.search);
+if (CLEAN) document.documentElement.classList.add('clean');
+// ?ar=45 → 4:5 frame (1080×1350) · ?post=12|8|6|0 posterize time · ?t=3.2 · ?paused · ?embed (inside map animation demo/index.html)
+const QS = new URLSearchParams(location.search);
+const VERT = /^(45|4x5|4:5|v|vertical)$/i.test(QS.get('ar') || '');
+const EMBED = QS.has('embed') && parent !== window;
+const SW = VERT ? 1080 : 1920, SH = VERT ? 1350 : 1080, CX = SW / 2, CY = SH / 2;
+document.documentElement.style.setProperty('--sw', SW + 'px');
+document.documentElement.style.setProperty('--sh', SH + 'px');
+if (EMBED) document.documentElement.classList.add('embed');
+
+/* ================= helpers ================= */
+const NS = 'http://www.w3.org/2000/svg';
+const $ = id => document.getElementById(id);
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function rng(seed) {
+  return function () {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const r1 = v => Math.round(v * 10) / 10;
+function smoothOpen(p) {
+  let d = `M${r1(p[0][0])} ${r1(p[0][1])}`;
+  for (let i = 0; i < p.length - 1; i++) {
+    const a = p[Math.max(i - 1, 0)], b = p[i], c = p[i + 1], e = p[Math.min(i + 2, p.length - 1)];
+    d += ` C${r1(b[0] + (c[0] - a[0]) / 6)} ${r1(b[1] + (c[1] - a[1]) / 6)} ${r1(c[0] - (e[0] - b[0]) / 6)} ${r1(c[1] - (e[1] - b[1]) / 6)} ${r1(c[0])} ${r1(c[1])}`;
+  }
+  return d;
+}
+function smoothClosed(p) {
+  const n = p.length;
+  let d = `M${r1(p[0][0])} ${r1(p[0][1])}`;
+  for (let i = 0; i < n; i++) {
+    const a = p[(i - 1 + n) % n], b = p[i], c = p[(i + 1) % n], e = p[(i + 2) % n];
+    d += ` C${r1(b[0] + (c[0] - a[0]) / 6)} ${r1(b[1] + (c[1] - a[1]) / 6)} ${r1(c[0] - (e[0] - b[0]) / 6)} ${r1(c[1] - (e[1] - b[1]) / 6)} ${r1(c[0])} ${r1(c[1])}`;
+  }
+  return d + 'Z';
+}
+function roughen(base, seed, amp) {
+  const r = rng(seed), out = [];
+  for (let i = 0; i < base.length - 1; i++) {
+    const a = base[i], b = base[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy);
+    out.push(a);
+    for (const t of [0.33, 0.66]) {
+      const j = (r() - 0.5) * 2 * amp;
+      out.push([a[0] + dx * t - dy / L * j, a[1] + dy * t + dx / L * j]);
+    }
+  }
+  out.push(base[base.length - 1]);
+  return out;
+}
+function blob(cx, cy, rx, ry, seed, n = 11, jit = 0.16) {
+  const r = rng(seed), p = [];
+  for (let i = 0; i < n; i++) {
+    const t = i / n * Math.PI * 2, k = 1 + (r() - 0.5) * 2 * jit;
+    p.push([cx + Math.cos(t) * rx * k, cy + Math.sin(t) * ry * k]);
+  }
+  return smoothClosed(p);
+}
+function handLoop(cx, cy, rx, ry, seed) {
+  const r = rng(seed), p = [], n = 28;
+  for (let i = 0; i <= n; i++) {
+    const t = -2.3 + i / n * (Math.PI * 2 + 0.6), k = 1 + (r() - 0.5) * 0.07 + i / n * 0.09;
+    p.push([cx + Math.cos(t) * rx * k, cy + Math.sin(t) * ry * k]);
+  }
+  return smoothOpen(p);
+}
+/* stroke draw-on: a dash as long as the path, pushed off by its length (+ cap) */
+function prepDraw(path) {
+  const L = path.getTotalLength(), w = parseFloat(path.getAttribute('stroke-width') || 4);
+  path.style.strokeDasharray = `${L} ${L + 2 * w}`;
+  path.style.strokeDashoffset = L + w;
+  return L + w;
+}
+function drawOn(tl, path, at, dur, ease = 'power2.inOut') {
+  const off = prepDraw(path);
+  tl.fromTo(path, { strokeDashoffset: off }, { strokeDashoffset: 0, duration: dur, ease }, at);
+}
+/* arrow = curve + separate arrowhead (two strokes), both draw on */
+function makeArrow(parent, d, color, w) {
+  const g = el('g', { fill: 'none', stroke: color, 'stroke-width': w, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, parent);
+  const line = el('path', { d, 'stroke-width': w }, g);
+  const L = line.getTotalLength(), p = line.getPointAtLength(L), q = line.getPointAtLength(L - 24);
+  const ang = Math.atan2(p.y - q.y, p.x - q.x), len = w * 4.6, spread = 2.55;
+  const a = [p.x + Math.cos(ang + spread) * len, p.y + Math.sin(ang + spread) * len];
+  const b = [p.x + Math.cos(ang - spread) * len, p.y + Math.sin(ang - spread) * len];
+  const head = el('path', { d: `M${r1(a[0])} ${r1(a[1])} L${r1(p.x)} ${r1(p.y)} L${r1(b[0])} ${r1(b[1])}`, 'stroke-width': w }, g);
+  return { g, line, head };
+}
+
+/* ================= the delta map (illustrative, not to scale) ================= */
+const COAST_BASE = [[-20,515],[60,535],[120,500],[180,552],[240,512],[300,570],[360,528],[420,585],[480,540],[545,598],[600,560],[640,540],[668,482],[718,452],[770,432],[820,446],[870,406],[930,420],[985,465],[1025,530],[1055,610],[1085,690],[1115,770],[1140,880]];
+const COAST = roughen(COAST_BASE, 7, 9);
+const COAST_D = smoothOpen(COAST);
+const LAND_D = COAST_D + ' L1330 890 L1330 -30 L-30 -30 Z';
+function coastY(x) {
+  for (let i = 0; i < COAST_BASE.length - 1; i++) {
+    const a = COAST_BASE[i], b = COAST_BASE[i + 1];
+    if (x >= a[0] && x <= b[0]) return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+  }
+  return 520;
+}
+const ISLANDS = [[725,600,34,105,11],[835,606,20,46,12],[928,522,15,40,13],[640,640,13,22,14],[590,700,9,15,15],[785,700,12,18,16]];
+const PATCHES = [[728,748,48,30,21],[884,628,30,48,22],[850,470,82,34,23],[640,672,26,44,24]];
+const TOWNS = [['DHAKA',650,200,1],['KHULNA',330,350,0],['BARISHAL',575,395,0],['MONGLA',365,470,0],['NOAKHALI',880,372,0],['CHATTOGRAM',1085,560,0],["COX'S BAZAR",1155,770,0]];
+
+function buildMap(svg, o) {
+  const refs = { towns: [], patches: [] };
+  el('rect', { x: -30, y: -30, width: 1360, height: 920, fill: o.sea }, svg);
+  const cont = el('g', { fill: 'none', stroke: o.contour, 'stroke-width': 2.2, 'stroke-linecap': 'round' }, svg);
+  [1, 2, 3].forEach(k => el('path', { d: smoothOpen(COAST.map(p => [p[0] - k * 22, p[1] + k * 36])), opacity: r1(0.85 - k * 0.18) }, cont));
+  el('path', { d: LAND_D, fill: o.land, stroke: o.coastStroke, 'stroke-width': 2.4, 'stroke-linejoin': 'round' }, svg);
+
+  // rivers are drawn in sea colour across the land
+  const riv = el('g', { fill: 'none', stroke: o.sea, 'stroke-linecap': 'round' }, svg);
+  [['M745 440 C700 360 620 300 520 270 S300 210 -20 205', 17],
+   ['M760 436 C790 340 800 240 840 150 S900 40 935 -20', 14],
+   ['M520 270 C540 180 520 100 560 -20', 10],
+   ['M380 232 C360 320 300 380 300 480', 7],
+   ['M600 305 C590 380 600 440 585 540', 7],
+   ['M1035 560 C1080 540 1120 520 1170 470', 6]].forEach(([d, w]) => el('path', { d, 'stroke-width': w }, riv));
+  const rc = rng(31);
+  [70, 150, 230, 310, 390, 470, 535].forEach(x => {
+    const y0 = coastY(x) + 6, x1 = x + (rc() - 0.5) * 60, y1 = y0 - 120 - rc() * 70;
+    el('path', { d: `M${x} ${r1(y0)} Q${r1(x + (rc() - 0.5) * 70)} ${r1((y0 + y1) / 2)} ${r1(x1)} ${r1(y1)}`, 'stroke-width': 5 }, riv);
+  });
+
+  ISLANDS.forEach(([x, y, a, b, s]) => el('path', { d: blob(x, y, a, b, s), fill: o.land, stroke: o.coastStroke, 'stroke-width': 2.2 }, svg));
+
+  if (o.patches) {
+    PATCHES.forEach(([x, y, a, b, s]) => {
+      const d = blob(x, y, a, b, s, 10, 0.2);
+      el('path', { d, fill: o.land }, svg);
+      const fill = el('path', { d, fill: '#d6472f', opacity: 0 }, svg);
+      const line = el('path', { d, fill: 'none', stroke: '#d6472f', 'stroke-width': 5, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg);
+      refs.patches.push({ fill, line });
+    });
+  }
+
+  const grid = el('g', { stroke: o.grid, 'stroke-width': 1.6 }, svg);
+  for (let x = 100; x < 1300; x += 100) el('line', { x1: x, y1: -30, x2: x, y2: 890 }, grid);
+  for (let y = 100; y < 860; y += 100) el('line', { x1: -30, y1: y, x2: 1330, y2: y }, grid);
+
+  const roads = el('g', { fill: 'none', stroke: o.road, 'stroke-width': 3.2, 'stroke-linecap': 'round' }, svg);
+  ['M650 200 C560 240 420 280 330 350', 'M650 200 C640 280 600 330 575 395', 'M650 200 C780 260 900 330 1000 420 S1070 520 1085 560',
+   'M330 350 C340 400 355 440 365 470', 'M1085 560 C1110 640 1130 700 1155 770', 'M575 395 C700 380 800 380 880 372'].forEach(d => el('path', { d }, roads));
+  el('path', { d: 'M650 200 C790 236 925 298 1014 398 S1094 500 1099 552', fill: 'none', stroke: o.rail, 'stroke-width': 2.6, 'stroke-dasharray': '11 7' }, svg);
+
+  if (o.towns) TOWNS.forEach(([n, x, y, big]) => {
+    const g = el('g', {}, svg);
+    el('circle', { cx: x, cy: y, r: big ? 9 : 6.5, fill: '#1f1f1f', stroke: '#ffffff', 'stroke-width': 2.5 }, g);
+    const t = el('text', { x: x + 13, y: y - 9, 'font-family': 'Barlow Condensed', 'font-weight': 600, 'font-size': big ? 28 : 22, 'letter-spacing': 1, fill: '#2b302e' }, g);
+    t.textContent = n;
+    refs.towns.push(g);
+  });
+
+  const bay = el('text', { x: 300, y: 800, 'font-family': 'Barlow Condensed', 'font-weight': 500, 'font-size': 34, 'letter-spacing': 12, fill: o.bayInk }, svg);
+  bay.textContent = 'BAY OF BENGAL';
+  refs.bay = bay;
+
+  if (o.furniture) {
+    const tb = el('g', {}, svg);
+    el('rect', { x: 30, y: 30, width: 400, height: 98, fill: '#fbf9f2', stroke: '#2a2a2a', 'stroke-width': 2.4 }, tb);
+    el('text', { x: 48, y: 72, 'font-family': 'Special Elite', 'font-size': 27, fill: '#1e1e1e' }, tb).textContent = o.title;
+    el('text', { x: 48, y: 106, 'font-family': 'Special Elite', 'font-size': 18, fill: '#575757' }, tb).textContent = 'DELTA COAST · NOT TO SCALE';
+    const cp = el('g', {}, svg);
+    el('circle', { cx: 1225, cy: 92, r: 36, fill: 'none', stroke: '#2a2a2a', 'stroke-width': 2.4 }, cp);
+    el('path', { d: 'M1225 60 L1239 104 L1225 96 L1211 104 Z', fill: '#2a2a2a' }, cp);
+    el('text', { x: 1225, y: 150, 'text-anchor': 'middle', 'font-family': 'Barlow Condensed', 'font-weight': 700, 'font-size': 24, fill: '#2a2a2a' }, cp).textContent = 'N';
+    const sb = el('g', {}, svg);
+    for (let i = 0; i < 4; i++) el('rect', { x: 40 + i * 44, y: 826, width: 44, height: 11, fill: i % 2 ? '#fbf9f2' : '#222', stroke: '#222', 'stroke-width': 1.6 }, sb);
+    el('text', { x: 40, y: 816, 'font-family': 'Barlow Condensed', 'font-weight': 600, 'font-size': 18, fill: '#222' }, sb).textContent = '0';
+    el('text', { x: 216, y: 816, 'text-anchor': 'end', 'font-family': 'Barlow Condensed', 'font-weight': 600, 'font-size': 18, fill: '#222' }, sb).textContent = '50 KM';
+  }
+
+  if (o.highlight) {
+    refs.hl = el('path', { d: COAST_D, fill: 'none', stroke: '#f7e04a', 'stroke-width': 20, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: 0.85, style: 'mix-blend-mode:multiply' }, svg);
+    const tag = el('g', {}, svg);
+    el('rect', { x: 52, y: 600, width: 236, height: 44, fill: '#1c1c1c' }, tag);
+    el('text', { x: 170, y: 631, 'text-anchor': 'middle', 'font-family': 'Barlow Condensed', 'font-weight': 700, 'font-size': 27, 'letter-spacing': 2, fill: '#ffffff' }, tag).textContent = '1973 COASTLINE';
+    refs.tag = tag;
+  }
+  if (o.loop) {
+    refs.loop = el('path', { d: handLoop(725, 602, 88, 142, 41), fill: 'none', stroke: '#fff4a8', 'stroke-width': 7, 'stroke-linecap': 'round', style: 'filter:drop-shadow(0 2px 2px rgba(0,0,0,0.45))' }, svg);
+  }
+  if (o.ring) {
+    refs.dot = el('circle', { cx: 725, cy: 600, r: 9, fill: '#e3412f', opacity: 0 }, svg);
+    refs.ring = el('circle', { cx: 725, cy: 600, r: 60, fill: 'none', stroke: '#e3412f', 'stroke-width': 6, opacity: 0 }, svg);
+  }
+  return refs;
+}
+
+const PAL_A = { sea: '#56b4be', contour: '#7cc6ce', land: '#f2eee2', coastStroke: '#3f8f98', grid: 'rgba(25,45,45,0.09)', road: '#a9aba2', rail: '#555a58', bayInk: '#246c77' };
+const PAL_B = { sea: '#f3eee0', contour: '#ddd2b2', land: '#e8c54c', coastStroke: '#8d7526', grid: 'rgba(60,45,10,0.10)', road: '#a99a5e', rail: '#5c5130', bayInk: '#a1904f' };
+const tvRefs = buildMap($('tvMap'), { ...PAL_A, towns: true, ring: true });
+const A = buildMap($('mapAsvg'), { ...PAL_A, towns: true, furniture: true, title: 'SURVEY SHEET · 1973', highlight: true, loop: true });
+const B = buildMap($('mapBsvg'), { ...PAL_B, towns: true, furniture: true, title: 'SURVEY SHEET · 2023', patches: true });
+
+/* ================= scene 1 dressing ================= */
+(function studio() {
+  const s = $('stands');
+  [[205, 0.85, 1], [1725, 0.7, 0.88]].forEach(([x, op, k]) => {
+    const g = el('g', { stroke: '#22170f', 'stroke-width': 7 * k, 'stroke-linecap': 'round', fill: 'none', opacity: op }, s);
+    el('rect', { x: x - 95 * k, y: -70, width: 190 * k, height: 140 * k, fill: '#1d140d', stroke: 'none', rx: 6 }, g);
+    el('line', { x1: x, y1: 60, x2: x, y2: 880 * k + 40 }, g);
+    const fy = 880 * k + 40;
+    el('line', { x1: x, y1: fy, x2: x - 80 * k, y2: fy + 110 * k }, g);
+    el('line', { x1: x, y1: fy, x2: x + 80 * k, y2: fy + 110 * k }, g);
+    el('line', { x1: x, y1: fy, x2: x + 6, y2: fy + 125 * k }, g);
+  });
+  const a = $('antenna');
+  el('ellipse', { cx: 960, cy: 244, rx: 70, ry: 30, fill: '#2a1c12' }, a);
+  const rods = el('g', { stroke: '#2b2b2b', 'stroke-width': 6, 'stroke-linecap': 'round' }, a);
+  el('line', { x1: 950, y1: 228, x2: 800, y2: 36 }, rods);
+  el('line', { x1: 970, y1: 228, x2: 1130, y2: 26 }, rods);
+  el('circle', { cx: 800, cy: 36, r: 9, fill: '#2b2b2b' }, a);
+  el('circle', { cx: 1130, cy: 26, r: 9, fill: '#2b2b2b' }, a);
+  if (VERT) { gsap.set('#hw1', { left: 470, top: 870 }); gsap.set('#hw2', { left: 640, top: 1000 }); }
+  $('grain').setAttribute('width', SW); $('grain').setAttribute('height', SH); $('grain').querySelector('rect').setAttribute('width', SW); $('grain').querySelector('rect').setAttribute('height', SH);
+  const title = $('tvTitle');
+  'SHIFTING SHORES'.split('').forEach(ch => { const sp = document.createElement('span'); sp.textContent = ch; title.appendChild(sp); });
+})();
+const arrow1 = makeArrow($('arrow1svg'), VERT ? 'M900 945 C1090 930 1215 800 1112 690' : 'M1610 470 C1625 650 1390 720 1100 575', '#ece46b', 10);
+
+/* ================= desk ================= */
+(function desk() {
+  const d = $('desk'), r = rng(77);
+  el('rect', { width: 3900, height: 2800, fill: '#5d3823' }, d);
+  const defs = el('defs', {}, d);
+  const rg = el('radialGradient', { id: 'pool', cx: '0.45', cy: '0.42', r: '0.32' }, defs);
+  el('stop', { offset: '0', 'stop-color': '#ffd9a8', 'stop-opacity': 0.16 }, rg);
+  el('stop', { offset: '1', 'stop-color': '#ffd9a8', 'stop-opacity': 0 }, rg);
+  const grain = el('g', { fill: 'none', 'stroke-linecap': 'round' }, d);
+  for (let i = 0; i < 90; i++) {
+    const y = r() * 2800, pts = [];
+    for (let x = -50; x <= 3950; x += 260) pts.push([x, y + (r() - 0.5) * 26]);
+    el('path', { d: smoothOpen(pts), stroke: r() < 0.5 ? '#46281a' : '#7b4a2e', 'stroke-width': r1(1.5 + r() * 4), opacity: r1(0.25 + r() * 0.35) }, grain);
+  }
+  for (let y = 180; y < 2800; y += 340) el('line', { x1: 0, y1: y, x2: 3900, y2: y, stroke: '#311c11', 'stroke-width': 5, opacity: 0.7 }, d);
+  el('rect', { width: 3900, height: 2800, fill: 'url(#pool)' }, d);
+})();
+
+/* paper placement: x/y = top-left, rotation about the paper centre */
+const PW = 1100, PH = 748;
+const A_REST = { cx: 960, cy: 560, rot: -1.5 }, A_END = VERT ? { cx: 975, cy: 330, rot: -3 } : { cx: 770, cy: 640, rot: -4 };
+const B_START = VERT ? { cx: 2300, cy: 2000, rot: 13 } : { cx: 2950, cy: 360, rot: 13 }, B_END = VERT ? { cx: 1000, cy: 1110, rot: 2.5 } : { cx: 1650, cy: 430, rot: 3.5 };
+// 4:5: the two sheets stack; the pencil and the cup lie under them
+if (VERT) {
+  gsap.set(['#mapA', '#mapB'], { zIndex: 2 }); gsap.set(['#annoSvg', '#sameCoast'], { zIndex: 3 });
+  gsap.set('#pencil', { left: 380, top: 1010, zIndex: 1 }); gsap.set('#cup', { left: 1260, top: 1040, zIndex: 1 });
+}
+const place = p => ({ x: p.cx - PW / 2, y: p.cy - PH / 2, rotation: p.rot });
+function mapToWorld(p, mx, my) {
+  const lx = 30 + mx * 0.8 - PW / 2, ly = 30 + my * 0.8 - PH / 2, a = p.rot * Math.PI / 180;
+  return [p.cx + lx * Math.cos(a) - ly * Math.sin(a), p.cy + lx * Math.sin(a) + ly * Math.cos(a)];
+}
+gsap.set(['#mapA', '#mapB'], { transformOrigin: '50% 50%' });
+gsap.set('#mapA', place(A_REST));
+gsap.set('#mapB', place(B_START));
+
+const S = mapToWorld(A_END, 705, 640), E = mapToWorld(B_END, 700, 610);
+const arrow2 = makeArrow($('annoSvg'), VERT
+  ? `M${r1(S[0] + 60)} ${r1(S[1] + 40)} C${r1(S[0] + 380)} ${r1(S[1] + 180)} ${r1(E[0] + 380)} ${r1(E[1] - 260)} ${r1(E[0] + 50)} ${r1(E[1] - 50)}`
+  : `M${r1(S[0] + 40)} ${r1(S[1] + 40)} C${r1(S[0] + 300)} ${r1(S[1] + 210)} ${r1(E[0] - 90)} ${r1(E[1] + 330)} ${r1(E[0] - 10)} ${r1(E[1] + 70)}`, '#fff4a8', 13);
+arrow2.g.style.filter = 'drop-shadow(0 3px 3px rgba(0,0,0,0.45))';
+// park the handwritten question just under the lowest point of the arrow
+const low = (() => { const L = arrow2.line.getTotalLength(); let b = { x: 0, y: -1e9 }; for (let i = 0; i <= 60; i++) { const p = arrow2.line.getPointAtLength(L * i / 60); if (p.y > b.y) b = p; } return b; })();
+// (4:5: the arrow runs down between the stacked sheets, so the question sits left of its middle)
+const mid = arrow2.line.getPointAtLength(arrow2.line.getTotalLength() / 2);
+gsap.set('#sameCoast', VERT ? { left: r1(mid.x - 500), top: r1(mid.y - 70) } : { left: r1(low.x - 120), top: r1(low.y + 24) });
+
+/* ================= camera proxies ================= */
+const cam1 = { cx: 960, cy: 540, s: 1 };
+const view = { cx: 960, cy: 540, s: 1 };
+const shake = { x: 0, y: 0 };
+const cam1El = $('cam1'), worldEl = $('world'), shakeEl = $('shake');
+function applyCams() {
+  cam1El.style.transform = `translate(${CX - cam1.cx * cam1.s}px, ${CY - cam1.cy * cam1.s}px) scale(${cam1.s})`;
+  worldEl.style.transform = `translate(${CX - view.cx * view.s}px, ${CY - view.cy * view.s}px) scale(${view.s})`;
+  shakeEl.style.transform = `translate(${shake.x}px, ${shake.y}px)`;
+}
+
+/* ================= timeline ================= */
+gsap.set('#sc2', { autoAlpha: 0 });
+const SCREEN_C = [859, 509];
+const startView = (() => { const [x, y] = mapToWorld(A_REST, 710, 532); return { cx: x, cy: y, s: 4.7 }; })();
+const islandView = (() => { const [x, y] = mapToWorld(A_REST, 715, 600); return VERT ? { cx: x - 125, cy: y, s: 2.15 } : { cx: x - 40, cy: y, s: 2.3 }; })();
+Object.assign(view, startView);
+
+const tl = gsap.timeline({ paused: true, onUpdate: applyCams });
+
+// --- scene 1: TV
+tl.fromTo('#screenContent', { scaleY: 0.012, scaleX: 0.55 }, { scaleY: 1, scaleX: 1, duration: 0.45, ease: 'power3.out' }, 0.1)
+  .fromTo('#screenWhite', { opacity: 1 }, { opacity: 0, duration: 0.7, ease: 'power2.out' }, 0.2)
+  .fromTo('#led', { backgroundColor: '#5a1d14', boxShadow: '0 0 0px rgba(255,70,40,0)' }, { backgroundColor: '#ff5a3c', boxShadow: '0 0 14px rgba(255,90,60,0.9)', duration: 0.15 }, 0.1)
+  .fromTo('#tvMapWrap', { scale: 1 }, { scale: 1.1, duration: 4.7, ease: 'none' }, 0.5)
+  .fromTo('#tvTitle', { opacity: 0 }, { opacity: 1, duration: 0.05 }, 0.66)
+  .fromTo('#tvTitle span', { opacity: 0 }, { opacity: 1, duration: 0.01, stagger: 0.045 }, 0.7)
+  .fromTo(cam1, { cx: 960, cy: 540, s: 1 }, { cx: 960, cy: 540, s: 1.06, duration: 4.2, ease: 'sine.inOut' }, 0)
+  .fromTo('#hw1', { clipPath: 'inset(0% 100% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.5, ease: 'none' }, 1.0)
+  .fromTo('#hw2', { clipPath: 'inset(0% 100% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.42, ease: 'none' }, 1.48);
+drawOn(tl, arrow1.line, 1.95, 0.62, 'power2.inOut');
+drawOn(tl, arrow1.head, 2.55, 0.18, 'power1.out');
+tl.fromTo('#note', { opacity: 0, scale: 1.45, rotation: -22, y: -40 }, { opacity: 1, scale: 1, rotation: -7, y: 0, duration: 0.32, ease: 'back.out(2.2)' }, 2.8)
+  .fromTo('#knob2', { rotation: -40 }, { rotation: 25, duration: 0.6, ease: 'power2.inOut' }, 3.1)
+  .fromTo(tvRefs.dot, { opacity: 0 }, { opacity: 1, duration: 0.08 }, 3.0)
+  .fromTo(tvRefs.ring, { opacity: 1, scale: 0.4 }, { opacity: 0, scale: 1.7, duration: 0.9, ease: 'power2.out', repeat: 1, transformOrigin: '50% 50%' }, 3.0)
+  .to(cam1, { cx: SCREEN_C[0], cy: SCREEN_C[1], s: 4.2, duration: 0.95, ease: 'power3.in' }, 4.25)
+  .fromTo('#flash', { opacity: 0 }, { opacity: 1, duration: 0.18, ease: 'power1.in' }, 5.02)
+  .set('#sc1', { autoAlpha: 0 }, 5.2)
+  .set('#sc2', { autoAlpha: 1 }, 5.2)
+  .to('#flash', { opacity: 0, duration: 0.45, ease: 'power2.out' }, 5.2)
+  .fromTo('#crtOverlay', { opacity: 0.55 }, { opacity: 0, duration: 0.8, ease: 'power1.out' }, 5.2);
+
+// --- scene 2: pull back to the desk, highlight the coast
+tl.fromTo(view, { ...startView }, { cx: 960, cy: VERT ? 560 : 540, s: VERT ? .9 : 1, duration: 1.7, ease: 'power3.inOut' }, 5.3);
+gsap.set('.islandNote', { clipPath: 'inset(0% 100% 0% 0%)' });
+gsap.set(A.tag, { opacity: 0 });
+drawOn(tl, A.hl, 7.1, 1.5, 'power1.inOut');
+tl.fromTo(A.tag, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.35, ease: 'back.out(2)', transformOrigin: '50% 50%' }, 8.2)
+  .to(view, { s: VERT ? .93 : 1.035, duration: 1.0, ease: 'sine.inOut' }, 8.6);
+
+// --- scene 3: push in on the islands
+tl.to(view, { cx: islandView.cx, cy: islandView.cy, s: islandView.s, duration: 1.35, ease: 'power3.inOut' }, 9.7)
+  .fromTo(A.towns, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: 'back.out(2.4)', stagger: 0.13, transformOrigin: '0% 100%' }, 10.55)
+  .fromTo(A.bay, { opacity: 0, letterSpacing: 2 }, { opacity: 1, letterSpacing: 12, duration: 1.0, ease: 'power2.out' }, 10.8);
+drawOn(tl, A.loop, 11.6, 0.9, 'power2.inOut');
+tl.fromTo('#islandNote1', { clipPath: 'inset(0% 100% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.38, ease: 'none' }, 12.4)
+  .fromTo('#islandNote2', { clipPath: 'inset(0% 100% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.45, ease: 'none' }, 12.78)
+  .to(view, { s: islandView.s * 1.04, duration: 1.0, ease: 'sine.inOut' }, 13.2);
+
+// --- scene 4: two sheets side by side
+tl.to(view, { ...(VERT ? { cx: 990, cy: 720, s: 0.7 } : { cx: 1150, cy: 560, s: 0.66 }), duration: 1.35, ease: 'power3.inOut' }, 14.3)
+  .to('.islandNote', { opacity: 0, duration: 0.4 }, 14.3)
+  .to(A.loop, { opacity: 0, duration: 0.4 }, 14.3)
+  .to('#mapA', { ...place(A_END), duration: 1.3, ease: 'power3.inOut' }, 14.3)
+  .to('#mapB', { ...place(B_END), duration: 1.05, ease: 'power3.out' }, 15.2);
+B.patches.forEach((p, i) => {
+  drawOn(tl, p.line, 16.6 + i * 0.25, 0.55, 'power2.inOut');
+  tl.fromTo(p.fill, { opacity: 0 }, { opacity: 0.32, duration: 0.4 }, 16.9 + i * 0.25);
+});
+drawOn(tl, arrow2.line, 16.4, 0.9, 'power2.inOut');
+drawOn(tl, arrow2.head, 17.28, 0.2, 'power1.out');
+gsap.set('#sameCoast', { clipPath: 'inset(0% 100% 0% 0%)' });
+tl.fromTo('#sameCoast', { clipPath: 'inset(0% 100% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.7, ease: 'none' }, 17.4)
+  .fromTo('#stamp', { opacity: 0, scale: 2.3, rotation: -4 }, { opacity: 0.92, scale: 1, rotation: -12, duration: 0.17, ease: 'power4.in' }, 18.25)
+  .fromTo(shake, { x: 0, y: 0 }, { keyframes: [{ x: -9, y: 6, duration: 0.05 }, { x: 7, y: -5, duration: 0.05 }, { x: -4, y: 3, duration: 0.06 }, { x: 0, y: 0, duration: 0.08 }] }, 18.42)
+  .to(view, { cx: VERT ? 990 : 1170, s: VERT ? 0.72 : 0.69, duration: 2.5, ease: 'sine.inOut' }, 18.5)
+  .set({}, {}, BASE);
+
+/* ================= player ================= */
+// The player owns the clock (GSAP only renders a given time), so posterize time can hold the picture
+// at 12 / 8 / 6 fps while the seek bar and the sound keep running smoothly.
+const audio = $('score');
+if (VD) audio.src = 'audio/score-vo.mp3';
+const voice = VD ? new Audio() : null;
+if (voice) {
+  // a blob URL always seeks (simple servers without byte ranges do not); file:// falls back to the plain path
+  const url = 'audio/' + encodeURIComponent(VD.file);
+  voice.preload = 'auto';
+  fetch(url).then(r => r.ok ? r.blob() : Promise.reject()).then(b => { voice.src = URL.createObjectURL(b); }).catch(() => { voice.src = url; })
+    .finally(() => voice.addEventListener('loadedmetadata', () => syncAudio(true), { once: true }));
+}
+const tracks = [[audio, 0, 1], ...(voice ? [[voice, VD.delay, VD.gain]] : [])];   // [element, start on the clock, level]
+let volume = 0.25;
+const seek = $('seek'), tTime = $('tTime'), tFrame = $('tFrame');
+const TOTAL_F = Math.round(DURATION * FPS);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const C = { t: 0, playing: false, t0: 0, wall: 0, speed: 1, loop: true, scrub: false, wasPlaying: false, lastQ: -1, unlocked: EMBED, blocked: false };
+const POST_KEY = 'mapdemo.posterize';
+let post = { on: false, fps: 12 };
+try { const s = JSON.parse(localStorage.getItem(POST_KEY) || 'null'); if (s) post = { on: !!s.on, fps: +s.fps || 12 }; } catch (e) {}
+if (QS.has('post')) { const v = +QS.get('post'); post = v > 0 ? { on: true, fps: v } : { ...post, on: false }; }
+seek.max = TOTAL_F;
+
+const fmt = t => { const m = Math.floor(t / 60), s = t - m * 60; return `${m}:${s.toFixed(2).padStart(5, '0')}`; };
+const shownT = t => post.on ? Math.min(DURATION, Math.floor(t * post.fps + 1e-6) / post.fps) : t;
+function render(force) {
+  const tq = shownT(C.t);
+  if (force || tq !== C.lastQ) { tl.time(Math.min(BASE, tq * BASE / DURATION), false); C.lastQ = tq; }
+  const f = Math.min(TOTAL_F, Math.round(C.t * FPS));
+  if (!C.scrub) seek.value = f;
+  tTime.innerHTML = `<b>${fmt(C.t)}</b> / ${fmt(DURATION)}`;
+  tFrame.innerHTML = `f <b>${f}</b> / ${TOTAL_F}`;
+}
+function ui() {
+  $('icoPlay').setAttribute('d', C.playing ? 'M7 5h4v14H7zM13 5h4v14h-4z' : 'M8 5v14l11-7z');
+  $('bLoop').classList.toggle('on', C.loop);
+  $('bPost').classList.toggle('on', post.on); $('postFps').value = String(post.fps);
+  $('bAr').textContent = VERT ? '4:5' : '16:9';
+}
+// every track follows the clock: seek, pause, speed, mute, volume (the voice starts VD.delay s in)
+function syncAudio(force) {
+  if (CLEAN || !audio) return;
+  for (const [a, off, lvl] of tracks) {
+    a.playbackRate = C.speed; a.preservesPitch = true; a.muted = audio.muted; a.volume = Math.min(1, volume * lvl);
+    const at = C.t - off, past = (a.duration && at >= a.duration - 0.02) || C.t >= DURATION - 0.02;
+    if (!C.playing || !C.unlocked || past || at < 0) {
+      if (!a.paused) a.pause();
+      if (a.readyState && !past && (force || (at < 0 && a.currentTime > 0.02))) try { a.currentTime = Math.max(0, at); } catch (e) {}
+      continue;
+    }
+    if (force || Math.abs(a.currentTime - at) > 0.1) try { a.currentTime = at; } catch (e) {}
+    if (a.paused && !C.blocked) a.play().then(() => { $('soundHint').style.display = 'none'; }).catch(() => { C.blocked = true; });
+  }
+}
+function setTime(t) { C.t = clamp(t, 0, DURATION); C.t0 = C.t; C.wall = performance.now(); syncAudio(true); render(); }
+function play() { if (C.playing) return; if (C.t >= DURATION - 0.001) C.t = 0; C.playing = true; C.t0 = C.t; C.wall = performance.now(); ui(); syncAudio(true); }
+function pause() { if (!C.playing) return; C.playing = false; ui(); syncAudio(true); }
+function toggle() { C.playing ? pause() : play(); }
+function goTo(t) { setTime(t); }
+function step(nf) { pause(); goTo((Math.round(C.t * FPS) + nf) / FPS); }
+function advance(now) {
+  if (C.playing) {
+    let t = C.t0 + (now - C.wall) / 1000 * C.speed;
+    if (t >= DURATION) {
+      if (C.loop && !CLEAN) { t %= DURATION; C.t0 = t; C.wall = now; C.t = t; syncAudio(true); }
+      else { C.t = DURATION; C.playing = false; ui(); syncAudio(true); render(true); return; }
+    }
+    C.t = t; syncAudio(false);
+  }
+  render();
+}
+// rAF drives the clock; a timer takes over when rAF stalls (hidden panes, OBS sources)
+let lastRaf = 0;
+function tick(now) { lastRaf = performance.now(); advance(now); requestAnimationFrame(tick); }
+setInterval(() => { const now = performance.now(); if (now - lastRaf > 120) advance(now); }, 33);
+
+function setLoop(v) { C.loop = v; ui(); }
+function setMute(v) {
+  audio.muted = v; if (voice) voice.muted = v;
+  $('bMute').classList.toggle('on', v);
+  $('icoVol').setAttribute('d', v ? 'M4 9h4l5-4v14l-5-4H4zM16 9.4l1.4-1.4 2.1 2.1 2.1-2.1L23 9.4 20.9 11.5 23 13.6l-1.4 1.4-2.1-2.1-2.1 2.1-1.4-1.4 2.1-2.1z'
+    : 'M4 9h4l5-4v14l-5-4H4zM16 8.5a5 5 0 0 1 0 7l-1.4-1.4a3 3 0 0 0 0-4.2zM18.4 6a8.5 8.5 0 0 1 0 12L17 16.6a6.5 6.5 0 0 0 0-9.2z');
+}
+function setSpeed(v) { C.t0 = C.t; C.wall = performance.now(); C.speed = v; $('speed').value = String(v); syncAudio(true); }
+function setPost(on, fps) {
+  post = { on, fps: fps || post.fps };
+  try { localStorage.setItem(POST_KEY, JSON.stringify(post)); } catch (e) {}
+  if (EMBED) parent.postMessage({ mapdemo: 'post', on: post.on, fps: post.fps }, '*');
+  ui(); render(true);
+}
+function toggleFs() {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else if ($('app').requestFullscreen) $('app').requestFullscreen().catch(() => {});
+}
+function onKey(k, sh, e) {
+  const stop = () => e && e.preventDefault();
+  if (k === ' ' || k === 'k' || k === 'K') { stop(); if (!(e && e.repeat)) toggle(); }
+  else if (k === 'ArrowLeft') { stop(); sh ? (pause(), goTo(C.t - 1)) : step(-1); }
+  else if (k === 'ArrowRight') { stop(); sh ? (pause(), goTo(C.t + 1)) : step(1); }
+  else if (k === ',' || k === '<') step(-1);
+  else if (k === '.' || k === '>') step(1);
+  else if (k === 'Home') { stop(); goTo(0); }
+  else if (k === 'End') { stop(); pause(); goTo(DURATION); }
+  else if (k === 'm' || k === 'M') setMute(!audio.muted);
+  else if (k === 'l' || k === 'L') setLoop(!C.loop);
+  else if (k === 'p' || k === 'P') setPost(!post.on);
+  else if (k === 'f' || k === 'F') toggleFs();
+  else return false;
+  return true;
+}
+
+if (!CLEAN) {
+  syncAudio(false);
+  $('bPlay').onclick = toggle;
+  $('bRestart').onclick = () => { goTo(0); play(); };
+  $('bPrev').onclick = () => step(-1);
+  $('bNext').onclick = () => step(1);
+  $('bLoop').onclick = () => setLoop(!C.loop);
+  $('bPost').onclick = () => setPost(!post.on);
+  $('postFps').onchange = e => { setPost(true, +e.target.value); e.target.blur(); };
+  $('bAr').onclick = () => { const q = new URLSearchParams(location.search); if (VERT) q.delete('ar'); else q.set('ar', '45'); q.set('t', C.t.toFixed(3)); if (!C.playing) q.set('paused', ''); else q.delete('paused'); location.search = q.toString(); };
+  $('bMute').onclick = () => setMute(!audio.muted);
+  $('bFs').onclick = toggleFs;
+  $('speed').onchange = e => { setSpeed(parseFloat(e.target.value)); e.target.blur(); };
+  $('vol').oninput = e => { volume = parseFloat(e.target.value); if (audio.muted && volume > 0) setMute(false); syncAudio(false); };
+  seek.addEventListener('pointerdown', () => { C.scrub = true; C.wasPlaying = C.playing; pause(); });
+  seek.addEventListener('input', () => { pause(); goTo(seek.value / FPS); });
+  const endScrub = () => { if (!C.scrub) return; C.scrub = false; if (C.wasPlaying) play(); };
+  seek.addEventListener('pointerup', endScrub);
+  seek.addEventListener('change', endScrub);
+  // the first gesture unlocks the sound (browsers block autoplay with sound)
+  const unlock = () => { C.unlocked = true; C.blocked = false; syncAudio(true); };
+  window.addEventListener('pointerdown', unlock, true);
+  window.addEventListener('keydown', unlock, true);
+  window.addEventListener('keydown', e => {
+    if (e.target.tagName === 'SELECT' || (e.target.tagName === 'INPUT' && e.target.type !== 'range') || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (EMBED && /^(\[|\]|v|V|PageUp|PageDown)$/.test(e.key)) { e.preventDefault(); parent.postMessage({ mapdemo: 'hubKey', key: e.key }, '*'); return; }   // demo / frame switch keys belong to index.html
+    if (onKey(e.key, e.shiftKey, e) && e.target.type === 'range') e.target.blur();
+  });
+  // index.html (map animation demo) embeds this page: forwarded keys, posterize, and the time goes back to it
+  window.addEventListener('message', e => {
+    const d = e.data; if (!d || typeof d !== 'object') return;
+    if (d.mapdemo === 'key') { C.unlocked = true; C.blocked = false; onKey(d.key, d.shiftKey); }
+    else if (d.mapdemo === 'setPost') setPost(!!d.on, d.fps);
+  });
+}
+
+/* ================= fit the stage (1920×1080 or 1080×1350) to the window ================= */
+const stage = $('stage'), vp = $('viewport');
+function fit() {
+  const ph = CLEAN ? 0 : $('player').offsetHeight;
+  const k = Math.max(0.05, Math.min(innerWidth / SW, (innerHeight - ph) / SH));
+  stage.style.transform = `scale(${k})`;
+  vp.style.width = SW * k + 'px';
+  vp.style.height = SH * k + 'px';
+}
+addEventListener('resize', fit);
+document.addEventListener('fullscreenchange', fit);
+fit();
+
+/* start once the fonts are ready, so text metrics never jump */
+applyCams();
+const start = () => {
+  const t0 = parseFloat(QS.get('t')); C.t = isFinite(t0) ? clamp(t0, 0, DURATION) : 0;
+  render(true); ui();
+  if (!QS.has('paused')) play();
+  requestAnimationFrame(tick);
+  if (EMBED) {
+    setInterval(() => parent.postMessage({ mapdemo: 'time', t: C.t, playing: C.playing }, '*'), 200);
+    parent.postMessage({ mapdemo: 'ready', post: post.on, fps: post.fps, vert: VERT }, '*');
+  }
+  window.__player = { C, tl, setTime, play, pause, render, setPost, get post() { return post; } };
+};
+(document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(start);
+</script>
+</body>
+</html>

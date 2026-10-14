@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neon Routes Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script src="lib/kit.js?v=415f4781"></script>
+<script src="audio/vo-env.js?v=d3018d45"></script>
+<script src="lib/player.js?v=fc9ee7d5"></script>
+</head>
+<body>
+<script>
+// 03 · Dark data map: dot-matrix world, scanner sweep, glowing great-circle routes converging on one hub.
+MapPlayer({
+  title: '03 · Neon routes',
+  vo: ['audio/03-vo.mp3'],
+  // with a voice: the routes fly during the first sentence; 'And every route ends in the same place' lands on the shock ring at the hub
+  voWarp: [[7.2, 5.5]],
+  score: {
+    bpm: 120, root: 52, seed: 37, chords: [[0, 7, 12, 15], [-4, 3, 8, 12], [-2, 5, 10, 14], [-5, 2, 7, 10]],
+    pad: .024, padCut: 1500, pulse: .06, pulseFrom: 1.7, hats: .035, hatsFrom: 1.7, kick: .55, kickFrom: 5.5, bass: .08, bassFrom: 5.5,
+    cues: [[0, 'riser', 1.6, .18], ...Array.from({ length: 10 }, (_, i) => [1.7 + i * .3, 'blip', 1 + i * .09, .09]),[5.55, 'hit', .8], [5.5, 'whoosh', 2.2, .35], [6.6, 'shimmer', .1],
+      [6.8, 'tick', .14], [6.95, 'tick', .14], [7.1, 'tick', .14], [7.25, 'tick', .14]]
+  },
+  async setup(stage, { W, H, VERT }) {
+    await K.fonts(['800 64px Inter', '400 26px Inter', '600 20px Inter', '400 18px "JetBrains Mono"', '600 20px "JetBrains Mono"']);
+    const [full, lo] = await Promise.all([K.loadWorld('50m'), K.loadWorld('110m')]);
+    const BD = K.byId(full.countries, '050');
+    const cv = K.canvas(W, H); stage.appendChild(cv); const g = cv.getContext('2d');
+    const proj = d3.geoNaturalEarth1().translate([W / 2, H / 2]), path = d3.geoPath(proj, g);
+    const { ease: E, prog, lerp, clamp } = K, grain = K.grainTile(13, 256, 50);
+
+    // dot-matrix: rasterise the land once, keep the grid points that land on it
+    const SP = .9, dots = [], bdDots = [];
+    {
+      const rc = K.canvas(3600, 1800), rg = rc.getContext('2d');
+      const eq = d3.geoEquirectangular().scale(3600 / (2 * Math.PI)).translate([1800, 900]);
+      rg.fillStyle = '#fff'; rg.beginPath(); d3.geoPath(eq, rg)(full.land); rg.fill();
+      const px = rg.getImageData(0, 0, 3600, 1800).data;
+      for (let la = 83; la > -57; la -= SP) for (let lo2 = -180 + SP / 2; lo2 < 180; lo2 += SP) {
+        const x = Math.floor((lo2 + 180) * 10), y = Math.floor((90 - la) * 10);
+        if (px[(y * 3600 + x) * 4 + 3] > 100) (lo2 > 87.5 && lo2 < 93 && la > 20.5 && la < 26.8 && d3.geoContains(BD, [lo2, la]) ? bdDots : dots).push([lo2, la]);
+      }
+    }
+    // scanlines
+    const scan = K.canvas(W, H); { const sg = scan.getContext('2d'); sg.fillStyle = 'rgba(0,0,0,.18)'; for (let y = 0; y < H; y += 3) sg.fillRect(0, y, W, 1); }
+
+    const HUB = [90.4125, 23.8103];
+    const COL = { gulf: [255, 200, 87], asia: [255, 95, 162], west: [79, 227, 255] };
+    const SRC = [
+      ['NEW YORK', 'USA', [-74.0, 40.71], 'west', [-14, -12, 'right']],
+      ['LONDON', 'GBR', [-0.13, 51.51], 'west', [-14, -12, 'right']],
+      ['ROME', 'ITA', [12.5, 41.9], 'west', [14, -12, 'left']],
+      ['RIYADH', 'KSA', [46.72, 24.71], 'gulf', [-14, 28, 'right']],
+      ['DUBAI', 'UAE', [55.27, 25.2], 'gulf', [10, -14, 'left']],
+      ['KUWAIT CITY', 'KWT', [47.98, 29.37], 'gulf', [-14, -12, 'right']],
+      ['DOHA', 'QAT', [51.53, 25.29], 'gulf', [0, 34, 'center']],
+      ['MUSCAT', 'OMN', [58.4, 23.6], 'gulf', [14, 26, 'left']],
+      ['KUALA LUMPUR', 'MYS', [101.69, 3.14], 'asia', [-14, 8, 'right']],
+      ['SINGAPORE', 'SGP', [103.82, 1.35], 'asia', [14, 24, 'left']],
+    ].map(([name, code, ll, reg, lab], i) => {
+      const dist = d3.geoDistance(ll, HUB), t0 = 1.7 + i * .3, dur = 1.0 + .75 * dist / 2.2;
+      return { name, code, ll, col: COL[reg], lab, t0, t1: t0 + dur, gi: d3.geoInterpolate(ll, HUB), big: ['NEW YORK', 'LONDON', 'ROME', 'RIYADH', 'KUALA LUMPUR'].includes(name) };
+    });
+    const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+    const GLY = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&';
+    const scramble = (str, t, a, b, frame) => {
+      let o = ''; for (let i = 0; i < str.length; i++) {
+        const r = a + (b - a) * i / str.length;
+        if (t >= r) o += str[i]; else if (t >= r - .35) o += str[i] === ' ' ? ' ' : GLY[Math.floor(K.hash(frame * 31 + i) * GLY.length)]; else break;
+      } return o;
+    };
+
+    // 4:5 shows less width: the wide shot pulls back further, the close shot sits a little lower
+    const vk = t => VERT ? K.track([[0, .66], [5.4, .66], [7.8, .86]], t) : 1;
+    const cam = t => ({
+      cx: K.track([[0, 25], [5.4, 30, 'inOutSine'], [7.8, 75], [10, 77, 'outSine']], t),
+      cy: VERT ? K.track([[0, 22], [5.4, 22, 'inOutSine'], [7.8, 27], [10, 27.5, 'outSine']], t) : K.track([[0, 18], [5.4, 20, 'inOutSine'], [7.8, 24], [10, 24.5, 'outSine']], t),
+      s0: Math.exp(K.track([[0, Math.log(330)], [5.4, Math.log(372), 'inOutSine'], [7.8, Math.log(800)], [10, Math.log(880), 'outSine']], t)),
+      get s() { return this.s0 * vk(t); },
+    });
+    function arcPts(r, u0, u1, P0, P1) {
+      const d = Math.hypot(P1[0] - P0[0], P1[1] - P0[1]), h = Math.min(220, d * .16), out = [], N = 72;
+      for (let i = 0; i <= N; i++) { const u = lerp(u0, u1, i / N), p = proj(r.gi(u)); out.push([p[0], p[1] - h * Math.sin(Math.PI * u)]); }
+      return out;
+    }
+
+    return (t, frame) => {
+      const C = cam(t); proj.rotate([-C.cx, 0]).center([0, C.cy]).scale(C.s);
+      const k = C.s / 330;
+
+      const bg = g.createRadialGradient(W * .55, H * .5, 0, W * .55, H * .5, W * .75); bg.addColorStop(0, '#0a1430'); bg.addColorStop(1, '#02040b');
+      g.fillStyle = bg; g.fillRect(0, 0, W, H);
+      g.beginPath(); path(d3.geoGraticule10()); g.strokeStyle = 'rgba(80,130,255,.06)'; g.lineWidth = 1; g.stroke();
+      g.beginPath(); path(lo.land); g.fillStyle = 'rgba(40,80,170,.10)'; g.fill();
+      g.beginPath(); path(lo.borders); g.strokeStyle = 'rgba(110,150,255,.10)'; g.stroke();
+
+      // dots with scanner sweep (relative to the view's centre longitude)
+      const sw = lerp(-200, 200, E.inOut(prog(t, .1, 1.8))), r = clamp(1.1 * k, 1.1, 4.6), front = [];
+      g.beginPath();
+      for (const d of dots) {
+        let rl = d[0] - C.cx; if (rl < -180) rl += 360; if (rl > 180) rl -= 360;
+        const v = (sw - rl) / 25; if (v <= 0) continue;
+        const p = proj(d); if (p[0] < -10 || p[0] > W + 10 || p[1] < -10 || p[1] > H + 10) continue;
+        if (v < 1) { front.push([p, v]); continue; }
+        g.moveTo(p[0] + r, p[1]); g.arc(p[0], p[1], r, 0, 7);
+      }
+      g.fillStyle = 'rgba(80,135,230,.55)'; g.fill();
+      for (const [p, v] of front) { g.beginPath(); g.arc(p[0], p[1], r * (1 + .8 * (1 - v)), 0, 7); g.fillStyle = `rgba(150,230,255,${.3 + .7 * (1 - v)})`; g.fill(); }
+
+      // hub country dots
+      const ha = E.out(prog(t, 1.6, 2.2));
+      if (ha > 0) {
+        g.save(); g.globalCompositeOperation = 'lighter'; g.shadowColor = 'rgba(255,150,60,.9)'; g.shadowBlur = 12;
+        g.beginPath(); for (const d of bdDots) { const p = proj(d); g.moveTo(p[0] + r * 1.15, p[1]); g.arc(p[0], p[1], r * 1.15, 0, 7); }
+        g.fillStyle = `rgba(255,160,70,${ha})`; g.fill(); g.restore();
+      }
+
+      // routes
+      const H0 = proj(HUB); let arrived = 0;
+      g.save(); g.globalCompositeOperation = 'lighter'; g.lineCap = 'round'; g.lineJoin = 'round';
+      for (const s of SRC) {
+        if (t < s.t0) continue;
+        const P0 = proj(s.ll), p = E.inOut(prog(t, s.t0, s.t1)), done = p >= 1; if (done) arrived++;
+        const pts = arcPts(s, 0, p, P0, H0), fade = done ? lerp(1, .38, prog(t, s.t1, s.t1 + .8)) : 1;
+        K.polyline(g, pts); g.strokeStyle = rgba(s.col, .12 * fade); g.lineWidth = 9; g.stroke();
+        K.polyline(g, pts); g.strokeStyle = rgba(s.col, .85 * fade); g.lineWidth = 2.2; g.stroke();
+        if (!done) {
+          const hd = pts[pts.length - 1], hg = g.createRadialGradient(hd[0], hd[1], 0, hd[0], hd[1], 22);
+          hg.addColorStop(0, 'rgba(255,255,255,1)'); hg.addColorStop(.25, rgba(s.col, .9)); hg.addColorStop(1, rgba(s.col, 0));
+          g.fillStyle = hg; g.beginPath(); g.arc(hd[0], hd[1], 22, 0, 7); g.fill();
+        } else {
+          for (let q = 0; q < 3; q++) {
+            const u = ((t - s.t1) * .55 + q / 3) % 1, seg = arcPts(s, Math.max(0, u - .08), u, P0, H0), hd = seg[seg.length - 1];
+            K.polyline(g, seg); g.strokeStyle = rgba(s.col, .9); g.lineWidth = 3; g.stroke();
+            g.beginPath(); g.arc(hd[0], hd[1], 4, 0, 7); g.fillStyle = '#fff'; g.fill();
+          }
+        }
+        // source pulse + dot
+        const pr = prog(t, s.t0, s.t0 + .7);
+        if (pr < 1) { g.beginPath(); g.arc(P0[0], P0[1], 6 + 34 * E.out(pr), 0, 7); g.strokeStyle = rgba(s.col, 1 - pr); g.lineWidth = 2; g.stroke(); }
+        g.beginPath(); g.arc(P0[0], P0[1], 4.5, 0, 7); g.fillStyle = rgba(s.col, 1); g.fill();
+      }
+      // hub pulses + shock ring when the last route lands
+      if (ha > 0) {
+        for (let q = 0; q < 3; q++) { const u = ((t - 1.6) / 1.2 + q / 3) % 1; g.beginPath(); g.arc(H0[0], H0[1], 8 + 46 * u, 0, 7); g.strokeStyle = `rgba(255,170,80,${.6 * (1 - u) * ha})`; g.lineWidth = 2; g.stroke(); }
+        const cg = g.createRadialGradient(H0[0], H0[1], 0, H0[0], H0[1], 40); cg.addColorStop(0, `rgba(255,240,210,${ha})`); cg.addColorStop(.3, `rgba(255,150,60,${.7 * ha})`); cg.addColorStop(1, 'rgba(255,120,40,0)');
+        g.fillStyle = cg; g.beginPath(); g.arc(H0[0], H0[1], 40, 0, 7); g.fill();
+        const sk = prog(t, 5.55, 6.6); if (sk > 0 && sk < 1) { g.beginPath(); g.arc(H0[0], H0[1], 20 + 420 * E.outExpo(sk), 0, 7); g.strokeStyle = `rgba(255,200,140,${.7 * (1 - sk)})`; g.lineWidth = 3 + 8 * (1 - sk); g.stroke(); }
+      }
+      g.restore();
+
+      // labels
+      for (const s of SRC) {
+        const la = E.out(prog(t, s.t0 + .1, s.t0 + .5)) * (s.big ? 1 : clamp((C.s0 - 520) / 150));
+        if (la <= 0) continue;
+        const P0 = proj(s.ll), [dx, dy, al] = s.lab;
+        K.text(g, s.name, P0[0] + dx, P0[1] + dy, { font: '600 20px "JetBrains Mono"', color: 'rgba(255,255,255,.92)', align: al, alpha: la, spacing: 1 });
+        K.text(g, s.code, P0[0] + dx, P0[1] + dy + 20, { font: '400 16px "JetBrains Mono"', color: rgba(s.col, .9), align: al, alpha: la, spacing: 2 });
+      }
+      if (ha > 0) { K.text(g, 'DHAKA', H0[0] + 26, H0[1] - 14, { font: '800 30px Inter', color: '#fff', alpha: ha, spacing: 2, shadow: ['rgba(255,140,50,.8)', 14] }); K.text(g, 'BANGLADESH', H0[0] + 27, H0[1] + 10, { font: '600 16px "JetBrains Mono"', color: 'rgba(255,180,110,.95)', alpha: ha, spacing: 3 }); }
+
+      // title block (dark backdrop keeps it readable over the zoomed map)
+      const tb = g.createRadialGradient(360, 130, 0, 360, 130, 760); tb.addColorStop(0, 'rgba(2,4,12,.88)'); tb.addColorStop(.55, 'rgba(2,4,12,.55)'); tb.addColorStop(1, 'rgba(2,4,12,0)');
+      g.fillStyle = tb; g.fillRect(0, 0, 1200, 560);
+      K.text(g, scramble('DATA MAP  //  DEMO', t, .2, .7, frame), 84, 88, { font: '600 20px "JetBrains Mono"', color: '#4fe3ff', spacing: 3 });
+      K.text(g, scramble('REMITTANCE ROUTES', t, .4, 1.3, frame), 80, 160, { font: '800 66px Inter', color: '#fff', spacing: 1 });
+      K.text(g, scramble("Where Bangladesh's migrant income flows from", t, .9, 1.9, frame), 84, 204, { font: '400 26px Inter', color: 'rgba(200,215,255,.75)' });
+
+      // region panel
+      const pa = E.out(prog(t, 6.5, 7.0));
+      if (pa > 0) {
+        const x = (VERT ? 64 : 1440) + (1 - pa) * 40, y = VERT ? H - 370 : 330, w = 400;
+        g.save(); g.globalAlpha = pa;
+        g.fillStyle = 'rgba(8,14,32,.72)'; g.strokeStyle = 'rgba(79,227,255,.25)'; g.lineWidth = 1.5; g.beginPath(); g.roundRect(x, y, w, 300, 10); g.fill(); g.stroke();
+        K.text(g, 'TOP SOURCE REGIONS', x + 28, y + 46, { font: '600 18px "JetBrains Mono"', color: '#4fe3ff', spacing: 3 });
+        [['GULF STATES', .95, COL.gulf], ['EUROPE', .42, COL.west], ['NORTH AMERICA', .36, COL.west], ['SOUTHEAST ASIA', .3, COL.asia]].forEach(([n, v, c], i) => {
+          const yy = y + 92 + i * 50, bp = E.inOut(prog(t, 6.75 + i * .15, 7.5 + i * .15));
+          K.text(g, n, x + 28, yy, { font: '600 18px Inter', color: 'rgba(255,255,255,.9)' });
+          g.fillStyle = 'rgba(255,255,255,.08)'; g.fillRect(x + 28, yy + 12, w - 56, 8);
+          g.fillStyle = rgba(c, .95); g.shadowColor = rgba(c, .8); g.shadowBlur = 10; g.fillRect(x + 28, yy + 12, (w - 56) * v * bp, 8); g.shadowBlur = 0;
+        });
+        K.text(g, 'Illustrative ranking', x + 28, y + 282, { font: '400 15px "JetBrains Mono"', color: 'rgba(200,215,255,.5)' });
+        g.restore();
+      }
+
+      // HUD
+      const ra = E.out(prog(t, 1.7, 2.2));
+      const hy = VERT ? 290 : H - 80;
+      K.text(g, `ROUTES ACTIVE  ${String(arrived).padStart(2, '0')} / ${SRC.length}`, 84, hy - 32, { font: '600 20px "JetBrains Mono"', color: 'rgba(79,227,255,.9)', alpha: ra, spacing: 2 });
+      K.text(g, `HUB  23.81°N  90.41°E`, 84, hy, { font: '400 18px "JetBrains Mono"', color: 'rgba(200,215,255,.6)', alpha: ra, spacing: 2 });
+
+      g.drawImage(scan, 0, 0);
+      K.drawGrain(g, grain, W, H, frame, .05);
+      K.vignette(g, W, H, .5, 'rgba(0,0,8,.7)');
+    };
+  }
+});
+</script>
+</body>
+</html>

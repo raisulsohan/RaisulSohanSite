@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3D Density Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script src="lib/kit.js?v=415f4781"></script>
+<script src="audio/vo-env.js?v=d3018d45"></script>
+<script src="lib/player.js?v=fc9ee7d5"></script>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }</script>
+</head>
+<body>
+<script type="module">
+// 04 · 3D data map: countries extruded by population density, staggered rise, camera dolly onto the tallest tower.
+import * as THREE from 'three';
+
+// density, people per km² (rounded, approximate)
+const FOC = {
+  '064': ['BHUTAN', 20, [90.4, 27.45]], '004': ['AFGHANISTAN', 63, [64.2, 34.6]], '104': ['MYANMAR', 83, [96.2, 21.5]],
+  '764': ['THAILAND', 140, [101, 15.6]], '156': ['CHINA', 150, [102, 31]], '524': ['NEPAL', 205, [84.1, 28.25]],
+  '586': ['PAKISTAN', 310, [69.8, 27.4]], '144': ['SRI LANKA', 350, [80.7, 7.8]], '356': ['INDIA', 480, [78.8, 22.2]], '050': ['BANGLADESH', 1300, [90.3, 23.8]],
+};
+const ORDER = Object.keys(FOC);
+const RISE = Object.fromEntries(ORDER.map((id, i) => [id, id === '050' ? [4.2, 1.5] : [1.0 + i * .3, .9]]));
+
+MapPlayer({
+  title: '04 · 3D data map',
+  vo: ['audio/04-vo.mp3'],
+  // with a voice: 'towers above the rest' raises Bangladesh; 'Bangladesh' brings the panel; 'thirteen hundred' runs the counter
+  voWarp: [[4.4, 4.2], [6.0, 6.4], [8.6, 8.0]],
+  score: {
+    bpm: 90, root: 45, seed: 41, chords: [[0, 7, 12, 15], [-4, 3, 8, 12], [-7, 0, 5, 12], [-5, 2, 7, 14]],
+    drone: .04, pad: .03, padCut: 900, pulse: .05, pulseFrom: 1.0, kick: .45, kickFrom: 4.25, hats: .025, hatsFrom: 4.25,
+    cues: [...ORDER.slice(0, 9).map((id, i) => [RISE[id][0] + .05, 'pop', .8 + i * .08, .2]), [3.0, 'riser', 1.2, .25], [4.25, 'boom', .9],
+      [5.0, 'whoosh', 2.0, .35], [6.5, 'shimmer', .1], ...Array.from({ length: 14 }, (_, i) => [6.6 + i * .1, 'tick', .1]), [8.2, 'pop', 1.6, .22]]
+  },
+  async setup(stage, { W, H, VERT }) {
+    await K.fonts(['800 60px Inter', '600 16px Inter', '400 22px Inter']);
+    const reg = K.region(await K.loadWorld('50m'), [55, 0, 112, 42]);
+    const { ease: E, prog, lerp } = K;
+    const proj = d3.geoMercator().center([84, 23]).scale(92).translate([0, 0]);
+    const ramp = d3.interpolateRgbBasis(['#2b5f8f', '#3aa5a0', '#e9c46a', '#f4a261', '#ef4b3c']);
+    const colorOf = d => ramp(K.clamp(Math.log(d / 15) / Math.log(1300 / 15)));   // log scale keeps the mid countries apart
+    const heightOf = d => .5 + d / 1300 * 30;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(1); renderer.setSize(W, H);
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; renderer.outputColorSpace = THREE.SRGBColorSpace;
+    stage.appendChild(renderer.domElement);
+    const ov = K.canvas(W, H); stage.appendChild(ov); const g = ov.getContext('2d');
+
+    const scene = new THREE.Scene(); scene.background = new THREE.Color('#0a1220'); scene.fog = new THREE.Fog('#0a1220', 150, 380);
+    const camera = new THREE.PerspectiveCamera(VERT ? 40 : 32, W / H, 1, 2000);
+    scene.add(new THREE.HemisphereLight('#cfe0ff', '#20160c', .9));
+    const sun = new THREE.DirectionalLight('#fff0dc', 2.4); sun.position.set(-80, 160, 90); sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -140, right: 140, top: 140, bottom: -140, near: 10, far: 500 }); sun.shadow.bias = -.0005;
+    scene.add(sun);
+    const rim = new THREE.DirectionalLight('#6aa8ff', .7); rim.position.set(100, 60, -120); scene.add(rim);
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(1400, 1400), new THREE.MeshStandardMaterial({ color: '#0f2236', roughness: .95 }));
+    ground.rotation.x = -Math.PI / 2; ground.position.y = -.02; ground.receiveShadow = true; scene.add(ground);
+    const grid = new THREE.GridHelper(1400, 280, '#1c3a5a', '#132a42'); grid.position.y = .005; grid.material.transparent = true; grid.material.opacity = .35; scene.add(grid);
+
+    // geo → extruded meshes (shape y is flipped so north points away from the camera)
+    const toV = ring => {   // drop points closer than 0.2 units: fewer wall facets, less striping
+      const out = []; for (const p of ring.slice(0, -1)) { const [x, y] = proj(p), l = out[out.length - 1]; if (!l || Math.hypot(x - l.x, -y - l.y) > .2) out.push(new THREE.Vector2(x, -y)); }
+      return out;
+    };
+    const meshes = {};
+    for (const f of reg.countries) {
+      const polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates;
+      const shapes = [], outlines = [];
+      for (const rings of polys) {
+        const outer = toV(rings[0]); if (outer.length < 3 || Math.abs(THREE.ShapeUtils.area(outer)) < .03) continue;
+        const s = new THREE.Shape(outer); rings.slice(1).map(toV).filter(h => h.length >= 3).forEach(h => s.holes.push(new THREE.Path(h))); shapes.push(s); outlines.push(outer);
+      }
+      if (!shapes.length) continue;
+      const foc = FOC[f.id], col = new THREE.Color(foc ? colorOf(foc[1]) : '#1e3048');
+      const top = new THREE.MeshStandardMaterial({ color: col, roughness: .5, metalness: .05 });
+      const side = new THREE.MeshStandardMaterial({ color: col.clone().multiplyScalar(foc ? .62 : .75), roughness: .7 });
+      const mesh = new THREE.Mesh(new THREE.ExtrudeGeometry(shapes, { depth: 1, bevelEnabled: false }), [top, side]);
+      mesh.rotation.x = -Math.PI / 2; mesh.castShadow = mesh.receiveShadow = true; mesh.scale.z = .25;
+      const lm = new THREE.LineBasicMaterial({ color: foc ? '#ffffff' : '#5b7aa0', transparent: true, opacity: foc ? .4 : .25 });
+      for (const o of outlines) mesh.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(o.map(v => new THREE.Vector3(v.x, v.y, 1.002))), lm));
+      scene.add(mesh);
+      if (foc) meshes[f.id] = { mesh, top, d: foc[1], h: heightOf(foc[1]), name: foc[0], ll: foc[2], col: colorOf(foc[1]) };
+    }
+    const hz = (id, t) => { const m = meshes[id], [a, d] = RISE[id], u = prog(t, a, a + d); return .25 + (m.h - .25) * (u <= 0 ? 0 : id === '050' ? E.outBack(u) : E.outExpo(u)); };
+    const world = ll => { const [x, y] = proj(ll); return [x, y]; };
+    const V = new THREE.Vector3();
+    const toScreen = (x, y, z) => { V.set(x, y, z).project(camera); return [(V.x + 1) / 2 * W, (1 - V.y) / 2 * H, V.z]; };
+
+    return t => {
+      // camera rig: target + spherical offset
+      const tl = [K.track([[0, 82], [4, 83], [6.6, 89.4], [10, 90.2]], t), K.track([[0, 23.5], [4, 23.8], [6.6, 24.3], [10, 24.1]], t)];
+      const [tx, tz] = world(tl), ty = VERT ? K.track([[0, 0], [4, 9], [6.6, 27], [10, 30]], t) : K.track([[0, 0], [4, 5], [6.6, 16], [10, 18]], t);
+      const dist = K.track([[0, 150], [4, 132], [6.6, 104], [10, 96]], t) * (VERT ? 1.3 : 1);
+      const pol = K.track([[0, 10], [4, 46], [6.6, 60], [10, 63]], t) * Math.PI / 180, az = K.track([[0, 0], [4, -16], [6.6, 10], [10, 26]], t) * Math.PI / 180;
+      camera.position.set(tx + dist * Math.sin(pol) * Math.sin(az), ty + dist * Math.cos(pol), tz + dist * Math.sin(pol) * Math.cos(az));
+      camera.lookAt(tx, ty, tz); camera.updateMatrixWorld();
+
+      for (const id in meshes) meshes[id].mesh.scale.z = hz(id, t);
+      const bd = meshes['050'], glow = prog(t, 5.0, 6.0);
+      bd.top.emissive.set(bd.col); bd.top.emissiveIntensity = glow * (.18 + .1 * Math.sin(t * 5));
+      renderer.render(scene, camera);
+
+      // overlay: labels pinned to tower tops
+      g.clearRect(0, 0, W, H);
+      const lab = [];
+      for (const id in meshes) {
+        const m = meshes[id], [a, d] = RISE[id], u = E.out(prog(t, a + .15, a + d)); if (u <= 0) continue;
+        const [x, z] = world(m.ll), [sx, sy, sz] = toScreen(x, hz(id, t) + .6, z); if (sz > 1) continue;
+        lab.push([id, m, u, sx, sy]);
+      }
+      for (const [id, m, u, sx, sy] of lab) {
+        const hero = id === '050', fade = hero ? 1 : lerp(1, .45, prog(t, 6.2, 7));
+        const a = u * fade, ly = sy - (hero ? 70 : 48);
+        g.save(); g.globalAlpha = a;
+        g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(sx, sy); g.lineTo(sx, ly + 8); g.stroke();
+        g.beginPath(); g.arc(sx, sy, 3.5, 0, 7); g.fillStyle = '#fff'; g.fill();
+        K.text(g, m.name, sx, ly - (hero ? 30 : 24), { font: `600 ${hero ? 20 : 15}px Inter`, color: 'rgba(255,255,255,.88)', align: 'center', spacing: 2, shadow: ['rgba(0,0,0,.6)', 6] });
+        K.text(g, K.fmt(m.d * u) + '/km²', sx, ly, { font: `800 ${hero ? 34 : 22}px Inter`, color: m.col, align: 'center', shadow: ['rgba(0,0,0,.6)', 8] });
+        g.restore();
+      }
+
+      // title
+      const ta = E.out(prog(t, .2, .8));
+      K.text(g, 'POPULATION DENSITY  ·  SOUTH ASIA', 84, 92, { font: '600 18px Inter', color: '#e9c46a', spacing: 4, alpha: ta });
+      K.text(g, 'THE MOST CROWDED', 80, 156, { font: '800 60px Inter', color: '#fff', alpha: E.out(prog(t, .35, .95)), shadow: ['rgba(0,0,0,.5)', 16] });
+      K.text(g, 'BIG COUNTRY ON EARTH', 80, 222, { font: '800 60px Inter', color: '#fff', alpha: E.out(prog(t, .5, 1.1)), shadow: ['rgba(0,0,0,.5)', 16] });
+
+      // legend
+      const la = E.out(prog(t, 1.0, 1.5)) * (VERT ? 1 - prog(t, 6.2, 6.6) : 1);
+      if (la > 0) {
+        g.save(); g.globalAlpha = la;
+        const lx = 84, ly = H - 110, lw = 320, lg = g.createLinearGradient(lx, 0, lx + lw, 0);
+        for (let i = 0; i <= 10; i++) lg.addColorStop(i / 10, ramp(i / 10));
+        K.text(g, 'People per km²  (approx., log scale)', lx, ly - 16, { font: '600 16px Inter', color: 'rgba(255,255,255,.75)', spacing: 1 });
+        g.fillStyle = lg; g.fillRect(lx, ly, lw, 10);
+        K.text(g, '20', lx, ly + 34, { font: '400 16px Inter', color: 'rgba(255,255,255,.6)' });
+        K.text(g, '1,300', lx + lw, ly + 34, { font: '400 16px Inter', color: 'rgba(255,255,255,.6)', align: 'right' });
+        g.restore();
+      }
+
+      // hero panel
+      const pa = E.out(prog(t, 6.4, 6.9));
+      if (pa > 0) {
+        const x = (VERT ? 84 : 1360) + (1 - pa) * 40, y = VERT ? H - 250 : 640;
+        g.save(); g.globalAlpha = pa;
+        if (VERT) { const bg = g.createLinearGradient(0, y - 170, 0, H); bg.addColorStop(0, 'rgba(10,18,32,0)'); bg.addColorStop(.3, 'rgba(10,18,32,.78)'); bg.addColorStop(1, 'rgba(10,18,32,.92)'); g.fillStyle = bg; g.fillRect(0, y - 170, W, H - y + 170); }
+        else { const bg = g.createLinearGradient(x - 40, 0, W, 0); bg.addColorStop(0, 'rgba(10,18,32,0)'); bg.addColorStop(.25, 'rgba(10,18,32,.75)'); bg.addColorStop(1, 'rgba(10,18,32,.9)'); g.fillStyle = bg; g.fillRect(x - 40, y - 120, W - x + 40, 420); }
+        K.text(g, 'BANGLADESH', x, y - 50, { font: '800 30px Inter', color: '#fff', spacing: 4 });
+        K.text(g, K.fmt(1300 * E.out(prog(t, 6.6, 8.0))), x - 4, y + 90, { font: '800 140px Inter', color: '#ef4b3c', shadow: ['rgba(239,75,60,.5)', 30] });
+        K.text(g, 'people per km²  (approx.)', x, y + 132, { font: '400 22px Inter', color: 'rgba(255,255,255,.75)' });
+        K.text(g, '≈ 2.7× India   ·   ≈ 4× Pakistan', x, y + 186, { font: '600 22px Inter', color: '#e9c46a', alpha: E.out(prog(t, 8.2, 8.7)) });
+        g.restore();
+      }
+      K.vignette(g, W, H, .55, 'rgba(0,0,8,.55)');
+    };
+  }
+});
+</script>
+</body>
+</html>
