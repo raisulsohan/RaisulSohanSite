@@ -14,8 +14,9 @@
  *   player.js or vo-env.js needs a new URL to reach returning visitors.
  * - Shifting Shores reads its voice and vo-env.js from audio/ next to it,
  *   its score is score-vo.wav encoded to MP3 (needs ffmpeg), the unducked
- *   score.wav it would preload first is not shipped, and its volume starts
- *   at 25 % like the other players.
+ *   score.wav it would preload first is not shipped.
+ * - Every player starts at full volume (the working copies start at 25 %
+ *   and 80 %).
  * - index.html is a small page that sends the player's "All demos" link
  *   back to /map-animation-demo/ (or /en/map-animation-demo/).
  *
@@ -66,6 +67,11 @@ for ( const d of [ 'lib', 'audio', 'thumbs' ] ) {
 for ( const f of fs.readdirSync( path.join( SRC, 'lib' ) ).filter( ( n ) => n.endsWith( '.js' ) ) ) {
 	fs.copyFileSync( path.join( SRC, 'lib', f ), path.join( OUT, 'lib', f ) );
 }
+const playerFile = path.join( OUT, 'lib', 'player.js' );
+let player = read( playerFile );
+player = replaceOnce( player, 'step="0.01" value="0.25" title="Volume"', 'step="0.01" value="1" title="Volume"', 'player.js' );
+player = replaceOnce( player, 'muted: false, vol: .25,', 'muted: false, vol: 1,', 'player.js' );
+fs.writeFileSync( playerFile, player );
 fs.copyFileSync( path.join( SRC, 'audio', 'vo-env.js' ), path.join( OUT, 'audio', 'vo-env.js' ) );
 for ( const id of [ ...PAGES, SHORES ] ) {
 	fs.copyFileSync( path.join( SRC, 'audio', `${ id }-vo.mp3` ), path.join( OUT, 'audio', `${ id }-vo.mp3` ) );
@@ -103,8 +109,8 @@ let shores = read( shoresFile );
 shores = replaceOnce( shores, '../map%20animation%20demo/audio/', 'audio/', 'Shifting Shores' );
 shores = replaceOnce( shores, '<audio id="score" src="assets/score.wav"', '<audio id="score" src="audio/score-vo.mp3"', 'Shifting Shores' );
 shores = replaceOnce( shores, "audio.src = 'assets/score-vo.wav'", "audio.src = 'audio/score-vo.mp3'", 'Shifting Shores' );
-shores = replaceOnce( shores, 'let volume = 0.8;', 'let volume = 0.25;', 'Shifting Shores' );
-shores = replaceOnce( shores, 'id="vol" type="range" min="0" max="1" step="0.01" value="0.8"', 'id="vol" type="range" min="0" max="1" step="0.01" value="0.25"', 'Shifting Shores' );
+shores = replaceOnce( shores, 'let volume = 0.8;', 'let volume = 1;', 'Shifting Shores' );
+shores = replaceOnce( shores, 'id="vol" type="range" min="0" max="1" step="0.01" value="0.8"', 'id="vol" type="range" min="0" max="1" step="0.01" value="1"', 'Shifting Shores' );
 fs.writeFileSync( path.join( OUT, 'shifting-shores.html' ), stamp( shores ) );
 
 /* The players' "All demos" link points at index.html. */

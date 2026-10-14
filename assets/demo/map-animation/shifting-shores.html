@@ -229,7 +229,7 @@
     <button id="bAr" class="txt hide-embed" title="Switch frame: 16:9 / 4:5">16:9</button>
     <button id="bLoop" class="on" title="Loop (L)" aria-label="Loop"><svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2zM17 17H7v-3l-4 4 4 4v-3h12v-6h-2z"/></svg></button>
     <button id="bMute" title="Mute (M)" aria-label="Mute"><svg viewBox="0 0 24 24"><path id="icoVol" d="M4 9h4l5-4v14l-5-4H4zM16 8.5a5 5 0 0 1 0 7l-1.4-1.4a3 3 0 0 0 0-4.2zM18.4 6a8.5 8.5 0 0 1 0 12L17 16.6a6.5 6.5 0 0 0 0-9.2z"/></svg></button>
-    <input id="vol" type="range" min="0" max="1" step="0.01" value="0.25" aria-label="Volume">
+    <input id="vol" type="range" min="0" max="1" step="0.01" value="1" aria-label="Volume">
     <span id="soundHint">click for sound</span>
     <button id="bFs" title="Fullscreen (F)" aria-label="Fullscreen"><svg viewBox="0 0 24 24"><path d="M4 4h6v2H6v4H4zM14 4h6v6h-2V6h-4zM4 14h2v4h4v2H4zM18 14h2v6h-6v-2h4z"/></svg></button>
   </div>
@@ -616,7 +616,7 @@ if (voice) {
     .finally(() => voice.addEventListener('loadedmetadata', () => syncAudio(true), { once: true }));
 }
 const tracks = [[audio, 0, 1], ...(voice ? [[voice, VD.delay, VD.gain]] : [])];   // [element, start on the clock, level]
-let volume = 0.25;
+let volume = 1;
 const seek = $('seek'), tTime = $('tTime'), tFrame = $('tFrame');
 const TOTAL_F = Math.round(DURATION * FPS);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));

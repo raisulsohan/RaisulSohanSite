@@ -56,7 +56,7 @@
   <div class="sep hide-s"></div>
   <span class="vo" id="voTag" title="Voice-over file loaded">VO</span>
   <button id="bMute" title="Mute (M)"><svg viewBox="0 0 24 24"><path id="muteIcon" d="M3 9v6h4l5 5V4L7 9zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4z"/></svg></button>
-  <input id="vol" type="range" min="0" max="1" step="0.01" value="0.25" title="Volume">
+  <input id="vol" type="range" min="0" max="1" step="0.01" value="1" title="Volume">
   <div class="sep hide-s"></div>
   <button id="bFull" title="Fullscreen (F)"><svg viewBox="0 0 24 24"><path d="M4 4h6v2H6v4H4zm10 0h6v6h-2V6h-4zM4 14h2v4h4v2H4zm14 0h2v6h-6v-2h4z"/></svg></button>`;
 
@@ -273,7 +273,7 @@
 
     // audio tracks: synthesized score + optional voice-over file
     const tracks = [];
-    const P = { t: 0, playing: false, speed: 1, loop: true, wall: 0, t0: 0, muted: false, vol: .25, drawn: -1, uiT: -1, unlocked: EMBED, blocked: false };
+    const P = { t: 0, playing: false, speed: 1, loop: true, wall: 0, t0: 0, muted: false, vol: 1, drawn: -1, uiT: -1, unlocked: EMBED, blocked: false };
     if (o.score) {
       const music = new Audio(); music.preload = 'auto'; music._g = 1; music.src = await synthScore(DUR, o.score, warp, VD); tracks.push(music);
       if (o.vo) {

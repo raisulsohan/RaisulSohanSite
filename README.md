@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.48.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.48.1-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -14,7 +14,8 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 
 **The map animation demos get their own page.**
 
-- **7.48.0: /map-animation-demo/.** Twelve map animations with voice-over (explainer and data maps, crime documentary maps, the Vox-style Manhattan recreation and Dhaka at night, Shifting Shores, and the Korean War front map) play in one player at `/map-animation-demo/` and `/en/map-animation-demo/`, the same English page on both editions with the English address as canonical. `inc/18-map-animation-demo.php` answers the address with a rewrite rule (added on the version bump, no WordPress page needed) and serves `parts/map-animation-demo.php`, a page of its own outside the site's header: the player with 16:9 / 4:5, posterize and the demo keys, the cards, and a floating **Work with me** button that copies the email address and shows the WhatsApp number. The demos live in `assets/demo/map-animation/`, copied from the working folder by `node scripts/map-demo-sync.js`, which stamps the local scripts with a content hash (the `.htaccess` and the service worker cache scripts for a long time), points Shifting Shores at its files beside it, ships its score as a 192 kbps MP3 instead of two WAVs, and starts its volume at 25 % like the others. The portfolio's hero gains a **Map animation** button to the page.
+- **7.48.1: The map demos start at full volume.** Every player on `/map-animation-demo/` now starts with the volume at 100 % instead of 25 %; `scripts/map-demo-sync.js` sets it in the copied `lib/player.js` and in Shifting Shores.
+- **7.48.0: /map-animation-demo/.** Twelve map animations with voice-over (explainer and data maps, crime documentary maps, the Vox-style Manhattan recreation and Dhaka at night, Shifting Shores, and the Korean War front map) play in one player at `/map-animation-demo/` and `/en/map-animation-demo/`, the same English page on both editions with the English address as canonical. `inc/18-map-animation-demo.php` answers the address with a rewrite rule (added on the version bump, no WordPress page needed) and serves `parts/map-animation-demo.php`, a page of its own outside the site's header: the player with 16:9 / 4:5, posterize and the demo keys, the cards, and a floating **Work with me** button that copies the email address and shows the WhatsApp number. The demos live in `assets/demo/map-animation/`, copied from the working folder by `node scripts/map-demo-sync.js`, which stamps the local scripts with a content hash (the `.htaccess` and the service worker cache scripts for a long time), points Shifting Shores at its files beside it, ships its score as a 192 kbps MP3 instead of two WAVs, and starts every player at full volume. The portfolio's hero gains a **Map animation** button to the page.
 
 ## What's new in 7.47
 
