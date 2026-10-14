@@ -24,10 +24,11 @@ $rs_md_pair      = rs_edition_pair();
 $rs_md_canonical = ( $rs_md_pair && ! rs_is_en() ) ? rs_map_demo_url( $rs_md_pair['other'] ) : rs_map_demo_url();
 
 $rs_md_title = 'Map Animation Demos';
-$rs_md_desc  = 'Twelve map animations with voice-over, drawn in code by Raisul Sohan: explainer and data maps, crime documentary maps, a Vox-style reference recreation, a desk-and-TV explainer and an animated war front map.';
+$rs_md_desc  = 'Thirteen map animations with voice-over, drawn in code by Raisul Sohan: explainer and data maps, crime documentary maps, a Vox-style reference recreation, a desk-and-TV explainer, an animated war front map and a 3D satellite news map.';
 
 /* Sections with the same row number sit side by side.
-   Each item: id, file, tag, title, description, alt text. */
+   Each item: id, file, tag, title, description, alt text, and optionally
+   the file of its own 4:5 cut (otherwise the 4:5 frame is file?ar=45). */
 $rs_md_sections = array(
 	array(
 		'row'   => 1,
@@ -74,6 +75,14 @@ $rs_md_sections = array(
 		'sub'   => 'The "every day" history-map style. Front lines simplified from campaign maps; terrain from AWS Terrain Tiles, borders from Natural Earth.',
 		'items' => array(
 			array( '12', '12-korean-war.html', '12 · Animated war map', 'The Korean War', 'Shaded relief, red and blue sides, a front of waving flags that moves with a running date, explosions, event cards and a live territory counter.', 'Relief map of Korea, the north red and the south blue, with flags along the front and an Inchon Landing card' ),
+		),
+	),
+	array(
+		'row'   => 4,
+		'title' => '3D Satellite News Map',
+		'sub'   => 'A breaking-news piece (25 s with the voice-over) in 3D over real satellite relief, with its own 4:5 cut. Imagery from Esri World Imagery, terrain from AWS Terrain Tiles, coastline © OpenStreetMap contributors, borders from geoBoundaries.',
+		'items' => array(
+			array( '13', 'hormuz/hormuz-v2.html', '13 · 3D satellite map', 'Strait of Hormuz', 'Countries tinted over satellite relief, glowing type laid on the ground, a running clock, a destroyer on a dashed route, three missiles off the rail and an E-2D Hawkeye.', 'Red-tinted 3D satellite map of the Strait of Hormuz with three missiles launching from the coast near Bandar Abbas', 'hormuz/hormuz-v2-4x5.html' ),
 		),
 	),
 );
@@ -158,6 +167,12 @@ foreach ( $rs_md_sections as $rs_md_s ) {
 	.body p { margin: 0; color: var(--mut); font-size: 14px; }
 	.playing { display: none; font-size: 11px; font-weight: 600; color: #fff; background: linear-gradient(135deg, var(--brand), var(--pink)); padding: 2px 8px; border-radius: 6px; margin-left: 6px; letter-spacing: 0; text-transform: none; }
 	a.card.on .playing { display: inline-block; }
+	/* a row with one demo: the card lies on its side, picture left */
+	@media (min-width: 1001px) {
+		.row.solo .block.one > a.card { flex-direction: row; }
+		.row.solo .block.one > a.card img { width: 50%; height: auto; }
+		.row.solo .block.one .body { align-self: center; padding: 22px 28px; }
+	}
 	@media (max-width: 1000px) {
 		.row { display: block; margin-top: 0; }
 		.block { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; grid-row: auto; gap: 18px; margin-top: 40px; }
@@ -247,7 +262,7 @@ foreach ( $rs_md_sections as $rs_md_s ) {
 				$rs_md_n += count( $rs_md_s['items'] );
 			}
 			?>
-			<div class="row" style="--n:<?php echo (int) $rs_md_n; ?>">
+			<div class="row<?php echo 1 === $rs_md_n ? ' solo' : ''; ?>" style="--n:<?php echo (int) $rs_md_n; ?>">
 				<?php foreach ( $rs_md_secs as $rs_md_s ) : $rs_md_k = count( $rs_md_s['items'] ); ?>
 					<section class="block<?php echo 1 === $rs_md_k ? ' one' : ''; ?>" style="--k:<?php echo (int) $rs_md_k; ?>">
 						<header>
@@ -291,7 +306,7 @@ const DEMOS = <?php
 $rs_md_js = array();
 foreach ( $rs_md_sections as $rs_md_s ) {
 	foreach ( $rs_md_s['items'] as $rs_md_i ) {
-		$rs_md_js[] = array( 'id' => $rs_md_i[0], 'src' => $rs_md_i[1], 'tag' => $rs_md_i[2], 'title' => $rs_md_i[3] );
+		$rs_md_js[] = array( 'id' => $rs_md_i[0], 'src' => $rs_md_i[1], 'src45' => isset( $rs_md_i[6] ) ? $rs_md_i[6] : '', 'tag' => $rs_md_i[2], 'title' => $rs_md_i[3] );
 	}
 }
 echo wp_json_encode( $rs_md_js );
@@ -307,17 +322,18 @@ function readHash() {
   if (m) { const i = DEMOS.findIndex(d => d.id === m[1]); if (i >= 0) S.i = i; S.vert = !!m[2]; }
   else S.vert = store.get('mapdemo.vert') === '1';
 }
+const file = d => (S.vert && d.src45) || d.src;   // a demo with its own 4:5 cut plays that file in the 4:5 frame
 function url(d, keepTime) {
   const q = ['embed', 'ver=' + VER];
   if (S.vert) q.push('ar=45');
   if (S.post) q.push('post=' + (S.post.on ? S.post.fps : 0));
   if (keepTime && S.t > 0) { q.push('t=' + S.t.toFixed(3)); if (!S.playing) q.push('paused'); }
-  return BASE + d.src + '?' + q.join('&');
+  return BASE + file(d) + '?' + q.join('&');
 }
 function load(keepTime) {
   const d = DEMOS[S.i];
   screenEl.src = url(d, keepTime);
-  $('openTab').href = BASE + d.src + '?ver=' + VER + (S.vert ? '&ar=45' : '');
+  $('openTab').href = BASE + file(d) + '?ver=' + VER + (S.vert ? '&ar=45' : '');
   $('nowTag').textContent = d.tag; $('nowTitle').textContent = d.title;
   $('ar169').classList.toggle('on', !S.vert); $('ar45').classList.toggle('on', S.vert);
   $('ar169').setAttribute('aria-pressed', !S.vert); $('ar45').setAttribute('aria-pressed', S.vert);

@@ -25,6 +25,12 @@
  *   Animation Showreel project's demo on the portfolio. clips.js is made in
  *   the source by `node showreel/build.mjs`, so the sync stops if a demo page
  *   is newer than it.
+ * - Strait of Hormuz (demo 13) comes from "Map Animation for client work"
+ *   beside the demo folder. It has its own player, voice (01-vo.mp3) and
+ *   vo-env.js, so it goes into hormuz/ with them: hormuz-v2.html and its
+ *   4:5 cut hormuz-v2-4x5.html. The map images ship as files, not as the
+ *   25 MB data/tex.js that inlines them for file://, and the CodeFlow-only
+ *   <audio> tags are dropped. hormuz-v2.html?ar=45 opens the 4:5 file.
  *
  * Only the demos in PAGES are copied. Add a number here and a card in
  * parts/map-animation-demo.php to publish another one.
@@ -41,6 +47,7 @@ const SHORES = '11';
 
 const SRC = path.resolve( process.argv[ 2 ] || 'D:/GitHub/04. Animation for video/05. Fun/map animation demo' );
 const VOX = path.join( SRC, '..', 'Vox Map Demo' );
+const HORMUZ = path.join( SRC, '..', 'Map Animation for client work' );
 const OUT = path.join( __dirname, '..', 'assets', 'demo', 'map-animation' );
 
 const read = ( f ) => fs.readFileSync( f, 'utf8' );
@@ -54,10 +61,10 @@ function replaceOnce( text, from, to, file ) {
 	return from instanceof RegExp ? text.replace( from, to ) : text.split( from ).join( to );
 }
 
-/* Every src="lib/…js", "audio/…js", "data/…js" or "showreel/…js" gets the hash of the copied file. */
-function stamp( html ) {
+/* Every src="lib/…js", "audio/…js", "data/…js" or "showreel/…js" gets the hash of the copied file in `dir`. */
+function stamp( html, dir = OUT ) {
 	return html.replace( /src="((?:lib|audio|data|showreel)\/[\w./-]+\.js)"/g, ( m, rel ) => {
-		const f = path.join( OUT, rel );
+		const f = path.join( dir, rel );
 		if ( ! fs.existsSync( f ) ) {
 			throw new Error( `missing ${ rel }` );
 		}
@@ -82,11 +89,13 @@ for ( const d of [ 'lib', 'audio', 'thumbs', 'showreel' ] ) {
 for ( const f of fs.readdirSync( path.join( SRC, 'lib' ) ).filter( ( n ) => n.endsWith( '.js' ) ) ) {
 	fs.copyFileSync( path.join( SRC, 'lib', f ), path.join( OUT, 'lib', f ) );
 }
-const playerFile = path.join( OUT, 'lib', 'player.js' );
-let player = read( playerFile );
-player = replaceOnce( player, /step="0\.01" value="[\d.]+" title="Volume"/, 'step="0.01" value="1" title="Volume"', 'player.js' );
-player = replaceOnce( player, /muted: false, vol: [\d.]+,/, 'muted: false, vol: 1,', 'player.js' );
-fs.writeFileSync( playerFile, player );
+function fullVolume( playerFile ) {
+	let player = read( playerFile );
+	player = replaceOnce( player, /step="0\.01" value="[\d.]+" title="Volume"/, 'step="0.01" value="1" title="Volume"', playerFile );
+	player = replaceOnce( player, /muted: false, vol: [\d.]+,/, 'muted: false, vol: 1,', playerFile );
+	fs.writeFileSync( playerFile, player );
+}
+fullVolume( path.join( OUT, 'lib', 'player.js' ) );
 fs.copyFileSync( path.join( SRC, 'audio', 'vo-env.js' ), path.join( OUT, 'audio', 'vo-env.js' ) );
 for ( const id of [ ...PAGES, SHORES ] ) {
 	fs.copyFileSync( path.join( SRC, 'audio', `${ id }-vo.mp3` ), path.join( OUT, 'audio', `${ id }-vo.mp3` ) );
@@ -133,6 +142,29 @@ fs.copyFileSync( CLIPS, path.join( OUT, 'showreel', 'clips.js' ) );
 fs.writeFileSync( path.join( OUT, 'showreel.html' ), stamp( read( path.join( SRC, 'showreel.html' ) ) ) );
 fs.copyFileSync( path.join( SRC, 'showreel-4x5.html' ), path.join( OUT, 'showreel-4x5.html' ) );
 
+/* Strait of Hormuz, in hormuz/ with its own player, voice and map data. */
+const HZ = path.join( OUT, 'hormuz' );
+for ( const d of [ 'lib', 'audio', 'data' ] ) {
+	fs.mkdirSync( path.join( HZ, d ), { recursive: true } );
+}
+for ( const f of [ 'lib/kit.js', 'lib/player.js', 'audio/vo-env.js', 'audio/01-vo.mp3', 'data/geo.js' ] ) {
+	fs.copyFileSync( path.join( HORMUZ, f ), path.join( HZ, f ) );
+}
+for ( const f of fs.readdirSync( path.join( HORMUZ, 'data' ) ).filter( ( n ) => /\.(jpe?g|png)$/.test( n ) ) ) {
+	fs.copyFileSync( path.join( HORMUZ, 'data', f ), path.join( HZ, 'data', f ) );
+}
+fullVolume( path.join( HZ, 'lib', 'player.js' ) );
+fs.copyFileSync( path.join( HORMUZ, 'thumbs', 'hormuz-v2.jpg' ), path.join( OUT, 'thumbs', '13.jpg' ) );
+for ( const name of [ 'hormuz-v2.html', 'hormuz-v2-4x5.html' ] ) {
+	let html = read( path.join( HORMUZ, name ) );
+	html = replaceOnce( html, /<script src="data\/tex\.js"[^>]*><\/script>\r?\n/, '', name );
+	html = replaceOnce( html, /<!-- sound for CodeFlow[^\n]*\n(?:<audio id="cf\w+"[^\n]*\n)+/, '', name );
+	if ( name === 'hormuz-v2.html' ) {
+		html = replaceOnce( html, /<meta charset="utf-8">\r?\n/, ( m ) => m + "<script>if (/^(45|4x5|4:5|v|vertical)$/i.test(new URLSearchParams(location.search).get('ar') || '')) location.replace('hormuz-v2-4x5.html' + location.search);</script>\n", name );
+	}
+	fs.writeFileSync( path.join( HZ, name ), stamp( html, HZ ) );
+}
+
 /* The players' "All demos" link points at index.html. A player in the
    portfolio's demo pop-up opens the page in the whole window, not inside the
    pop-up, and the window's address says which edition it came from. */
@@ -164,4 +196,4 @@ const walk = ( d ) => fs.readdirSync( d, { withFileTypes: true } ).forEach( ( e 
 	}
 } );
 walk( OUT );
-console.log( `map-animation: ${ PAGES.length + 1 } demos and the showreel, ${ ( bytes / 1048576 ).toFixed( 1 ) } MB in ${ path.relative( process.cwd(), OUT ) }` );
+console.log( `map-animation: ${ PAGES.length + 2 } demos and the showreel, ${ ( bytes / 1048576 ).toFixed( 1 ) } MB in ${ path.relative( process.cwd(), OUT ) }` );

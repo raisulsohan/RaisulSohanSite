@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.49.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.50.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.50
+
+**Strait of Hormuz joins the map animation demos.**
+
+- **7.50.0: A 3D satellite news map on /map-animation-demo/.** Demo 13, *Strait of Hormuz* (25 s with the voice-over), sits in a row of its own, "3D Satellite News Map", as a wide card with the picture on the left. It is the first demo with its own 4:5 cut: a card item may now name a second file, and the player's 4:5 frame (and Open ↗) plays `hormuz-v2-4x5.html` instead of adding `?ar=45`. `scripts/map-demo-sync.js` copies it from "Map Animation for client work" into `assets/demo/map-animation/hormuz/` with its own player, voice and `vo-env.js` (they share names with the other demos'), ships the map images as files instead of the 25 MB `data/tex.js` that inlines them for `file://`, drops the CodeFlow-only `<audio>` tags, starts it at full volume like the rest, and sends `hormuz-v2.html?ar=45` to the 4:5 file. The card picture is a frame of the finished film at 16.8 s.
 
 ## What's new in 7.49
 
