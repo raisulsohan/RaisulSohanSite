@@ -15,10 +15,16 @@
  * - Shifting Shores reads its voice and vo-env.js from audio/ next to it,
  *   its score is score-vo.wav encoded to MP3 (needs ffmpeg), the unducked
  *   score.wav it would preload first is not shipped.
- * - Every player starts at full volume (the working copies start at 25 %
- *   and 80 %).
+ * - Every player starts at full volume (the working copies start lower:
+ *   lib/player.js at 5 %, Shifting Shores at 80 %).
  * - index.html is a small page that sends the player's "All demos" link
- *   back to /map-animation-demo/ (or /en/map-animation-demo/).
+ *   back to /map-animation-demo/ (or /en/map-animation-demo/), out of the
+ *   portfolio's demo pop-up too.
+ * - The showreel (showreel.html, its 4:5 cut showreel-4x5.html and the
+ *   showreel/clips.js it plays the demos through) comes along; it is the Map
+ *   Animation Showreel project's demo on the portfolio. clips.js is made in
+ *   the source by `node showreel/build.mjs`, so the sync stops if a demo page
+ *   is newer than it.
  *
  * Only the demos in PAGES are copied. Add a number here and a card in
  * parts/map-animation-demo.php to publish another one.
@@ -40,16 +46,17 @@ const OUT = path.join( __dirname, '..', 'assets', 'demo', 'map-animation' );
 const read = ( f ) => fs.readFileSync( f, 'utf8' );
 const hash = ( f ) => crypto.createHash( 'sha1' ).update( fs.readFileSync( f ) ).digest( 'hex' ).slice( 0, 8 );
 
+/* `from` is a string (every copy is replaced) or a RegExp (the first match). */
 function replaceOnce( text, from, to, file ) {
-	if ( ! text.includes( from ) ) {
-		throw new Error( `${ file }: expected to find ${ JSON.stringify( from ) }` );
+	if ( from instanceof RegExp ? ! from.test( text ) : ! text.includes( from ) ) {
+		throw new Error( `${ file }: expected to find ${ from instanceof RegExp ? from : JSON.stringify( from ) }` );
 	}
-	return text.split( from ).join( to );
+	return from instanceof RegExp ? text.replace( from, to ) : text.split( from ).join( to );
 }
 
-/* Every src="lib/…js", "audio/…js" or "data/…js" gets the hash of the copied file. */
+/* Every src="lib/…js", "audio/…js", "data/…js" or "showreel/…js" gets the hash of the copied file. */
 function stamp( html ) {
-	return html.replace( /src="((?:lib|audio|data)\/[\w./-]+\.js)"/g, ( m, rel ) => {
+	return html.replace( /src="((?:lib|audio|data|showreel)\/[\w./-]+\.js)"/g, ( m, rel ) => {
 		const f = path.join( OUT, rel );
 		if ( ! fs.existsSync( f ) ) {
 			throw new Error( `missing ${ rel }` );
@@ -58,8 +65,16 @@ function stamp( html ) {
 	} );
 }
 
+/* Checked before anything is removed: the showreel's bundle has to be made from the demos being copied. */
+const CLIPS = path.join( SRC, 'showreel', 'clips.js' );
+for ( const n of fs.readdirSync( SRC ).filter( ( f ) => /^\d\d-.+\.html$/.test( f ) ) ) {
+	if ( fs.statSync( path.join( SRC, n ) ).mtimeMs > fs.statSync( CLIPS ).mtimeMs ) {
+		throw new Error( `${ n } is newer than showreel/clips.js: run  node showreel/build.mjs  in the demo folder first` );
+	}
+}
+
 fs.rmSync( OUT, { recursive: true, force: true } );
-for ( const d of [ 'lib', 'audio', 'thumbs' ] ) {
+for ( const d of [ 'lib', 'audio', 'thumbs', 'showreel' ] ) {
 	fs.mkdirSync( path.join( OUT, d ), { recursive: true } );
 }
 
@@ -69,8 +84,8 @@ for ( const f of fs.readdirSync( path.join( SRC, 'lib' ) ).filter( ( n ) => n.en
 }
 const playerFile = path.join( OUT, 'lib', 'player.js' );
 let player = read( playerFile );
-player = replaceOnce( player, 'step="0.01" value="0.25" title="Volume"', 'step="0.01" value="1" title="Volume"', 'player.js' );
-player = replaceOnce( player, 'muted: false, vol: .25,', 'muted: false, vol: 1,', 'player.js' );
+player = replaceOnce( player, /step="0\.01" value="[\d.]+" title="Volume"/, 'step="0.01" value="1" title="Volume"', 'player.js' );
+player = replaceOnce( player, /muted: false, vol: [\d.]+,/, 'muted: false, vol: 1,', 'player.js' );
 fs.writeFileSync( playerFile, player );
 fs.copyFileSync( path.join( SRC, 'audio', 'vo-env.js' ), path.join( OUT, 'audio', 'vo-env.js' ) );
 for ( const id of [ ...PAGES, SHORES ] ) {
@@ -113,14 +128,28 @@ shores = replaceOnce( shores, 'let volume = 0.8;', 'let volume = 1;', 'Shifting 
 shores = replaceOnce( shores, 'id="vol" type="range" min="0" max="1" step="0.01" value="0.8"', 'id="vol" type="range" min="0" max="1" step="0.01" value="1"', 'Shifting Shores' );
 fs.writeFileSync( path.join( OUT, 'shifting-shores.html' ), stamp( shores ) );
 
-/* The players' "All demos" link points at index.html. */
+/* The showreel. Its 4:5 page only reloads showreel.html with ?ar=45, so it goes as it is. */
+fs.copyFileSync( CLIPS, path.join( OUT, 'showreel', 'clips.js' ) );
+fs.writeFileSync( path.join( OUT, 'showreel.html' ), stamp( read( path.join( SRC, 'showreel.html' ) ) ) );
+fs.copyFileSync( path.join( SRC, 'showreel-4x5.html' ), path.join( OUT, 'showreel-4x5.html' ) );
+
+/* The players' "All demos" link points at index.html. A player in the
+   portfolio's demo pop-up opens the page in the whole window, not inside the
+   pop-up, and the window's address says which edition it came from. */
 fs.writeFileSync( path.join( OUT, 'index.html' ), `<!doctype html>
 <meta charset="utf-8">
 <title>Map Animation Demos</title>
 <meta name="robots" content="noindex">
 <script>
 var root = location.pathname.split( '/wp-content/' )[ 0 ];
-location.replace( root + ( /\\/en\\//.test( document.referrer ) ? '/en' : '' ) + '/map-animation-demo/' );
+var win = window, from = document.referrer;
+try {
+	if ( window.top !== window ) {
+		from = window.top.location.pathname;
+		win = window.top;
+	}
+} catch ( e ) {}
+win.location.replace( root + ( /\\/en\\//.test( from ) ? '/en' : '' ) + '/map-animation-demo/' );
 </script>
 <a href="/map-animation-demo/">Map Animation Demos</a>
 ` );
@@ -135,4 +164,4 @@ const walk = ( d ) => fs.readdirSync( d, { withFileTypes: true } ).forEach( ( e 
 	}
 } );
 walk( OUT );
-console.log( `map-animation: ${ PAGES.length + 1 } demos, ${ ( bytes / 1048576 ).toFixed( 1 ) } MB in ${ path.relative( process.cwd(), OUT ) }` );
+console.log( `map-animation: ${ PAGES.length + 1 } demos and the showreel, ${ ( bytes / 1048576 ).toFixed( 1 ) } MB in ${ path.relative( process.cwd(), OUT ) }` );

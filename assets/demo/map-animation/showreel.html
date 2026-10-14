@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Map Animation Showreel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script src="lib/kit.js?v=415f4781"></script>
+<script src="lib/city.js?v=3eafbebb"></script>
+<script src="data/korea/geo.js?v=7ad4aba1"></script>
+<script src="lib/player.js?v=0d740b1f"></script>
+<script>
+// The demos register here. showreel/clips.js wraps each demo's own script (node showreel/build.mjs makes it).
+window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { this.clips[id] = o; }).catch(e => console.warn(`showreel: demo ${id} did not load`, e))); } };
+</script>
+<script src="showreel/clips.js?v=5141e6da"></script>
+<style>
+  #loader { display: none !important; }
+  #reelLoad { position: absolute; inset: 0; display: grid; place-content: center; gap: 26px; background: #05070b; color: #e8ecf3; text-align: center;
+    font: 500 22px "JetBrains Mono", monospace; letter-spacing: 4px; }
+  #reelLoad b { font: 400 150px Anton, Impact, sans-serif; letter-spacing: 3px; line-height: 1; }
+  #reelLoad i { display: block; width: 720px; height: 6px; margin: 0 auto; border-radius: 3px; background: #1a1f29; overflow: hidden; }
+  #reelLoad i span { display: block; width: 0; height: 100%; background: #ffcc2e; transition: width .3s; }
+</style>
+</head>
+<body>
+<script>
+// Map animation showreel: 20 s at 120 BPM, so a beat is 0.5 s and a bar is 2 s. Every cut, word and hit sits on that grid.
+// The pictures are the real demos, played through time-remaps; the reel adds the type, the transitions and its own score.
+//   0 – 2   hook: MAPS · THAT · MOVE, each word a window onto a demo; the camera dives through the last word
+//   2 – 17  montage: explainer → data → true crime → history, the shots get shorter toward the climax
+//  17 – 20  the drop: a wall of all twelve styles and the end title
+(() => {
+  const { clamp, lerp, prog, ease: E } = K;
+  const BEAT = .5;
+
+  // ── styles and groups
+  const SEC = {
+    EXPLAINER: { col: '#ffcc2e', ink: '#14120e' },
+    DATA: { col: '#4fe3ff', ink: '#03131d' },
+    'TRUE CRIME': { col: '#ff2d3d', ink: '#ffffff' },
+    HISTORY: { col: '#8fb3ff', ink: '#06122a' },
+  };
+  const NAME = {
+    '01': ['VOX EXPLAINER', 'EXPLAINER'], '02': ['GLOBE DIVE', 'EXPLAINER'], '03': ['NEON DATA ROUTES', 'DATA'], '04': ['3D DATA MAP', 'DATA'],
+    '05': ['EVIDENCE BOARD', 'TRUE CRIME'], '06': ['SURVEILLANCE', 'TRUE CRIME'], '07': ['CASE DOSSIER', 'TRUE CRIME'], '08': ['SEARCH GRID', 'TRUE CRIME'],
+    '09': ['VOX CITY REVEAL', 'EXPLAINER'], '10': ['NIGHT GOLD CITY', 'EXPLAINER'], '11': ['SHIFTING SHORES', 'EXPLAINER'], '12': ['WAR FRONT MAP', 'HISTORY'],
+  };
+
+  // ── cut list: reel seconds → demo seconds (linear between keys unless an ease is named; outside the keys it runs on at the edge speed)
+  const SHOTS = [
+    { id: '02', a: 1.0, b: 4.0, map: [[1.0, 1.7], [2.0, 3.3], [4.0, 6.35]] },                     // seen through "MOVE", then the dive; its flash lands on 4.0
+    { id: '01', a: 4.0, b: 6.0, map: [[4.0, 4.0], [6.0, 7.1]] },                                  // rivers draw, labels pop, the halftone starts
+    { id: '09', a: 6.0, b: 7.0, map: [[6.0, 1.85], [7.0, 3.65]] },                                // Manhattan fills block by block
+    { id: '10', a: 7.0, b: 8.0, map: [[7.0, 2.3], [8.0, 4.4]] },                                  // Dhaka switches on
+    { id: '03', a: 8.0, b: 9.5, map: [[8.0, 2.3], [9.5, 5.55]] },                                 // routes fly in; the shock ring on 9.5
+    { id: '04', a: 9.5, b: 11.0, map: [[9.5, 3.6], [10.0, 4.2], [11.0, 5.8, 'out']] },            // Bangladesh's tower slams up on 10.0
+    { id: '07', a: 11.0, b: 12.0, map: [[11.0, 2.5], [12.0, 5.3]] },                              // the escape route, stop by stop
+    { id: '06', a: 12.0, b: 13.0, map: [[12.0, 7.9], [12.5, 8.9], [13.0, 9.35, 'out']] },          // SIGNAL LOST on 12.5
+    { id: '08', a: 13.0, b: 14.0, map: [[13.0, 6.9], [14.0, 8.5]] },                              // the find, outside the search zone
+    { id: '05', a: 14.0, b: 15.0, map: [[14.0, 7.5], [14.5, 8.2], [15.0, 8.75, 'out']] },          // UNSOLVED on 14.5
+    { id: '12', a: 15.0, b: 17.0, map: [[15.0, 7.0], [16.5, 13.98, 'inOutSine'], [17.0, 14.5, 'out']] },   // a year of war in 1.5 s; China strikes on 16.5
+  ];
+  const HOOK = [
+    { word: 'MAPS', id: '10', a: 0, b: .5, map: [[0, 3.2], [.5, 3.8]] },
+    { word: 'THAT', id: '12', a: .5, b: 1.0, map: [[.5, 9.3], [1.0, 9.9]] },
+    { word: 'MOVE', id: '02', a: 1.0, b: 2.0, map: SHOTS[0].map },
+  ];
+  // transitions: d = [s before the cut, s after it]
+  const TRANS = [
+    { at: 4.0, type: 'flash', d: [.12, .32] },
+    { at: 6.0, type: 'push', d: [.12, .12] },
+    { at: 7.0, type: 'slices', d: [.1, .26] },
+    { at: 8.0, type: 'pullOut', d: [.1, .22] },
+    { at: 9.5, type: 'iris', d: [0, .3] },
+    { at: 11.0, type: 'glitch', d: [.1, .14] },
+    { at: 12.0, type: 'push', d: [.1, .1], vertical: true },
+    { at: 13.0, type: 'glitch', d: [.08, .14] },
+    { at: 14.0, type: 'pushIn', d: [.12, .16] },
+    { at: 15.0, type: 'flash', d: [.08, .3] },
+  ];
+  const STAMPS = [[4.0, 'EXPLAINER'], [8.0, 'DATA'], [11.0, 'TRUE CRIME'], [15.0, 'HISTORY']];
+  const IMPACTS = [[0, 5], [.5, 5], [1.0, 5], [2.0, 9], [4.0, 6], [10.0, 14], [12.5, 7], [14.5, 6], [16.5, 12], [17.0, 18]];   // [s, px of shake]
+
+  // ── the score, in code: F minor, 120 BPM (i – VI – III – VII), a break before the drop, Ab major at the end
+  const SCORE = {
+    master: .5, peak: .89, fadeIn: 0, seed: 2026, wet: .3, root: 56,
+    compose({ ac, out, osc, nsrc, filt, env, hz, fx, master }) {
+      const B = BEAT, BRK = 16.75;   // BRK → 17.0 is silent: the drop lands out of nothing
+      const m = SCORE.master; master.gain.setValueAtTime(m, BRK - .03); master.gain.linearRampToValueAtTime(m * .05, BRK + .05); master.gain.setValueAtTime(m * .05, 16.995); master.gain.linearRampToValueAtTime(m, 17);
+      const ok = t => t < BRK - .01 || t >= 17;
+      const CHORD = t => t < 4 ? 'Fm' : t < 6 ? 'Db' : t < 8 ? 'Ab' : t < 10 ? 'Eb' : t < 12 ? 'Fm' : t < 14 ? 'Db' : t < 16 ? 'Ab' : t < 17 ? 'C' : t < 18 ? 'Fm' : t < 19 ? 'Db' : 'Ab';
+      const BASS = { Fm: 41, Db: 37, Ab: 44, Eb: 39, C: 36 };
+      const VOX = { Fm: [65, 68, 72, 77], Db: [65, 68, 73, 77], Ab: [63, 68, 72, 75], Eb: [63, 67, 70, 75], C: [64, 67, 72, 76] };
+
+      // sidechain: pads and bass dip under every kick
+      const pump = ac.createGain(); out(pump, .2);
+      const KICKS = [0, .5, 1.0]; for (let t = 2; t < BRK; t += B) KICKS.push(t); KICKS.push(17, 18);
+      for (const t of KICKS) { pump.gain.setValueAtTime(.3, t); pump.gain.setTargetAtTime(1, t + .02, .08); }
+
+      const kick = (t, v = .85) => {
+        const o = osc('sine', 160, t, .45), g = ac.createGain(); o.frequency.exponentialRampToValueAtTime(48, t + .1); o.frequency.exponentialRampToValueAtTime(38, t + .4);
+        env(g, t, .002, v, .36); o.connect(g); out(g, 0);
+        const n = nsrc(t, .02), f = filt('highpass', 2500), g2 = ac.createGain(); env(g2, t, .001, v * .22, .012); n.connect(f).connect(g2); out(g2, 0);
+      };
+      const clap = (t, v = .3) => {
+        const n = nsrc(t, .3), f = filt('bandpass', 1500, .9), g = ac.createGain();
+        for (const d of [0, .011, .023]) { g.gain.setValueAtTime(v, t + d); g.gain.exponentialRampToValueAtTime(v * .2, t + d + .01); }
+        g.gain.setValueAtTime(v * .6, t + .034); g.gain.exponentialRampToValueAtTime(1e-4, t + .26);
+        n.connect(f).connect(g); out(g, .4, .05);
+      };
+      const hat = (t, v = .05, open = false, pan = .2) => { const n = nsrc(t, open ? .25 : .06), f = filt('highpass', open ? 7000 : 8500), g = ac.createGain(); env(g, t, .001, v, open ? .2 : .035); n.connect(f).connect(g); out(g, .08, pan); };
+      const bass = (t, n, d, v = .14) => {
+        const o = osc('sawtooth', hz(n), t, d + .05), o2 = osc('sine', hz(n - 12), t, d + .05), f = filt('lowpass', 900, 1.4), g = ac.createGain();
+        f.frequency.setValueAtTime(1400, t); f.frequency.exponentialRampToValueAtTime(260, t + d);
+        env(g, t, .005, v, d); o.connect(f); o2.connect(f); f.connect(g); g.connect(pump);
+      };
+      const stab = (t, notes, v = .06, d = .35, cut = 2600) => {
+        for (const n of notes) for (const det of [-9, 9]) {
+          const o = osc('sawtooth', hz(n), t, d + .1), f = filt('lowpass', cut, .8), g = ac.createGain(); o.detune.value = det;
+          f.frequency.setValueAtTime(cut, t); f.frequency.exponentialRampToValueAtTime(cut * .25, t + d);
+          env(g, t, .004, v, d); o.connect(f).connect(g); out(g, .4, det > 0 ? .2 : -.2);
+        }
+      };
+      const pad = (t0, t1, notes, v = .02, cut = 900, rel = .3) => notes.forEach(n => [-7, 7].forEach(det => {
+        const o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.value = hz(n - 12); o.detune.value = det;
+        const f = filt('lowpass', cut, .5), g = ac.createGain();
+        g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(v, t0 + .25); g.gain.setValueAtTime(v, t1 - .05); g.gain.linearRampToValueAtTime(0, t1 + rel);
+        o.connect(f).connect(g); g.connect(pump); o.start(t0); o.stop(t1 + rel + .05);
+      }));
+      const pluck = (t, n, v = .045, type = 'triangle', cut = 3000, pan = 0) => { const o = osc(type, hz(n), t, .3), f = filt('lowpass', cut), g = ac.createGain(); env(g, t, .002, v, .22); o.connect(f).connect(g); out(g, .3, pan); };
+      const tom = (t, n = 45, v = .35) => {
+        const o = osc('sine', hz(n) * 1.8, t, .5), g = ac.createGain(); o.frequency.exponentialRampToValueAtTime(hz(n), t + .09); env(g, t, .002, v, .4); o.connect(g); out(g, .2);
+        const s = nsrc(t, .08), f = filt('lowpass', 1200), g2 = ac.createGain(); env(g2, t, .001, v * .3, .06); s.connect(f).connect(g2); out(g2, .2);
+      };
+      const snare = (t, v = .2) => {
+        const s = nsrc(t, .15), f = filt('bandpass', 1900, .7), g = ac.createGain(); env(g, t, .001, v, .11); s.connect(f).connect(g); out(g, .3);
+        const o = osc('triangle', 200, t, .1), g2 = ac.createGain(); o.frequency.exponentialRampToValueAtTime(140, t + .08); env(g2, t, .001, v * .5, .07); o.connect(g2); out(g2, .1);
+      };
+      const crash = (t, v = .14, d = 1.6) => { const s = nsrc(t, d), f = filt('highpass', 5000), g = ac.createGain(); env(g, t, .002, v, d); s.connect(f).connect(g); out(g, .5); };
+      const sub = (t, n, d, v = .45) => { const o = osc('sine', hz(n), t, d), g = ac.createGain(); o.frequency.exponentialRampToValueAtTime(hz(n) * .5, t + d); env(g, t, .01, v, d); o.connect(g); out(g, 0); };
+
+      // ── hook (0 – 2): three words, three hits; a riser and a whoosh carry the dive through "MOVE"
+      for (const t of [0, .5, 1.0]) { kick(t, .9); sub(t, 29, .5, .32); stab(t, VOX.Fm.map(n => n - 12), .035, .3, 1400); fx.tick(t, .18); }
+      pad(0, 2, VOX.Fm, .015, 600);
+      fx.riser(1.0, 1.0, .2); fx.whoosh(1.5, .5, .36);
+
+      // ── groove (2 – 16.75)
+      crash(2, .13, 1.6);
+      for (let t = 2; t < BRK - 1e-6; t += B) {
+        const ch = CHORD(t), beat = Math.round(t / B) % 4, bn = BASS[ch];
+        kick(t, .8);
+        if (t >= 4 && t < 15 && beat % 2) clap(t, .28);
+        if (t < 8 || t >= 15) { if (ok(t + B / 2)) hat(t + B / 2, .055, t >= 15); }
+        else for (let k = 0; k < 4; k++) hat(t + k * B / 4, k === 2 ? .06 : .032, false, k % 2 ? .25 : -.15);
+        if (t < 8) { if (ok(t + B / 2)) bass(t + B / 2, bn, .2, .14); }
+        else for (let k = 1; k < 4; k++) if (ok(t + k * B / 4)) bass(t + k * B / 4, bn + (k === 3 ? 12 : 0), .1, .1);
+        if (t >= 4 && t < 11) {   // arp in 16ths through the chord: soft triangle for the explainers, a brighter square for the data maps
+          const v = VOX[ch];
+          for (let k = 0; k < 4; k++) { const s = Math.round(t / B) * 4 + k, n = v[[0, 1, 2, 3, 2, 1, 3, 2][s % 8]] + (s % 16 >= 8 ? 12 : 0); pluck(t + k * B / 4, n, t < 8 ? .045 : .036, t < 8 ? 'triangle' : 'square', t < 8 ? 3200 : 1800, k % 2 ? .3 : -.3); }
+        }
+        if (t >= 11 && t < 15) for (let k = 0; k < 4; k++) fx.tick(t + k * B / 4, k ? .045 : .08);   // true crime: a clock in 16ths
+        if (t >= 15) { tom(t, 45, .28); if (ok(t + B / 2)) tom(t + B / 2, 41, .2); }               // history: war drums
+      }
+      for (let t = 2; t < BRK; t += 2) { const t1 = Math.min(t + 2, BRK); pad(t, t1, VOX[CHORD(t)], .02, t >= 11 && t < 15 ? 650 : 950, t1 === BRK ? .04 : .3); }
+      for (let t = 16, k = 0; t < BRK - .01; k++) { snare(t, .08 + .18 * (t - 16) / .75); t += k < 4 ? B / 4 : B / 8; }   // roll into the break
+      fx.riser(15.0, 1.75, .26);
+
+      // ── transitions
+      fx.hit(4, .45); crash(4, .1, 1.2); fx.shimmer(4.02, .06);
+      fx.whoosh(5.86, .3, .3);
+      fx.whoosh(6.88, .34, .24); for (let k = 0; k < 7; k++) fx.tick(6.9 + k * .022, .1);
+      fx.whoosh(7.88, .36, .3);
+      fx.hit(9.5, .4); fx.shimmer(9.52, .06);
+      fx.boom(10, .5);
+      fx.glitch(10.92, .22, .26); stab(11, [65, 66, 72], .045, .45, 1600);
+      fx.whoosh(11.89, .24, .24);
+      fx.glitch(12.47, .45, .3); fx.hit(12.5, .35);
+      fx.glitch(12.93, .2, .22);
+      for (const t of [13.12, 13.22, 13.32]) fx.blip(t, 1.3, .06);
+      fx.whoosh(13.87, .3, .28);
+      fx.boom(14.5, .55);
+      fx.hit(15, .42); crash(15, .1, 1.2);
+      fx.boom(16.5, .45);
+
+      // ── the drop (17) and the end title
+      kick(17, 1); sub(17, 29, 1.8, .5); crash(17, .2, 2.4); fx.boom(17, .6); fx.shimmer(17.02, .09);
+      stab(17, VOX.Fm, .075, .7, 3400); stab(17, VOX.Fm.map(n => n - 12), .045, .7, 2000);
+      pad(17, 18, VOX.Fm, .026, 1500); pad(18, 19, VOX.Db, .026, 1500); pad(19, 20.4, VOX.Ab, .028, 1600);
+      fx.hit(17.4, .22); fx.whoosh(17.66, .34, .2);
+      kick(18, .65); stab(18, VOX.Db, .042, .5, 2600); crash(18, .07, 1.4);
+      fx.type(18.0, 14, .4, .1); fx.type(18.1, 12, .3, .08);   // the genre line and the contact heading type themselves
+      fx.pop(18.2, 1.2, .12); fx.pop(18.32, 1.5, .12);         // the contact chips land
+      stab(19, VOX.Ab, .038, 1.2, 2200); fx.shimmer(19, .07); fx.note(19, 44, .12, 1.6);
+    },
+  };
+
+  MapPlayer({
+    title: 'Map Animation Showreel',
+    DUR: 20,
+    score: SCORE,
+    async setup(stage, { W, H, FPS, VERT }) {
+      const U = Math.min(W, H) / 1080, inExpo = u => u <= 0 ? 0 : Math.pow(2, 10 * u - 10);
+      const box = document.createElement('div'); box.id = 'reelLoad';
+      box.innerHTML = '<b>MAPS THAT MOVE</b><span>LOADING THE MAPS</span><i><span></span></i>';
+      stage.appendChild(box);
+      const say = (s, f) => { box.children[1].textContent = s; if (f != null) box.querySelector('i span').style.width = (f * 100).toFixed(1) + '%'; };
+
+      // fonts for every demo (merged by the build), then the reel's own
+      if (REEL.fonts) await new Promise(res => { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = REEL.fonts; l.onload = l.onerror = res; document.head.appendChild(l); });
+      await K.fonts(['400 100px Anton', '500 20px "JetBrains Mono"', '700 20px "JetBrains Mono"']);
+      await Promise.all(REEL.jobs);
+
+      // most demos need the same world map: fetch it once
+      const lw = K.loadWorld, worlds = {}; K.loadWorld = res => worlds[res] || (worlds[res] = lw(res));
+      // thumbnails: the end wall, and a stand-in for any demo that cannot load
+      const thumbs = {};
+      const thumbJobs = Object.keys(NAME).map(id => new Promise(res => { const i = new Image(); i.onload = () => { thumbs[id] = i; res(); }; i.onerror = res; i.src = `thumbs/${id}.jpg`; }));
+
+      // every demo gets its own detached stage; its canvases are read from there each frame
+      const C = {}, ids = Object.keys(REEL.clips).sort(); let done = 0;
+      say(`PREPARING ${ids.length} MAPS`, 0);
+      await Promise.all(ids.map(async id => {
+        const o = REEL.clips[id], el = document.createElement('div'), dur = o.DUR || 10;
+        try { const draw = await o.setup(el, { W, H, FPS, DUR: dur, VERT }); C[id] = { draw, dur, cvs: [...el.querySelectorAll('canvas')] }; }
+        catch (e) { console.warn(`showreel: demo ${id} failed, its thumbnail stands in`, e); }
+        say(`PREPARING MAPS   ${++done} / ${ids.length}`, done / ids.length);
+      }));
+      await Promise.all(thumbJobs);
+      box.remove();
+
+      const cv = K.canvas(W, H); stage.appendChild(cv); const g = cv.getContext('2d');
+      const grain = K.grainTile(7, 256, 60);
+      let frameNo = 0, SH = { x: 0, y: 0, s: 1 };
+      const cache = new Map();
+
+      // one demo at one demo-time → a canvas holding its whole picture
+      function pic(id, ct) {
+        const key = id + '@' + ct.toFixed(4); if (cache.has(key)) return cache.get(key);
+        const c = C[id] || (C[id] = { stand: true }); let out;
+        if (c.stand) {   // the thumbnail with a slow push
+          if (!c.comp) c.comp = K.canvas(W, H);
+          const x = c.comp.getContext('2d'), im = thumbs[id]; x.fillStyle = '#0a0c10'; x.fillRect(0, 0, W, H);
+          if (im) { const s = Math.max(W / im.width, H / im.height) * (1.04 + .015 * ct); x.drawImage(im, (W - im.width * s) / 2, (H - im.height * s) / 2, im.width * s, im.height * s); }
+          out = c.comp;
+        } else {
+          c.draw(clamp(ct, 0, c.dur - 1 / FPS), frameNo);
+          if (c.cvs.length === 1) out = c.cvs[0];
+          else {   // 04: WebGL scene + its label layer, flattened
+            if (!c.comp) c.comp = K.canvas(W, H);
+            const x = c.comp.getContext('2d'); x.clearRect(0, 0, W, H); for (const s of c.cvs) x.drawImage(s, 0, 0); out = c.comp;
+          }
+        }
+        cache.set(key, out); return out;
+      }
+      function remap(keys, t) {
+        const n = keys.length, seg = i => { const [t0, v0] = keys[i - 1], [t1, v1, e] = keys[i]; return u => lerp(v0, v1, E[e || 'lin'](clamp((u - t0) / (t1 - t0)))); };
+        if (t < keys[0][0]) { const f = seg(1), a = keys[0][0]; return f(a) + (t - a) * (f(a + 1e-3) - f(a)) / 1e-3; }
+        if (t >= keys[n - 1][0]) { const f = seg(n - 1), b = keys[n - 1][0]; return f(b) + (t - b) * (f(b) - f(b - 1e-3)) / 1e-3; }
+        let i = 1; while (t > keys[i][0]) i++;
+        return seg(i)(t);
+      }
+      const shotAt = t => SHOTS.find(s => t >= s.a && t < s.b) || SHOTS[SHOTS.length - 1];
+      const shotPic = (s, t) => pic(s.id, remap(s.map, t));
+
+      // ── drawing helpers: a frame scaled about (cx, cy), optionally soft (blur px); and a zoom streak (a few soft copies, averaged: copy i at alpha 1/(i+1))
+      function put(src, { s = 1, x = 0, y = 0, a = 1, cx = W / 2, cy = H / 2, blur = 0 } = {}) {
+        if (a <= 0) return;
+        g.save(); g.globalAlpha = a; if (blur > .5) g.filter = `blur(${blur.toFixed(1)}px)`;
+        g.translate(cx + x + SH.x, cy + y + SH.y); g.scale(s * SH.s, s * SH.s); g.drawImage(src, -cx, -cy, W, H); g.restore();
+      }
+      function zoomBlur(src, o, ds, blur) {
+        const n = blur > 4 * U && ds > .02 ? 3 : 1;   // sharp copies would read as a double image
+        for (let i = 0; i < n; i++) { const k = n > 1 ? i / (n - 1) - .5 : 0; put(src, { ...o, s: (o.s || 1) * (1 + ds * k), a: (o.a ?? 1) / (i + 1), blur }); }
+      }
+      // motion blur along one axis: squeeze that axis down by the blur length, stretch it back (smooth, two draws)
+      const mb = [0, 1].map(() => ({ s: K.canvas(W, H), o: K.canvas(W, H) }));
+      function dirBlur(src, len, vertical, slot = 0) {
+        const k = Math.min(len / 2, 160); if (k < 1.5) return src;
+        const { s, o } = mb[slot], w = vertical ? W : Math.max(4, Math.round(W / k)), h = vertical ? Math.max(4, Math.round(H / k)) : H, sx = s.getContext('2d'), ox = o.getContext('2d');
+        sx.imageSmoothingQuality = 'high'; sx.clearRect(0, 0, w, h); sx.drawImage(src, 0, 0, w, h);
+        ox.imageSmoothingQuality = 'high'; ox.clearRect(0, 0, W, H); ox.drawImage(s, 0, 0, w, h, 0, 0, W, H);
+        return o;
+      }
+      // RGB split: each channel on its own canvas (multiply by pure red / green / blue), added back with offsets
+      const ch = [0, 1, 2].map(() => K.canvas(W, H));
+      function rgb(src, off) {
+        g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
+        ['#ff0000', '#00ff00', '#0000ff'].forEach((col, i) => {
+          const c = ch[i].getContext('2d'); c.globalCompositeOperation = 'source-over'; c.drawImage(src, 0, 0); c.globalCompositeOperation = 'multiply'; c.fillStyle = col; c.fillRect(0, 0, W, H);
+          g.save(); g.globalCompositeOperation = 'lighter'; g.drawImage(ch[i], (i - 1) * off + SH.x, SH.y); g.restore();
+        });
+      }
+      function shake(t) {
+        let x = 0, y = 0;
+        for (const [t0, a] of IMPACTS) { const u = t - t0; if (u < 0 || u > .5) continue; const d = a * U * Math.exp(-u * 8); x += d * Math.sin(u * 90 + t0 * 3); y += d * Math.cos(u * 73 + t0 * 5); }
+        return { x, y, s: 1 + 2.2 * Math.max(Math.abs(x), Math.abs(y)) / Math.min(W, H) };
+      }
+      const GLY = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&';
+      const scramble = (str, t, a, b) => {
+        let o = ''; for (let i = 0; i < str.length; i++) {
+          const r = a + (b - a) * i / str.length;
+          if (t >= r) o += str[i]; else if (t >= r - .3) o += str[i] === ' ' ? ' ' : GLY[Math.floor(K.hash(frameNo * 31 + i) * GLY.length)]; else break;
+        } return o;
+      };
+      const mono = (w, px) => `${w} ${Math.round(px * U)}px "JetBrains Mono"`;
+      // text drawn from the left edge of where the whole string will sit (so a growing scramble does not slide)
+      function textAt(str, full, x, y, o) {
+        g.save(); g.font = o.font; g.letterSpacing = (o.spacing || 0) + 'px'; const w = g.measureText(full).width; g.restore();
+        K.text(g, str, o.align === 'center' ? x - w / 2 : o.align === 'right' ? x - w : x, y, { ...o, align: 'left' });
+      }
+
+      // where 03's hub (Dhaka) and 08's find sit on screen: the same cameras as in those demos
+      const hub03 = ct => {
+        const vk = VERT ? K.track([[0, .66], [5.4, .66], [7.8, .86]], ct) : 1;
+        const cx = K.track([[0, 25], [5.4, 30, 'inOutSine'], [7.8, 75], [10, 77, 'outSine']], ct);
+        const cy = VERT ? K.track([[0, 22], [5.4, 22, 'inOutSine'], [7.8, 27], [10, 27.5, 'outSine']], ct) : K.track([[0, 18], [5.4, 20, 'inOutSine'], [7.8, 24], [10, 24.5, 'outSine']], ct);
+        const s = Math.exp(K.track([[0, Math.log(330)], [5.4, Math.log(372), 'inOutSine'], [7.8, Math.log(800)], [10, Math.log(880), 'outSine']], ct)) * vk;
+        return d3.geoNaturalEarth1().translate([W / 2, H / 2]).rotate([-cx, 0]).center([0, cy]).scale(s)([90.4125, 23.8103]);
+      };
+      const FIND = [1610, 820];
+      const find08 = ct => {
+        const c = VERT ? { cx: K.track([[0, 960], [6.9, 975], [7.6, 1240], [8.5, FIND[0] - 40], [10, FIND[0] - 30, 'outSine']], ct), cy: K.track([[0, 540], [6.9, 540], [7.6, 620], [8.5, FIND[1] - 60], [10, FIND[1] - 50, 'outSine']], ct), z: K.track([[0, .95], [6.9, .96, 'inOutSine'], [7.6, .78], [8.5, 1.75], [10, 1.65, 'outSine']], ct) }
+          : { cx: K.track([[0, 960], [7.3, 990], [8.5, FIND[0] - 60], [10, FIND[0] - 40, 'outSine']], ct), cy: K.track([[0, 540], [7.3, 560], [8.5, FIND[1] - 30], [10, FIND[1] - 20, 'outSine']], ct), z: K.track([[0, 1.0], [7.3, 1.05, 'inOutSine'], [8.5, 2.0], [10, 1.85, 'outSine']], ct) };
+        return [W / 2 + (FIND[0] - c.cx) * c.z, H / 2 + (FIND[1] - c.cy) * c.z];
+      };
+
+      // ── transitions (A, B: the outgoing and incoming pictures, made only when asked for)
+      const TR = {
+        flash(t, x, A, B) {
+          const pre = t < x.at;
+          if (pre) put(A()); else put(B(), { s: 1 + .05 * (1 - E.outExpo(prog(t, x.at, x.at + .35))) });
+          const k = pre ? E.in(prog(t, x.at - x.d[0], x.at)) : Math.pow(1 - prog(t, x.at, x.at + x.d[1]), 2);
+          g.fillStyle = `rgba(255,251,240,${(k * .92).toFixed(3)})`; g.fillRect(0, 0, W, H);
+        },
+        push(t, x, A, B) {   // whip pan, blurred by its own speed (half a frame of travel, like a 180° shutter)
+          const T = x.d[0] + x.d[1], u = prog(t, x.at - x.d[0], x.at + x.d[1]), f = E.inOutQuint, p = f(u);
+          const L = x.vertical ? H : W, v = (f(clamp(u + .01)) - f(clamp(u - .01))) / .02 / T / FPS, bl = v * L * .5;
+          const at = d => x.vertical ? { y: d } : { x: d };
+          put(dirBlur(A(), bl, x.vertical, 0), at(-p * L)); put(dirBlur(B(), bl, x.vertical, 1), at((1 - p) * L));
+        },
+        slices(t, x, A, B) {   // blinds: strips drop in from above and below, one after another, each blurred by its speed
+          put(A());
+          const N = VERT ? 5 : 7, sw = W / N, b = B(), t0 = x.at - x.d[0], { s } = mb[0], sx = s.getContext('2d');
+          for (let k = 0; k < N; k++) {
+            const a = t0 + k * .022, u = prog(t, a, a + .2); if (u <= 0) continue;
+            const dir = k % 2 ? 1 : -1, y = dir * (1 - E.outExpo(u)) * H, len = (E.outExpo(clamp(u + .05)) - E.outExpo(u)) / .05 / .2 / FPS * H * .5;
+            const q = Math.min(Math.max(len / 2, 1), 120), h = Math.max(4, Math.round(H / q)), x0 = Math.round(k * sw), w0 = Math.round((k + 1) * sw) - x0;
+            sx.imageSmoothingQuality = 'high'; sx.clearRect(0, 0, w0, h); sx.drawImage(b, x0, 0, w0, H, 0, 0, w0, h);
+            g.save(); g.imageSmoothingQuality = 'high'; g.drawImage(s, 0, 0, w0, h, x0 + SH.x, y + SH.y, w0, H); g.restore();
+          }
+        },
+        pullOut(t, x, A, B) {   // the camera pulls back: the old shot shrinks away over the new one
+          const u = prog(t, x.at - x.d[0], x.at + x.d[1]);
+          zoomBlur(B(), { s: lerp(1.7, 1, E.outExpo(u)) }, .1 * (1 - u), 14 * U * (1 - E.outExpo(u)));
+          const aA = 1 - E.inOut(prog(u, .2, .6)); if (aA > 0) zoomBlur(A(), { s: lerp(1, .3, E.in(u)), a: aA }, .12 * u, 10 * U * u);
+        },
+        iris(t, x, A, B) {   // 03's shock ring opens onto the 3D map
+          put(A());
+          const u = prog(t, x.at, x.at + x.d[1]); if (u <= 0) return;
+          const [px, py] = hub03(remap(SHOTS[4].map, t)), r = Math.hypot(W, H) * 1.1 * E.out(u);
+          g.save(); g.beginPath(); g.arc(px + SH.x, py + SH.y, r, 0, 7); g.clip(); put(B(), { s: 1 + .08 * (1 - u) }); g.restore();
+          g.save(); g.globalCompositeOperation = 'lighter'; g.strokeStyle = `rgba(255,190,120,${(.85 * (1 - u)).toFixed(3)})`; g.lineWidth = (8 + 40 * (1 - u)) * U;
+          g.beginPath(); g.arc(px + SH.x, py + SH.y, r, 0, 7); g.stroke(); g.restore();
+        },
+        glitch(t, x, A, B) {
+          const pre = t < x.at, src = pre ? A() : B(), alt = pre ? B() : A();
+          const k = pre ? prog(t, x.at - x.d[0], x.at) : 1 - prog(t, x.at, x.at + x.d[1]);   // peaks on the cut
+          rgb(src, (8 + 26 * k) * U);
+          const R = K.rng(frameNo * 7 + 3);
+          for (let i = 0; i < Math.round(3 + 9 * k); i++) {
+            const y = R() * H, h = (8 + R() * 70) * U, dx = (R() - .5) * 160 * k * U;
+            g.drawImage(R() < .35 ? alt : src, 0, y, W, h, dx, y, W, h);
+          }
+          g.fillStyle = `rgba(255,255,255,${(.5 * k).toFixed(3)})`; g.fillRect(0, R() * H, W, 3 * U);
+        },
+        pushIn(t, x, A, B) {   // punch in on 08's find, land on the board
+          if (t < x.at) { const u = prog(t, x.at - x.d[0], x.at), [px, py] = find08(remap(SHOTS[8].map, t)); zoomBlur(A(), { s: lerp(1, 1.9, E.in(u)), cx: px, cy: py }, .2 * u, 16 * U * E.in(u)); }
+          else { const u = prog(t, x.at, x.at + x.d[1]); zoomBlur(B(), { s: lerp(1.4, 1, E.outExpo(u)) }, .12 * (1 - u), 12 * U * (1 - E.outExpo(u))); }
+          const k = 1 - Math.abs(t - x.at) / .1; if (k > 0) { g.fillStyle = `rgba(255,255,255,${(k * .5).toFixed(3)})`; g.fillRect(0, 0, W, H); }
+        },
+      };
+
+      // ── hook: one type size for the three words.
+      //    16:9: one word at a time, centred, the widest fills 84 % of the frame.
+      //    4:5: the words stack into three rows that fill the tall frame; each new word is live, the ones above hold their last frame
+      const STACK = VERT;
+      g.font = '400 100px Anton';
+      const wmax = Math.max(...HOOK.map(h => g.measureText(h.word).width)), capH = g.measureText('MOVE').actualBoundingBoxAscent;
+      const FS = Math.min(W * (STACK ? .88 : .84) / wmax * 100, H * (STACK ? .235 : .6) / capH * 100), CAP = capH * FS / 100, LEAD = CAP * .2;
+      const BASES = HOOK.map((h, i) => STACK ? H / 2 - (CAP * 3 + LEAD * 2) / 2 + CAP * (i + 1) + LEAD * i : H / 2 + CAP / 2);
+      const mask = K.canvas(W, H), mg = mask.getContext('2d'), lay = K.canvas(W, H), lg = lay.getContext('2d');
+      // the dive goes into the thickest stroke of "MOVE" nearest its centre (the stroke grows until it is the whole frame)
+      const ZP = (() => {
+        const q = 6, w = Math.ceil(W / q), h = Math.ceil(H / q), c = K.canvas(w, h), x = c.getContext('2d'), base = BASES[HOOK.length - 1], cy = base - CAP / 2;
+        x.scale(1 / q, 1 / q); x.font = `400 ${FS}px Anton`; x.textAlign = 'center'; x.fillStyle = '#fff'; x.fillText('MOVE', W / 2, base);
+        const px = x.getImageData(0, 0, w, h).data, D = new Float32Array(w * h);
+        for (let i = 0; i < w * h; i++) D[i] = px[i * 4 + 3] > 127 ? 1e6 : 0;
+        const p = (i, j, d) => { if (D[j] + d < D[i]) D[i] = D[j] + d; };
+        for (let y = 1; y < h - 1; y++) for (let xx = 1; xx < w - 1; xx++) { const i = y * w + xx; p(i, i - 1, 1); p(i, i - w, 1); p(i, i - w - 1, 1.41); p(i, i - w + 1, 1.41); }
+        for (let y = h - 2; y > 0; y--) for (let xx = w - 2; xx > 0; xx--) { const i = y * w + xx; p(i, i + 1, 1); p(i, i + w, 1); p(i, i + w + 1, 1.41); p(i, i + w - 1, 1.41); }
+        let mx = 0; for (const v of D) if (v < 1e5 && v > mx) mx = v;
+        let best = [W / 2, H / 2], bd = Infinity;
+        for (let i = 0; i < w * h; i++) if (D[i] >= mx * .7 && D[i] < 1e5) { const X = (i % w + .5) * q, Y = (Math.floor(i / w) + .5) * q, d = Math.hypot(X - W / 2, Y - cy); if (d < bd) { bd = d; best = [X, Y]; } }
+        return best;
+      })();
+
+      function furniture(t, a) {   // viewfinder corners and labels around the hook
+        const m = 44 * U, l = 40 * U, F = mono(500, 20), col = 'rgba(232,236,243,.82)';
+        g.save(); g.globalAlpha = a; g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 2 * U;
+        for (const [x, y, sx, sy] of [[m, m, 1, 1], [W - m, m, -1, 1], [m, H - m, 1, -1], [W - m, H - m, -1, -1]]) { g.beginPath(); g.moveTo(x, y + sy * l); g.lineTo(x, y); g.lineTo(x + sx * l, y); g.stroke(); }
+        const tl = 'MAP ANIMATION', tr = 'SHOWREEL 2026', bl = '12 STYLES  ·  4 GENRES', f = Math.floor(t * FPS + 1e-6);
+        const tc = `00:00:${String(Math.floor(f / FPS)).padStart(2, '0')}:${String(f % FPS).padStart(2, '0')}`;
+        K.text(g, scramble(tl, t, .05, .45), m + 18 * U, m + 34 * U, { font: F, color: col, spacing: 3 });
+        textAt(scramble(tr, t, .1, .5), tr, W - m - 18 * U, m + 34 * U, { font: F, color: col, spacing: 3, align: 'right' });
+        K.text(g, scramble(bl, t, .2, .6), m + 18 * U, H - m - 18 * U, { font: F, color: col, spacing: 3 });
+        K.text(g, tc, W - m - 18 * U, H - m - 18 * U, { font: F, color: '#ffcc2e', spacing: 3, align: 'right' });
+        g.restore();
+      }
+      function hook(t) {
+        g.fillStyle = '#05070b'; g.fillRect(0, 0, W, H);
+        const zu = prog(t, 1.5, 2.0), furn = 1 - E.out(prog(t, 1.5, 1.75));
+        if (furn > 0) {   // a faint grid behind the words
+          const st = 64 * U; g.save(); g.globalAlpha = furn; g.strokeStyle = 'rgba(255,255,255,.045)'; g.lineWidth = 1; g.beginPath();
+          for (let x = (W / 2) % st; x < W; x += st) { g.moveTo(x, 0); g.lineTo(x, H); }
+          for (let y = (H / 2) % st; y < H; y += st) { g.moveTo(0, y); g.lineTo(W, y); }
+          g.stroke(); g.restore();
+        }
+        const cur = HOOK.findIndex(h => t < h.b), last = cur < 0 ? HOOK.length - 1 : cur;
+        const zs = zu > 0 ? Math.exp(Math.log(48) * E.in(zu)) : 1;   // the dive: every word grows about ZP
+        const zt = [zs, 0, 0, zs, ZP[0] * (1 - zs) + SH.x, ZP[1] * (1 - zs) + SH.y];
+        for (let i = STACK ? 0 : last; i <= last; i++) {
+          const h = HOOK[i], base = BASES[i], wy = base - CAP / 2, es = lerp(1.14, 1, E.outExpo(prog(t, h.a, h.a + .24))), live = i === last;
+          // the word's transform: the dive, then its own landing scale about its centre
+          const tf = new DOMMatrix(zt).translate(W / 2, wy).scale(es).translate(-W / 2, -wy);
+          mg.setTransform(1, 0, 0, 1, 0, 0); mg.clearRect(0, 0, W, H); mg.setTransform(tf);
+          mg.font = `400 ${FS}px Anton`; mg.textAlign = 'center'; mg.fillStyle = '#fff'; mg.fillText(h.word, W / 2, base);
+          // 4:5: the map is moved so its middle sits behind the word's row (and slides back to full frame during the dive)
+          const dy = STACK ? (wy - H / 2) * (i === HOOK.length - 1 ? 1 - E.inOut(zu) : 1) : 0;
+          lg.globalCompositeOperation = 'copy'; lg.drawImage(live ? pic(h.id, remap(h.map, t)) : held(i), 0, dy);
+          lg.globalCompositeOperation = 'destination-in'; lg.drawImage(mask, 0, 0); lg.globalCompositeOperation = 'source-over';
+          g.save(); g.globalAlpha = live ? 1 : .5 * furn; g.drawImage(lay, 0, 0); g.restore();
+          const fl = 1 - prog(t, h.a, h.a + .13); if (fl > 0) { g.save(); g.globalAlpha = fl * .95; g.drawImage(mask, 0, 0); g.restore(); }   // each word lands white, then opens onto its map
+          if (furn > 0) {   // a thin outline keeps the word readable where its map is dark
+            g.save(); g.setTransform(tf); g.font = `400 ${FS}px Anton`; g.textAlign = 'center'; g.strokeStyle = `rgba(255,255,255,${((live ? .4 : .3) * furn).toFixed(3)})`;
+            g.lineWidth = 2 * U / (zs * es); g.strokeText(h.word, W / 2, base); g.restore();
+          }
+        }
+        if (furn > 0) furniture(t, furn);
+      }
+      // a word that is no longer the newest keeps its map's last frame (made once, so scrubbing stays exact)
+      const helds = {};
+      function held(i) {
+        if (!helds[i]) { const h = HOOK[i]; helds[i] = K.canvas(W, H); helds[i].getContext('2d').drawImage(pic(h.id, remap(h.map, h.b - 1 / FPS)), 0, 0); }
+        return helds[i];
+      }
+
+      // ── montage
+      function montage(t) {
+        const x = TRANS.find(x => t >= x.at - x.d[0] && t < x.at + x.d[1]);
+        if (x) { const a = shotAt(x.at - 1e-4), b = shotAt(x.at); TR[x.type](t, x, () => shotPic(a, t), () => shotPic(b, t)); }
+        else put(shotPic(shotAt(t), t));
+        const dk = E.in(prog(t, 16.8, 17.0)); if (dk > 0) { g.fillStyle = `rgba(0,0,0,${(dk * .85).toFixed(3)})`; g.fillRect(0, 0, W, H); }   // dip before the drop
+      }
+      // a group title on a colour bar that wipes in and out (0.85 s)
+      function stamps(t) {
+        STAMPS.forEach(([t0, word], i) => {
+          const u = t - t0; if (u < 0 || u > .85) return;
+          const S = SEC[word], fs = Math.round(Math.min(H * .17, W * .14)), F = `400 ${fs}px Anton`;
+          g.font = F; g.letterSpacing = `${2 * U}px`; const tw = g.measureText(word).width; g.letterSpacing = '0px';
+          const pad = fs * .22, bw = tw + pad * 2, bh = fs * 1.1, x0 = Math.round(W * .065), yc = H * .5;
+          const L = x0 + bw * inExpo(prog(u, .6, .82)), R = x0 + bw * E.outExpo(prog(u, 0, .2)); if (R <= L) return;
+          g.save(); g.shadowColor = 'rgba(0,0,0,.4)'; g.shadowBlur = 34 * U; g.shadowOffsetY = 12 * U; g.fillStyle = S.col; g.fillRect(L, yc - bh / 2, R - L, bh); g.restore();
+          g.save(); g.beginPath(); g.rect(L, yc - bh / 2, R - L, bh); g.clip();
+          K.text(g, word, x0 + pad - (1 - E.outExpo(prog(u, .04, .32))) * fs * .5 + u * 26 * U, yc + fs * .37, { font: F, color: S.ink, spacing: 2 * U });
+          g.restore();
+          const ta = E.out(prog(u, .08, .2)) * (1 - prog(u, .55, .7));
+          K.text(g, `0${i + 1} / 04`, x0, yc - bh / 2 - 18 * U, { font: mono(700, 20), color: '#fff', spacing: 4, alpha: ta, shadow: ['rgba(0,0,0,.6)', 8] });
+        });
+      }
+      // the style's name in a pill at the bottom; it re-types itself on every cut
+      const pillW = id => { const [nm, sec] = NAME[id]; g.font = mono(700, 17); g.letterSpacing = '3px'; const a = g.measureText(sec).width; g.font = mono(500, 20); g.letterSpacing = '2px'; const b = g.measureText(`${id} / 12   ${nm}`).width; g.letterSpacing = '0px'; return [a, b]; };
+      function pill(t) {
+        const a = E.out(prog(t, 2.05, 2.35)) * (1 - prog(t, 16.6, 16.85)); if (a <= 0) return;
+        const i = SHOTS.indexOf(shotAt(t)), s = SHOTS[i], [nm, sec] = NAME[s.id], since = t - Math.max(s.a, 2.0);
+        const ph = 46 * U, pad = 22 * U, dot = 10 * U, gap = 16 * U, wOf = id => { const [p, q] = pillW(id); return pad * 2 + dot + gap + p + gap * 1.6 + q; };
+        const w = i > 0 && since < .3 ? lerp(wOf(SHOTS[i - 1].id), wOf(s.id), E.outExpo(since / .3)) : wOf(s.id), [ws] = pillW(s.id);
+        const x = W / 2 - w / 2, y = H - 66 * U - ph / 2, col = SEC[sec].col;
+        g.save(); g.globalAlpha = a; g.translate(0, (1 - a) * 20 * U);
+        g.fillStyle = 'rgba(6,8,12,.74)'; g.beginPath(); g.roundRect(x, y, w, ph, ph / 2); g.fill(); g.strokeStyle = 'rgba(255,255,255,.14)'; g.lineWidth = 1.5 * U; g.stroke(); g.clip();
+        g.fillStyle = col; g.beginPath(); g.arc(x + pad + dot / 2, y + ph / 2, dot / 2, 0, 7); g.fill();
+        K.text(g, sec, x + pad + dot + gap, y + ph / 2 + 6 * U, { font: mono(700, 17), color: col, spacing: 3 });
+        K.text(g, scramble(`${s.id} / 12   ${nm}`, since, 0, .3), x + pad + dot + gap + ws + gap * 1.6, y + ph / 2 + 7 * U, { font: mono(500, 20), color: '#f0f3f8', spacing: 2 });
+        g.restore();
+      }
+
+      // ── the end: a wall of all twelve styles, then the title
+      const WALL = Object.keys(NAME);
+      function endCard(t) {
+        const u = t - 17, cols = VERT ? 3 : 4, rows = Math.ceil(WALL.length / cols), tw = (VERT ? .4 : .265) * W, th = tw * 9 / 16, gap = 22 * U;
+        g.fillStyle = '#05070b'; g.fillRect(0, 0, W, H);
+        const ws = lerp(1.22, 1, E.outExpo(prog(u, 0, .7))) * (1 + .012 * u), dim = E.inOut(prog(u, .3, .9));
+        g.save(); g.translate(W / 2 + SH.x, H / 2 + SH.y); g.rotate(-.075); g.transform(1, 0, -.16, 1, 0, 0); g.scale(ws, ws); g.translate(-u * 26 * U, -u * 8 * U);
+        // the twelve in the middle, a ring of repeats around them so the tilted wall runs off every edge
+        const tiles = [];
+        for (let r = -1; r <= rows; r++) for (let c = -1; c <= cols; c++) {
+          const inner = c >= 0 && c < cols && r >= 0 && r < rows, id = inner ? WALL[r * cols + c] : WALL[Math.floor(K.hash((r + 3) * 17 + c + 5) * WALL.length)];
+          const x = (c - (cols - 1) / 2) * (tw + gap), y = (r - (rows - 1) / 2) * (th + gap);
+          tiles.push({ id, x, y, inner, d: Math.hypot(x / tw, y / th) });
+        }
+        [...tiles].sort((a, b) => a.d - b.d).forEach((o, k) => { o.t0 = k * (o.inner ? .028 : .016); });
+        for (const o of tiles) {
+          const k = prog(u, o.t0, o.t0 + .4); if (k <= 0) continue;
+          const sc = lerp(1.3, 1, E.outExpo(k)), [nm, sec] = NAME[o.id], im = thumbs[o.id];
+          g.save(); g.translate(o.x, o.y); g.scale(sc, sc); g.globalAlpha = clamp(k * 5) * (o.inner ? 1 : .45);
+          if (im) g.drawImage(im, -tw / 2, -th / 2, tw, th); else { g.fillStyle = '#1a1f29'; g.fillRect(-tw / 2, -th / 2, tw, th); }
+          const fl = 1 - prog(u, o.t0, o.t0 + .22); if (fl > 0) { g.fillStyle = `rgba(255,255,255,${(fl * .85).toFixed(3)})`; g.fillRect(-tw / 2, -th / 2, tw, th); }
+          g.fillStyle = 'rgba(5,7,11,.74)'; g.fillRect(-tw / 2, th / 2 - 34 * U, tw, 34 * U); g.fillStyle = SEC[sec].col; g.fillRect(-tw / 2, th / 2 - 34 * U, 5 * U, 34 * U);
+          K.text(g, `${o.id}  ${nm}`, -tw / 2 + 16 * U, th / 2 - 11 * U, { font: mono(700, 15), color: 'rgba(240,243,248,.92)', spacing: 2, alpha: 1 - .85 * dim });   // names fade as the title comes in
+          g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = 2 * U / ws; g.strokeRect(-tw / 2, -th / 2, tw, th);
+          g.restore();
+        }
+        g.restore();
+        if (dim > 0) { const gr = g.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.hypot(W, H) * .55); gr.addColorStop(0, `rgba(4,6,10,${(.86 * dim).toFixed(3)})`); gr.addColorStop(1, `rgba(4,6,10,${(.5 * dim).toFixed(3)})`); g.fillStyle = gr; g.fillRect(0, 0, W, H); }
+        title(u);
+        const fl = Math.pow(1 - prog(u, 0, .3), 2); if (fl > 0) { g.fillStyle = `rgba(255,252,244,${(fl * .9).toFixed(3)})`; g.fillRect(0, 0, W, H); }   // the drop
+      }
+      // the call to action under the title: two contact chips (side by side in 16:9, stacked in 4:5)
+      const CTA = 'WANT TO WORK TOGETHER?', CONTACT = [['EMAIL', 'lettertosohan@gmail.com', '#ffcc2e'], ['WHATSAPP', '+880 1775 860544', '#25d366']];
+      const chipFonts = [mono(700, 15), mono(700, 26)], chipH = 60 * U, chipGap = 16 * U;
+      function chipW([cap, val]) { g.font = chipFonts[0]; g.letterSpacing = '3px'; const a = g.measureText(cap).width; g.font = chipFonts[1]; g.letterSpacing = '1px'; const b = g.measureText(val).width; g.letterSpacing = '0px'; return 24 * U + 10 * U + 14 * U + a + 18 * U + b + 26 * U; }
+      function chip([cap, val, col], x, y, k) {
+        const w = chipW([cap, val]), a = clamp(k * 1.6);
+        g.save(); g.globalAlpha = a; g.translate(0, (1 - k) * 26 * U);
+        g.fillStyle = 'rgba(8,10,14,.84)'; g.beginPath(); g.roundRect(x, y, w, chipH, chipH / 2); g.fill(); g.strokeStyle = 'rgba(255,255,255,.2)'; g.lineWidth = 1.5 * U; g.stroke();
+        g.fillStyle = col; g.beginPath(); g.arc(x + 24 * U + 5 * U, y + chipH / 2, 5 * U, 0, 7); g.fill();
+        let cx = x + 24 * U + 10 * U + 14 * U;
+        K.text(g, cap, cx, y + chipH / 2 + 5 * U, { font: chipFonts[0], color: col, spacing: 3 });
+        g.font = chipFonts[0]; g.letterSpacing = '3px'; cx += g.measureText(cap).width + 18 * U; g.letterSpacing = '0px';
+        K.text(g, val, cx, y + chipH / 2 + 9 * U, { font: chipFonts[1], color: '#f4f6fa', spacing: 1 });
+        g.restore();
+      }
+      function title(u) {
+        const fs = Math.round(Math.min(H * .165, W * .12)), F = `400 ${fs}px Anton`, sp = 2 * U;
+        // measured cap height, so the marker has the same margin above and below the words
+        g.font = F; g.letterSpacing = sp + 'px'; const cap = g.measureText('ON THE MAP.').actualBoundingBoxAscent;
+        const pad = fs * .14, gap = fs * .24, subH = fs * .44;      // marker margin; room under line 1 (its comma hangs below the baseline)
+        const stack = VERT, ctaH = 76 * U + 28 * U + (stack ? chipH * 2 + chipGap : chipH);
+        const y1 = (H - (cap * 2 + gap + pad * 2 + subH + ctaH)) / 2 + cap, y2 = y1 + gap + pad + cap, top = y2 - cap - pad, bot = y2 + pad;   // the whole block sits centred
+        // line 1: the letters rise out of a mask
+        const L1 = 'YOUR STORY,'; g.font = F; g.letterSpacing = sp + 'px'; let x = W / 2 - g.measureText(L1).width / 2;
+        g.save(); g.beginPath(); g.rect(0, y1 - cap - fs * .1, W, cap + fs * .1 + gap * .9); g.clip(); g.textAlign = 'left'; g.fillStyle = '#fff';
+        for (let i = 0; i < L1.length; i++) { const k = E.outExpo(prog(u, .4 + i * .025, .85 + i * .025)); g.fillText(L1[i], x, y1 + (1 - k) * (cap + gap)); x += g.measureText(L1[i]).width; }
+        g.restore();
+        // line 2: a yellow marker swipe, then the words (the Vox callback)
+        const L2 = 'ON THE MAP.', w2 = g.measureText(L2).width, x2 = W / 2 - w2 / 2, sw = E.inOut(prog(u, .7, .98)), e = 24 * U, tilt = fs * .025;
+        if (sw > 0) { g.fillStyle = '#ffcc2e'; g.beginPath(); g.moveTo(x2 - e, top); g.lineTo(x2 - e + (w2 + e * 2) * sw, top - tilt); g.lineTo(x2 - e * .8 + (w2 + e * 1.8) * sw, bot - tilt); g.lineTo(x2 - e * 1.2, bot); g.fill(); }
+        const rv = E.out(prog(u, .8, 1.15));
+        if (rv > 0) { g.save(); g.beginPath(); g.rect(x2 - e, top - tilt, (w2 + e * 2) * rv, bot - top + tilt); g.clip(); g.textAlign = 'left'; g.fillStyle = '#14120e'; g.fillText(L2, x2, y2); g.restore(); }
+        g.letterSpacing = '0px';
+        const sub = 'EXPLAINER  ·  DATA  ·  TRUE CRIME  ·  HISTORY';
+        textAt(scramble(sub, u, 1.0, 1.4), sub, W / 2, bot + subH, { font: mono(500, 24), color: 'rgba(232,236,243,.86)', align: 'center', spacing: 4, alpha: E.out(prog(u, 1.0, 1.2)) });
+        // contact: a heading, then the chips rise in one after the other
+        const ly = bot + subH + 76 * U, cy = ly + 28 * U;
+        textAt(scramble(CTA, u, 1.1, 1.4), CTA, W / 2, ly, { font: mono(700, 22), color: '#ffcc2e', align: 'center', spacing: 5, alpha: E.out(prog(u, 1.1, 1.3)) });
+        const ws = CONTACT.map(chipW), row = ws[0] + ws[1] + 20 * U;
+        CONTACT.forEach((c, i) => {
+          const k = E.outExpo(prog(u, 1.2 + i * .12, 1.55 + i * .12)); if (k <= 0) return;
+          if (stack) chip(c, W / 2 - ws[i] / 2, cy + i * (chipH + chipGap), k);
+          else chip(c, W / 2 - row / 2 + (i ? ws[0] + 20 * U : 0), cy, k);
+        });
+      }
+
+      return (t, frame) => {
+        frameNo = frame; cache.clear(); SH = shake(t);
+        g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.letterSpacing = '0px';
+        if (t < 2) hook(t);
+        else if (t < 17) { montage(t); stamps(t); pill(t); }
+        else endCard(t);
+        K.drawGrain(g, grain, W, H, frame, .045);
+      };
+    },
+  });
+})();
+</script>
+</body>
+</html>

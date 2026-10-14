@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.48.2-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.49.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.49
+
+**The Map Animation Showreel joins the portfolio.**
+
+- **7.49.0: Map Animation Showreel on the portfolio, behind the featured project.** The 20-second reel of twelve map animation styles (MAPS · THAT · MOVE, then explainer, data, true crime and history on a 120 BPM grid, and the drop onto a wall of all twelve) joins the videos with its complete bilingual case study. The reel plays the real map demos live through time-remaps, with its own type, transitions and a score synthesized in code. The card is a WebP of its 16:9 YouTube thumbnail (`assets/img/map-animation-showreel.webp`, 1280×720); Watch Animation opens `https://raisulsohan.com/en/map-animation-demo/`. The reel itself is the project's demo: `assets/demo/map-animation/showreel.html`, with `showreel-4x5.html` as the cut for portrait screens, seeded by `rs_seed_portfolio_demo()` and added with `as_first = false` in `rs_add_portfolio_project_once()`, so the featured project keeps its place. `scripts/map-demo-sync.js` now copies the showreel and its `showreel/clips.js` (stopping if a demo page is newer than that bundle), sets full volume whatever default the working `lib/player.js` has (it now starts at 5 %), and its `index.html` opens the demos page in the whole window when the "All demos" link is pressed inside the portfolio's pop-up. The copied `lib/player.js` gains the showreel's score hooks (`compose`, `peak`, `fadeIn`); the demos sound as before.
 
 ## What's new in 7.48
 

@@ -99,8 +99,8 @@
       duck.gain.setValueCurveAtTime(c, 0, Math.min(DUR, (c.length - 1) / hz));
     }
     const at = t => warp ? warp.inv(t) : t;
-    const m = S.master || .85;
-    master.gain.setValueAtTime(0, 0); master.gain.linearRampToValueAtTime(m, .15);
+    const m = S.master || .85, fadeIn = S.fadeIn ?? .15;   // fadeIn 0: a hit on 0.0 keeps its attack
+    master.gain.setValueAtTime(fadeIn > 0 ? 0 : m, 0); if (fadeIn > 0) master.gain.linearRampToValueAtTime(m, fadeIn);
     master.gain.setValueAtTime(m, DUR - .5); master.gain.linearRampToValueAtTime(0, DUR);
     const irLen = sr * 2.8, ir = ac.createBuffer(2, irLen, sr);
     for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < irLen; i++) d[i] = (R() * 2 - 1) * Math.pow(1 - i / irLen, 3.4); }
@@ -213,6 +213,8 @@
       if (S.kick && b % 2 === 0 && t >= at(S.kickFrom || 0)) { const o = osc('sine', 150, t, .4), g = ac.createGain(); o.frequency.exponentialRampToValueAtTime(42, t + .12); env(g, t, .002, S.kick, .3); o.connect(g); out(g, 0); }
     }
     for (const [t, name, ...a] of S.cues || []) fx[name](at(t), ...a);
+    // optional: a page writes its own instruments on the same bus (used by the showreel)
+    if (S.compose) S.compose({ ac, out, osc, nsrc, filt, env, hz, R, fx, DUR, master });
 
     const buf = await ac.startRendering();
     // with a voice: level the music so it sits a fixed distance under the words (VO_META.voiceDb + bedDb), never clipping
@@ -225,6 +227,12 @@
         const k = Math.min(10 ** ((window.VO_META.voiceDb + window.VO_META.bedDb - 10 * Math.log10(s / n)) / 20), .98 / peak);
         for (const d of chs) for (let i = 0; i < d.length; i++) d[i] *= k;
       }
+    }
+    // optional: scale the whole mix so its loudest sample sits at S.peak (e.g. .89 = -1 dBFS), never clipping
+    if (S.peak) {
+      const chs = [0, 1].map(c => buf.getChannelData(c)); let p = 0;
+      for (const d of chs) for (let i = 0; i < d.length; i++) p = Math.max(p, Math.abs(d[i]));
+      if (p) { const k = S.peak / p; for (const d of chs) for (let i = 0; i < d.length; i++) d[i] *= k; }
     }
     return URL.createObjectURL(wav(buf));
   }
@@ -275,7 +283,7 @@
     const tracks = [];
     const P = { t: 0, playing: false, speed: 1, loop: true, wall: 0, t0: 0, muted: false, vol: 1, drawn: -1, uiT: -1, unlocked: EMBED, blocked: false };
     if (o.score) {
-      const music = new Audio(); music.preload = 'auto'; music._g = 1; music.src = await synthScore(DUR, o.score, warp, VD); tracks.push(music);
+      const music = new Audio(); music.preload = 'auto'; music._g = 1; music.volume = P.vol; music.src = await synthScore(DUR, o.score, warp, VD); tracks.push(music);
       if (o.vo) {
         // a blob URL is always seekable (simple servers without Range support are not); file:// falls back to plain src
         let list = VD ? ['audio/' + VD.file] : o.vo;

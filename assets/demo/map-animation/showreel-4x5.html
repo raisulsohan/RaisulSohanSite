@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Map Animation Showreel 4:5</title>
+<script>
+// The 4:5 cut (1080×1350) of the showreel: the same page with the 4:5 frame on, so both versions share one source.
+// Other options in the address (?paused, ?t=…, ?post=…) are kept.
+const q = new URLSearchParams(location.search); q.set('ar', '45');
+location.replace('showreel.html?' + q + location.hash);
+</script>
+</head>
+<body style="margin: 0; background: #05070b;"></body>
+</html>
