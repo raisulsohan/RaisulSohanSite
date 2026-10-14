@@ -216,7 +216,7 @@ foreach ( $rs_md_sections as $rs_md_s ) {
 	</nav>
 
 	<div class="eyebrow">Map animation</div>
-	<h1>Map animations, <em>drawn in code</em></h1>
+	<h1>Every map, <em>a story in motion</em></h1>
 	<p class="lead"><?php echo esc_html( $rs_md_count ); ?> map styles with voice-over in one place. Pick a demo and it plays here, in 16:9 (1920×1080) or 4:5 (1080×1350), at 30 fps.
 		Turn on <b>Posterize</b> in the player bar (or press <kbd>P</kbd>) for an After Effects–style stepped look at 12, 8 or 6 fps.
 		<span class="keys">Keys: <kbd>Space</kbd> play/pause, <kbd>←</kbd>/<kbd>→</kbd> step frames, <kbd>Shift</kbd>+<kbd>←</kbd>/<kbd>→</kbd> ±1 s,
