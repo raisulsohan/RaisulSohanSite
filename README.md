@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.50.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.51.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.51
+
+**Claude Usage Widget joins the portfolio.**
+
+- **7.51.0: Claude Usage Widget in the portfolio.** The Windows port of a macOS widget that keeps the claude.ai session, weekly, Fable and extra usage limits on the taskbar, with a pixel robot that reacts to the session, gets its bilingual case study behind the featured project (`rs_sync_new_portfolio_projects()` adds it once). The card, `assets/img/claudeusagewidget.webp`, is made from real captures of the widget itself: the vertical card, the compact taskbar strip and the five mascot moods. Download Free opens the latest GitHub release. It has no pop-up demo.
 
 ## What's new in 7.50
 

@@ -2302,6 +2302,57 @@ function rs_get_default_portfolio_projects() {
 			'github_url'  => '',
 			'order'       => 12,
 		),
+		array(
+			'id'          => 'claudeusagewidget',
+			'category'    => 'tools',
+			'type_bn'     => 'উইন্ডোজ ডেস্কটপ উইজেট ও ব্রাউজার এক্সটেনশন',
+			'type_en'     => 'Windows Desktop Widget & Browser Extension',
+			'badge_bn'    => 'উইন্ডোজ ১০ ও ১১ • ফ্রি ও ওপেন সোর্স',
+			'badge_en'    => 'Windows 10 & 11 • Free & Open Source',
+			'title_bn'    => 'Claude Usage Widget — লিমিটে পৌঁছানোর আগেই দেখুন: টাস্কবারের ওপর claude.ai-এর সেশন, সাপ্তাহিক ও Fable লিমিট, সাথে মেজাজ বদলানো এক পিক্সেল রোবট',
+			'title_en'    => 'Claude Usage Widget — See the Limit Before You Hit It: claude.ai Session, Weekly and Fable Limits on the Taskbar, With a Pixel Robot That Reacts',
+			'summary_bn'  => 'claude.ai-এ কাজের মাঝখানে হঠাৎ লিমিট শেষ হয়ে যাওয়া খুব বিরক্তিকর। Claude Usage Widget উইন্ডোজের টাস্কবারের ওপর ছোট্ট একটি স্ট্রিপে সবসময় দেখায় চারটি হিসাব: ৫ ঘণ্টার সেশন লিমিট, ৭ দিনের সাপ্তাহিক লিমিট, প্ল্যানে থাকলে আলাদা সাপ্তাহিক Fable লিমিট, আর মাসিক সীমার বিপরীতে এক্সট্রা ইউসেজের খরচ, প্রতিটির রিসেট হতে কত সময় বাকি তাসহ। বার ৭৫%-এ হয় অ্যাম্বার, ৯০%-এ লাল, আর একটি পিক্সেল রোবট সেশনের সাথে মেজাজ বদলায়: অলস, কাজে ব্যস্ত, ঘামছে, আতঙ্কে কাঁপছে, আর লিমিট শেষ হলে ঘুমিয়ে পড়ে। Chrome, Edge বা Brave-এ একটি ছোট এক্সটেনশন ব্রাউজারের লগইন দিয়েই প্রতি ৫ মিনিটে ডেটা আনে, তাই কোনো কুকি ফাইল পড়তে হয় না; Firefox-পরিবারে কুকি থেকে নিজে নিজেই চলে। লগইন পিসি ছেড়ে যায় শুধু claude.ai-এর সাথে কথা বলতে। এটি sdezubiria-র macOS উইজেটের উইন্ডোজ সংস্করণ (MIT), যেখানে Keychain, launchd আর Übersicht-এর জায়গায় এসেছে DPAPI, Credential Manager, Task Scheduler আর মাসকটসহ নিজস্ব উইন্ডো। এটি অনানুষ্ঠানিক, Anthropic-এর সাথে যুক্ত নয়।',
+			'summary_en'  => 'Running out of claude.ai limits in the middle of work is frustrating. Claude Usage Widget keeps four numbers in a small strip on the Windows taskbar: the rolling 5-hour session limit, the 7-day weekly limit, the separate weekly Fable limit when the plan has one, and extra usage spent against the monthly cap, each with the time left until it resets. Bars turn amber at 75% and red at 90%, and a pixel robot follows the session: idle, working, hustling with a sweat drop, shaking in panic, and asleep once the limit is hit. On Chrome, Edge or Brave a tiny extension fetches the numbers every 5 minutes with the browser\'s own login, so no cookie file is ever read; on the Firefox family it runs from the cookies on its own. The login leaves the PC only to talk to claude.ai. It is a Windows port of sdezubiria\'s macOS widget (MIT), with Keychain, launchd and Übersicht replaced by DPAPI, Credential Manager, Task Scheduler and a window of its own that carries the mascot. Unofficial, and not affiliated with Anthropic.',
+			'role_bn'     => 'একক ডেভেলপার — উইন্ডোজ পোর্ট, ব্রাউজার এক্সটেনশন ও ইনস্টলার',
+			'role_en'     => 'Solo Developer — Windows Port, Browser Extension & Installer',
+			'context_bn'  => 'উইন্ডোজ ১০ ও ১১ • Python, tkinter • Chrome / Edge / Brave এক্সটেনশন (MV3) • DPAPI • Inno Setup • v1.0.0',
+			'context_en'  => 'Windows 10 & 11 • Python, tkinter • Chrome / Edge / Brave Extension (MV3) • DPAPI • Inno Setup • v1.0.0',
+			'challenge_bn'=> "claude.ai-এর লিমিট দেখা যায় শুধু সেটিংস পাতায়, তাই বেশিরভাগ মানুষ লিমিটের কথা জানে ঠিক তখন, যখন সেটা শেষ হয়ে যায়। macOS-এ এর একটি সুন্দর সমাধান ছিল, কিন্তু সেটা দাঁড়িয়ে ছিল Keychain, launchd আর Übersicht-এর ওপর, যার কোনোটিই উইন্ডোজে নেই। লক্ষ্য ছিল একই অভিজ্ঞতা উইন্ডোজে আনা, এমনভাবে যে সাধারণ ব্যবহারকারী একটি সেটআপ ফাইল চালিয়েই কাজ শুরু করতে পারে।\n\nপ্রধান কারিগরি চ্যালেঞ্জসমূহ:\n১. উইন্ডোজে Chrome-এর কুকি: Chrome ও Edge চলার সময় কুকি ফাইলটি পুরোপুরি লক করে রাখে, আর ১২৭ সংস্করণ থেকে app-bound encryption বাইরের কোনো প্রোগ্রামকে কুকি পড়তে দেয় না। তাই macOS-এর মতো কুকি পড়ে লগইন নেওয়ার পথ বেশিরভাগ উইন্ডোজ পিসিতে বন্ধ।\n২. লগইন নিরাপদ রাখা: হাতে পেস্ট করা sessionKey কখনো সাধারণ লেখা হিসেবে ডিস্কে থাকবে না, আর একই পিসির অন্য অ্যাকাউন্ট সেটা পড়তে পারবে না।\n৩. Cloudflare: সাধারণ HTTP রিকোয়েস্ট claude.ai-এর Cloudflare-এ আটকে যায়।\n৪. টাস্কবারের ওপর থাকা: উইন্ডোজ ১১-এর টাস্কবার অন্য উইন্ডোকে নিজের নিচে ঠেলে দেয়, তাই উইজেটকে টাস্কবারের ওপর দৃশ্যমান রাখতে হবে, অথচ ঘড়ি আর সিস্টেম ট্রে ঢাকা যাবে না।\n৫. Python ছাড়া চালানো: সাধারণ ব্যবহারকারীর পিসিতে Python থাকে না, আর অ্যাডমিন অনুমতিও চাওয়া উচিত নয়।",
+			'challenge_en'=> "claude.ai shows its limits only on the settings page, so most people learn about a limit at the moment they hit it. There was a fine answer on macOS, but it stood on Keychain, launchd and Übersicht, none of which exist on Windows. The goal was the same experience on Windows, set up by an ordinary user with one setup file.\n\nCore Technical Challenges:\n1. Chrome's Cookies on Windows: Chrome and Edge keep the cookie file exclusively locked while they run, and from version 127 app-bound encryption stops any outside program from reading the cookies. The macOS way of borrowing the login from the cookies is closed on most Windows PCs.\n2. Keeping the Login Safe: a pasted sessionKey must never sit on disk as plain text, and another account on the same PC must not be able to read it.\n3. Cloudflare: ordinary HTTP requests are stopped by claude.ai's Cloudflare.\n4. Staying on the Taskbar: the Windows 11 taskbar pushes other windows below it, so the widget has to stay visible on top of it without ever covering the clock and the system tray.\n5. Running Without Python: ordinary users have no Python installed, and the setup should never ask for administrator rights.",
+			'solution_bn' => "১. দুটি পথ, একই ডেটা: Chrome, Edge আর Brave-এর জন্য একটি MV3 এক্সটেনশন ব্রাউজারের ভেতর থেকেই চালু লগইন দিয়ে ইউসেজ আনে এবং প্রতি ৫ মিনিটে 127.0.0.1:8765-এ চলা ছোট receiver.py-কে পাঠায়, তাই কোনো কুকি ফাইল পড়তে হয় না। Firefox, Zen, LibreWolf আর Floorp-এ fetch_usage.py সরাসরি কুকি পড়ে, আর পুরোনো লগইন পরের বার নিজেই নবায়ন হয়। দুটি পথ একই পার্সিং কোড ভাগ করে আর লেখে একই usage_data.json, তাই উইজেটের স্কিমা সংজ্ঞায়িত একবারই।\n\n২. সব ব্রাউজারের জন্য পেস্ট করা কী: অন্য যেকোনো ব্রাউজারে sessionKey একবার পেস্ট করলেই চলে। keyring থাকলে কী যায় Windows Credential Manager-এ, না থাকলে DPAPI দিয়ে এনক্রিপ্ট করা একটি ফাইলে (ctypes দিয়ে লেখা ছোট একটি DPAPI র‍্যাপার), তাই কেবল সেই উইন্ডোজ অ্যাকাউন্টই সেটা ফেরত পড়তে পারে।\n\n৩. Cloudflare পার হওয়া: রিকোয়েস্ট যায় curl_cffi দিয়ে, যা একটি আসল ব্রাউজারের মতো সংযোগ করে, তাই Cloudflare সেগুলো আটকায় না।\n\n৪. তিন লেআউট ও টাস্কবারে বসা: tkinter-এর একটি ফ্রেমহীন উইন্ডো, তিন লেআউটে: টাস্কবারের ওপর বসা ছোট্ট compact স্ট্রিপ (ডিফল্ট), টাস্কবারের ঠিক ওপরে চওড়া horizontal স্ট্রিপ, আর কোণের vertical কার্ড। কয়েক টিক পরপর SetWindowPos দিয়ে উইন্ডোটি আবার সবার ওপরে আসে, ডানদিকে ঘড়ি ও ট্রের জন্য জায়গা ছাড়া থাকে, আর টেনে রাখা জায়গাটি মনে থাকে। ফাইলের সময় বদলালেই উইজেট নিজে আবার আঁকে; ডাবল-ক্লিকে রিফ্রেশ, রাইট-ক্লিকে বন্ধ।\n\n৫. মেজাজ বদলানো পিক্সেল রোবট: মাসকটটি ক্যানভাসের ছোট ছোট আয়তক্ষেত্রে আঁকা আর নিজের ট্যাগে অ্যানিমেট হয়, তাই পুরো উইজেট আবার আঁকতে হয় না। ২৫%-এর নিচে ধীরে শ্বাস নেয় আর চোখ পিটপিট করে, ২৫–৭৪%-এ জায়গায় দাঁড়িয়ে হাঁটে, ৭৫–৮৯%-এ দ্রুত চলে আর ঘাম ঝরে, ৯০–৯৯%-এ কাঁপে, আর ১০০%-এ চোখ বুজে ঘুমায়, মাথার ওপর z ওড়ে।\n\n৬. এক সেটআপ ফাইল: app.py receiver আর উইজেটকে একই প্রসেসে চালায়, PyInstaller সেটা একটি EXE-তে বাঁধে, আর Inno Setup বানায় ClaudeUsageWidget-Setup.exe, যা অ্যাডমিন অনুমতি ছাড়াই ব্যবহারকারীর নিজের ফোল্ডারে ইনস্টল হয় এবং চাইলে উইন্ডোজে সাইন ইন করলেই চালু হয়। একটি মিউটেক্স দ্বিতীয় কপি খুলতে দেয় না; আবার চালালে চালু উইজেটটিই সামনে আসে।",
+			'solution_en' => "1. Two Ways In, One Data File: for Chrome, Edge and Brave an MV3 extension fetches usage from inside the browser with the live login and posts it every 5 minutes to a small receiver.py on 127.0.0.1:8765, so no cookie file is ever read. On Firefox, Zen, LibreWolf and Floorp, fetch_usage.py reads the cookies directly, and an expired login renews on the next run. Both share the same parsing code and write the same usage_data.json, so the widget's schema is defined once.\n\n2. A Pasted Key for Any Browser: any other browser works with a sessionKey pasted once. With keyring installed it goes into Windows Credential Manager; otherwise into a file encrypted with DPAPI (through a thin ctypes wrapper), so only that Windows account can read it back.\n\n3. Getting Past Cloudflare: requests go through curl_cffi, which connects like a real browser, so Cloudflare lets them through.\n\n4. Three Layouts and a Seat on the Taskbar: one frameless tkinter window in three layouts: a tiny compact strip sitting on the taskbar (the default), a wide horizontal strip just above it, and a vertical corner card. Every few ticks SetWindowPos pushes the window back to the top, the right side stays clear for the clock and tray, and the dragged position is remembered. The widget redraws itself whenever the data file changes; double-click refreshes, right-click quits.\n\n5. A Pixel Robot With Moods: the mascot is drawn from small canvas rectangles and animates under its own tag, so the rest of the widget never redraws. Under 25% it breathes slowly and blinks, at 25–74% it walks in place, at 75–89% it hurries with a sweat drop, at 90–99% it shakes, and at 100% it sleeps with its eyes shut and z's floating up.\n\n6. One Setup File: app.py runs the receiver and the widget in one process, PyInstaller bundles it into one EXE, and Inno Setup makes ClaudeUsageWidget-Setup.exe, which installs for the user without administrator rights and can start at Windows sign-in. A mutex keeps a second copy from opening; launching again brings the running widget to the front.",
+			'highlights_bn'=> array(
+				'সেশন (৫ ঘণ্টা), সাপ্তাহিক, Fable ও এক্সট্রা ইউসেজ, রিসেটের বাকি সময়সহ',
+				'বার ৭৫%-এ অ্যাম্বার আর ৯০%-এ লাল',
+				'সেশনের সাথে মেজাজ বদলানো পিক্সেল রোবট: অলস থেকে আতঙ্ক, তারপর ঘুম',
+				'টাস্কবারের ওপর বসা compact স্ট্রিপ, সাথে horizontal ও vertical লেআউট',
+				'Chrome, Edge ও Brave-এ এক্সটেনশন দিয়ে, কোনো কুকি ফাইল না পড়ে',
+				'Firefox, Zen, LibreWolf ও Floorp-এ নিজে নিজে; অন্য ব্রাউজারে একবার কী পেস্ট করে',
+				'কী সংরক্ষিত Credential Manager বা DPAPI-তে, কখনো সাধারণ লেখা হিসেবে নয়',
+				'অ্যাডমিন অনুমতি ছাড়া এক সেটআপ ফাইলে ইনস্টল, Python লাগে না; MIT লাইসেন্সে ফ্রি ও ওপেন সোর্স'
+			),
+			'highlights_en'=> array(
+				'Session (5-hour), weekly, Fable and extra usage, each with the time to reset',
+				'Bars turn amber at 75% and red at 90%',
+				'A pixel robot that follows the session: idle to panic, then asleep',
+				'A compact strip that sits on the taskbar, plus horizontal and vertical layouts',
+				'On Chrome, Edge and Brave through an extension that never reads a cookie file',
+				'Automatic on Firefox, Zen, LibreWolf and Floorp; any other browser with a key pasted once',
+				'The key kept in Credential Manager or DPAPI, never as plain text',
+				'One setup file, no admin rights, no Python needed; free and open source under MIT'
+			),
+			'tags'        => array( 'Windows 10/11', 'Python', 'tkinter', 'Browser Extension', 'Desktop Widget', 'Claude', 'Open Source' ),
+			'accent'      => '#d97706',
+			'icon'        => 'terminal',
+			'image'       => get_template_directory_uri() . '/assets/img/claudeusagewidget.webp',
+			'image_fit'   => 'cover',
+			'action_type' => 'code',
+			'action_bn'   => 'ফ্রি ডাউনলোড',
+			'action_en'   => 'Download Free',
+			'direct_url'  => 'https://github.com/raisulsohan/ClaudeUsageWidget/releases/latest',
+			'github_url'  => 'https://github.com/raisulsohan/ClaudeUsageWidget',
+			'order'       => 13,
+		),
 	);
 }
 
@@ -3179,6 +3230,7 @@ function rs_sync_new_portfolio_projects() {
 			'kfc-sniper'              => false,
 			'lazyfinds'               => false,
 			'map-animation-showreel'  => false,
+			'claudeusagewidget'       => false,
 		);
 		foreach ( $new_projects as $slug => $as_first ) {
 			if ( ! get_option( 'rs_portfolio_added_' . $slug ) ) {
