@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Seven free 3D asset sources for characters, environments, textures and HDRIs: what each one is for, its license, animation support, and which to use for each kind of scene. English and Bangla.">
+<link rel="canonical" href="https://raisulsohan.com/3dinformation">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Free 3D Asset Map">
+<meta property="og:description" content="Seven free 3D asset sources for characters, environments, textures and HDRIs: what each one is for, its license, animation support, and which to use for each kind of scene. English and Bangla.">
+<meta property="og:url" content="https://raisulsohan.com/3dinformation">
+<meta name="twitter:card" content="summary">
+<style>
+/* Base reset (the same one the Artifact viewer adds) */
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Free 3D Asset Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a pro asset browser. Sticky top bar (with EN/BN switch), quiet hero on a viewport grid, one-line scene tabs over a scene matrix or a three-layer view,
+   a master–detail source browser, a spec table, three rule cards. Role colours borrow the 3D axes: X red = characters, Y green = environment, Z blue = light. */
+:root{
+  --bg:#F7F7F8; --surface:#FFFFFF; --surface-2:#F2F2F4; --raised:#FFFFFF; --hover:#FAFAFB;
+  --ink:#0F1115; --ink-2:#3B4049; --muted:#6A6F7A; --line:#E5E6EA; --line-strong:#D2D4DA; --grid:#0F11150D;
+  --c:#D93D42; --c-soft:#FDECEC; --e:#23905E; --e-soft:#E5F5EC; --l:#3A5CCC; --l-soft:#EAF0FD;
+  --ok:#18794E; --ok-soft:#E6F4EC; --warn:#A45200; --warn-soft:#FFF2DB; --bad:#C62A2F; --bad-soft:#FDEBEC; --bad-tint:#FFF8F8;
+  --neutral:#5D626C; --neutral-soft:#F0F1F3;
+  --sh-1:0 1px 2px #0F11150A, 0 4px 14px #0F11150A;
+  --f-body:"Geist","Noto Sans Bengali","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"Geist Mono","Noto Sans Bengali",ui-monospace,"Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0B0C0E; --surface:#121316; --surface-2:#1A1C20; --raised:#25272C; --hover:#16181B;
+  --ink:#EDEEF0; --ink-2:#C3C6CD; --muted:#8C919B; --line:#24262B; --line-strong:#34373D; --grid:#FFFFFF0B;
+  --c:#FF6B70; --c-soft:#3A161A; --e:#45D492; --e-soft:#12301F; --l:#8CA4FF; --l-soft:#1A2448;
+  --ok:#45D492; --ok-soft:#12301F; --warn:#F5C04A; --warn-soft:#33260C; --bad:#FF6B70; --bad-soft:#3A161A; --bad-tint:#1A1012;
+  --neutral:#A3A8B1; --neutral-soft:#1F2125;
+  --sh-1:0 0 0 #0000; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0B0C0E; --surface:#121316; --surface-2:#1A1C20; --raised:#25272C; --hover:#16181B;
+  --ink:#EDEEF0; --ink-2:#C3C6CD; --muted:#8C919B; --line:#24262B; --line-strong:#34373D; --grid:#FFFFFF0B;
+  --c:#FF6B70; --c-soft:#3A161A; --e:#45D492; --e-soft:#12301F; --l:#8CA4FF; --l-soft:#1A2448;
+  --ok:#45D492; --ok-soft:#12301F; --warn:#F5C04A; --warn-soft:#33260C; --bad:#FF6B70; --bad-soft:#3A161A; --bad-tint:#1A1012;
+  --neutral:#A3A8B1; --neutral-soft:#1F2125;
+  --sh-1:0 0 0 #0000; color-scheme:dark }
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.6 var(--f-body);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0;text-wrap:balance}
+p{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--l);outline-offset:2px;border-radius:8px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.gut{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font:500 12px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+/* top bar */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--bg);background:color-mix(in srgb,var(--bg) 84%,transparent);-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line)}
+.topbar .gut{height:56px;display:flex;align-items:center;gap:20px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;letter-spacing:-.01em;text-decoration:none;white-space:nowrap}
+.nav{display:flex;gap:2px}
+.nav a{font-size:14px;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:7px;white-space:nowrap}
+.nav a:hover{color:var(--ink);background:var(--surface-2)}
+.top-end{margin-left:auto;display:flex;align-items:center;gap:12px}
+.stamp{display:flex;align-items:center;gap:8px;font:500 12px/1 var(--f-mono);color:var(--muted);white-space:nowrap}
+.stamp::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px var(--ok-soft)}
+
+/* hero */
+.hero-band{position:relative;isolation:isolate;overflow:hidden;border-bottom:1px solid var(--line)}
+.hero-band::before{content:"";position:absolute;inset:0;z-index:-1;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:40px 40px;background-position:-1px -1px;
+  -webkit-mask-image:radial-gradient(ellipse 70% 100% at 20% 0%,#000 25%,transparent 80%);mask-image:radial-gradient(ellipse 70% 100% at 20% 0%,#000 25%,transparent 80%)}
+.hero{padding-block:72px 56px;display:flex;flex-direction:column;gap:20px}
+.hero h1{font-size:clamp(40px,6.2vw,68px);font-weight:600;letter-spacing:-.04em;line-height:1}
+.lede{font-size:18px;line-height:1.55;color:var(--ink-2);max-width:56ch;text-wrap:pretty}
+.meta{display:flex;flex-wrap:wrap;gap:8px}
+.meta span{display:inline-flex;align-items:center;gap:8px;font:500 12.5px/1.2 var(--f-mono);color:var(--ink-2);padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.meta b{font-weight:600;color:var(--ink)}
+
+/* sections */
+main{padding-bottom:24px}
+.sec{padding-top:64px;display:flex;flex-direction:column;gap:20px;scroll-margin-top:56px}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px 24px;flex-wrap:wrap}
+.sec-head > div:first-child{display:flex;flex-direction:column;gap:10px}
+.sec-head h2{font-size:30px;font-weight:600;letter-spacing:-.03em;line-height:1.1}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;list-style:none;margin:0;padding:0;font-size:13.5px;color:var(--ink-2)}
+.legend li{display:flex;align-items:center;gap:8px}
+
+/* role badges, monograms, pills */
+.r{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:5px;font:600 11px/1 var(--f-mono);font-style:normal;flex:0 0 auto}
+.r-c{background:var(--c-soft);color:var(--c)} .r-e{background:var(--e-soft);color:var(--e)} .r-l{background:var(--l-soft);color:var(--l)}
+.mt{display:inline-grid;place-items:center;flex:0 0 auto;width:30px;height:30px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);font:600 11.5px/1 var(--f-mono);letter-spacing:-.02em;color:var(--ink)}
+.mt.xs{width:20px;height:20px;border-radius:999px;font-size:8.5px}
+.mt.sm{width:26px;height:26px;border-radius:7px;font-size:10.5px}
+.mt.lg{width:52px;height:52px;border-radius:13px;font-size:17px}
+.pill{display:inline-flex;align-items:center;gap:7px;font:500 12.5px/1.25 var(--f-body);padding:4px 10px 4px 8px;border-radius:999px}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex:0 0 auto}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.neutral{background:var(--neutral-soft);color:var(--neutral)}
+
+/* one-line segmented controls */
+.seg{position:relative;display:flex;gap:2px;padding:3px;width:max-content;max-width:100%;overflow-x:auto;scrollbar-width:none;background:var(--surface-2);border:1px solid var(--line);border-radius:12px}
+.seg::-webkit-scrollbar{display:none}
+.seg.fade-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 56px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 56px),transparent)}
+.seg.fade-l{-webkit-mask-image:linear-gradient(90deg,transparent,#000 56px);mask-image:linear-gradient(90deg,transparent,#000 56px)}
+.seg.fade-l.fade-r{-webkit-mask-image:linear-gradient(90deg,transparent,#000 56px,#000 calc(100% - 56px),transparent);mask-image:linear-gradient(90deg,transparent,#000 56px,#000 calc(100% - 56px),transparent)}
+.seg-btn{position:relative;z-index:1;flex:0 0 auto;padding:9px 14px;border:0;border-radius:9px;background:transparent;color:var(--muted);font-size:14px;font-weight:500;line-height:1.1;white-space:nowrap;cursor:pointer;transition:color .15s}
+.seg-btn:hover{color:var(--ink)}
+.seg-btn[aria-selected="true"],.seg-btn[aria-pressed="true"]{color:var(--ink)}
+.seg-ind{position:absolute;z-index:0;top:3px;bottom:3px;left:0;width:0;border-radius:9px;background:var(--raised);box-shadow:0 1px 2px #0F111514,0 0 0 1px var(--line)}
+.seg.ready .seg-ind{transition:transform .3s cubic-bezier(.2,.8,.2,1),width .3s cubic-bezier(.2,.8,.2,1)}
+.seg.sm{border-radius:10px}
+.seg.sm .seg-btn{padding:7px 11px;font-size:13px;border-radius:7px}
+.seg.sm .seg-btn[aria-pressed="true"]{background:var(--raised);box-shadow:0 1px 2px #0F111514,0 0 0 1px var(--line)}
+.seg.lang{border-radius:9px;padding:2px}
+.seg.lang .seg-btn{padding:5px 9px;font:600 11.5px/1 var(--f-mono);letter-spacing:.04em;border-radius:7px}
+
+/* scene panel */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh-1);overflow:hidden}
+.mx-wrap{overflow-x:auto}
+.matrix{border-collapse:separate;border-spacing:0;width:100%;min-width:920px;font-size:14px}
+.matrix th,.matrix td{padding:12px 8px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle;font-weight:400}
+.matrix thead th{background:var(--surface-2);font-size:12px;color:var(--ink-2);padding-block:14px}
+.mx-h{display:flex;flex-direction:column;align-items:center;gap:7px;line-height:1.2}
+.matrix .mx-scene{position:sticky;left:0;z-index:1;text-align:left;width:210px;padding-left:20px;background:var(--surface)}
+.matrix thead .mx-scene{background:var(--surface-2);font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);vertical-align:bottom}
+.matrix tbody tr{cursor:pointer}
+.matrix tbody tr:hover > *{background:var(--hover)}
+.matrix tbody tr:last-child > *{border-bottom:0}
+.mx-open{display:inline-flex;align-items:center;gap:8px;padding:0;border:0;background:none;font-size:14.5px;font-weight:500;cursor:pointer;text-align:left}
+.mx-open svg{opacity:0;transform:translateX(-4px);transition:opacity .15s,transform .15s;color:var(--muted)}
+.matrix tbody tr:hover .mx-open svg,.mx-open:focus-visible svg{opacity:1;transform:none}
+.cell{display:inline-flex;gap:4px}
+.nil{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--line-strong)}
+.layers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.layer{padding:24px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.layer + .layer{border-left:1px solid var(--line)}
+.layer-head{display:flex;align-items:center;gap:10px;font:500 12px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.layer p{font-size:16.5px;line-height:1.5;letter-spacing:-.005em;text-wrap:pretty}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:4px}
+.src-chip{display:inline-flex;align-items:center;gap:7px;padding:4px 11px 4px 4px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:13px;font-weight:500;line-height:1.2;text-decoration:none;cursor:pointer}
+.src-chip:hover{border-color:var(--line-strong);background:var(--surface-2)}
+.src-chip.static{cursor:default;background:var(--surface-2)}
+.scene-foot{display:flex;gap:10px;align-items:flex-start;padding:14px 24px;border-top:1px solid var(--line);background:var(--surface-2);font-size:14px;color:var(--ink-2)}
+.scene-foot svg{flex:0 0 auto;margin-top:3px;color:var(--muted)}
+
+/* source browser */
+.browser{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
+.src-list{list-style:none;margin:0;padding:6px;display:flex;flex-direction:column;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh-1);position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px)}
+.list-note{padding:10px 12px 8px;font:500 12px/1.4 var(--f-mono);color:var(--muted)}
+.list-note b{color:var(--ink);font-weight:600}
+.src-item{width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:3px 12px;padding:10px 12px;border:0;border-radius:10px;background:transparent;text-align:left;cursor:pointer;transition:background .15s,opacity .15s}
+.src-item .mt{grid-row:span 2}
+.src-item .nm{font-size:14.5px;font-weight:600;letter-spacing:-.01em}
+.src-item .rl{display:flex;gap:3px}
+.src-item .jb{grid-column:2/4;font-size:13px;line-height:1.4;color:var(--muted)}
+.src-item:hover{background:var(--surface-2)}
+.src-item[aria-current="true"]{background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line-strong)}
+.src-item.off{opacity:.42}
+.src-item.off:hover,.src-item.off[aria-current="true"]{opacity:1}
+.detail{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh-1);padding:28px;display:flex;flex-direction:column;gap:26px;min-width:0;scroll-margin-top:72px}
+.d-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.d-title{display:flex;flex-direction:column;gap:4px;min-width:0}
+.d-title h3{font-size:28px;font-weight:600;letter-spacing:-.03em;line-height:1.05}
+.d-domain{font:400 13px/1 var(--f-mono);color:var(--muted);text-decoration:none}
+.d-domain:hover{color:var(--ink);text-decoration:underline}
+.btn{margin-left:auto;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;background:var(--ink);color:var(--bg);font-size:14px;font-weight:500;line-height:1.1;text-decoration:none;white-space:nowrap}
+.btn:hover{opacity:.86}
+.d-job{font-size:19px;line-height:1.45;letter-spacing:-.015em;max-width:58ch;text-wrap:pretty}
+.spec{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.spec > div{padding:14px 16px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-width:0}
+.spec > div + div{border-left:1px solid var(--line)}
+.spec dt{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.spec dd{margin:0;font-size:14px;font-weight:500}
+.rows{margin:0;display:flex;flex-direction:column}
+.rows > div{display:grid;grid-template-columns:170px minmax(0,1fr);gap:16px;padding:13px 0;border-top:1px solid var(--line)}
+.rows > div:first-child{border-top:0;padding-top:0}
+.rows dt{font-size:13.5px;color:var(--muted)}
+.rows dd{margin:0;font-size:14.5px;min-width:0}
+.rows dd.mono{font:400 13px/1.6 var(--f-mono)}
+h4{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:13px;line-height:1.3;padding:5px 9px;border-radius:7px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
+.d-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.box{border:1px solid var(--line);border-radius:12px;padding:18px;min-width:0}
+.box.caution{background:var(--bad-tint);border-color:var(--bad-soft)}
+.box.caution h4{color:var(--bad)}
+.steps{counter-reset:s;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;font-size:14.5px;line-height:1.5}
+.steps li::before{content:counter(s);display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line);font:600 11px/1 var(--f-mono);color:var(--ink-2)}
+html[lang="bn"] .steps li::before{content:counter(s,bengali)}
+.cautions{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.cautions li{display:grid;grid-template-columns:16px minmax(0,1fr);gap:10px;font-size:14.5px;line-height:1.5}
+.cautions svg{color:var(--bad);margin-top:3px}
+
+/* compare table */
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh-1)}
+.cmp{border-collapse:separate;border-spacing:0;width:100%;min-width:980px;font-size:14px}
+.cmp th,.cmp td{padding:14px 16px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle;font-weight:400}
+.cmp thead th{background:var(--surface-2);font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-block:13px;white-space:nowrap}
+.cmp .first{position:sticky;left:0;z-index:1;background:var(--surface)}
+.cmp thead .first{background:var(--surface-2)}
+.cmp tbody tr{cursor:pointer}
+.cmp tbody tr:hover > *{background:var(--hover)}
+.cmp tbody tr:last-child > *{border-bottom:0}
+.srcname{display:flex;align-items:center;gap:10px;font-weight:600;white-space:nowrap}
+.cmp td.best{color:var(--ink-2);min-width:220px}
+
+/* rules */
+.rules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.rule{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh-1);padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.ico{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--surface-2);border:1px solid var(--line);color:var(--ink)}
+.rule h3{font-size:18px;font-weight:600;letter-spacing:-.02em}
+.rule ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;font-size:14.5px;line-height:1.5;color:var(--ink-2)}
+.rule li{display:grid;grid-template-columns:14px minmax(0,1fr);gap:8px}
+.rule li::before{content:"";width:6px;height:6px;border-radius:2px;background:var(--line-strong);margin-top:8px}
+.rule li.no::before{background:var(--bad)}
+.rule li b{color:var(--ink);font-weight:600}
+.credit{font:400 12.5px/1.65 var(--f-mono);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;white-space:pre;overflow-x:auto}
+.copy{align-self:flex-start;display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:13px;font-weight:500;cursor:pointer}
+.copy:hover{background:var(--surface-2)}
+
+footer{margin-top:72px;border-top:1px solid var(--line)}
+footer .gut{padding-block:24px 40px;display:flex;justify-content:space-between;gap:8px 24px;flex-wrap:wrap;font-size:13.5px;color:var(--muted)}
+
+/* Bangla: no tracking (it breaks conjuncts), a little more leading */
+html[lang="bn"] body{line-height:1.7}
+html[lang="bn"] body *{letter-spacing:normal!important}
+html[lang="bn"] .hero h1{line-height:1.15}
+html[lang="bn"] .sec-head h2,html[lang="bn"] .d-title h3{line-height:1.3}
+html[lang="bn"] .eyebrow,html[lang="bn"] h4,html[lang="bn"] .spec dt,html[lang="bn"] .layer-head{font-family:var(--f-body);font-size:13px}
+
+@media (max-width:920px){
+  .browser{grid-template-columns:minmax(0,1fr)}
+  .src-list{position:static}
+  .layers{grid-template-columns:minmax(0,1fr)}
+  .layer + .layer{border-left:0;border-top:1px solid var(--line)}
+  .spec{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .spec > div:nth-child(3){border-left:0}
+  .spec > div:nth-child(n+3){border-top:1px solid var(--line)}
+  .d-cols{grid-template-columns:minmax(0,1fr)}
+  .rules{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:640px){
+  .nav{display:none}
+  .hero{padding-block:48px 40px}
+  .sec{padding-top:48px}
+  .sec-head h2{font-size:25px}
+  .detail{padding:20px}
+  .src-item .jb{display:none}
+  .src-item .mt{grid-row:auto}
+  .rows > div{grid-template-columns:minmax(0,1fr);gap:4px}
+  .btn{margin-left:0}
+}
+@media (max-width:480px){
+  .brand-name{display:none}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,.seg.ready .seg-ind{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="gut">
+    <a class="brand" href="#top">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2 21 7 12 12 3 7Z" style="fill:var(--l)"/>
+        <path d="M3 7 12 12 12 22 3 17Z" style="fill:var(--c)"/>
+        <path d="M21 7 12 12 12 22 21 17Z" style="fill:var(--e)"/>
+      </svg>
+      <span class="brand-name" data-t="brand">Asset Map</span>
+    </a>
+    <nav class="nav" data-ta="aria.nav" aria-label="Sections">
+      <a href="#scenes" data-t="nav.scenes">Scenes</a><a href="#sources" data-t="nav.sources">Sources</a><a href="#compare" data-t="nav.compare">Compare</a><a href="#rules" data-t="nav.rules">Rules</a>
+    </nav>
+    <div class="top-end">
+      <span class="stamp" data-t="stamp">Verified 18 Oct 2026</span>
+      <div class="seg lang" id="langSwitch" role="group" data-ta="aria.lang" aria-label="Language">
+        <button type="button" class="seg-btn" data-lang="en" aria-pressed="true" lang="en">EN</button>
+        <button type="button" class="seg-btn" data-lang="bn" aria-pressed="false" lang="en">BN</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="hero-band" id="top">
+  <header class="hero gut">
+    <span class="eyebrow" data-t="hero.eyebrow">Field guide · free assets for 3D video scenes</span>
+    <h1 data-t="hero.title">Free 3D Asset Map</h1>
+    <p class="lede" data-t="hero.lede">Seven free sources for characters, sets, textures and light. Select a scene. The map shows which source gives each layer.</p>
+    <div class="meta">
+      <span data-th="meta.1"><b>7</b> sources</span>
+      <span data-th="meta.2"><b>9</b> scene recipes</span>
+      <span data-th="meta.3"><b>5</b> sources fully CC0</span>
+      <span data-th="meta.4"><b>0</b> paid files needed</span>
+    </div>
+  </header>
+</div>
+
+<main class="gut">
+  <section class="sec" id="scenes" aria-labelledby="scenes-h">
+    <div class="sec-head">
+      <div><span class="eyebrow" data-t="nav.scenes">Scenes</span><h2 id="scenes-h" data-t="scenes.h">What do I want to make?</h2></div>
+      <ul class="legend" data-ta="aria.legend" aria-label="Layer key">
+        <li><i class="r r-c">C</i><span data-t="role.c">Characters</span></li>
+        <li><i class="r r-e">E</i><span data-t="role.e">Environment</span></li>
+        <li><i class="r r-l">L</i><span data-t="role.l">Light and sky</span></li>
+      </ul>
+    </div>
+    <div class="seg" id="sceneTabs" role="tablist" data-ta="aria.scenes" aria-label="Scenes"><span class="seg-ind" aria-hidden="true"></span></div>
+    <div class="panel" id="scenePanel" role="tabpanel"></div>
+  </section>
+
+  <section class="sec" id="sources" aria-labelledby="sources-h">
+    <div class="sec-head">
+      <div><span class="eyebrow" data-t="nav.sources">Sources</span><h2 id="sources-h" data-t="sources.h">What each site is for</h2></div>
+      <div class="seg sm" id="filters" role="group" data-ta="aria.filters" aria-label="Filter sources"></div>
+    </div>
+    <div class="browser">
+      <ul class="src-list" id="srcList" data-ta="aria.list" aria-label="Sources"></ul>
+      <article class="detail" id="detail" aria-live="polite"></article>
+    </div>
+  </section>
+
+  <section class="sec" id="compare" aria-labelledby="compare-h">
+    <div class="sec-head">
+      <div><span class="eyebrow" data-t="nav.compare">Compare</span><h2 id="compare-h" data-t="compare.h">All seven at a glance</h2></div>
+    </div>
+    <div class="tbl"><table class="cmp" id="cmp"></table></div>
+  </section>
+
+  <section class="sec" id="rules" aria-labelledby="rules-h">
+    <div class="sec-head">
+      <div><span class="eyebrow" data-t="nav.rules">Rules</span><h2 id="rules-h" data-t="rules.h">Three things to remember</h2></div>
+    </div>
+    <div class="rules">
+      <div class="rule">
+        <span class="ico"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true"><path d="M8 2 14 5 8 8 2 5Z"/><path d="M2 8l6 3 6-3"/><path d="M2 11l6 3 6-3"/></svg></span>
+        <h3 data-t="r1.h">One style per scene</h3>
+        <ul>
+          <li class="no"><span data-th="r1.1">Do not mix low-poly and realistic models in one scene.</span></li>
+          <li><span data-th="r1.2"><b>HDRIs</b> are the exception. A Poly Haven HDRI fits every style.</span></li>
+          <li><span data-th="r1.3">For <b>realistic</b> characters, use Poly Haven and ambientCG.</span></li>
+          <li><span data-th="r1.4">For <b>cartoon</b> scenes, use Quaternius characters.</span></li>
+        </ul>
+      </div>
+      <div class="rule">
+        <span class="ico"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M5 6.5h6M5 9.5h4"/></svg></span>
+        <h3 data-t="r2.h">Credits on YouTube</h3>
+        <ul>
+          <li><span data-th="r2.1"><b>CC0:</b> no credit is necessary.</span></li>
+          <li><span data-th="r2.2"><b>CC-BY / OGA-BY:</b> put a credit in the description.</span></li>
+          <li class="no"><span data-th="r2.3"><b>CC-BY-SA / GPL:</b> do not use in a monetized video.</span></li>
+        </ul>
+        <div class="credit" id="credit" lang="en">"Guy" by CLOAKING .US
+poly.pizza/m/0eU7bl0a6Cg
+CC BY 3.0 — modified</div>
+        <button class="copy" id="copyBtn" type="button" data-t="copy">Copy sample</button>
+      </div>
+      <div class="rule">
+        <span class="ico"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="3.3" r="1.6"/><path d="M8 5.5v4.5M8 10l-2.5 4M8 10l2.5 4M3.5 7.2h9"/></svg></span>
+        <h3 data-t="r3.h">Animations from other sources</h3>
+        <ul>
+          <li><span data-th="r3.1">Humanoid animations can be <b>retargeted</b> from one rig to another.</span></li>
+          <li><span data-th="r3.2"><b>Quaternius</b> uses a standard humanoid rig. Animations from other common rigs fit it.</span></li>
+          <li><span data-th="r3.3"><b>KayKit</b> and <b>Kenney</b> characters look best with their own animations.</span></li>
+          <li><span data-th="r3.4">An auto-rig tool can rig a mesh with no rig and human proportions.</span></li>
+          <li class="no"><span data-th="r3.5">Big-head, small-body characters make retargeted animations clip.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="gut">
+    <span data-t="foot.1">Data checked on the official page of each source on 18 October 2026.</span>
+    <span data-t="foot.2">"Not verified" means the source does not give that fact.</span>
+  </div>
+</footer>
+
+<script>
+const ICON = {
+  out:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11 11 5M6 5h5v5"/></svg>',
+  info:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M8 7.3v3.6M8 5.1v.1"/></svg>',
+  warn:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.2 14.3 13H1.7Z"/><path d="M8 6.6v2.9M8 11.2v.1"/></svg>',
+  arrow:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>'
+};
+
+/* ---------- interface text ---------- */
+const STR = {
+  "brand":{en:"Asset Map", bn:"অ্যাসেট ম্যাপ"},
+  "nav.scenes":{en:"Scenes", bn:"দৃশ্য"}, "nav.sources":{en:"Sources", bn:"সাইট"},
+  "nav.compare":{en:"Compare", bn:"তুলনা"}, "nav.rules":{en:"Rules", bn:"নিয়ম"},
+  "stamp":{en:"Verified 18 Oct 2026", bn:"যাচাই ১৮ অক্টোবর ২০২৬"},
+  "hero.eyebrow":{en:"Field guide · free assets for 3D video scenes", bn:"গাইড · 3D ভিডিও দৃশ্যের জন্য ফ্রি অ্যাসেট"},
+  "hero.title":{en:"Free 3D Asset Map", bn:"ফ্রি 3D অ্যাসেট ম্যাপ"},
+  "hero.lede":{en:"Seven free sources for characters, sets, textures and light. Select a scene. The map shows which source gives each layer.",
+               bn:"চরিত্র, সেট, texture আর আলোর জন্য ৭টি ফ্রি সাইট। একটি দৃশ্য বাছুন। ম্যাপ দেখাবে কোন সাইট কোন layer দেয়।"},
+  "meta.1":{en:"<b>7</b> sources", bn:"<b>৭</b>টি সাইট"},
+  "meta.2":{en:"<b>9</b> scene recipes", bn:"<b>৯</b>টি দৃশ্যের রেসিপি"},
+  "meta.3":{en:"<b>5</b> sources fully CC0", bn:"<b>৫</b>টি সাইট পুরো CC0"},
+  "meta.4":{en:"<b>0</b> paid files needed", bn:"<b>০</b>টি paid ফাইল দরকার"},
+  "scenes.h":{en:"What do I want to make?", bn:"আমি কী বানাতে চাই?"},
+  "role.c":{en:"Characters", bn:"চরিত্র"}, "role.e":{en:"Environment", bn:"পরিবেশ"}, "role.l":{en:"Light and sky", bn:"আলো ও আকাশ"},
+  "sources.h":{en:"What each site is for", bn:"কোন সাইটের কাজ কী"},
+  "compare.h":{en:"All seven at a glance", bn:"সাতটি সাইট এক নজরে"},
+  "rules.h":{en:"Three things to remember", bn:"তিনটি কথা মনে রাখুন"},
+  "r1.h":{en:"One style per scene", bn:"এক দৃশ্যে এক স্টাইল"},
+  "r1.1":{en:"Do not mix low-poly and realistic models in one scene.", bn:"এক দৃশ্যে low-poly আর realistic model মেশাবেন না।"},
+  "r1.2":{en:"<b>HDRIs</b> are the exception. A Poly Haven HDRI fits every style.", bn:"<b>HDRI</b> ব্যতিক্রম। Poly Haven-এর HDRI সব স্টাইলে চলে।"},
+  "r1.3":{en:"For <b>realistic</b> characters, use Poly Haven and ambientCG.", bn:"<b>Realistic</b> চরিত্রের জন্য Poly Haven আর ambientCG নিন।"},
+  "r1.4":{en:"For <b>cartoon</b> scenes, use Quaternius characters.", bn:"<b>Cartoon</b> দৃশ্যের জন্য Quaternius চরিত্র নিন।"},
+  "r2.h":{en:"Credits on YouTube", bn:"YouTube-এ ক্রেডিট"},
+  "r2.1":{en:"<b>CC0:</b> no credit is necessary.", bn:"<b>CC0:</b> ক্রেডিট লাগে না।"},
+  "r2.2":{en:"<b>CC-BY / OGA-BY:</b> put a credit in the description.", bn:"<b>CC-BY / OGA-BY:</b> description-এ ক্রেডিট দিন।"},
+  "r2.3":{en:"<b>CC-BY-SA / GPL:</b> do not use in a monetized video.", bn:"<b>CC-BY-SA / GPL:</b> monetized ভিডিওতে ব্যবহার করবেন না।"},
+  "r3.h":{en:"Animations from other sources", bn:"অন্য উৎসের animation"},
+  "r3.1":{en:"Humanoid animations can be <b>retargeted</b> from one rig to another.", bn:"Humanoid animation এক rig থেকে অন্য rig-এ <b>retarget</b> করা যায়।"},
+  "r3.2":{en:"<b>Quaternius</b> uses a standard humanoid rig. Animations from other common rigs fit it.", bn:"<b>Quaternius</b> একটি standard humanoid rig ব্যবহার করে। অন্য সাধারণ rig-এর animation এতে চলে।"},
+  "r3.3":{en:"<b>KayKit</b> and <b>Kenney</b> characters look best with their own animations.", bn:"<b>KayKit</b> আর <b>Kenney</b> চরিত্রে তাদের নিজস্ব animation সবচেয়ে ভালো দেখায়।"},
+  "r3.4":{en:"An auto-rig tool can rig a mesh with no rig and human proportions.", bn:"Rig ছাড়া, মানুষের মতো অনুপাতের mesh একটি auto-rig tool দিয়ে rig করা যায়।"},
+  "r3.5":{en:"Big-head, small-body characters make retargeted animations clip.", bn:"বড় মাথা, ছোট শরীরের চরিত্রে retarget করা animation শরীরে ঢুকে যায়।"},
+  "copy":{en:"Copy sample", bn:"নমুনা কপি করুন"},
+  "copied":{en:"Copied", bn:"কপি হয়েছে"},
+  "copyFail":{en:"Text selected. Press Ctrl+C.", bn:"লেখা select হয়েছে। Ctrl+C চাপুন।"},
+  "foot.1":{en:"Data checked on the official page of each source on 18 October 2026.", bn:"সব তথ্য ১৮ অক্টোবর ২০২৬ তারিখে প্রতিটি সাইটের official page থেকে যাচাই করা।"},
+  "foot.2":{en:"\"Not verified\" means the source does not give that fact.", bn:"\"যাচাই হয়নি\" মানে সাইট নিজে তথ্যটি দেয়নি।"},
+  "aria.nav":{en:"Sections", bn:"অংশ"}, "aria.lang":{en:"Language", bn:"ভাষা"}, "aria.legend":{en:"Layer key", bn:"Layer-এর চিহ্ন"},
+  "aria.scenes":{en:"Scenes", bn:"দৃশ্য"}, "aria.filters":{en:"Filter sources", bn:"সাইট ফিল্টার"}, "aria.list":{en:"Sources", bn:"সাইট"},
+  "mx.caption":{en:"Which source gives which layer, per scene", bn:"প্রতিটি দৃশ্যে কোন সাইট কোন layer দেয়"},
+  "mx.scene":{en:"Scene", bn:"দৃশ্য"}, "mx.nil":{en:"not used", bn:"ব্যবহার নেই"},
+  "mx.foot":{en:"Select a scene to see its three layers and the exact packs.", bn:"একটি দৃশ্য বাছুন। তিনটি layer আর ঠিক কোন pack লাগবে, তা দেখাবে।"},
+  "d.open":{en:"Open site", bn:"সাইট খুলুন"},
+  "d.license":{en:"License", bn:"লাইসেন্স"}, "d.anim":{en:"Animation", bn:"Animation"}, "d.style":{en:"Style", bn:"স্টাইল"},
+  "d.paid":{en:"Paid part", bn:"Paid অংশ"}, "d.best":{en:"Best for", bn:"সেরা কাজ"}, "d.cost":{en:"Cost", bn:"খরচ"},
+  "d.formats":{en:"Formats", bn:"ফরম্যাট"}, "d.account":{en:"Account", bn:"Account"}, "d.rig":{en:"Characters and rig", bn:"চরিত্র ও rig"},
+  "d.packs":{en:"Useful packs", bn:"কাজের pack"}, "d.steps":{en:"How to download", bn:"কীভাবে নামাবেন"}, "d.warn":{en:"Watch out", bn:"সতর্কতা"},
+  "c.source":{en:"Source", bn:"সাইট"}, "c.chars":{en:"Characters", bn:"চরিত্র"},
+  "yes":{en:"Yes", bn:"আছে"}, "no":{en:"No", bn:"নেই"}
+};
+
+/* ---------- sources ---------- */
+const SITES = [
+  { id:"quaternius", name:"Quaternius", mono:"Qu", url:"https://quaternius.com", domain:"quaternius.com",
+    job:{en:"Characters, animations and environments in one matching style.", bn:"একই স্টাইলের চরিত্র, animation আর পরিবেশ।"},
+    best:{en:"Cartoon city, forest, dungeon, sci-fi.", bn:"Cartoon শহর, বন, dungeon, sci-fi।"},
+    style:{en:"Stylized low-poly", bn:"Stylized low-poly"}, realistic:false, chars:true, anim:"full", cc0:true,
+    lic:["ok","CC0",{en:"No credit needed.", bn:"ক্রেডিট লাগে না।"}],
+    paid:["warn",{en:"Optional tiers", bn:"ঐচ্ছিক স্তর"},{en:"The Standard part is free (60–70% of each pack). Pro and Source tiers are paid. You do not need them.", bn:"Standard অংশ free (প্রতিটি pack-এর ৬০–৭০%)। Pro আর Source স্তর paid। এগুলো দরকার নেই।"}],
+    formats:{en:"glTF · FBX · OBJ", bn:"glTF · FBX · OBJ"}, account:{en:"Not needed", bn:"লাগে না"},
+    rig:{en:"Universal Base Characters and the Universal Animation Library share one standard humanoid rig. The site says it works with other common rigs, so animations from other sources can be retargeted.", bn:"Universal Base Characters আর Universal Animation Library একই standard humanoid rig ব্যবহার করে। সাইট বলে: এটি অন্য সাধারণ rig-এর সাথে চলে। তাই অন্য উৎসের animation retarget করা যায়।"},
+    packs:{en:["Universal Base Characters","Universal Animation Library (45 free)","Downtown City MegaKit (315 pieces)","Ultimate House Interior","Stylized Nature MegaKit","Medieval Village MegaKit","Modular Dungeons","Modular Sci-Fi Megakit","Ultimate Animated Animal","Bestiary"],
+           bn:["Universal Base Characters","Universal Animation Library (৪৫টি free)","Downtown City MegaKit (৩১৫ অংশ)","Ultimate House Interior","Stylized Nature MegaKit","Medieval Village MegaKit","Modular Dungeons","Modular Sci-Fi Megakit","Ultimate Animated Animal","Bestiary"]},
+    steps:{en:["Open the pack page.","Click the Free / Standard download.","If itch.io opens, type 0 in the price box.","Click \"No thanks, just take me to the downloads\".","Use the glTF files in your scene."],
+           bn:["Pack page খুলুন।","Free / Standard download চাপুন।","itch.io খুললে দামের ঘরে 0 লিখুন।","\"No thanks, just take me to the downloads\" চাপুন।","glTF ফাইলগুলো আপনার scene-এ ব্যবহার করুন।"]},
+    warn:{en:["The paid Source tier adds only .blend and engine files. Most scenes need only the free Standard files.","UAL Pro (120+ animations) costs $9.99. Start with the 45 free ones."],
+          bn:["Paid Source স্তরে শুধু .blend আর engine ফাইল যোগ হয়। বেশিরভাগ দৃশ্যে free Standard ফাইলই যথেষ্ট।","UAL Pro (১২০+ animation)-এর দাম $9.99। Free ৪৫টি দিয়ে শুরু করুন।"]} },
+  { id:"kaykit", name:"KayKit", mono:"Kk", url:"https://kaylousberg.itch.io", domain:"kaylousberg.itch.io",
+    job:{en:"Toy-like characters and small environments, with 150+ own animations.", bn:"খেলনার মতো চরিত্র আর ছোট পরিবেশ। নিজস্ব ১৫০+ animation সহ।"},
+    best:{en:"Toy worlds, fantasy adventures, small towns.", bn:"খেলনা-দুনিয়া, fantasy অভিযান, ছোট শহর।"},
+    style:{en:"Chunky toy low-poly", bn:"মোটা খেলনা low-poly"}, realistic:false, chars:true, anim:"full", cc0:true,
+    lic:["ok","CC0",{en:"No credit needed. Do not resell the files unchanged.", bn:"ক্রেডিট লাগে না। অপরিবর্তিত ফাইল আবার বিক্রি করবেন না।"}],
+    paid:["bad",{en:"Some packs paid", bn:"কিছু pack paid"},{en:"Type $0 for the Free file. Extra and Source tiers are paid. Mystery Monthly, Bits Bundles and The Complete KayKit are paid only.", bn:"Free ফাইলের জন্য $0 লিখুন। Extra আর Source স্তর paid। Mystery Monthly, Bits Bundle আর The Complete KayKit শুধু paid।"}],
+    formats:{en:"glTF · FBX (OBJ in some packs)", bn:"glTF · FBX (কিছু pack-এ OBJ)"}, account:{en:"Not needed (type $0)", bn:"লাগে না ($0 লিখুন)"},
+    rig:{en:"Own rig (Rig_Medium, Rig_Large). Animations from other rigs can make the arms clip into the body.", bn:"নিজস্ব rig (Rig_Medium, Rig_Large)। অন্য rig-এর animation চালালে হাত শরীরে ঢুকে যেতে পারে।"},
+    packs:{en:["Character Pack: Adventurers (5 characters)","Character Animations (150+)","City Builder Bits (32+)","Furniture Bits","Restaurant Bits","Forest Nature Pack","Dungeon Pack","Medieval Hexagon (200+ tiles)","Space Base Bits","Halloween Bits"],
+           bn:["Character Pack: Adventurers (৫টি চরিত্র)","Character Animations (১৫০+)","City Builder Bits (৩২+)","Furniture Bits","Restaurant Bits","Forest Nature Pack","Dungeon Pack","Medieval Hexagon (২০০+ tile)","Space Base Bits","Halloween Bits"]},
+    steps:{en:["Open the pack page.","Click \"Download Now\".","Type 0 in the price box.","Download only the \"Free\" file.","Use the glTF files in your scene."],
+           bn:["Pack page খুলুন।","\"Download Now\" চাপুন।","দামের ঘরে 0 লিখুন।","শুধু \"Free\" ফাইলটি নামান।","glTF ফাইলগুলো আপনার scene-এ ব্যবহার করুন।"]},
+    warn:{en:["Avoid the packs with a price ($19.99, $19.95, $150).","On KayKit characters, use KayKit Character Animations."],
+          bn:["দাম লেখা pack ($19.99, $19.95, $150) এড়িয়ে চলুন।","KayKit চরিত্রে KayKit Character Animations ব্যবহার করুন।"]} },
+  { id:"kenney", name:"Kenney", mono:"Ke", url:"https://kenney.nl/assets", domain:"kenney.nl/assets",
+    job:{en:"Simple low-poly environments and props. Good to fill the background.", bn:"সরল low-poly পরিবেশ আর prop। Background ভরাট করার জন্য ভালো।"},
+    best:{en:"Simple cartoon city, room, castle, space.", bn:"সরল cartoon শহর, ঘর, castle, মহাকাশ।"},
+    style:{en:"Very simple flat low-poly", bn:"খুব সরল flat low-poly"}, realistic:false, chars:true, anim:"few", cc0:true,
+    lic:["ok","CC0",{en:"No credit needed. Do not use the Kenney logo.", bn:"ক্রেডিট লাগে না। Kenney-র logo ব্যবহার করবেন না।"}],
+    paid:["ok",{en:"None", bn:"নেই"},{en:"All free. The donation page is optional.", bn:"সব free। Donation page ঐচ্ছিক।"}],
+    formats:{en:"Usually FBX · GLB · OBJ (check the zip)", bn:"সাধারণত FBX · GLB · OBJ (zip খুলে দেখুন)"}, account:{en:"Not needed", bn:"লাগে না"},
+    rig:{en:"Animated Characters: one rig, many skins, few animations. Bone names not verified.", bn:"Animated Characters: একটি rig, অনেক skin, অল্প animation। Bone name যাচাই হয়নি।"},
+    packs:{en:["City Kit (Roads)","City Kit (Commercial)","City Kit (Suburban)","Furniture Kit (140 files)","Nature Kit","Castle Kit","Fantasy Town Kit","Space Station Kit","Car Kit","Train Kit","Food Kit","Animated Characters","Blocky Characters"],
+           bn:["City Kit (Roads)","City Kit (Commercial)","City Kit (Suburban)","Furniture Kit (১৪০ ফাইল)","Nature Kit","Castle Kit","Fantasy Town Kit","Space Station Kit","Car Kit","Train Kit","Food Kit","Animated Characters","Blocky Characters"]},
+    steps:{en:["Open the pack page.","Click \"Download\".","A donation page opens. Click \"Continue without donating...\".","The zip downloads. Unzip it and use the GLB or FBX files."],
+           bn:["Pack page খুলুন।","\"Download\" চাপুন।","একটি donation page খুলবে। \"Continue without donating...\" চাপুন।","Zip নামবে। Unzip করে GLB বা FBX ফাইল ব্যবহার করুন।"]},
+    warn:{en:["Do not use the Kenney logo in your video.","Animations from other sources do not fit these simple, blocky characters well."],
+          bn:["ভিডিওতে Kenney-র logo ব্যবহার করবেন না।","এই সরল, blocky চরিত্রে অন্য উৎসের animation ভালো মেলে না।"]} },
+  { id:"polypizza", name:"Poly Pizza", mono:"PP", url:"https://poly.pizza", domain:"poly.pizza",
+    job:{en:"A search engine to find one specific object fast (10,700+ models).", bn:"একটি নির্দিষ্ট জিনিস দ্রুত খোঁজার search (১০,৭০০+ model)।"},
+    best:{en:"One prop, fast — for example \"bicycle\" or \"coffee machine\".", bn:"একটি prop দ্রুত খোঁজা — যেমন \"bicycle\" বা \"coffee machine\"।"},
+    style:{en:"Mixed low-poly", bn:"মিশ্র low-poly"}, realistic:false, chars:true, anim:"varies", cc0:false,
+    lic:["warn",{en:"CC0 or CC-BY", bn:"CC0 বা CC-BY"},{en:"Each model has its own license. A CC-BY model needs a credit.", bn:"প্রতিটি model-এর লাইসেন্স আলাদা। CC-BY model-এ ক্রেডিট লাগে।"}],
+    paid:["warn",{en:"Paid ads in search", bn:"Search-এ paid ad"},{en:"Paid Unity Asset Store packs show at the top of the search results.", bn:"Search ফলের উপরে paid Unity Asset Store pack দেখায়।"}],
+    formats:{en:"GLB · FBX · OBJ (per model)", bn:"GLB · FBX · OBJ (model অনুযায়ী)"}, account:{en:"Not verified for downloads", bn:"Download-এর জন্য যাচাই হয়নি"},
+    rig:{en:"Each model is different. The Quaternius animated characters are here as CC0.", bn:"প্রতিটি model আলাদা। Quaternius-এর animated চরিত্র এখানে CC0-তে আছে।"},
+    packs:{en:["The Office Pack","Coffeehouse Lounge","Charming Kitchen","House Plants","Coral Reef Kit","Animated Animal","Animated Men / Women","~100 bundles"],
+           bn:["The Office Pack","Coffeehouse Lounge","Charming Kitchen","House Plants","Coral Reef Kit","Animated Animal","Animated Men / Women","~১০০টি bundle"]},
+    steps:{en:["Type an English word in the search box.","Open the model page.","Read the license. If it is CC0, take it.","If it is CC-BY, write down the author and the link.","Download the GLB."],
+           bn:["Search বক্সে একটি ইংরেজি শব্দ লিখুন।","Model page খুলুন।","লাইসেন্স পড়ুন। CC0 হলে নিন।","CC-BY হলে লেখকের নাম আর link লিখে রাখুন।","GLB নামান।"]},
+    warn:{en:["Each model has its own license. Read it before the download.","Avoid the Unity packs with a price."],
+          bn:["প্রতিটি model-এর লাইসেন্স আলাদা। ডাউনলোডের আগে পড়ুন।","দাম লেখা Unity pack এড়িয়ে চলুন।"]} },
+  { id:"polyhaven", name:"Poly Haven", mono:"PH", url:"https://polyhaven.com", domain:"polyhaven.com",
+    job:{en:"Realistic sky and light (HDRIs), textures and furniture.", bn:"Realistic আকাশ ও আলো (HDRI), texture আর furniture।"},
+    best:{en:"Realistic rooms. Sky and light for every scene.", bn:"Realistic ঘর। প্রতিটি দৃশ্যের আকাশ ও আলো।"},
+    style:{en:"Realistic", bn:"Realistic"}, realistic:true, chars:false, anim:"none", cc0:true,
+    lic:["ok","CC0",{en:"No credit needed. The site's preview images and logo are not CC0.", bn:"ক্রেডিট লাগে না। সাইটের preview ছবি আর logo CC0 নয়।"}],
+    paid:["ok",{en:"None", bn:"নেই"},{en:"All free. Patreon is optional.", bn:"সব free। Patreon ঐচ্ছিক।"}],
+    formats:{en:"Models: glTF · FBX · USD · Blend — Textures 1K–8K — HDRI .hdr / .exr", bn:"Model: glTF · FBX · USD · Blend — Texture 1K–8K — HDRI .hdr / .exr"}, account:{en:"Not needed", bn:"লাগে না"},
+    rig:{en:"No characters or animals.", bn:"চরিত্র বা প্রাণী নেই।"},
+    packs:{en:["~980 HDRIs","~780 textures","Furniture","Household objects","Food","Lights","Plants"],
+           bn:["~৯৮০ HDRI","~৭৮০ texture","Furniture","ঘরের জিনিস","খাবার","আলো","গাছপালা"]},
+    steps:{en:["Open HDRIs, Textures or Models.","Open an asset.","Select the resolution (2K–4K for video).","For a model, select glTF.","Click Download."],
+           bn:["HDRIs, Textures বা Models খুলুন।","একটি asset খুলুন।","Resolution বাছুন (ভিডিওতে 2K–4K)।","Model হলে glTF বাছুন।","Download চাপুন।"]},
+    warn:{en:["The site's preview images and logo are not CC0. Do not use them in thumbnails."],
+          bn:["সাইটের preview ছবি আর logo CC0 নয়। Thumbnail-এ এগুলো ব্যবহার করবেন না।"]} },
+  { id:"ambientcg", name:"ambientCG", mono:"aC", url:"https://ambientcg.com", domain:"ambientcg.com",
+    job:{en:"Realistic materials for floors, walls and roads.", bn:"মেঝে, দেয়াল আর রাস্তার realistic material।"},
+    best:{en:"Realistic floors, walls, roads, ground.", bn:"Realistic মেঝে, দেয়াল, রাস্তা, মাটি।"},
+    style:{en:"Realistic textures", bn:"Realistic texture"}, realistic:true, chars:false, anim:"none", cc0:true,
+    lic:["ok","CC0",{en:"No credit needed. Preview images are CC0 too.", bn:"ক্রেডিট লাগে না। Preview ছবিও CC0।"}],
+    paid:["ok",{en:"None", bn:"নেই"},{en:"All free. Patreon only removes ads.", bn:"সব free। Patreon শুধু ad সরায়।"}],
+    formats:{en:"1K–8K · JPG or PNG zip", bn:"1K–8K · JPG বা PNG zip"}, account:{en:"Not needed", bn:"লাগে না"},
+    rig:{en:"No characters.", bn:"চরিত্র নেই।"},
+    packs:{en:["Wood","Tiles","Concrete","Bricks","Fabric","Metal","Ground","HDRI","Decals"],
+           bn:["কাঠ","টাইল","কংক্রিট","ইট","কাপড়","ধাতু","মাটি","HDRI","Decal"]},
+    steps:{en:["Search for a material (for example \"tiles\").","Open the asset.","Download the 2K-JPG zip."],
+           bn:["একটি material খুঁজুন (যেমন \"tiles\")।","Asset খুলুন।","2K-JPG zip নামান।"]},
+    warn:{en:["An 8K-PNG file can be ~800 MB. 2K-JPG is enough for video."],
+          bn:["8K-PNG ফাইল ~৮০০ MB পর্যন্ত বড়। ভিডিওতে 2K-JPG যথেষ্ট।"]} },
+  { id:"opengameart", name:"OpenGameArt", mono:"OG", url:"https://opengameart.org", domain:"opengameart.org",
+    job:{en:"Last option. Use it only when the other six sites do not have the item.", bn:"শেষ উপায়। অন্য ছয়টি সাইটে জিনিসটি না পেলে ব্যবহার করুন।"},
+    best:{en:"Rare items that you cannot find elsewhere.", bn:"বিরল জিনিস, যা অন্য কোথাও নেই।"},
+    style:{en:"Mixed, many old", bn:"মিশ্র, অনেক পুরোনো"}, realistic:false, chars:true, anim:"varies", cc0:false,
+    lic:["bad",{en:"Mixed (5 types)", bn:"মিশ্র (৫ ধরন)"},{en:"CC0, CC-BY, CC-BY-SA, OGA-BY and GPL. Each asset is different.", bn:"CC0, CC-BY, CC-BY-SA, OGA-BY আর GPL। প্রতিটি asset আলাদা।"}],
+    paid:["ok",{en:"None", bn:"নেই"},{en:"All free.", bn:"সব free।"}],
+    formats:{en:"Often .blend only — these need Blender to convert", bn:"প্রায়ই শুধু .blend — রূপান্তরের জন্য Blender লাগে"}, account:{en:"Usually not needed", bn:"সাধারণত লাগে না"},
+    rig:{en:"Few characters. Most are old and .blend only.", bn:"অল্প চরিত্র। বেশিরভাগ পুরোনো আর শুধু .blend।"},
+    packs:{en:["Modular Dungeon 2","Nature Kit","Modular Terrain","Modular Village","Suburb Asset","Rocks","Bushes"],
+           bn:["Modular Dungeon 2","Nature Kit","Modular Terrain","Modular Village","Suburb Asset","Rocks","Bushes"]},
+    steps:{en:["In search, set Art Type = 3D Art.","In the license filter, select only CC0.","On the asset page, read the file types.","Prefer assets that include FBX, OBJ or glTF."],
+           bn:["Search-এ Art Type = 3D Art বাছুন।","License filter-এ শুধু CC0 বাছুন।","Asset page-এ ফাইলের ধরন পড়ুন।","FBX, OBJ বা glTF আছে এমন asset বেছে নিন।"]},
+    warn:{en:["Do not use CC-BY-SA or GPL in a monetized video.","A .blend-only asset needs Blender before you can use it in other tools."],
+          bn:["CC-BY-SA বা GPL monetized ভিডিওতে ব্যবহার করবেন না।","শুধু .blend হলে অন্য tool-এ ব্যবহারের আগে Blender লাগে।"]} }
+];
+
+const LIB = { id:"library", name:{en:"Any rigged character", bn:"যেকোনো rigged চরিত্র"}, short:{en:"Other characters", bn:"অন্য চরিত্র"}, mono:"+" };
+
+/* ---------- scenes: c / e / l = characters / environment / light: [text, source ids] ---------- */
+const SCENES = [
+  { id:"cartoon-city", label:{en:"Cartoon city", bn:"Cartoon শহর"},
+    c:[{en:"Quaternius Universal Base Characters with the Universal Animation Library.", bn:"Quaternius Universal Base Characters, সাথে Universal Animation Library।"},["quaternius"]],
+    e:[{en:"Quaternius Downtown City MegaKit. Roads and cars from Kenney City Kit.", bn:"Quaternius Downtown City MegaKit। রাস্তা ও গাড়ি Kenney City Kit থেকে।"},["quaternius","kenney"]],
+    l:[{en:"One outdoor HDRI from Poly Haven.", bn:"Poly Haven-এর একটি outdoor HDRI।"},["polyhaven"]],
+    note:{en:"All files are CC0. No credit is necessary.", bn:"সব ফাইল CC0। কোনো ক্রেডিট লাগে না।"} },
+  { id:"toy-town", label:{en:"Toy town", bn:"খেলনা শহর"},
+    c:[{en:"KayKit Adventurers with KayKit Character Animations.", bn:"KayKit Adventurers, সাথে KayKit Character Animations।"},["kaykit"]],
+    e:[{en:"KayKit City Builder Bits (the free part).", bn:"KayKit City Builder Bits (free অংশ)।"},["kaykit"]],
+    l:[{en:"One soft-sky HDRI from Poly Haven.", bn:"Poly Haven-এর একটি নরম আকাশের HDRI।"},["polyhaven"]],
+    note:{en:"On KayKit, type 0 in the price box. Do not take paid packs.", bn:"KayKit-এ দামের ঘরে 0 লিখুন। Paid pack নেবেন না।"} },
+  { id:"real-room", label:{en:"Realistic room", bn:"Realistic ঘর"},
+    c:[{en:"Realistic rigged characters from any library, for example Mixamo.", bn:"যেকোনো library-র realistic rigged চরিত্র, যেমন Mixamo।"},["library"]],
+    e:[{en:"Poly Haven furniture. Floors and walls from ambientCG.", bn:"Poly Haven furniture। মেঝে ও দেয়াল ambientCG থেকে।"},["polyhaven","ambientcg"]],
+    l:[{en:"One indoor HDRI from Poly Haven.", bn:"Poly Haven-এর একটি indoor HDRI।"},["polyhaven"]],
+    note:{en:"Do not mix low-poly models into this scene.", bn:"এই দৃশ্যে low-poly model মেশাবেন না।"} },
+  { id:"real-street", label:{en:"Realistic street", bn:"Realistic রাস্তা"},
+    c:[{en:"Realistic rigged characters with walk and idle animations.", bn:"Realistic rigged চরিত্র, সাথে হাঁটা ও দাঁড়ানোর animation।"},["library"]],
+    e:[{en:"Poly Haven props. Roads and walls from ambientCG textures.", bn:"Poly Haven prop। রাস্তা ও দেয়াল ambientCG texture থেকে।"},["polyhaven","ambientcg"]],
+    l:[{en:"A Poly Haven outdoor HDRI. It gives the background and the light.", bn:"Poly Haven-এর outdoor HDRI। এটি background আর আলো দুটোই দেয়।"},["polyhaven"]],
+    note:{en:"Far buildings stay in the HDRI. Build only the near objects as models.", bn:"দূরের বাড়ি HDRI-তেই থাকে। শুধু কাছের জিনিস model দিয়ে বানান।"} },
+  { id:"cartoon-room", label:{en:"Cartoon room", bn:"Cartoon ঘর"},
+    c:[{en:"Quaternius Universal Base Characters with the Universal Animation Library.", bn:"Quaternius Universal Base Characters, সাথে Universal Animation Library।"},["quaternius"]],
+    e:[{en:"Quaternius Ultimate House Interior or Kenney Furniture Kit. Small objects from Poly Pizza (CC0 only).", bn:"Quaternius Ultimate House Interior বা Kenney Furniture Kit। ছোট জিনিস Poly Pizza থেকে (শুধু CC0)।"},["quaternius","kenney","polypizza"]],
+    l:[{en:"One indoor HDRI from Poly Haven.", bn:"Poly Haven-এর একটি indoor HDRI।"},["polyhaven"]],
+    note:{en:"If you take a CC-BY model from Poly Pizza, add a credit to the description.", bn:"Poly Pizza থেকে CC-BY model নিলে description-এ ক্রেডিট দিন।"} },
+  { id:"forest", label:{en:"Forest", bn:"বন"},
+    c:[{en:"Quaternius characters or Animated Animals.", bn:"Quaternius চরিত্র বা Animated Animals।"},["quaternius"]],
+    e:[{en:"Quaternius Stylized Nature MegaKit. For a toy style, KayKit Forest Nature Pack.", bn:"Quaternius Stylized Nature MegaKit। খেলনা স্টাইলে KayKit Forest Nature Pack।"},["quaternius","kaykit"]],
+    l:[{en:"One open-sky HDRI from Poly Haven.", bn:"Poly Haven-এর একটি খোলা আকাশের HDRI।"},["polyhaven"]],
+    note:{en:"Take all trees for one scene from one source. Then the style matches.", bn:"এক দৃশ্যের সব গাছ একটি সাইট থেকে নিন। তাহলে স্টাইল মিলবে।"} },
+  { id:"dungeon", label:{en:"Dungeon", bn:"Dungeon"},
+    c:[{en:"KayKit Adventurers and Skeletons, or Quaternius Bestiary monsters.", bn:"KayKit Adventurers ও Skeletons, অথবা Quaternius Bestiary দানব।"},["kaykit","quaternius"]],
+    e:[{en:"KayKit Dungeon Pack, or Quaternius Modular Dungeons with Medieval Village MegaKit.", bn:"KayKit Dungeon Pack, অথবা Quaternius Modular Dungeons আর Medieval Village MegaKit।"},["kaykit","quaternius"]],
+    l:[{en:"Inside: warm point lights for the torches. Outside: a Poly Haven HDRI.", bn:"ভেতরে: মশালের জন্য উষ্ণ point light। বাইরে: Poly Haven HDRI।"},["polyhaven"]],
+    note:{en:"Do not mix KayKit and Quaternius characters. Their proportions are different.", bn:"KayKit আর Quaternius চরিত্র একসাথে মেশাবেন না। তাদের অনুপাত আলাদা।"} },
+  { id:"scifi", label:{en:"Sci-fi", bn:"Sci-fi"},
+    c:[{en:"Quaternius characters, Robot or Mech.", bn:"Quaternius চরিত্র, Robot বা Mech।"},["quaternius"]],
+    e:[{en:"Quaternius Modular Sci-Fi Megakit with Space Kit. Other option: Kenney Space Station Kit.", bn:"Quaternius Modular Sci-Fi Megakit আর Space Kit। বিকল্প: Kenney Space Station Kit।"},["quaternius","kenney"]],
+    l:[{en:"A Poly Haven night-sky HDRI, or a simple star field.", bn:"Poly Haven-এর রাতের আকাশের HDRI, অথবা একটি সরল তারার আকাশ।"},["polyhaven"]],
+    note:{en:"All files are CC0.", bn:"সব ফাইল CC0।"} },
+  { id:"animals", label:{en:"Animals", bn:"প্রাণী"},
+    c:[{en:"Quaternius Ultimate Animated Animal Pack, with its own animations.", bn:"Quaternius Ultimate Animated Animal Pack, নিজস্ব animation সহ।"},["quaternius","polypizza"]],
+    e:[{en:"Quaternius Stylized Nature MegaKit.", bn:"Quaternius Stylized Nature MegaKit।"},["quaternius"]],
+    l:[{en:"One Poly Haven HDRI.", bn:"Poly Haven-এর একটি HDRI।"},["polyhaven"]],
+    note:{en:"These animals are also on Poly Pizza as CC0.", bn:"এই প্রাণীগুলো Poly Pizza-তেও CC0-তে আছে।"} }
+];
+
+const FILTERS = [
+  {id:"all", label:{en:"All", bn:"সব"}, test:()=>true},
+  {id:"chars", label:{en:"Characters", bn:"চরিত্র"}, test:s=>s.chars},
+  {id:"anim", label:{en:"Animated", bn:"Animated"}, test:s=>s.anim==="full"},
+  {id:"real", label:{en:"Realistic", bn:"Realistic"}, test:s=>s.realistic},
+  {id:"cc0", label:{en:"CC0", bn:"CC0"}, test:s=>s.cc0}
+];
+const ANIM = {
+  full:["ok",{en:"Rigged + animated", bn:"Rig ও animation আছে"}], few:["warn",{en:"Few animations", bn:"অল্প animation"}],
+  varies:["warn",{en:"Varies by model", bn:"Model অনুযায়ী আলাদা"}], none:["neutral",{en:"No characters", bn:"চরিত্র নেই"}]
+};
+const TABS = [{id:"all", label:{en:"All", bn:"সব"}}, ...SCENES];
+const ALL = [LIB, ...SITES];
+const byId = Object.fromEntries(ALL.map(s=>[s.id,s]));
+
+/* ---------- helpers ---------- */
+let LANG = "en";
+const T = v => (v && typeof v === "object" && !Array.isArray(v) && "en" in v) ? (v[LANG] ?? v.en) : v;
+const S = k => T(STR[k]);
+const N = n => LANG === "bn" ? String(n).replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]) : String(n);
+const $ = s => document.querySelector(s);
+const esc = t => String(t).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const mt = (s, size="") => `<span class="mt ${size}" aria-hidden="true">${esc(s.mono)}</span>`;
+const pill = (kind, text) => `<span class="pill ${kind}">${esc(T(text))}</span>`;
+const badge = k => `<i class="r r-${k}" title="${esc(S("role."+k))}">${k.toUpperCase()}</i>`;
+const rolesOf = (sc, id) => ["c","e","l"].filter(k => sc[k][1].includes(id));
+const motion = () => matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+const narrow = () => matchMedia("(max-width: 920px)").matches;
+function store(k, v){ try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k, v); }catch(e){ return null; } }
+
+const state = { scene:"all", source:"quaternius", filter:"all" };
+const tabs = $("#sceneTabs"), ind = tabs.querySelector(".seg-ind"), panel = $("#scenePanel");
+const list = $("#srcList"), detail = $("#detail"), fWrap = $("#filters"), langSw = $("#langSwitch");
+
+/* ---------- scene tabs ---------- */
+TABS.forEach(t => {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "seg-btn"; b.id = "tab-" + t.id; b.dataset.id = t.id; b.textContent = T(t.label);
+  b.setAttribute("role","tab"); b.setAttribute("aria-controls","scenePanel");
+  b.addEventListener("click", () => setScene(t.id));
+  tabs.appendChild(b);
+});
+tabs.addEventListener("keydown", e => {
+  if(!["ArrowLeft","ArrowRight","Home","End"].includes(e.key)) return;
+  e.preventDefault();
+  const i = TABS.findIndex(t => t.id === state.scene);
+  let n = e.key==="ArrowLeft" ? i-1 : e.key==="ArrowRight" ? i+1 : e.key==="Home" ? 0 : TABS.length-1;
+  n = (n + TABS.length) % TABS.length;
+  setScene(TABS[n].id);
+  document.getElementById("tab-" + TABS[n].id).focus();
+});
+function moveInd(){
+  const b = document.getElementById("tab-" + state.scene);
+  if(!b) return;
+  ind.style.width = b.offsetWidth + "px";
+  ind.style.transform = `translateX(${b.offsetLeft}px)`;
+}
+function edges(){
+  const max = tabs.scrollWidth - tabs.clientWidth;
+  tabs.classList.toggle("fade-l", tabs.scrollLeft > 2);
+  tabs.classList.toggle("fade-r", max > 2 && tabs.scrollLeft < max - 2);
+}
+function setScene(id){
+  if(!TABS.some(t => t.id === id)) id = "all";
+  state.scene = id; store("am-scene", id);
+  tabs.querySelectorAll(".seg-btn").forEach(b => {
+    const on = b.dataset.id === id;
+    b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1;
+  });
+  panel.setAttribute("aria-labelledby", "tab-" + id);
+  moveInd();
+  const b = document.getElementById("tab-" + id);
+  if(b.offsetLeft < tabs.scrollLeft + 40 || b.offsetLeft + b.offsetWidth > tabs.scrollLeft + tabs.clientWidth - 40)
+    tabs.scrollTo({ left: b.offsetLeft - tabs.clientWidth/2 + b.offsetWidth/2, behavior: motion() });
+  renderPanel(); renderList();
+}
+
+/* ---------- scene panel ---------- */
+const chipFor = id => id === "library"
+  ? `<span class="src-chip static">${mt(LIB,"xs")}${esc(T(LIB.name))}</span>`
+  : `<button type="button" class="src-chip" data-src="${id}">${mt(byId[id],"xs")}${esc(byId[id].name)}</button>`;
+
+function renderPanel(){
+  if(state.scene === "all"){
+    panel.innerHTML = `
+      <div class="mx-wrap"><table class="matrix">
+        <caption class="sr">${esc(S("mx.caption"))}</caption>
+        <thead><tr><th class="mx-scene" scope="col">${esc(S("mx.scene"))}</th>${ALL.map(s => `<th scope="col"><span class="mx-h">${mt(s,"sm")}<span>${esc(T(s.short || s.name))}</span></span></th>`).join("")}</tr></thead>
+        <tbody>${SCENES.map(sc => `<tr data-open="${sc.id}">
+          <th scope="row" class="mx-scene"><button type="button" class="mx-open">${esc(T(sc.label))}${ICON.arrow}</button></th>
+          ${ALL.map(s => { const r = rolesOf(sc, s.id); return `<td>${r.length ? `<span class="cell">${r.map(badge).join("")}</span>` : `<span class="nil"></span><span class="sr">${esc(S("mx.nil"))}</span>`}</td>`; }).join("")}
+        </tr>`).join("")}</tbody>
+      </table></div>
+      <div class="scene-foot">${ICON.info}<span>${esc(S("mx.foot"))}</span></div>`;
+    panel.querySelectorAll("tr[data-open]").forEach(tr => tr.addEventListener("click", () => setScene(tr.dataset.open)));
+    return;
+  }
+  const sc = SCENES.find(s => s.id === state.scene);
+  panel.innerHTML = `
+    <div class="layers">${["c","e","l"].map(k => `
+      <div class="layer">
+        <div class="layer-head">${badge(k)}<span>${esc(S("role."+k))}</span></div>
+        <p>${esc(T(sc[k][0]))}</p>
+        <div class="chips">${sc[k][1].map(chipFor).join("")}</div>
+      </div>`).join("")}</div>
+    <div class="scene-foot">${ICON.info}<span>${esc(T(sc.note))}</span></div>`;
+  panel.querySelectorAll("[data-src]").forEach(b => b.addEventListener("click", () => selectSource(b.dataset.src, true)));
+}
+
+/* ---------- source browser ---------- */
+FILTERS.forEach(f => {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "seg-btn"; b.id = "f-" + f.id; b.dataset.f = f.id; b.textContent = T(f.label);
+  b.addEventListener("click", () => setFilter(f.id));
+  fWrap.appendChild(b);
+});
+function setFilter(id){
+  if(!FILTERS.some(f => f.id === id)) id = "all";
+  state.filter = id; store("am-filter", id);
+  fWrap.querySelectorAll(".seg-btn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.f === id)));
+  renderList();
+}
+function renderList(){
+  const f = FILTERS.find(x => x.id === state.filter);
+  const sc = SCENES.find(s => s.id === state.scene);
+  const shown = SITES.filter(f.test);
+  if(!shown.some(s => s.id === state.source)){ state.source = shown[0].id; renderDetail(); }
+  const used = sc ? SITES.filter(s => rolesOf(sc, s.id).length).length : 0;
+  const note = !sc ? "" : LANG === "bn"
+    ? `<b>${esc(T(sc.label))}</b> দৃশ্যে ৭টির মধ্যে ${N(used)}টি সাইট লাগে`
+    : `${used} of 7 sources used in <b>${esc(T(sc.label))}</b>`;
+  list.innerHTML = (sc ? `<li class="list-note">${note}</li>` : "") +
+    shown.map(s => {
+      const r = sc ? rolesOf(sc, s.id) : [];
+      return `<li><button type="button" class="src-item${sc && !r.length ? " off" : ""}" data-src="${s.id}" aria-current="${s.id === state.source}">
+        ${mt(s)}<span class="nm">${esc(s.name)}</span><span class="rl">${r.map(badge).join("")}</span><span class="jb">${esc(T(s.job))}</span>
+      </button></li>`;
+    }).join("");
+  list.querySelectorAll(".src-item").forEach(b => b.addEventListener("click", () => selectSource(b.dataset.src, narrow())));
+}
+function selectSource(id, scroll){
+  if(!SITES.some(s => s.id === id)) return;
+  if(!FILTERS.find(x => x.id === state.filter).test(byId[id])){
+    state.filter = "all"; store("am-filter","all");
+    fWrap.querySelectorAll(".seg-btn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.f === "all")));
+  }
+  state.source = id; store("am-source", id);
+  renderList(); renderDetail();
+  if(scroll) (narrow() ? detail : $("#sources")).scrollIntoView({ behavior: motion(), block:"start" });
+}
+function renderDetail(){
+  const s = byId[state.source];
+  detail.setAttribute("aria-label", s.name);
+  detail.innerHTML = `
+    <div class="d-head">
+      ${mt(s,"lg")}
+      <div class="d-title"><h3>${esc(s.name)}</h3><a class="d-domain" href="${s.url}" target="_blank" rel="noopener">${esc(s.domain)}</a></div>
+      <a class="btn" href="${s.url}" target="_blank" rel="noopener">${esc(S("d.open"))} ${ICON.out}</a>
+    </div>
+    <p class="d-job">${esc(T(s.job))}</p>
+    <dl class="spec">
+      <div><dt>${esc(S("d.license"))}</dt><dd>${pill(s.lic[0], s.lic[1])}</dd></div>
+      <div><dt>${esc(S("d.anim"))}</dt><dd>${pill(ANIM[s.anim][0], ANIM[s.anim][1])}</dd></div>
+      <div><dt>${esc(S("d.style"))}</dt><dd>${esc(T(s.style))}</dd></div>
+      <div><dt>${esc(S("d.paid"))}</dt><dd>${pill(s.paid[0], s.paid[1])}</dd></div>
+    </dl>
+    <dl class="rows">
+      <div><dt>${esc(S("d.best"))}</dt><dd>${esc(T(s.best))}</dd></div>
+      <div><dt>${esc(S("d.license"))}</dt><dd>${esc(T(s.lic[2]))}</dd></div>
+      <div><dt>${esc(S("d.cost"))}</dt><dd>${esc(T(s.paid[2]))}</dd></div>
+      <div><dt>${esc(S("d.formats"))}</dt><dd class="mono">${esc(T(s.formats))}</dd></div>
+      <div><dt>${esc(S("d.account"))}</dt><dd>${esc(T(s.account))}</dd></div>
+      <div><dt>${esc(S("d.rig"))}</dt><dd>${esc(T(s.rig))}</dd></div>
+    </dl>
+    <div><h4>${esc(S("d.packs"))}</h4><div class="tags">${T(s.packs).map(p => `<span class="tag">${esc(p)}</span>`).join("")}</div></div>
+    <div class="d-cols">
+      <div class="box"><h4>${esc(S("d.steps"))}</h4><ol class="steps">${T(s.steps).map(x => `<li><span>${esc(x)}</span></li>`).join("")}</ol></div>
+      <div class="box caution"><h4>${esc(S("d.warn"))}</h4><ul class="cautions">${T(s.warn).map(x => `<li>${ICON.warn}<span>${esc(x)}</span></li>`).join("")}</ul></div>
+    </div>`;
+}
+
+/* ---------- compare table ---------- */
+function renderCompare(){
+  const cmp = $("#cmp");
+  cmp.innerHTML = `
+    <thead><tr><th class="first" scope="col">${esc(S("c.source"))}</th><th scope="col">${esc(S("d.best"))}</th><th scope="col">${esc(S("c.chars"))}</th><th scope="col">${esc(S("d.anim"))}</th><th scope="col">${esc(S("d.style"))}</th><th scope="col">${esc(S("d.license"))}</th><th scope="col">${esc(S("d.paid"))}</th><th scope="col">${esc(S("d.account"))}</th></tr></thead>
+    <tbody>${SITES.map(s => `<tr data-src="${s.id}" tabindex="0">
+      <th scope="row" class="first"><span class="srcname">${mt(s)}${esc(s.name)}</span></th>
+      <td class="best">${esc(T(s.best))}</td>
+      <td>${s.chars ? pill("ok", STR.yes) : pill("neutral", STR.no)}</td>
+      <td>${pill(ANIM[s.anim][0], ANIM[s.anim][1])}</td>
+      <td>${esc(T(s.style))}</td>
+      <td>${pill(s.lic[0], s.lic[1])}</td>
+      <td>${pill(s.paid[0], s.paid[1])}</td>
+      <td>${esc(T(s.account))}</td>
+    </tr>`).join("")}</tbody>`;
+  cmp.querySelectorAll("tr[data-src]").forEach(tr => {
+    tr.addEventListener("click", () => selectSource(tr.dataset.src, true));
+    tr.addEventListener("keydown", e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); selectSource(tr.dataset.src, true); } });
+  });
+}
+
+/* ---------- language ---------- */
+function setLang(l){
+  LANG = l === "bn" ? "bn" : "en"; store("am-lang", LANG);
+  document.documentElement.lang = LANG;
+  langSw.querySelectorAll(".seg-btn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === LANG)));
+  document.querySelectorAll("[data-t]").forEach(el => el.textContent = S(el.dataset.t));
+  document.querySelectorAll("[data-th]").forEach(el => el.innerHTML = S(el.dataset.th));
+  document.querySelectorAll("[data-ta]").forEach(el => el.setAttribute("aria-label", S(el.dataset.ta)));
+  tabs.querySelectorAll(".seg-btn").forEach(b => b.textContent = T(TABS.find(t => t.id === b.dataset.id).label));
+  fWrap.querySelectorAll(".seg-btn").forEach(b => b.textContent = T(FILTERS.find(f => f.id === b.dataset.f).label));
+  renderPanel(); renderList(); renderDetail(); renderCompare();
+  requestAnimationFrame(() => { moveInd(); edges(); });
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(() => { moveInd(); edges(); });
+}
+langSw.querySelectorAll(".seg-btn").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
+
+/* ---------- copy credit ---------- */
+$("#copyBtn").addEventListener("click", e => {
+  const btn = e.currentTarget, box = $("#credit");
+  const done = () => { btn.textContent = S("copied"); setTimeout(() => btn.textContent = S("copy"), 1600); };
+  const fallback = () => { const r = document.createRange(); r.selectNodeContents(box); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); btn.textContent = S("copyFail"); };
+  try{ navigator.clipboard.writeText(box.textContent).then(done, fallback); }catch(err){ fallback(); }
+});
+
+/* ---------- start ---------- */
+const hash = location.hash.slice(1);
+const savedSrc = store("am-source");
+state.source = SITES.some(s => s.id === hash) ? hash : (SITES.some(s => s.id === savedSrc) ? savedSrc : "quaternius");
+state.filter = FILTERS.some(f => f.id === store("am-filter")) ? store("am-filter") : "all";
+const savedScene = store("am-scene");
+state.scene = TABS.some(t => t.id === savedScene) ? savedScene : "all";
+setLang(hash === "bn" ? "bn" : hash === "en" ? "en" : (store("am-lang") || "en"));
+setFilter(state.filter);
+setScene(state.scene);
+edges();
+requestAnimationFrame(() => tabs.classList.add("ready"));
+tabs.addEventListener("scroll", edges, { passive:true });
+addEventListener("resize", () => { moveInd(); edges(); });
+if("ResizeObserver" in window) new ResizeObserver(() => { moveInd(); edges(); }).observe(tabs);
+</script>
+
+</body>
+</html>

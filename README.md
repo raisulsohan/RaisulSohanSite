@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.51.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.52.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.52
+
+**The free 3D asset map gets its own page.**
+
+- **7.52.0: /3dinformation.** The Free 3D Asset Map (seven free 3D asset sources for characters, environments, textures and HDRIs, with nine scene recipes, a source browser, a compare table and its own EN/BN switch and light and dark modes) is served at `/3dinformation`, with or without the trailing slash, as the finished file `parts/3dinformation.html`, byte for byte: its own styles, scripts, meta tags and canonical link (`https://raisulsohan.com/3dinformation`), outside the site's header, stylesheet and scripts. `inc/19-3d-information.php` answers the address with a rewrite rule (added on the version bump, no WordPress page needed) before `redirect_canonical()`, so the address without the slash is not redirected, and lists it in the sitemap of the main edition (`/wp-sitemap-standalone-1.xml`). The page loads Geist, Geist Mono and Noto Sans Bengali from Google Fonts. It is not linked from the site menu.
 
 ## What's new in 7.51
 
@@ -560,7 +566,7 @@ raisul-sohan/
 ├── style.css              Theme header only (the stylesheet is built, see below)
 ├── functions.php          Constants, then loads every inc/NN-*.php in order
 ├── inc/
-│   ├── 01-theme-setup.php … 18-map-animation-demo.php   The theme, one file per area
+│   ├── 01-theme-setup.php … 19-3d-information.php   The theme, one file per area
 │   ├── github-updater.php Self-updater: checks GitHub for new versions
 │   └── portfolio-cpt.php  Portfolio post type, meta boxes, admin reorder
 ├── src/
