@@ -224,9 +224,10 @@ foreach ( $rs_md_sections as $rs_md_s ) {
 	.wwm { pointer-events: none; }
 	.wwm > * { pointer-events: auto; }
 
-	/* Back to top: the site's button (44px circle, 18px arrow) in the portfolio's dark glass, above Work with me */
+	/* Back to top: the site's button (44px circle, 18px arrow) in the portfolio's dark glass, above Work with me.
+	   pointer-events comes back after all: unset, which would otherwise inherit the stack's none and leave the button dead. */
 	.to-top {
-		all: unset; box-sizing: border-box; display: grid; place-items: center; width: 44px; height: 44px; cursor: pointer;
+		all: unset; pointer-events: auto; box-sizing: border-box; display: grid; place-items: center; width: 44px; height: 44px; cursor: pointer;
 		border: 1px solid var(--line); border-radius: 50%; color: #fff; background: rgba(22, 18, 42, .86);
 		-webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 14px 34px -14px rgba(108, 76, 255, .8);
 		opacity: 0; visibility: hidden; transform: translateY(8px); transition: opacity .2s ease, transform .2s ease, visibility .2s ease;
