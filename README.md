@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.53.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.54.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.54
+
+**One back-to-top button across the site.**
+
+- **7.54.0: The same back-to-top button on every page.** It was a small rounded square on the home page, the stories, the CV and in the reading modal, a 46 px dark glass circle on the portfolio, and missing on the two standalone pages. Now it is one design everywhere: a 44 px circle with an 18 px arrow and a 1 px border, in the page's own surface colour, filled with the solid colour on hover (the portfolio keeps its dark glass and purple gradient), fading in and rising 8 px once the reader is 300 px down, and scrolling smoothly to the top (at once with reduced motion). `.rs-top` and `.rs-modal__top` share one rule in `08-scroll-to-top.css`; the portfolio's version in `21-portfolio-page.css` keeps only its position and colours; both arrows are now 18 px. The map animation demos page gets the portfolio's version above its Work with me button, in the same corner stack. The 3D asset map gets its own copy in the finished file, copied byte for byte: beside its content column on wide screens and in the corner (inside the phone's safe area) on narrow ones, in the page's light and dark colours, reading "Back to top" or "উপরে যান" with the EN/BN switch, with room at the bottom of its footer so it never covers the last line. On both standalone pages keyboard focus moves to the first link at the top after the click, because the button hides there.
 
 ## What's new in 7.53
 

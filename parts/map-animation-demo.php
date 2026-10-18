@@ -220,7 +220,22 @@ foreach ( $rs_md_sections as $rs_md_s ) {
 	.wwm-row .ok { margin-left: 6px; color: var(--ok); font-weight: 700; letter-spacing: 0; text-transform: none; }
 	.wwm-row a.btn { height: 32px; font-size: 12px; text-decoration: none; }
 	@media (max-width: 600px) { .wwm { right: 16px; bottom: 16px; } }
-	@media (prefers-reduced-motion: reduce) { .wwm-btn, .wwm-btn .dot, .wwm-card { animation: none; } html { scroll-behavior: auto; } }
+	/* The stack's own box is taller than its buttons (the hidden back-to-top keeps its place); clicks on the empty part reach the page. */
+	.wwm { pointer-events: none; }
+	.wwm > * { pointer-events: auto; }
+
+	/* Back to top: the site's button (44px circle, 18px arrow) in the portfolio's dark glass, above Work with me */
+	.to-top {
+		all: unset; box-sizing: border-box; display: grid; place-items: center; width: 44px; height: 44px; cursor: pointer;
+		border: 1px solid var(--line); border-radius: 50%; color: #fff; background: rgba(22, 18, 42, .86);
+		-webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 14px 34px -14px rgba(108, 76, 255, .8);
+		opacity: 0; visibility: hidden; transform: translateY(8px); transition: opacity .2s ease, transform .2s ease, visibility .2s ease;
+	}
+	.to-top.is-visible { opacity: 1; visibility: visible; transform: none; }
+	.to-top:hover { border-color: transparent; background: linear-gradient(135deg, var(--brand), var(--pink)); }
+	.to-top:focus-visible { outline: 2px solid var(--key); outline-offset: 3px; }
+	.to-top svg { display: block; }
+	@media (prefers-reduced-motion: reduce) { .wwm-btn, .wwm-btn .dot, .wwm-card { animation: none; } .to-top { transition: none; } html { scroll-behavior: auto; } }
 </style>
 </head>
 <body>
@@ -285,6 +300,7 @@ foreach ( $rs_md_sections as $rs_md_s ) {
 </main>
 
 <div class="wwm" id="wwm">
+	<button type="button" class="to-top" id="toTop" aria-label="Back to top" title="Back to top"><?php echo wp_kses( rs_icon( 'up', 18 ), rs_svg_tags() ); ?></button>
 	<div class="wwm-card" id="wwmCard" role="dialog" aria-label="Work with me" hidden>
 		<div class="hd"><span>Let's work together</span><button type="button" class="x" id="wwmClose" aria-label="Close">×</button></div>
 		<div class="wwm-row">
@@ -416,6 +432,16 @@ $('wwmBtn').onclick = () => {
 };
 $('wwmClose').onclick = () => { wwm(false); $('wwmBtn').focus(); };
 document.addEventListener('pointerdown', e => { if (!$('wwmCard').hidden && !e.target.closest('#wwm')) wwm(false); });
+
+// Back to top: shows after 300px, like the button on the rest of the site
+const toTop = $('toTop');
+const topBtn = () => toTop.classList.toggle('is-visible', scrollY > 300);
+addEventListener('scroll', topBtn, { passive: true });
+toTop.onclick = () => {
+  scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  document.querySelector('.top a').focus({ preventScroll: true });   // the button hides at the top, so keyboard focus moves to the first link
+};
+topBtn();
 
 readHash(); load(false);
 </script>

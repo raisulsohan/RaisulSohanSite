@@ -51,7 +51,7 @@ $rs_about = rs_about();
 </div>
 
 <button class="rs-top" type="button" id="rs-top" aria-label="<?php echo esc_attr( rs_is_en() ? 'Back to top' : 'উপরে যান' ); ?>">
-	<?php echo wp_kses( rs_icon( 'up' ), rs_svg_tags() ); ?>
+	<?php echo wp_kses( rs_icon( 'up', 18 ), rs_svg_tags() ); ?>
 </button>
 
 <?php
@@ -90,7 +90,7 @@ if ( is_singular( 'post' ) && function_exists( 'rs_post_twin' ) && rs_post_twin(
 			<div class="rs-article" id="rs-post-body"></div>
 		</div>
 		<button class="rs-modal__top" type="button" id="rs-modal-top" aria-label="<?php echo esc_attr( rs_is_en() ? 'Back to top' : 'উপরে যান' ); ?>">
-			<?php echo wp_kses( rs_icon( 'up' ), rs_svg_tags() ); ?>
+			<?php echo wp_kses( rs_icon( 'up', 18 ), rs_svg_tags() ); ?>
 		</button>
 	</div>
 </div>

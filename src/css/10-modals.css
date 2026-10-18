@@ -242,33 +242,13 @@
 	box-shadow: 0 0 0 1px currentColor;
 }
 
-/* Same control as .rs-top, but bound to the modal's own scroller. */
+/* Same control as .rs-top (its look is in 08-scroll-to-top.css), but bound
+   to the modal's own scroller. */
 .rs-modal__top {
 	position: absolute;
 	bottom: 1rem;
 	right: 1rem;
 	z-index: 2;
-	padding: 0.5rem;
-	background: var(--rs-solid-bg);
-	color: var(--rs-solid-fg);
-	border-radius: var(--rs-radius-lg);
-	box-shadow: var(--rs-shadow-md);
-	transition: opacity 0.2s ease, visibility 0.2s ease;
-	opacity: 0;
-	visibility: hidden;
-}
-
-.rs-modal__top.is-visible {
-	opacity: 1;
-	visibility: visible;
-}
-
-.rs-modal__top:hover {
-	opacity: 0.75;
-}
-
-.rs-modal__top svg {
-	display: block;
 }
 
 /* The end of a story is a finished render: the label and the bar turn green. */

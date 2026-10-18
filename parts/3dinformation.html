@@ -237,8 +237,17 @@ footer{margin-top:72px;border-top:1px solid var(--line)}
 footer .gut{padding-block:24px 40px;display:flex;justify-content:space-between;gap:8px 24px;flex-wrap:wrap;font-size:13.5px;color:var(--muted)}
 footer .foot-site{padding-bottom:0;align-items:center;font-size:14px;color:var(--ink-2)}
 footer .foot-site + .gut{padding-top:12px}
+footer .gut:last-child{padding-bottom:76px} /* room for the back-to-top button at the end of the page */
 .foot-nav{display:flex;flex-wrap:wrap;gap:4px 18px}
 .foot-nav a{font-weight:500}
+
+/* back to top: the same button as on raisulsohan.com (44 px circle, 18 px arrow, solid on hover); shows after 300 px of scroll,
+   beside the content column on wide screens and in the corner on narrow ones */
+.to-top{position:fixed;z-index:40;right:max(16px,env(safe-area-inset-right,0px),calc(50% - 544px - 24px - 44px));bottom:max(16px,env(safe-area-inset-bottom,0px));width:44px;height:44px;display:grid;place-items:center;padding:0;border:1px solid var(--line-strong);border-radius:999px;background:var(--raised);color:var(--ink);box-shadow:0 1px 2px #0F111514,0 6px 20px #0F11151F;cursor:pointer;opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .2s,transform .2s,visibility .2s,background-color .15s,color .15s,border-color .15s}
+.to-top.show{opacity:1;visibility:visible;transform:none}
+.to-top:hover{border-color:transparent;background:var(--ink);color:var(--bg)}
+.to-top svg{display:block}
+.to-top:focus-visible{border-radius:999px}
 
 /* Bangla: no tracking (it breaks conjuncts), a little more leading */
 html[lang="bn"] body{line-height:1.7}
@@ -409,6 +418,10 @@ CC BY 3.0 — modified</div>
   </div>
 </footer>
 
+<button type="button" class="to-top" id="toTop" data-ta="top" aria-label="Back to top" title="Back to top">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+</button>
+
 <script>
 const ICON = {
   out:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11 11 5M6 5h5v5"/></svg>',
@@ -460,6 +473,7 @@ const STR = {
   "link.home":{en:"Home", bn:"প্রথম পাতা"}, "link.portfolio":{en:"Portfolio", bn:"পোর্টফোলিও"},
   "foot.by":{en:"Made by Raisul Sohan", bn:"তৈরি করেছেন রাইসুল সোহান"},
   "aria.crumbs":{en:"Breadcrumb", bn:"পথনির্দেশ"},
+  "top":{en:"Back to top", bn:"উপরে যান"},
   "aria.nav":{en:"Sections", bn:"অংশ"}, "aria.lang":{en:"Language", bn:"ভাষা"}, "aria.legend":{en:"Layer key", bn:"Layer-এর চিহ্ন"},
   "aria.scenes":{en:"Scenes", bn:"দৃশ্য"}, "aria.filters":{en:"Filter sources", bn:"সাইট ফিল্টার"}, "aria.list":{en:"Sources", bn:"সাইট"},
   "mx.caption":{en:"Which source gives which layer, per scene", bn:"প্রতিটি দৃশ্যে কোন সাইট কোন layer দেয়"},
@@ -844,6 +858,7 @@ function setLang(l){
   document.querySelectorAll("[data-th]").forEach(el => el.innerHTML = S(el.dataset.th));
   document.querySelectorAll("[data-ta]").forEach(el => el.setAttribute("aria-label", S(el.dataset.ta)));
   document.querySelectorAll("[data-href]").forEach(el => { el.href = T(HREF[el.dataset.href]); el.hreflang = LANG; });
+  toTop.title = S("top");
   tabs.querySelectorAll(".seg-btn").forEach(b => b.textContent = T(TABS.find(t => t.id === b.dataset.id).label));
   fWrap.querySelectorAll(".seg-btn").forEach(b => b.textContent = T(FILTERS.find(f => f.id === b.dataset.f).label));
   renderPanel(); renderList(); renderDetail(); renderCompare();
@@ -860,6 +875,15 @@ $("#copyBtn").addEventListener("click", e => {
   try{ navigator.clipboard.writeText(box.textContent).then(done, fallback); }catch(err){ fallback(); }
 });
 
+/* ---------- back to top ---------- */
+const toTop = $("#toTop");
+const topBtn = () => toTop.classList.toggle("show", scrollY > 300);
+addEventListener("scroll", topBtn, { passive:true });
+toTop.addEventListener("click", () => {
+  scrollTo({ top:0, behavior: motion() });
+  $(".brand").focus({ preventScroll:true });   // the button hides at the top, so keyboard focus moves to the brand link
+});
+
 /* ---------- start ---------- */
 const hash = location.hash.slice(1);
 const savedSrc = store("am-source");
@@ -871,6 +895,7 @@ setLang(hash === "bn" ? "bn" : hash === "en" ? "en" : (store("am-lang") || "en")
 setFilter(state.filter);
 setScene(state.scene);
 edges();
+topBtn();
 requestAnimationFrame(() => tabs.classList.add("ready"));
 tabs.addEventListener("scroll", edges, { passive:true });
 addEventListener("resize", () => { moveInd(); edges(); });

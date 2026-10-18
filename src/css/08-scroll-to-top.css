@@ -2,28 +2,56 @@
    8. Scroll to top
    ========================================================================== */
 
+/* One back-to-top button for the whole site: the page's (.rs-top), the
+   reading modal's (.rs-modal__top, placed in 10-modals.css), the portfolio's
+   dark version (21-portfolio-page.css), and the same shape on the two pages
+   that stand alone (the map demos and the 3D asset map). A 44px circle with
+   an 18px arrow, the page's surface colour, filled with the solid colour on
+   hover; it fades in and rises 8px once the reader is 300px down. */
+.rs-top,
+.rs-modal__top {
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	padding: 0;
+	border: 1px solid var(--rs-border);
+	border-radius: 50%;
+	background: var(--rs-surface);
+	color: var(--rs-fg);
+	box-shadow: var(--rs-shadow-md);
+	cursor: pointer;
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(8px);
+	transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease, background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.rs-top.is-visible,
+.rs-modal__top.is-visible {
+	opacity: 1;
+	visibility: visible;
+	transform: none;
+}
+
+.rs-top:hover,
+.rs-modal__top:hover {
+	border-color: transparent;
+	background: var(--rs-solid-bg);
+	color: var(--rs-solid-fg);
+}
+
+.rs-top svg,
+.rs-modal__top svg {
+	display: block;
+}
+
+/* Beside the 48rem column, its left edge on the column's right edge. */
 .rs-top {
 	position: fixed;
 	bottom: 2rem;
-	right: calc(50% - 24rem - 2rem);
+	right: calc(50% - 24rem - 44px);
 	z-index: 30;
-	padding: 0.5rem;
-	background: var(--rs-solid-bg);
-	color: var(--rs-solid-fg);
-	border-radius: var(--rs-radius-lg);
-	box-shadow: var(--rs-shadow-md);
-	transition: opacity 0.2s ease, visibility 0.2s ease;
-	opacity: 0;
-	visibility: hidden;
-}
-
-.rs-top.is-visible {
-	opacity: 1;
-	visibility: visible;
-}
-
-.rs-top:hover {
-	opacity: 0.75;
 }
 
 /*

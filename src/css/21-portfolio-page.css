@@ -1903,17 +1903,12 @@ body.rs-stage {
    the column's right edge (1180px wide less its 32px padding, 880px on a
    project page), and back to the window's corner once the window is too
    narrow to leave room out there. */
+/* The site's button (08-scroll-to-top.css) in the stage's dark glass. */
 .rs-stage .rs-top {
-	--rs-top-edge: calc(1180px / 2 - 32px + 24px + 46px);
+	--rs-top-edge: calc(1180px / 2 - 32px + 24px + 44px);
 	right: max(clamp(16px, 2.5vw, 32px), calc(50% - var(--rs-top-edge)));
 	bottom: clamp(16px, 2.5vw, 28px);
-	display: grid;
-	place-items: center;
-	width: 46px;
-	height: 46px;
-	padding: 0;
-	border: 1px solid #2c2642;
-	border-radius: 50%;
+	border-color: #2c2642;
 	color: #fff;
 	background: rgba(22, 18, 42, 0.86);
 	-webkit-backdrop-filter: blur(10px);
@@ -1922,12 +1917,12 @@ body.rs-stage {
 }
 
 .rs-stage--project .rs-top {
-	--rs-top-edge: calc(880px / 2 - 32px + 24px + 46px);
+	--rs-top-edge: calc(880px / 2 - 32px + 24px + 44px);
 }
 
 .rs-stage .rs-top:hover {
-	opacity: 1;
 	border-color: transparent;
+	color: #fff;
 	background: linear-gradient(135deg, #6c4cff, #ea77ff);
 }
 
