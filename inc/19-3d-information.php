@@ -46,6 +46,20 @@ function rs_3d_info_url() {
 }
 
 /**
+ * The link the rest of the site gives the page (the portfolio's hero, the
+ * footer, the command palette): always the canonical address on the main
+ * edition, opened in the reader's language. The page reads #en or #bn on
+ * load and switches to it.
+ *
+ * @return string
+ */
+function rs_3d_info_link() {
+	$main = is_multisite() ? get_main_site_id() : null;
+
+	return get_home_url( $main, '/' . RS_3D_INFO_SLUG ) . '#' . ( rs_is_en() ? 'en' : 'bn' );
+}
+
+/**
  * Serve the page and stop; nothing else in the theme runs for it.
  *
  * At priority 1, before redirect_canonical() (10), so the address without

@@ -45,6 +45,8 @@
 	margin-inline-start: 0.75rem;
 	text-decoration: none;
 	border-bottom: 1px solid var(--rs-rule);
+	/* Three links can wrap on a phone; each one wraps as a whole. */
+	white-space: nowrap;
 }
 
 .rs-footer__link:hover,

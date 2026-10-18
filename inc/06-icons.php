@@ -49,6 +49,7 @@ function rs_icon( $name, $size = 15 ) {
 		/* The meridians are drawn rather than a second circle: rs_svg_tags()
 		   allows circle, but an ellipse is what this shape actually wants. */
 		'globe'    => '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18"/>',
+		'cube'     => '<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',
 	);
 
 	$fill = array(

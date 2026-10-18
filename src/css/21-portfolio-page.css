@@ -200,6 +200,15 @@
 	margin-top: 1.9rem;
 }
 
+/* The pages that show the work (map animation, 3D asset map) share a row of
+   their own, so four buttons sit two and two instead of one left alone. */
+.rs-pf__showcase {
+	display: flex;
+	flex-wrap: wrap;
+	flex-basis: 100%;
+	gap: 0.75rem;
+}
+
 .rs-pf-btn {
 	display: inline-flex;
 	align-items: center;

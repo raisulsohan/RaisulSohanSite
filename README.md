@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.52.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.53.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.53
+
+**The 3D asset map is linked both ways.**
+
+- **7.53.0: Links to and from /3dinformation.** The page gains a breadcrumb above its heading (Raisul Sohan / Portfolio / Free 3D Asset Map) and a footer row (Made by Raisul Sohan · Home · Portfolio). Both follow its EN/BN switch: English opens `/en/` and `/en/portfolio/`, Bangla opens `/` and `/portfolio/`. The change is made in the finished file and copied byte for byte, as before. The site links to the page from a **3D asset map** button in the portfolio's hero (beside Map animation, with a new `cube` icon), from the footer on every page (between Story timeline and Privacy) and from the command palette. In the hero, Map animation and 3D asset map share a row of their own (`.rs-pf__showcase`), so the four buttons sit two and two; the footer links no longer break inside a link when the three of them wrap on a phone. All three use `rs_3d_info_link()`: the canonical address on the main edition with `#en` or `#bn`, so the page opens in the reader's edition's language.
 
 ## What's new in 7.52
 

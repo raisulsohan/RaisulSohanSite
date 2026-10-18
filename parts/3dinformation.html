@@ -84,6 +84,11 @@ button{font:inherit;color:inherit}
 .meta{display:flex;flex-wrap:wrap;gap:8px}
 .meta span{display:inline-flex;align-items:center;gap:8px;font:500 12.5px/1.2 var(--f-mono);color:var(--ink-2);padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
 .meta b{font-weight:600;color:var(--ink)}
+.crumbs ol{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;list-style:none;margin:0;padding:0;font-size:13.5px;line-height:1.4;color:var(--muted)}
+.crumbs li{display:flex;align-items:center;gap:8px;min-width:0}
+.crumbs li + li::before{content:"/";color:var(--line-strong)}
+.crumbs a,.foot-nav a{color:var(--ink-2);text-decoration:none;border-radius:4px}
+.crumbs a:hover,.foot-nav a:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 
 /* sections */
 main{padding-bottom:24px}
@@ -230,6 +235,10 @@ html[lang="bn"] .steps li::before{content:counter(s,bengali)}
 
 footer{margin-top:72px;border-top:1px solid var(--line)}
 footer .gut{padding-block:24px 40px;display:flex;justify-content:space-between;gap:8px 24px;flex-wrap:wrap;font-size:13.5px;color:var(--muted)}
+footer .foot-site{padding-bottom:0;align-items:center;font-size:14px;color:var(--ink-2)}
+footer .foot-site + .gut{padding-top:12px}
+.foot-nav{display:flex;flex-wrap:wrap;gap:4px 18px}
+.foot-nav a{font-weight:500}
 
 /* Bangla: no tracking (it breaks conjuncts), a little more leading */
 html[lang="bn"] body{line-height:1.7}
@@ -292,6 +301,13 @@ html[lang="bn"] .eyebrow,html[lang="bn"] h4,html[lang="bn"] .spec dt,html[lang="
 
 <div class="hero-band" id="top">
   <header class="hero gut">
+    <nav class="crumbs" data-ta="aria.crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="https://raisulsohan.com/en/" data-href="home" data-t="name">Raisul Sohan</a></li>
+        <li><a href="https://raisulsohan.com/en/portfolio/" data-href="portfolio" data-t="link.portfolio">Portfolio</a></li>
+        <li><span aria-current="page" data-t="hero.title">Free 3D Asset Map</span></li>
+      </ol>
+    </nav>
     <span class="eyebrow" data-t="hero.eyebrow">Field guide · free assets for 3D video scenes</span>
     <h1 data-t="hero.title">Free 3D Asset Map</h1>
     <p class="lede" data-t="hero.lede">Seven free sources for characters, sets, textures and light. Select a scene. The map shows which source gives each layer.</p>
@@ -380,6 +396,13 @@ CC BY 3.0 — modified</div>
 </main>
 
 <footer>
+  <div class="gut foot-site">
+    <span data-t="foot.by">Made by Raisul Sohan</span>
+    <nav class="foot-nav" data-ta="name" aria-label="Raisul Sohan">
+      <a href="https://raisulsohan.com/en/" data-href="home" data-t="link.home">Home</a>
+      <a href="https://raisulsohan.com/en/portfolio/" data-href="portfolio" data-t="link.portfolio">Portfolio</a>
+    </nav>
+  </div>
   <div class="gut">
     <span data-t="foot.1">Data checked on the official page of each source on 18 October 2026.</span>
     <span data-t="foot.2">"Not verified" means the source does not give that fact.</span>
@@ -433,6 +456,10 @@ const STR = {
   "copyFail":{en:"Text selected. Press Ctrl+C.", bn:"লেখা select হয়েছে। Ctrl+C চাপুন।"},
   "foot.1":{en:"Data checked on the official page of each source on 18 October 2026.", bn:"সব তথ্য ১৮ অক্টোবর ২০২৬ তারিখে প্রতিটি সাইটের official page থেকে যাচাই করা।"},
   "foot.2":{en:"\"Not verified\" means the source does not give that fact.", bn:"\"যাচাই হয়নি\" মানে সাইট নিজে তথ্যটি দেয়নি।"},
+  "name":{en:"Raisul Sohan", bn:"রাইসুল সোহান"},
+  "link.home":{en:"Home", bn:"প্রথম পাতা"}, "link.portfolio":{en:"Portfolio", bn:"পোর্টফোলিও"},
+  "foot.by":{en:"Made by Raisul Sohan", bn:"তৈরি করেছেন রাইসুল সোহান"},
+  "aria.crumbs":{en:"Breadcrumb", bn:"পথনির্দেশ"},
   "aria.nav":{en:"Sections", bn:"অংশ"}, "aria.lang":{en:"Language", bn:"ভাষা"}, "aria.legend":{en:"Layer key", bn:"Layer-এর চিহ্ন"},
   "aria.scenes":{en:"Scenes", bn:"দৃশ্য"}, "aria.filters":{en:"Filter sources", bn:"সাইট ফিল্টার"}, "aria.list":{en:"Sources", bn:"সাইট"},
   "mx.caption":{en:"Which source gives which layer, per scene", bn:"প্রতিটি দৃশ্যে কোন সাইট কোন layer দেয়"},
@@ -445,6 +472,12 @@ const STR = {
   "d.packs":{en:"Useful packs", bn:"কাজের pack"}, "d.steps":{en:"How to download", bn:"কীভাবে নামাবেন"}, "d.warn":{en:"Watch out", bn:"সতর্কতা"},
   "c.source":{en:"Source", bn:"সাইট"}, "c.chars":{en:"Characters", bn:"চরিত্র"},
   "yes":{en:"Yes", bn:"আছে"}, "no":{en:"No", bn:"নেই"}
+};
+
+/* ---------- links back to raisulsohan.com: each language opens its own edition ---------- */
+const HREF = {
+  home:{en:"https://raisulsohan.com/en/", bn:"https://raisulsohan.com/"},
+  portfolio:{en:"https://raisulsohan.com/en/portfolio/", bn:"https://raisulsohan.com/portfolio/"}
 };
 
 /* ---------- sources ---------- */
@@ -810,6 +843,7 @@ function setLang(l){
   document.querySelectorAll("[data-t]").forEach(el => el.textContent = S(el.dataset.t));
   document.querySelectorAll("[data-th]").forEach(el => el.innerHTML = S(el.dataset.th));
   document.querySelectorAll("[data-ta]").forEach(el => el.setAttribute("aria-label", S(el.dataset.ta)));
+  document.querySelectorAll("[data-href]").forEach(el => { el.href = T(HREF[el.dataset.href]); el.hreflang = LANG; });
   tabs.querySelectorAll(".seg-btn").forEach(b => b.textContent = T(TABS.find(t => t.id === b.dataset.id).label));
   fWrap.querySelectorAll(".seg-btn").forEach(b => b.textContent = T(FILTERS.find(f => f.id === b.dataset.f).label));
   renderPanel(); renderList(); renderDetail(); renderCompare();

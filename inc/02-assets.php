@@ -53,6 +53,7 @@ function rs_assets() {
 			'catId'      => is_category() ? get_queried_object_id() : 0,
 			'animations' => get_theme_mod( 'rs_enable_animations', true ) ? 1 : 0,
 			'isEn'       => rs_is_en(),
+			'assetMap'   => esc_url_raw( rs_3d_info_link() ),
 			'editBase'   => current_user_can( 'edit_posts' )
 				? admin_url( 'post.php?action=edit&post=' )
 				: '',
