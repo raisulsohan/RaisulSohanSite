@@ -104,6 +104,18 @@ function rs_rest_routes() {
 				'first' => array(
 					'sanitize_callback' => 'absint',
 				),
+				/* What the site's own statistics need, and nothing more
+				   (21-statistics.php): the page before, whether this
+				   starts a visit, and the browser's time zone. */
+				'ref'   => array(
+					'sanitize_callback' => 'esc_url_raw',
+				),
+				'visit' => array(
+					'sanitize_callback' => 'absint',
+				),
+				'tz'    => array(
+					'sanitize_callback' => 'sanitize_text_field',
+				),
 			),
 		)
 	);
@@ -481,6 +493,11 @@ function rs_rest_view( $request ) {
 	}
 
 	rs_bump( $id, RS_VIEWS_KEY );
+
+	/* The same reading, as a line in the site's own statistics. */
+	if ( function_exists( 'rs_stats_record' ) ) {
+		rs_stats_record( $id, '', (string) $request->get_param( 'ref' ), (bool) $request->get_param( 'visit' ), (string) $request->get_param( 'tz' ) );
+	}
 
 	/*
 	 * Whether this browser has opened this post before is the browser's

@@ -9,6 +9,25 @@
 	var searchTimer = null;
 	var searchSeq = 0;
 
+	/* The term the reader settled on and how many it found, for the site's
+	   statistics. Reported once, when they open a result, close the box or
+	   leave the page: the letters typed on the way to it are not searches. */
+	var searchSeen = null;
+
+	function reportSearch() {
+		if ( ! searchSeen || searchSeen.sent ) {
+			return;
+		}
+
+		searchSeen.sent = true;
+		tell( 'event', { kind: 'search', label: searchSeen.term, found: searchSeen.total } );
+	}
+
+	if ( searchOverlay ) {
+		searchOverlay.addEventListener( 'rs:closed', reportSearch );
+		window.addEventListener( 'pagehide', reportSearch );
+	}
+
 	function openSearch() {
 		openOverlay( searchOverlay );
 
@@ -23,6 +42,10 @@
 	}
 
 	function renderResults( data, term ) {
+		if ( ! searchSeen || searchSeen.term !== term ) {
+			searchSeen = { term: term, total: data.total || 0 };
+		}
+
 		if ( ! data.items.length ) {
 			searchResults.innerHTML = '<p class="rs-search__hint">' + escapeHtml( strings.noResult || '' ) + '</p>';
 			searchCount.hidden = true;
@@ -64,6 +87,10 @@
 			if ( term.length < 2 ) {
 				searchResults.innerHTML = '<p class="rs-search__hint">' + escapeHtml( strings.hint || '' ) + '</p>';
 				searchCount.hidden = true;
+				/* Typed away again: nothing was settled on. */
+				if ( searchSeen && ! searchSeen.sent ) {
+					searchSeen = null;
+				}
 				return;
 			}
 
@@ -98,6 +125,7 @@
 				return;
 			}
 
+			reportSearch();
 			setModalOrigin( btn );
 			openPost( btn.getAttribute( 'data-rs-result' ), btn.getAttribute( 'data-href' ), true );
 		} );

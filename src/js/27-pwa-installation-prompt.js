@@ -140,10 +140,11 @@
 	}() );
 
 	/* A post opened at its own address, rather than in the modal. Zero on
-	   every other kind of page, and countView() ignores zero. */
+	   every other kind of page, and countView() ignores zero. The page the
+	   reader came from is the one the browser remembers. */
 	var mainPid = parseInt( cfg.postId, 10 );
 	if ( mainPid ) {
-		countView( mainPid );
+		countView( mainPid, rest, true );
 	}
 
 	markRead();

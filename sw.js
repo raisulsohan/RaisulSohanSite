@@ -119,6 +119,20 @@ function networkFirst( request, bucket ) {
 self.addEventListener( 'fetch', function ( event ) {
 	var url = new URL( event.request.url );
 
+	/* The site's own statistics (inc/21-statistics.php). How far a story
+	   was read is sent with sendBeacon as the page goes away, and a beacon
+	   left to fall through to the network from a page that is already gone
+	   never arrives in Chromium. Sent on by the worker itself, which
+	   outlives the page. */
+	if (
+		'POST' === event.request.method &&
+		url.origin === self.location.origin &&
+		/\/wp-json\/rs\/v1\/(hit|view\/\d+|depth|event)$/.test( url.pathname )
+	) {
+		event.respondWith( fetch( event.request ) );
+		return;
+	}
+
 	/* Only GETs on this origin, and never the dashboard, the login screen
 	   or a preview: those must always come fresh from the server. */
 	if (

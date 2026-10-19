@@ -100,6 +100,8 @@
 
 					if ( push ) {
 						window.history.pushState( { rs: 'list' }, '', url );
+						/* A page of the list, as much as if it had loaded. */
+						countPage( window.location.pathname, window.location.href );
 					}
 
 					/* Nothing was focused after the old rows went away, so

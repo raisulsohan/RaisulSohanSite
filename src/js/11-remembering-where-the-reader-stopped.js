@@ -231,6 +231,8 @@
 			   edition the story belongs to, which is the site holding the
 			   number. */
 			countView( id, base );
+			/* And from here on, how far into it the reader gets. */
+			readingStart( id, base, postBody.parentNode );
 			/* An en dash, because that is what WordPress puts between a title
 			   and the site name on the post's own page. The modal and the
 			   page are the same reading; a reader flicking between browser
@@ -263,6 +265,7 @@
 		}
 
 		flushPosition();
+		readingStop();
 		if ( typeof renderResume === 'function' ) renderResume();
 		currentPostId = null;
 		currentPostRest = null;

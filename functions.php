@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /* Bump this on every CSS or JS change (after `npm run build`): it is the
    cache buster in the ?ver= query string for style.min.css and app.min.js,
    and it must match the Version in style.css and package.json. */
-define( 'RS_VERSION', '7.55.2' );
+define( 'RS_VERSION', '7.56.0' );
 
 /** Rows per page before anyone changes it on the settings screen, and the
     value fallen back to if the field is ever emptied. */
@@ -71,6 +71,8 @@ foreach ( array(
 	'inc/18-map-animation-demo.php',
 	'inc/19-3d-information.php',
 	'inc/20-showreel.php',
+	'inc/21-statistics.php',
+	'inc/22-statistics-screen.php',
 ) as $rs_module ) {
 	require_once get_template_directory() . '/' . $rs_module;
 }

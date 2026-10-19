@@ -1258,5 +1258,6 @@ facade.href = CUTS[S.cut].watch;
 topBtn(); galUpdate(); sync(0); ui();
 })();
 </script>
+<?php if ( function_exists( 'rs_stats_beacon' ) ) { rs_stats_beacon(); } ?>
 </body>
 </html>

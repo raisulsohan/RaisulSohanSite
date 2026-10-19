@@ -59,6 +59,10 @@
 
 		el.hidden = true;
 
+		/* For whatever wants to know an overlay is gone without owning its
+		   close buttons: the search reports the term it settled on. */
+		el.dispatchEvent( new CustomEvent( 'rs:closed' ) );
+
 		if ( openOverlays.length === 0 ) {
 			lockBody( false );
 

@@ -1468,6 +1468,11 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE ); // phpcs:ignore Wor
 				window.history.pushState(state, '', addr);
 			}
 		}
+		/* Counted as a page of its own in the site's statistics, the same as
+		   the project page it stands in for (src/js/30-statistics.js). */
+		try {
+			document.dispatchEvent(new CustomEvent('rs:page', { detail: { path: portfolioPath + encodeURIComponent(projectId) + '/' } }));
+		} catch (err) {}
 		document.title = p.title.split(/\s+[—–]\s+/)[0] + ' — ' + portfolioTitle;
 
 		var isEn = document.documentElement.lang.indexOf('en') === 0;

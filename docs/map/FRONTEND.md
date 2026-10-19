@@ -16,6 +16,7 @@
 | `fonts.css` | Page bundle: the self-hosted `@font-face` declarations |
 | `cv.css` | Page bundle: the CV page (`page-cv.php`), the sheet on the stage and its print rules; loaded only on `/cv/` |
 | `cv-editor.css` | Admin-only page bundle: the CV content metabox; loaded only while editing the page that uses `page-cv.php` |
+| `stats-admin.css` | Admin-only page bundle: Dashboard › Statistics and its panel on the dashboard (`inc/22-statistics-screen.php`) |
 | `lazylord-demo.css`, `lazyimage-demo.css`, `lazykick-demo.css`, `lazymotion-demo.css`, `lazyeditmirror-demo.css` | Page bundles: one interactive demo per project, loaded only on that project's page |
 
 ## `src/js/`
@@ -23,7 +24,7 @@
 | Part | What it does |
 |---|---|
 | `00-intro.js`, `01-small-helpers.js` | The opening of the closure; small shared helpers |
-| `02-read-count.js`, `03-toasts.js`, `04-clipboard.js` | The view counter through the REST endpoint; toasts; clipboard helpers |
+| `02-read-count.js`, `03-toasts.js`, `04-clipboard.js` | The view counter through the REST endpoint, and the statistics helpers beside it (`countPage()`, `countEvent()`, `tell()`, the visit rule and the reading tracker); toasts; clipboard helpers |
 | `05-handing-a-story-on.js`, `06-reader-font-size.js`, `07-hero-heading.js`, `08-hover-summary.js` | The share bar; the reader's font size in local storage; the typewriter heading; the summary on hover |
 | `09-overlays.js`, `10-post-modal.js`, `11-remembering-where-the-reader-stopped.js`, `12-arrow-keys-move-between-posts-while-the-modal-is-open.js` | Overlays; the reading modal with the URL swap; resume reading; arrow keys between posts |
 | `13-search.js`, `14-page-links.js`, `15-scroll-to-top.js` | Server-side search with highlighting; AJAX pagination; scroll to top |
@@ -32,7 +33,9 @@
 | `22-carry-the-source-along-with-copied-text.js`, `23-quote-to-image-card.js`, `24-editing-a-post-where-it-is-read.js` | Copy attribution; the quote card; front-end quick edit for logged-in admins |
 | `25-service-worker-helper.js`, `26-register-the-service-worker.js`, `27-pwa-installation-prompt.js` | The PWA: helper, registration, the install prompt |
 | `28-command-palette.js`, `29-the-other-language-on-a-story-page.js` | The command palette; the switch to the other edition on a story page |
+| `30-statistics.js` | When the page reports to the site's own statistics: the page itself once it is seen, a project opened in the portfolio's pop-up (`rs:page`), how far a story is read, and links out, files, shares, saves, demos and contact clicks |
 | `cv-editor.js` | Admin-only page bundle: add/remove controls for CV repeaters and the Media Library PDF picker |
+| `stats-admin.js` | Admin-only page bundle: the pointer on the statistics chart, with its card beside the point |
 | `lazylord-demo.js`, `lazyimage-demo.js`, `lazykick-demo.js`, `lazymotion-demo.js`, `lazyeditmirror-demo.js` | Page bundles: the interactive demos, each running its project's own code; fetched by the portfolio pop-up on first use |
 
 After any change here: `npm run build`, commit `assets/*.min.*` with the sources, bump the version in the four places (AGENTS.md § 3).

@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.55.2-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.56.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.56
+
+**The site keeps its own statistics, with a screen of its own in the dashboard.**
+
+- **7.56.0: Dashboard › Statistics.** Every page and story opened on either edition is counted into three small tables that both editions share (`{base_prefix}rs_stats`, `rs_depth`, `rs_events`), by hour, edition, device, country and the site the reader came from, with no third party: the browser reports once a page is in front of somebody (`rs/v1/hit`; a story through the existing `rs/v1/view`, which now carries the same fields), so the full page cache stays in front of everything. Also counted: how far down a story the reader got and how long it was on screen, sent once as they leave it (`rs/v1/depth`); a project opened in the portfolio's pop-up, as a page of its own; a page of the list fetched in place; the search the reader settled on (not the letters typed on the way), with the ones that found nothing kept apart; the addresses that led nowhere, told by the 404 page itself, with scanners left out; and links followed out (GitHub, YouTube, the stores, a GitHub release marked as one), files downloaded (the CV), shares, the read-later button, demos tried and clicks on the email address, WhatsApp or the phone (`rs/v1/event`). The showreel and the map demos, which carry none of the site's script, count themselves through a few inline lines (`rs_stats_beacon()`); the 3D asset map is left as its finished file. Nothing that identifies a reader is stored: no address, no cookie, no id; the country comes from the browser's time zone, and whether a page starts a visit is decided in the browser (half an hour without a page ends one) and sent as a 1 or a 0. The author and other editors, recognised by their login cookie, and anything that looks automated are never counted. The screen (`rs-stats`, admin-only bundles `stats-admin.css` and `stats-admin.js`) opens on the last 24 hours, with 7, 30 and 90 days and the year a click away: figures for right now, views, visits, stories read and how far they were read, each against the period before; the views as a line with a pointer whose card sits beside the point, never on it; the most read stories with how far and how long, the most visited pages, where visits begin, the hours and the days, stories climbing, sources, countries, devices, editions and every list above, with the English edition's entries marked EN. A *Statistics: today* panel on the dashboard's front page leads to it. The service worker now sends these reports on itself, because Chromium drops a beacon from a page that is gone when the worker lets it fall through. The privacy page says what is counted, and a page still in the theme's own words is brought up to date once (`rs_privacy_apply_statistics_v1()`); one edited by hand is left alone.
 
 ## What's new in 7.55
 
@@ -521,6 +527,7 @@ The site title (centered in the header) is pulled from **Settings -> General**, 
 - **Smart Copy Attribution:** Copying text from an article automatically appends the author's name and a link back to the post, provided the copied snippet is over 60 characters.
 - **Reading Time & Summaries:** Automatically calculated on the first load and cached in post meta to avoid heavy server processing on archive pages.
 - **Native View Counter:** The theme tracks "Readers" (unique browsers) and "Reads" (total views) natively via a REST API endpoint (`POST /wp-json/rs/v1/view/<id>`). This bypasses page caching and accurately counts real human interactions. Logged-in editors are excluded from the counts.
+- **Its Own Statistics:** Dashboard › Statistics shows what both editions are read and looked at for, from where, on what and how far down, from three tables of hourly totals the browser reports to (`rs/v1/hit`, `rs/v1/depth`, `rs/v1/event`). No address, cookie or identifier is stored, and editors are left out.
 - **Frontend Quick Edit:** Logged-in admins can edit a post's text directly from the reading interface without jumping into the heavy backend dashboard, complete with save protections and revision history integration.
 - **Auto Image Optimization:** Uploaded JPG/PNG images are natively converted to WebP, auto-resized to max 1600px width, and optimized for quality directly within the theme, entirely replacing the need for image optimization plugins.
 
@@ -587,7 +594,7 @@ raisul-sohan/
 ├── style.css              Theme header only (the stylesheet is built, see below)
 ├── functions.php          Constants, then loads every inc/NN-*.php in order
 ├── inc/
-│   ├── 01-theme-setup.php … 20-showreel.php   The theme, one file per area
+│   ├── 01-theme-setup.php … 22-statistics-screen.php   The theme, one file per area
 │   ├── github-updater.php Self-updater: checks GitHub for new versions
 │   └── portfolio-cpt.php  Portfolio post type, meta boxes, admin reorder
 ├── src/

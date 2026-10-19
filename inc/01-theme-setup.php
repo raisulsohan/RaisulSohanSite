@@ -420,6 +420,7 @@ function rs_flush_rewrite_on_update() {
 	}
 
 	rs_ensure_pages();
+	rs_privacy_apply_statistics_v1();
 	flush_rewrite_rules( false );
 	update_option( 'rs_rewrite_version', RS_VERSION, false );
 }
@@ -486,6 +487,81 @@ function rs_ensure_pages() {
 }
 
 /**
+ * The two paragraphs of the privacy page that say what the site keeps,
+ * as they read now, and as they read before the site kept its own
+ * statistics (7.56), so a page still saying the old thing can be told
+ * the new one. rs_privacy_apply_statistics_v1() does the telling.
+ *
+ * @param bool $en  English site.
+ * @param bool $old The wording before 7.56.
+ * @return string[] { browser, counts } HTML.
+ */
+function rs_privacy_paragraphs( $en, $old = false ) {
+	if ( $old ) {
+		return $en ? array(
+			'browser' => '<p><strong>What stays in your browser.</strong> Your reading preferences (text size, colour, dark mode, animation), the stories you have opened, where you stopped reading, and your "read later" shelf are stored in your own browser&#8217;s local storage. They never leave your device and you can clear them at any time from your browser&#8217;s site settings.</p>',
+			'counts'  => '<p><strong>What the site counts.</strong> Each story shows how many times it has been read. When you open a story, your browser sends a single request that adds one to that number. No IP address, name or identifier is stored with it.</p>',
+		) : array(
+			'browser' => '<p><strong>যা আপনার ব্রাউজারে থাকে।</strong> পড়ার পছন্দ (লেখার আকার, রং, ডার্ক মোড, অ্যানিমেশন), কোন লেখাগুলো খুলেছেন, কোথায় থেমেছিলেন, আর &#8220;পরে পড়ব&#8221; তালিকা, এসব আপনার ব্রাউজারের local storage-এ থাকে। এগুলো কখনো আপনার ডিভাইস ছেড়ে যায় না; ব্রাউজারের সাইট সেটিংস থেকে যেকোনো সময় মুছে ফেলতে পারেন।</p>',
+			'counts'  => '<p><strong>সাইট যা গোনে।</strong> প্রতিটি লেখায় দেখানো হয় কতবার পড়া হয়েছে। লেখা খুললে আপনার ব্রাউজার একটা অনুরোধ পাঠায়, যা ওই সংখ্যায় এক যোগ করে। এর সাথে কোনো IP ঠিকানা, নাম বা পরিচয়সূচক কিছু রাখা হয় না।</p>',
+		);
+	}
+
+	if ( $en ) {
+		return array(
+			'browser' => '<p><strong>What stays in your browser.</strong> Your reading preferences (text size, colour, dark mode, animation), the stories you have opened, where you stopped reading, your "read later" shelf, and the time you last opened a page here (so a new visit can be told from the same one) are stored in your own browser&#8217;s local storage. They never leave your device and you can clear them at any time from your browser&#8217;s site settings.</p>',
+			'counts'  => '<p><strong>What the site counts.</strong> Each story shows how many times it has been read, and the site keeps its own statistics of what is opened, on its own server and not with any analytics service. When you open a page, your browser sends one short request saying which page it is, which site you came from, whether you are on a phone, a tablet or a computer, your browser&#8217;s time zone (from which the country is worked out), and whether it is the first page of a visit. On a story it also reports how far down you read and for how long, and the site counts clicks on links to other sites, downloads, shares, the "read later" button, demos and the search you settled on. All of it is added to totals by the hour. No IP address, cookie, name or identifier is stored with it, nothing is kept that could follow you from one visit to the next, and none of it is shared with anyone.</p>',
+		);
+	}
+
+	return array(
+		'browser' => '<p><strong>যা আপনার ব্রাউজারে থাকে।</strong> পড়ার পছন্দ (লেখার আকার, রং, ডার্ক মোড, অ্যানিমেশন), কোন লেখাগুলো খুলেছেন, কোথায় থেমেছিলেন, &#8220;পরে পড়ব&#8221; তালিকা, আর শেষবার কখন এই সাইটের কোনো পাতা খুলেছিলেন (নতুন ভিজিট শুরু হলো কি না বোঝার জন্য), এসব আপনার ব্রাউজারের local storage-এ থাকে। এগুলো কখনো আপনার ডিভাইস ছেড়ে যায় না; ব্রাউজারের সাইট সেটিংস থেকে যেকোনো সময় মুছে ফেলতে পারেন।</p>',
+		'counts'  => '<p><strong>সাইট যা গোনে।</strong> প্রতিটি লেখায় দেখানো হয় কতবার পড়া হয়েছে, আর কোন পাতা কতবার খোলা হয় তার একটা নিজস্ব হিসাব সাইট রাখে, নিজের সার্ভারে, কোনো অ্যানালিটিক্স সেবায় নয়। কোনো পাতা খুললে আপনার ব্রাউজার একটা ছোট অনুরোধ পাঠায়: কোন পাতা, কোন সাইট থেকে এসেছেন, ফোন, ট্যাবলেট না কম্পিউটার, ব্রাউজারের টাইম জোন (যা থেকে দেশটা বোঝা যায়), আর এটা ভিজিটের প্রথম পাতা কি না। লেখার বেলায় এর সাথে যায় কতটা নিচ পর্যন্ত আর কতক্ষণ পড়েছেন; আর অন্য সাইটের লিংক, ডাউনলোড, শেয়ার, &#8220;পরে পড়ব&#8221; বোতাম, ডেমো আর সার্চে শেষমেশ যা খুঁজেছেন, সেগুলোও গোনা হয়। সবই ঘণ্টা ধরে মোট সংখ্যায় যোগ হয়। এর সাথে কোনো IP ঠিকানা, কুকি, নাম বা পরিচয়সূচক কিছু রাখা হয় না, এক ভিজিট থেকে আরেক ভিজিটে আপনাকে চেনা যায় এমন কিছু থাকে না, আর কারও সাথে কিছু ভাগ করা হয় না।</p>',
+	);
+}
+
+/**
+ * Tell a privacy page published before 7.56 about the statistics, in place.
+ *
+ * The page is written once, when the theme first creates it, so a change
+ * to rs_privacy_page_content() never reaches a site that already has one.
+ * As with the saved CV, only text that still reads exactly as the theme
+ * wrote it is changed: a paragraph edited by hand keeps the edit.
+ */
+function rs_privacy_apply_statistics_v1() {
+	if ( get_option( 'rs_privacy_statistics_v1' ) ) {
+		return;
+	}
+
+	update_option( 'rs_privacy_statistics_v1', 1, false );
+
+	/* The page the footer links to, which is not always the one WordPress
+	   calls its privacy page: a new install makes a draft of its own and
+	   points wp_page_for_privacy_policy at that. */
+	$page = get_page_by_path( 'privacy', OBJECT, 'page' );
+
+	if ( ! $page ) {
+		return;
+	}
+
+	$en      = rs_is_en();
+	$content = str_replace(
+		array_values( rs_privacy_paragraphs( $en, true ) ),
+		array_values( rs_privacy_paragraphs( $en ) ),
+		$page->post_content
+	);
+
+	if ( $content !== $page->post_content ) {
+		wp_update_post(
+			array(
+				'ID'           => $page->ID,
+				'post_content' => $content,
+			)
+		);
+	}
+}
+
+/**
  * The privacy page, written once here so both sites get the same facts.
  *
  * @param bool $en English site.
@@ -494,16 +570,16 @@ function rs_ensure_pages() {
 function rs_privacy_page_content( $en ) {
 	if ( $en ) {
 		return '<p>This site keeps no account of who you are. There is no sign-up, no comment form, no advertising and no third-party analytics. The fonts are served from this site, so no font provider sees your visit.</p>'
-			. '<p><strong>What stays in your browser.</strong> Your reading preferences (text size, colour, dark mode, animation), the stories you have opened, where you stopped reading, and your "read later" shelf are stored in your own browser&#8217;s local storage. They never leave your device and you can clear them at any time from your browser&#8217;s site settings.</p>'
-			. '<p><strong>What the site counts.</strong> Each story shows how many times it has been read. When you open a story, your browser sends a single request that adds one to that number. No IP address, name or identifier is stored with it.</p>'
+			. rs_privacy_paragraphs( true )['browser']
+			. rs_privacy_paragraphs( true )['counts']
 			. '<p><strong>Copying text.</strong> If you copy more than a sentence from a story, the author&#8217;s name and a link back are added to the clipboard so the source travels with the words.</p>'
 			. '<p><strong>Links to other sites.</strong> Portfolio items may link to YouTube, GitHub or other services, which have their own privacy policies.</p>'
 			. '<p>Questions: use the email icon in the header.</p>';
 	}
 
 	return '<p>এই সাইট আপনার পরিচয়ের কোনো হিসাব রাখে না। এখানে সাইন-আপ নেই, মন্তব্যের ফর্ম নেই, বিজ্ঞাপন নেই, বাইরের কোনো অ্যানালিটিক্স নেই। ফন্টগুলো এই সাইট থেকেই আসে, তাই কোনো ফন্ট-সেবাদাতা আপনার আসা টের পায় না।</p>'
-		. '<p><strong>যা আপনার ব্রাউজারে থাকে।</strong> পড়ার পছন্দ (লেখার আকার, রং, ডার্ক মোড, অ্যানিমেশন), কোন লেখাগুলো খুলেছেন, কোথায় থেমেছিলেন, আর &#8220;পরে পড়ব&#8221; তালিকা, এসব আপনার ব্রাউজারের local storage-এ থাকে। এগুলো কখনো আপনার ডিভাইস ছেড়ে যায় না; ব্রাউজারের সাইট সেটিংস থেকে যেকোনো সময় মুছে ফেলতে পারেন।</p>'
-		. '<p><strong>সাইট যা গোনে।</strong> প্রতিটি লেখায় দেখানো হয় কতবার পড়া হয়েছে। লেখা খুললে আপনার ব্রাউজার একটা অনুরোধ পাঠায়, যা ওই সংখ্যায় এক যোগ করে। এর সাথে কোনো IP ঠিকানা, নাম বা পরিচয়সূচক কিছু রাখা হয় না।</p>'
+		. rs_privacy_paragraphs( false )['browser']
+		. rs_privacy_paragraphs( false )['counts']
 		. '<p><strong>লেখা কপি করা।</strong> কোনো লেখা থেকে এক বাক্যের বেশি কপি করলে লেখকের নাম আর লিংক ক্লিপবোর্ডে যুক্ত হয়, যাতে উৎসটা কথার সাথে যায়।</p>'
 		. '<p><strong>অন্য সাইটের লিংক।</strong> পোর্টফোলিওর কিছু লিংক YouTube, GitHub বা অন্য সেবায় নিয়ে যায়; তাদের নিজস্ব গোপনীয়তা নীতি আছে।</p>'
 		. '<p>প্রশ্ন থাকলে হেডারের মেইল আইকনে ক্লিক করুন।</p>';
