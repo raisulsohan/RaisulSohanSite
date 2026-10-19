@@ -268,7 +268,10 @@ $rs_sr_icon = function ( $name, $class = '' ) use ( $rs_sr_icons ) {
 	.h1b { display: block; font-size: clamp(60px, 13.2vw, 196px); line-height: .94; letter-spacing: -.045em; padding: .02em 0 .07em; text-wrap: balance; }
 	.fill { color: var(--fg); }
 	@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+		/* The tight tracking ends the box inside the last letter, and the picture only paints inside the box:
+		   room on both sides keeps every edge filled, and the negative margin keeps the letters where they were. */
 		.fill {
+			padding: 0 .12em; margin: 0 -.12em;
 			color: transparent; -webkit-text-fill-color: transparent;
 			background: #3a3a3c url("<?php echo esc_url( $rs_sr_img . 'fill.webp' . $rs_sr_ver ); ?>") 0 52% / auto 1.08em repeat-x;
 			-webkit-background-clip: text; background-clip: text;
@@ -278,7 +281,7 @@ $rs_sr_icon = function ( $name, $class = '' ) use ( $rs_sr_icons ) {
 	}
 	/* the strip is 19.2 frames wide for its height: 1.08em × 19.2 */
 	@keyframes pan { to { background-position-x: -20.736em; } }
-	.dot { display: inline-block; width: .17em; height: .17em; margin-left: .03em; border-radius: 50%; background: var(--acc); transform-origin: 50% 100%; }
+	.dot { display: inline-block; width: .17em; height: .17em; margin-left: .06em; border-radius: 50%; background: var(--acc); transform-origin: 50% 100%; }
 	.lede { margin: clamp(18px, 2.4vw, 28px) auto 0; max-width: 30em; color: var(--fg2); font-size: clamp(19px, 2vw, 25px); line-height: 1.32; font-weight: 600; letter-spacing: -.02em; text-wrap: balance; }
 	.lede b { color: var(--fg); font-weight: 600; }
 	.cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px 28px; margin-top: clamp(26px, 3.4vw, 38px); }
