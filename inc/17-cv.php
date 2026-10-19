@@ -294,7 +294,7 @@ function rs_cv_data( $post_id = 0 ) {
 			array( 'label' => 'linkedin.com/in/raisulsohan', 'url' => 'https://www.linkedin.com/in/raisulsohan/' ),
 			array( 'label' => 'github.com/raisulsohan', 'url' => 'https://github.com/raisulsohan' ),
 			array( 'label' => 'youtube.com/@nomolosfiles', 'url' => 'https://www.youtube.com/@nomolosfiles' ),
-			array( 'label' => 'Showreel on YouTube', 'url' => 'https://youtu.be/Hdq8STf5beQ' ),
+			array( 'label' => 'Showreel 2026', 'url' => rs_showreel_url() ),
 		),
 
 		/* One sentence for the hero and the search result. */
@@ -425,12 +425,7 @@ function rs_cv_data( $post_id = 0 ) {
 			rs_cv_lingopie_film(),
 			rs_cv_kfc_sniper_film(),
 			rs_cv_lazyeditmirror_work(),
-			array(
-				'title' => 'Showreel',
-				'url'   => 'https://youtu.be/Hdq8STf5beQ',
-				'meta'  => 'Motion design · 2D animation · SaaS product video',
-				'text'  => 'A short reel of selected motion design, 2D animation and SaaS product work.',
-			),
+			rs_cv_showreel_film(),
 		),
 
 		'skills'     => array(
@@ -2062,3 +2057,104 @@ function rs_cv_add_lazyfinds_v1() {
 	update_site_option( $flag, 1 );
 }
 add_action( 'init', 'rs_cv_add_lazyfinds_v1', 32 );
+
+/**
+ * Showreel 2026 in the selected work: the reel's own page at /showreel.
+ *
+ * @return array
+ */
+function rs_cv_showreel_film() {
+	return array(
+		'title' => 'Showreel 2026',
+		'url'   => rs_showreel_url(),
+		'meta'  => 'Motion design & animation reel, 1:00',
+		'text'  => '24 works in 60 seconds, cut on every beat to an original score: documentary and explainer animation, maps, 3D, character and UI motion. Delivered in 16:9 and 4:5.',
+	);
+}
+
+/**
+ * Point a saved CV at Showreel 2026, in place.
+ *
+ * The link and the selected-work entry opened the old reel on YouTube. As in
+ * rs_cv_apply_lazyfinds_v1(), only text that still reads exactly as the
+ * theme wrote it is changed (the entry's meta and text in either of the two
+ * forms the theme used), and only in a link or entry that still opens the
+ * old reel; one pointed elsewhere by hand keeps the edit.
+ *
+ * @param array $saved Saved CV data, changed in place.
+ * @return bool Whether anything changed.
+ */
+function rs_cv_apply_showreel_2026_v1( &$saved ) {
+	$changed = false;
+	$old_url = 'https://youtu.be/Hdq8STf5beQ';
+	$new     = rs_cv_showreel_film();
+
+	if ( isset( $saved['links'] ) && is_array( $saved['links'] ) ) {
+		foreach ( $saved['links'] as &$link ) {
+			if ( ! isset( $link['url'] ) || $old_url !== $link['url'] ) {
+				continue;
+			}
+			$link['url'] = $new['url'];
+			if ( isset( $link['label'] ) && 'Showreel on YouTube' === $link['label'] ) {
+				$link['label'] = 'Showreel 2026';
+			}
+			$changed = true;
+		}
+		unset( $link );
+	}
+
+	if ( isset( $saved['films'] ) && is_array( $saved['films'] ) ) {
+		foreach ( $saved['films'] as &$film ) {
+			if ( ! isset( $film['url'] ) || $old_url !== $film['url'] ) {
+				continue;
+			}
+			$film['url'] = $new['url'];
+			if ( isset( $film['title'] ) && 'Showreel' === $film['title'] ) {
+				$film['title'] = $new['title'];
+			}
+			if ( isset( $film['meta'] ) && in_array( $film['meta'], array( 'Motion design · 2D animation · SaaS product video', 'Motion design, 2D animation and SaaS product video' ), true ) ) {
+				$film['meta'] = $new['meta'];
+			}
+			if ( ! isset( $film['text'] ) || in_array( $film['text'], array( 'A short reel of selected motion design, 2D animation and SaaS product work.', '' ), true ) ) {
+				$film['text'] = $new['text'];
+			}
+			$changed = true;
+		}
+		unset( $film );
+	}
+
+	return $changed;
+}
+
+/**
+ * Run rs_cv_apply_showreel_2026_v1() on the saved CV, once. A CV that was
+ * never saved shows the defaults, which already carry it.
+ */
+function rs_cv_showreel_2026_v1() {
+	$flag = 'rs_cv_showreel_2026_v1';
+	if ( get_site_option( $flag ) ) {
+		return;
+	}
+
+	$page  = null;
+	$saved = false;
+	if ( is_multisite() ) {
+		$saved = rs_cv_saved_data();
+	} else {
+		$page  = get_page_by_path( 'cv', OBJECT, 'page' );
+		$saved = $page ? get_post_meta( $page->ID, '_rs_cv_data', true ) : false;
+	}
+
+	if ( is_array( $saved ) && rs_cv_apply_showreel_2026_v1( $saved ) ) {
+		if ( is_multisite() ) {
+			update_site_option( 'rs_cv_shared_data_v1', $saved );
+		} elseif ( $page ) {
+			update_post_meta( $page->ID, '_rs_cv_data', $saved );
+		}
+
+		rs_cv_purge_network_caches();
+	}
+
+	update_site_option( $flag, 1 );
+}
+add_action( 'init', 'rs_cv_showreel_2026_v1', 33 );

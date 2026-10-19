@@ -1200,48 +1200,52 @@ function rs_get_default_portfolio_projects() {
 		array(
 			'id'          => 'motion-showreel',
 			'category'    => 'video',
-			'type_bn'     => 'মোশন ডিজাইন ও ২ডি অ্যানিমেশন শোরিল',
-			'type_en'     => 'Motion Design & 2D Animation Showreel',
-			'badge_bn'    => 'অফিসিয়াল শোরিল • শোকেস',
-			'badge_en'    => 'Official Showreel • Showcase',
-			'title_bn'    => 'মোশন ডিজাইন, ২ডি অ্যানিমেশন ও প্রোডাক্ট ভিডিও শোরিল',
-			'title_en'    => 'Motion Design, 2D Animation & Product Video Showreel',
-			'summary_bn'  => 'সাস প্রোডাক্ট ওয়াকথ্রু, ২ডি ক্যারেক্টার ও ইনফোগ্রাফিক অ্যানিমেশন, কাইনেটিক টাইপোগ্রাফি এবং ডায়নামিক কমার্শিয়াল মোশন গ্রাফিক্সের নির্বাচিত কাজের হাই-এনার্জি রিদমিক সংকলন। সম্পূর্ণ ভেক্টর আর্টওয়ার্ক অ্যাডোবি ইলাস্ট্রেটরে তৈরি এবং কিফ্রেম ও ভেলোসিটি কার্ভস আফটার ইফেক্টসে কম্পোজ করা।',
-			'summary_en'  => 'A high-impact motion showcase featuring curated excerpts of SaaS product walkthroughs, 2D character and infographic animation, kinetic typography, and dynamic product commercials—crafted with Adobe After Effects and Illustrator.',
-			'role_bn'     => 'মোশন ডিজাইনার, ২ডি অ্যানিমেটর ও কম্পোজিটর',
-			'role_en'     => 'Motion Designer, 2D Animator & Compositor',
-			'context_bn'  => 'অফিসিয়াল মোশন পোর্টফোলিও শোরিল • ১৬:৯ • আফটার ইফেক্টস ও ইলাস্ট্রেটর',
-			'context_en'  => 'Official Motion Portfolio Showreel • 16:9 • After Effects & Illustrator',
-			'challenge_bn'=> "একটি পেশাদার মোশন শোরিলের প্রধান চ্যালেঞ্জ হলো স্বল্প সময়ের মধ্যে বহুমুখী টেকনিক্যাল ও নান্দনিক দক্ষতার গভীরতা বিশ্বাসযোগ্যভাবে প্রমাণ করা। আন্তর্জাতিক ক্লায়েন্ট, ক্রিয়েটিভ ডিরেক্টর এবং প্রোডাক্ট টিম সাধারণত দেখতে চায় অ্যানিমেটর একাধিক জঁনরে—যেমন জটিল SaaS ড্যাশবোর্ড ও ওয়ার্কফ্লো অ্যানিমেশন, ২ডি ভেক্টর ও ইনফোগ্রাফিক ভিজ্যুয়ালাইজেশন (যেমন ফাইন্যান্সিয়াল ও ক্রেডিট কার্ড অ্যানিমেশন), কাইনেটিক টাইপোগ্রাফি এবং হাই-কনভার্টিং প্রোডাক্ট ভিডিও—সমানভাবে দক্ষ কিনা।\n\nদ্বিতীয় বড় চ্যালেঞ্জ ছিল পেসিং ও অডিও-ভিজ্যুয়াল কন্টিনিউটি। ভিন্ন ভিন্ন প্রজেক্টের কালার স্কিম ও ভিজ্যুয়াল স্টাইল থাকা সত্ত্বেও পুরো রিলকে এমনভাবে ট্রানজিশন, ক্যামেরা মুভমেন্ট ও গ্রাফ এডিটর ভেলোসিটিতে গাঁথা হয়েছে যাতে এটি কোনো বিচ্ছিন্ন ক্লিপের সংকলন না হয়ে একটি আকর্ষণীয় একক গতিশীল অভিজ্ঞতা তৈরি করে। প্রতিটি সিন ও কাটে নিখুঁত অডিও ফলি এবং সাউন্ড ডিজাইনের সিঙ্ক বজায় রাখা ছিল অন্যতম সূক্ষ্ম কারিগরি কাজ।",
-			'challenge_en'=> "The core challenge of crafting a definitive motion showreel is condensing multifaceted technical and aesthetic capabilities into a high-retention, fast-paced portfolio piece. Prospective SaaS founders, creative directors, and global agencies look for proven versatility across multiple animation disciplines: dense software UI walkthroughs, 2D vector infographics (such as financial breakdown and credit card sequences), kinetic typography, and punchy product commercial rhythms.\n\nThe secondary challenge was pacing, color harmony, and seamless continuity. Rather than an arbitrary montage of unrelated clips, the reel demanded fluid spatial transitions, matching camera velocity curves, and cohesive kinetic choreography across distinct brand styles. Every visual pop had to preserve razor-sharp vector clarity while locking tightly to the rhythmic tempo and custom micro-audio foley.",
-			'solution_bn' => "১. ১০০% ভেক্টর আর্টওয়ার্ক পাইপলাইন (Adobe Illustrator): শোরিলের প্রতিটি গ্রাফিক, আইকন, ড্যাশবোর্ড কার্ড, ক্যারেক্টার ও ইনফোগ্রাফিক সিন অ্যাডোবি ইলাস্ট্রেটরে নিখুঁত স্কেলেবল ভেক্টর লেয়ারে ডিজাইন করা হয়েছে। ফলে Full HD থেকে 4K ডিসপ্লেতেও প্রতিটি টেক্সট ও শেপ ক্রিস্টাল-ক্লিয়ার শার্প থাকে।\n\n২. গ্রাফ এডিটর ভেলোসিটি ও অর্গানিক মোশন (After Effects): আফটার ইফেক্টসের স্পিড ও ভ্যালু গ্রাফ এডিটর ব্যবহার করে প্রতিটি মুভমেন্টে কাস্টম ইজিং, অর্গানিক ইলাস্টিক বাউন্স ও স্ন্যাপি এক্সিলারেশন যুক্ত করা হয়েছে, যা রোবোটিক ভাব দূর করে আন্তর্জাতিক মানের মোশন নিশ্চিত করে।\n\n৩. বহুমুখী স্কিল ক্লাস্টার প্রদর্শন: শোরিলটিতে সুপরিকল্পিতভাবে ৪টি মূল অ্যানিমেশন ডোমেইন উপস্থাপন করা হয়েছে— (ক) SaaS প্রোডাক্ট ও ইউআই ডেটা ফ্লো অ্যানিমেশন; (খ) ২.৫ডি আইসোমেট্রিক সিটিস্কেপ, ফ্লোটিং অ্যাসেট ও ইনফোগ্রাফিক কম্পোজিশন; (গ) কাইনেটিক টাইপোগ্রাফি ও শেপ মর্ফিং; এবং (ঘ) স্ন্যাপি ক্যামেরা পুশ ও মসৃণ স্প্যাশিয়াল ট্রানজিশন।\n\n৪. ২.৫ডি স্প্যাশিয়াল এনভায়রনমেন্ট ও লাইটিং: সমতল ভেক্টর আর্টওয়ার্কে সিনেম্যাটিক গভীরতা দিতে আফটার ইফেক্টসের ৩ডি লেয়ার স্পেস, ডেপথ অফ ফিল্ড, সফট নিয়ন গ্লো এবং মেঝেতে গ্লসি রিফ্লেকশন টেকনিক ব্যবহার করা হয়েছে।\n\n৫. বিট-পারফেক্ট সাউন্ড ডিজাইন ও অডিও সিঙ্ক: প্রতিটি কার্ড স্লাইড, হুপ, স্ন্যাপ এবং টেক্সট ট্রানজিশনের জন্য মাল্টি-লেয়ার্ড সাউন্ড এফেক্টস (foley, whooshes, clicks, impacts) তৈরি করে ব্যাকগ্রাউন্ড মিউজিকের ড্রপ ও বিটের সাথে ফ্রেম-পারফেক্টভাবে সিঙ্ক করা হয়েছে।",
-			'solution_en' => "1. 100% Scalable Vector Pipeline (Adobe Illustrator): Handcrafted every graphic element, device mock, infographic scene, and typography layout in Adobe Illustrator as pristine vector paths, guaranteeing razor-sharp high-DPI rendering without pixelation.\n\n2. Velocity Curve Smoothing (Adobe After Effects): Rigged and animated using After Effects Graph Editor (Value & Speed curves). Engineered snappy spring physics, fluid ease curves, and energetic overshoot dynamics to deliver world-class broadcast-ready motion.\n\n3. Multi-Discipline Skill Architecture: Strategically orchestrated 4 primary animation domains: (a) SaaS UI deconstruction and product walkthroughs; (b) 2.5D isometric infographic environments (such as urban nightscapes, floating currency, and data cards); (c) Kinetic typography and narrative pacing; and (d) Dynamic camera choreography and spatial transitions.\n\n4. 2.5D Spatial Parallax & Compositing: Transformed flat vector artwork into rich three-dimensional space using After Effects 3D layers, camera focal depth, subtle ambient neon glow effects, and glossy floor reflections.\n\n5. Layered UI Sound Design & Rhythm Lock: Engineered bespoke tactile sound design—pneumatic whooshes, UI pops, impacts, and tempo risers—locked frame-for-frame to motion transformations and musical cadence.",
+			'type_bn'     => 'মোশন ডিজাইন ও অ্যানিমেশন শোরিল',
+			'type_en'     => 'Motion Design & Animation Showreel',
+			'badge_bn'    => 'শোরিল ২০২৬ • ৬০ সেকেন্ড',
+			'badge_en'    => 'Showreel 2026 • 60 Secs',
+			'title_bn'    => 'Showreel 2026 — I Make Stories Move: ৬০ সেকেন্ডে ২৪টি কাজ, প্রতিটি বিটে একটি কাট',
+			'title_en'    => 'Showreel 2026 — I Make Stories Move: 24 Works in 60 Seconds, a Cut on Every Beat',
+			'summary_bn'  => '“I make STORIES MOVE.”: বড় অক্ষরগুলো ভরে ওঠে কাজের ছবিতে, কমলা বিন্দুটি লাফিয়ে এসে হয় দাঁড়ি, আর ক্যামেরা O-এর ফাঁক দিয়ে ঝাঁপ দেয় প্রথম শটে। তারপর ৬০ সেকেন্ডে ২৪টি কাজ, এই রিলের জন্য রচিত মৌলিক স্কোরের প্রতিটি বিটে একটি কাট: প্রথম হিটে সমুদ্র ফুঁড়ে ওঠা এক বিশাল মাছ, পার্ল হারবারে ঝরে পড়া বোমা, ৮,০০০ টেরাকোটা সৈন্য, ব্যাকটেরিয়া গিলে ফেলা এক ইমিউন সেল; গ্লোব ডাইভ, ৩ডি-তে হরমুজ প্রণালী, UNSOLVED সিল মারা ক্রাইম বোর্ড, কোরীয় যুদ্ধের ফ্রন্ট লাইন আর রাতের ঢাকা; স্লো মোশনে ফেটে পড়া এক রঙিন ৩ডি কিউব, এক স্নাইপার, উড়ে যাওয়া এক ড্রামস্টিক আর একটি জোরালো CHOMP, একটি ওয়াক সাইকেল, ইউআই লুপ আর একটি লোগো। লোগো পিছিয়ে গিয়ে হয়ে যায় নয়টি কাজের এক দেয়াল, সাড়ে পাঁচ সেকেন্ডে ছুটে যায় ২২টি মুহূর্ত, আর স্কোর ঘরে ফেরার সাথে আসে শেষ কার্ড। ডকুমেন্টারি ও এক্সপ্লেইনার অ্যানিমেশন, ম্যাপ, ৩ডি, ক্যারেক্টার আর ইউআই মোশন এসেছে Nomolos ও বিচিত্র বিজ্ঞান চ্যানেল, ক্লায়েন্টের ম্যাপের কাজ আর নিজের ফিল্ম থেকে; ১৬:৯ ও ৪:৫ দুই কাটে, ৬০ fps-এ। "শোরিলটি দেখুন" খোলে রিলের নিজের পাতা: অধ্যায়, বিট ধরে সাজানো এডিট আর দুই কাটসহ। ম্যাপ ডেটা © OpenStreetMap contributors, Natural Earth, NASA Blue Marble ও GEBCO; স্যাটেলাইট ছবি Esri, Maxar, Earthstar Geographics ও GIS User Community; ট্রু ক্রাইমের কেসগুলো কাল্পনিক।',
+			'summary_en'  => '“I make STORIES MOVE.”: the big letters fill with the work, the orange dot bounces in as the full stop, and the camera dives through the O into the first shot. Then 24 works in 60 seconds, a cut on every beat of an original score composed for the reel: a giant fish breaking the sea on the first hit, bombs falling on Pearl Harbor, 8,000 terracotta soldiers, an immune cell swallowing a bacterium; globe dives, the Strait of Hormuz in 3D, a crime board stamped UNSOLVED, the Korean War front and Dhaka at night; a candy-coloured 3D cube bursting in slow motion, a sniper, a flying drumstick and one loud CHOMP, a walk cycle, UI loops and a logo. The logo pulls back into a wall of nine works, 22 moments rush past in five and a half seconds, and the end card lands as the score comes home. Documentary and explainer animation, maps, 3D, character and UI motion from the Nomolos and Bichitro Biggan channels, client map work and personal films, delivered in 16:9 and 4:5 at 60 fps. Watch Showreel opens the reel\'s own page, with its chapters, the edit beat by beat and both cuts. Map data © OpenStreetMap contributors, Natural Earth, NASA Blue Marble and GEBCO; satellite imagery Esri, Maxar, Earthstar Geographics and the GIS User Community; the true-crime cases are fictional.',
+			'role_bn'     => 'রাইসুল সোহান — অ্যানিমেশন, এডিট, মোশন ডিজাইন ও সাউন্ড ডিজাইন',
+			'role_en'     => 'Raisul Sohan — Animation, Edit, Motion Design & Sound Design',
+			'context_bn'  => 'শোরিল • ২৪টি কাজ • ১২০ BPM-এর গ্রিডে ৮৫টি কাট • মৌলিক স্কোর • ১৬:৯ ও ৪:৫ • ৬০ fps • ৬০ সেকেন্ড',
+			'context_en'  => 'Showreel • 24 Works • 85 Cuts on a 120 BPM Grid • Original Score • 16:9 & 4:5 • 60 fps • 60 Secs',
+			'challenge_bn'=> "একটা শোরিলের হাতে থাকে এক মিনিট, আর বেশিরভাগ দর্শক সিদ্ধান্ত নেন প্রথম কয়েক সেকেন্ডেই। এই রিলকে ২৪টি কাজের ২৪ রকম চেহারা থেকে পুরো পরিসর দেখাতে হয়েছে: ডকুমেন্টারি ও এক্সপ্লেইনার অ্যানিমেশন, ম্যাপ ও ডেটা, ৩ডি, ক্যারেক্টার অ্যানিমেশন, ইউআই মোশন আর লোগো। তবু পুরোটা মনে হতে হবে এক ছন্দের একটিই ছবি, যার শেষে থাকবে একসাথে কাজ করার পরিষ্কার ডাক।\n\nপ্রধান চ্যালেঞ্জসমূহ:\n১. চার সেকেন্ডের হুক: প্রথম কাটের আগেই বলতে হবে কে এবং কী করেন, তারপর দর্শককে টেনে নিতে হবে সোজা কাজের ভেতরে।\n২. ২৪ চেহারা, এক ছবি: সমতল ২ডি ইতিহাসের ফিল্ম, ইলাস্ট্রেটেড বিজ্ঞান, স্যাটেলাইট ম্যাপ, রঙিন ৩ডি আর কার্টুন ক্যারেক্টার বসবে পাশাপাশি, অথচ রিলটি প্লেলিস্টের মতো লাগবে না।\n৩. প্রতিটি কাট মিউজিকে: প্রতিটি শট পড়বে বিটের ওপর, আর এক সেকেন্ড বা তার কম সময়ে দেখাবে তার কাজের সেরা মুহূর্ত: হিট, রিভিল বা পাঞ্চলাইন।\n৪. দম নেওয়ার জায়গা: এক মিনিট টানা কাট চোখকে ক্লান্ত করে; রিলের দরকার ছিল এমন বিরতি, যাতে পরের হিট আরও জোরে লাগে।\n৫. দুই ফরম্যাট, এক বিট: YouTube আর ওয়েবের জন্য ১৬:৯, ফোনের ফিডের জন্য ৪:৫; চওড়া কাটের মাঝখান থেকে কেটে নিলে কাজগুলো অর্ধেক কাটা পড়ত।",
+			'challenge_en'=> "A showreel gets one minute, and most viewers decide in its first seconds. This one had to show the whole range of the work, documentary and explainer animation, maps and data, 3D, character animation, UI motion and a logo, from 24 pieces with 24 different looks, and still feel like one film with one pulse that ends on a clear call to work together.\n\nCore Challenges:\n1. A Hook in Four Seconds: say who this is and what he does before the first cut, then pull the viewer straight into the work.\n2. Twenty-Four Looks, One Film: flat 2D history films, illustrated science, satellite maps, candy-coloured 3D and cartoon characters had to sit side by side without the reel feeling like a playlist.\n3. Every Cut on the Music: each shot had to land on the beat and show its work's best moment, the hit, the reveal or the punchline, in a second or less.\n4. Room to Breathe: a minute of nonstop cutting tires the eye; the reel needed rests that make the next hit land harder.\n5. Two Formats, One Beat: YouTube and the web want 16:9 and phone feeds want 4:5, and a centre crop of the wide cut would cut the work in half.",
+			'solution_bn' => "১. হুক: “I make STORIES MOVE.” ভরে দেয় পুরো ফ্রেম, বড় অক্ষরগুলোর ভেতরে চলে কাজের ছবি, কমলা বিন্দুটি লাফিয়ে এসে হয় দাঁড়ি, আর ক্যামেরা O-এর ফাঁক দিয়ে ঝাঁপ দেয় প্রথম শটে।\n\n২. তিন অঙ্ক আর এক দৌড়: ডকুমেন্টারি ও এক্সপ্লেইনার (প্রথম হিটে সমুদ্র ফুঁড়ে ওঠা মাছ, Prohibition, The Cobra Effect, পার্ল হারবারের বোমা আর আগুনের গোলা, ৮,০০০ টেরাকোটা সৈন্য, Mirror Life, Consciousness); ম্যাপ ও ডেটা (গ্লোব ডাইভ, ৩ডি-তে হরমুজ প্রণালী, Vox ধাঁচের নদীর বদ্বীপ, নিয়নের রুট, UNSOLVED সিল মারা এভিডেন্স বোর্ড, কোরীয় যুদ্ধের ফ্রন্ট, রাতের ঢাকা, একসাথে চারটি ম্যাপ); তারপর ৩ডি, ক্যারেক্টার, ইউআই ও লোগো (স্লো মোশনে ফেটে পড়া ৩ডি কিউব, এক স্নাইপার, উড়ে যাওয়া ড্রামস্টিক আর একটি জোরালো CHOMP, ওয়াক সাইকেল, ইউআই লুপ আর Nomolos-এর লোগো)।\n\n৩. প্রতিটি বিটে একটি কাট: ১২০ BPM-এর গ্রিডে ৮৫টি কাট: ডকুমেন্টারিতে প্রতি বিটে একটি শট, ম্যাপে প্রতিটি কিকে, বড় মুহূর্তগুলো থাকে দুই বিট, আর শেষের দৌড়ে প্রতি আধা বিটে একটি কাট, ২২টি মুহূর্ত, প্রতি বিটে একটি শব্দ।\n\n৪. দম আর ড্রপ: পৃথিবী ছোট হয়ে মিশে যায় কমলা বিন্দুতে, আধা বিট থেমে থাকে মিউজিক, আর ফিরে আসে ৩ডি বিস্ফোরণের সাথে। শেষ কার্ডের আগে রিল আরেকবার কালো আর নীরব হয়, আর ফিরে আসে বিন্দুটি।\n\n৫. কাজের দেয়াল: লোগো পিছিয়ে গিয়ে হয় নয়টি কাজের ৩×৩ দেয়াল, আর ক্যামেরা তার একটির ভেতরে ঝাঁপ দিয়ে শুরু করে শেষের দৌড়।\n\n৬. মৌলিক স্কোর: এই রিলের জন্যই রচিত, ১২০ BPM-এ, D মেজরে: ৩-৩-২ দোলায় মারিম্বা ও কালিম্বার সুর, প্লাক করা বেস, দুই ও চারে তালি, আর ভোকাল প্যাড; ম্যাপের নিচে ফোর-অন-দ্য-ফ্লোর, দৌড়ের নিচে ধীরে চড়তে থাকা একটানা সুর, আর শেষ কার্ডে সুর ফেরে ঘরে। মিক্স −১৪ LUFS-এ।\n\n৭. দুই কাট, একই বিট: YouTube আর ওয়েবের জন্য ১৯২০×১০৮০-এর ১৬:৯, ফোনের ফিডের জন্য ১০৮০×১৩৫০-এর ৪:৫, যেখানে প্রতিটি কাজ চলে তার নিজের ৪:৫ ফ্রেমিংয়ে; দুটিই ৬০ সেকেন্ড, ৬০ fps, একই টাইমলাইনে, তাই প্রতিটি কাট পড়ে একই বিটে।\n\n৮. শেষ কার্ড: RAISUL SOHAN, মোশন ডিজাইনার ও অ্যানিমেটর, “If you want to work together, CONNECT WITH ME.”, সাথে ইমেল আর WhatsApp, যখন স্কোর ফেরে ঘরে।",
+			'solution_en' => "1. The Hook: “I make STORIES MOVE.” fills the frame with the work playing inside the big letters, the orange dot bounces in and becomes the full stop, and the camera dives through the hole of the O into the first shot.\n\n2. Three Acts and a Rush: Documentary & explainer (a fish rising out of the sea on the first hit, Prohibition, The Cobra Effect, bombs and a fireball over Pearl Harbor, 8,000 terracotta soldiers, Mirror Life, Consciousness); Maps & data (globe dives, the Strait of Hormuz in 3D, a Vox-style river delta, neon routes, an evidence board stamped UNSOLVED, the Korean War front, Dhaka at night, four maps at once); then 3D, character, UI & logo (a 3D cube bursting in slow motion, a sniper, a flying drumstick and one loud CHOMP, a walk cycle, a UI loop and the Nomolos logo).\n\n3. A Cut on Every Beat: 85 cuts on a 120 BPM grid: a shot a beat for the documentaries, one on every kick for the maps, big moments held for two beats, and a closing rush that cuts on every half beat over 22 moments, one word per beat.\n\n4. The Breath and the Drop: the Earth shrinks into the orange dot and the music stops for half a beat, then comes back on the 3D burst. Before the end card the reel goes black and silent once more, and the dot returns.\n\n5. The Wall of Works: the logo pulls back into a 3×3 wall of nine works, and the camera dives into one of them to start the rush.\n\n6. An Original Score: composed for this reel at 120 BPM in D major: a marimba and kalimba motif on a 3-3-2 bounce, plucked bass, claps on two and four and vocal pads; four-on-the-floor under the maps, a rising pedal note under the rush, and a resolve home on the end card. Mixed to −14 LUFS.\n\n7. Two Cuts, the Same Beat: 16:9 at 1920×1080 for YouTube and the web, and 4:5 at 1080×1350 for phone feeds, where each work plays in its own 4:5 framing; both run 60 seconds at 60 fps on the same timeline, so every cut lands on the same beat.\n\n8. The End Card: RAISUL SOHAN, motion designer and animator, “If you want to work together, CONNECT WITH ME.”, with email and WhatsApp, as the score comes home.",
 			'highlights_bn'=> array(
-				'সাস প্রোডাক্ট ওয়াকথ্রু, ২ডি ক্যারেক্টার ও ইনফোগ্রাফিক অ্যানিমেশনের বৈচিত্র্যময় শোকেস',
-				'অ্যাডোবি ইলাস্ট্রেটরে প্রস্তুতকৃত ১০০% কাস্টম ও স্কেলেবল ভেক্টর আর্টওয়ার্ক',
-				'আফটার ইফেক্টস গ্রাফ এডিটর দিয়ে তৈরি স্ন্যাপি ভেলোসিটি কার্ভস ও অর্গানিক ইজিং',
-				'২.৫ডি আইসোমেট্রিক সিটিস্কেপ, ফ্লোর রিফ্লেকশন ও নিয়ন গ্লো কম্পোজিটিং',
-				'কাইনেটিক টাইপোগ্রাফি, শেপ মর্ফিং এবং সিমলেস ক্যামেরা ট্রানজিশন',
-				'হাই-এনার্জি মিউজিক বিট-সিঙ্ক ও নিখুঁত মাইক্রো-অডিও সাউন্ড ডিজাইন',
-				'আপওয়ার্ক ও আন্তর্জাতিক ক্লায়েন্টদের জন্য প্রফেশনাল স্ট্যান্ডার্ড ভিডিও প্রোডাকশন'
+				'৬০ সেকেন্ডে ২৪টি কাজ: ডকুমেন্টারি ও এক্সপ্লেইনার, ম্যাপ ও ডেটা, ৩ডি, ক্যারেক্টার, ইউআই আর লোগো',
+				'চার সেকেন্ডের হুক “I make STORIES MOVE.”, যার দাঁড়ি কমলা বিন্দুটি',
+				'১২০ BPM-এর গ্রিডে ৮৫টি কাট, প্রতিটি বিটের ওপর',
+				'আধা বিটের দুটি বিরতি, যাতে পরের হিট আরও জোরে লাগে',
+				'নয়টি কাজের ৩×৩ দেয়াল, আর সাড়ে পাঁচ সেকেন্ডে ২২টি মুহূর্তের দৌড়',
+				'এই রিলের জন্য রচিত মৌলিক স্কোর, মিক্স −১৪ LUFS',
+				'১৬:৯ ও ৪:৫ দুই কাট, একই বিটে, ৬০ fps',
+				'অধ্যায়, বিট ধরে এডিট আর দুই কাটসহ রিলের নিজের পাতা'
 			),
 			'highlights_en'=> array(
-				'Versatile motion showcase highlighting SaaS walkthroughs, 2D characters, and infographics',
-				'100% custom scalable vector illustration pipeline crafted in Adobe Illustrator',
-				'Snappy velocity curve tuning and organic spring dynamics via After Effects Graph Editor',
-				'2.5D isometric cityscapes, reflective glossy floors, and ambient neon glow compositing',
-				'Kinetic typography, shape morphing, and seamless spatial camera pushes',
-				'Tempo-locked audio synchronization with layered micro-foley and sound effects',
-				'Engineered to international commercial standards for global SaaS and agency clientele'
+				'24 works in 60 seconds: documentary and explainer, maps and data, 3D, character, UI and logo',
+				'A four-second hook, “I make STORIES MOVE.”, with the orange dot as its full stop',
+				'85 cuts on a 120 BPM grid, each one on the beat',
+				'Two half-beat rests that make the next hit land harder',
+				'A 3×3 wall of nine works and a rush of 22 moments in five and a half seconds',
+				'An original score composed for the reel, mixed to −14 LUFS',
+				'16:9 and 4:5 cuts on the same beat, at 60 fps',
+				'Its own page with chapters, the edit beat by beat and both cuts'
 			),
-			'tags'        => array( 'After Effects', 'Illustrator', 'Showreel', 'SaaS Explainer', '2D Animation', 'Kinetic Typography', 'Sound Design' ),
-			'accent'      => '#8c7ae6',
+			'tags'        => array( 'Showreel', 'Motion Design', 'Documentary Animation', 'Map Animation', '3D Animation', 'Character Animation', 'UI Animation', 'Sound Design' ),
+			'accent'      => '#ff4a1c',
 			'icon'        => 'video',
-			'image'       => get_template_directory_uri() . '/assets/img/showreel.png',
+			'image'       => get_template_directory_uri() . '/assets/img/showreel-2026.webp',
+			'image_fit'   => 'cover',
 			'action_type' => 'video',
-			'action_bn'   => 'ইউটিউবে শোরিলটি দেখুন',
-			'action_en'   => 'Watch Showreel on YouTube',
-			'direct_url'  => 'https://youtu.be/4RUm_kR_wgA',
+			'action_bn'   => 'শোরিলটি দেখুন',
+			'action_en'   => 'Watch Showreel',
+			'direct_url'  => rs_showreel_url(),
+			'github_url'  => '',
 			'order'       => 30,
 		),
 		array(
@@ -3193,6 +3197,70 @@ function rs_sync_lazymaplayers_v1_3() {
 	}
 }
 add_action( 'init', 'rs_sync_lazymaplayers_v1_3', 31 );
+
+/**
+ * The showreel card retargeted to Showreel 2026, once.
+ *
+ * The card described the old After Effects reel and opened it on YouTube; it
+ * now carries the 2026 reel from the defaults (its case study, picture and
+ * tags) and its button opens the reel's own page at /showreel. Its place in
+ * the list is left as it is.
+ */
+function rs_sync_motion_showreel_2026_v1() {
+	$switched = false;
+	if ( is_multisite() && ! is_main_site() ) {
+		switch_to_blog( get_main_site_id() );
+		$switched = true;
+	}
+
+	if ( get_option( 'rs_portfolio_synced_showreel_2026_v1' ) ) {
+		if ( $switched ) {
+			restore_current_blog();
+		}
+		return;
+	}
+
+	$item = null;
+	foreach ( rs_get_default_portfolio_projects() as $d ) {
+		if ( 'motion-showreel' === $d['id'] ) {
+			$item = $d;
+			break;
+		}
+	}
+
+	$posts = get_posts( array(
+		'post_type'      => 'rs_portfolio',
+		'name'           => 'motion-showreel',
+		'posts_per_page' => 1,
+		'post_status'    => 'any',
+	) );
+
+	$changed = false;
+	if ( $item && ! empty( $posts ) ) {
+		wp_update_post( array(
+			'ID'         => $posts[0]->ID,
+			'post_title' => $item['title_en'],
+		) );
+
+		foreach ( array( 'type_bn', 'type_en', 'badge_bn', 'badge_en', 'title_bn', 'title_en', 'summary_bn', 'summary_en', 'role_bn', 'role_en', 'context_bn', 'context_en', 'challenge_bn', 'challenge_en', 'solution_bn', 'solution_en', 'highlights_bn', 'highlights_en', 'accent', 'icon', 'image', 'image_fit', 'action_type', 'action_bn', 'action_en', 'direct_url', 'github_url' ) as $field ) {
+			update_post_meta( $posts[0]->ID, '_rs_portfolio_' . $field, $item[ $field ] );
+		}
+		update_post_meta( $posts[0]->ID, '_rs_portfolio_tags', implode( ', ', $item['tags'] ) );
+
+		$changed = true;
+	}
+
+	update_option( 'rs_portfolio_synced_showreel_2026_v1', 1 );
+
+	if ( $switched ) {
+		restore_current_blog();
+	}
+
+	if ( $changed && function_exists( 'rs_purge_host_cache_soon' ) ) {
+		rs_purge_host_cache_soon();
+	}
+}
+add_action( 'init', 'rs_sync_motion_showreel_2026_v1', 32 );
 
 /**
  * 11. Add projects that joined the defaults after the portfolio was seeded.

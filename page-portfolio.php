@@ -1580,6 +1580,10 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE ); // phpcs:ignore Wor
 
 		// Dynamic Visual Banner (Real Screenshot or CSS Mockup)
 		var displayDomain = p.direct_url.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+		// A video opens on YouTube, or on a page of this site (the reels have their own).
+		var watchTitle = /(?:youtu\.be\/|youtube\.com\/)/.test(p.direct_url)
+			? (isEn ? 'Watch on YouTube (Opens in new tab)' : 'ইউটিউবে দেখুন (নতুন ট্যাবে খুলবে)')
+			: (isEn ? 'Watch the video (Opens in new tab)' : 'ভিডিওটি দেখুন (নতুন ট্যাবে খুলবে)');
 		var isZoomable = Boolean(p.image && p.image_fit !== 'contain');
 
 		if (visualContainer) {
@@ -1609,7 +1613,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE ); // phpcs:ignore Wor
 					  '</button>'
 					: '';
 				visualEl.innerHTML = '<div class="rs-case-study-video-wrap">' +
-					'<a href="' + esc(p.direct_url) + '" target="_blank" rel="noopener noreferrer" class="rs-case-study-video-mockup" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url(&quot;' + esc(p.image) + '&quot;); background-size: cover; background-position: center;" title="' + (isEn ? 'Watch on YouTube (Opens in new tab)' : 'ইউটিউবে দেখুন (নতুন ট্যাবে খুলবে)') + '">' +
+					'<a href="' + esc(p.direct_url) + '" target="_blank" rel="noopener noreferrer" class="rs-case-study-video-mockup" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url(&quot;' + esc(p.image) + '&quot;); background-size: cover; background-position: center;" title="' + esc(watchTitle) + '">' +
 					'<div class="rs-portfolio-card__play-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div>' +
 					'<span class="rs-case-study-video-label">' + (isEn ? 'HD Video Preview • Click to Watch' : 'এইচডি ভিডিও প্রিভিউ • দেখতে ক্লিক করুন') + '</span>' +
 					'</a>' +
@@ -1639,7 +1643,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE ); // phpcs:ignore Wor
 		} else {
 			if (p.category === 'video') {
 				visualEl.innerHTML = '<div class="rs-case-study-video-wrap">' +
-					'<a href="' + esc(p.direct_url) + '" target="_blank" rel="noopener noreferrer" class="rs-case-study-video-mockup" title="' + (isEn ? 'Watch on YouTube (Opens in new tab)' : 'ইউটিউবে দেখুন (নতুন ট্যাবে খুলবে)') + '">' +
+					'<a href="' + esc(p.direct_url) + '" target="_blank" rel="noopener noreferrer" class="rs-case-study-video-mockup" title="' + esc(watchTitle) + '">' +
 					'<div class="rs-portfolio-card__play-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg></div>' +
 					'<span class="rs-case-study-video-label">' + (isEn ? 'HD Video Preview • Click to Watch' : 'এইচডি ভিডিও প্রিভিউ • দেখতে ক্লিক করুন') + '</span>' +
 					'</a>' +
