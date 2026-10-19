@@ -105,21 +105,23 @@ foreach ( $rs_md_sections as $rs_md_s ) {
 <meta property="og:url" content="<?php echo esc_url( $rs_md_canonical ); ?>">
 <meta property="og:image" content="<?php echo esc_url( $rs_md_base . 'thumbs/10.jpg' ); ?>">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#0c0a13">
+<meta name="theme-color" content="#000000">
 <?php wp_site_icon(); ?>
 <?php rs_inline_fonts(); ?>
 <style>
+	/* The showreel's look (9.0.0): black, neutral tiles, one orange, bold Inter. */
 	:root {
-		--bg: #0c0a13; --card: #14111f; --card2: #1b1728; --line: #2c2642; --fg: #f5f3fb; --mut: #9a93b5;
-		--acc: #8f74ff; --brand: #6c4cff; --pink: #ea77ff; --key: #ffd166; --ok: #3ddc97;
-		--serif: "Noto Serif Bengali", Georgia, Cambria, "Times New Roman", serif;
+		--bg: #000; --card: #161617; --card2: #1d1d1f; --line: #2c2c2e; --fg: #f5f5f7; --mut: #a1a1a6;
+		--acc: #ff4a1c; --brand: #ff4a1c; --ink: #0b0a0d; --key: #ffd166; --ok: #3ddc97;
+		--sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 		color-scheme: dark;
 	}
 	* { box-sizing: border-box; }
 	html { scroll-behavior: smooth; }
 	body {
-		margin: 0; color: var(--fg); font: 16px/1.6 var(--serif);
-		background: radial-gradient(1200px 600px at 10% -10%, rgba(108, 76, 255, .18), transparent 60%), var(--bg);
+		margin: 0; color: var(--fg); font: 17px/1.47 var(--sans); letter-spacing: -.016em;
+		-webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+		background: var(--bg);
 		min-height: 100vh;
 	}
 	a { color: inherit; }
@@ -127,45 +129,44 @@ foreach ( $rs_md_sections as $rs_md_s ) {
 	.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 28px; font-size: 14px; }
 	.top a { text-decoration: none; color: var(--mut); }
 	.top a:hover { color: var(--fg); }
-	.eyebrow { display: flex; align-items: center; gap: 10px; color: var(--acc); font-size: 12px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
-	.eyebrow::before { content: ""; width: 34px; height: 1px; background: currentColor; }
-	h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.15; font-weight: 700; margin: 0 0 10px; letter-spacing: -.5px; }
-	h1 em { font-style: normal; background: linear-gradient(135deg, var(--acc), var(--pink)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-	p.lead { color: #c4bdd8; margin: 0 0 28px; max-width: 86ch; font-size: 15px; }
+	.eyebrow { color: var(--acc); font-size: clamp(17px, 1.6vw, 19px); font-weight: 600; letter-spacing: -.01em; margin-bottom: 12px; }
+	h1 { font-size: clamp(40px, 6.6vw, 80px); line-height: 1.04; font-weight: 700; margin: 0 0 18px; letter-spacing: -.04em; text-wrap: balance; }
+	h1 em { font-style: normal; color: var(--acc); }
+	p.lead { color: var(--mut); margin: 0 0 36px; max-width: 46em; font-size: clamp(17px, 1.6vw, 19px); line-height: 1.45; font-weight: 500; }
 	kbd { font: 600 12px/1 ui-monospace, Consolas, monospace; padding: 3px 6px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; color: var(--fg); background: var(--card); }
 
 	/* the player: one iframe, any demo, 16:9 or 4:5 */
-	#playerBox { background: #050506; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; scroll-margin-top: 16px; box-shadow: 0 30px 80px -40px rgba(108, 76, 255, .55); }
+	#playerBox { background: #050506; border: 0; border-radius: 28px; overflow: hidden; scroll-margin-top: 16px; box-shadow: 0 0 0 1px rgba(255, 255, 255, .07), 0 40px 90px -30px rgba(0, 0, 0, .9); }
 	#screen { display: block; width: 100%; height: 600px; border: 0; background: #050506; }
 	#ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 14px; border-top: 1px solid var(--line); background: var(--card); }
 	#ctl .now { flex: 1; min-width: 200px; }
 	#ctl .now b { display: block; font-size: 18px; line-height: 1.3; }
-	.btn { all: unset; display: inline-grid; place-items: center; min-width: 38px; height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; font: 600 13px/1 var(--serif); color: var(--fg); background: var(--card2); }
-	.btn:hover { border-color: var(--acc); }
-	.btn:focus-visible { outline: 2px solid var(--key); outline-offset: 2px; }
-	.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-	.seg button { all: unset; padding: 0 14px; height: 34px; display: grid; place-items: center; cursor: pointer; font: 600 13px/1 var(--serif); color: var(--mut); }
-	.seg button.on { background: linear-gradient(135deg, var(--brand), var(--acc)); color: #fff; }
-	.seg button:focus-visible { outline: 2px solid var(--key); outline-offset: -2px; }
+	.btn { all: unset; display: inline-grid; place-items: center; min-width: 38px; height: 36px; padding: 0 14px; border-radius: 980px; cursor: pointer; font: 600 13px/1 var(--sans); color: var(--fg); background: rgba(255, 255, 255, .09); transition: background-color .2s; }
+	.btn:hover { background: rgba(255, 255, 255, .15); }
+	.btn:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+	.seg { display: inline-flex; padding: 2px; border-radius: 980px; overflow: hidden; background: rgba(118, 118, 128, .24); }
+	.seg button { all: unset; padding: 0 14px; height: 32px; display: grid; place-items: center; cursor: pointer; border-radius: 980px; font: 600 13px/1 var(--sans); color: var(--mut); }
+	.seg button.on { background: var(--acc); color: var(--ink); }
+	.seg button:focus-visible { outline: 2px solid var(--acc); outline-offset: -2px; }
 	#ctl a.btn { text-decoration: none; }
 
 	/* demo cards: sections in one row share the columns; subgrid keeps headers and cards on the same lines */
 	.row { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); grid-template-rows: auto auto; column-gap: 18px; margin-top: 48px; }
 	.block { display: grid; grid-column: span var(--k); grid-row: span 2; grid-template-columns: subgrid; grid-template-rows: subgrid; }
 	.block > header { grid-column: 1 / -1; padding-bottom: 18px; }
-	h2.sec { display: flex; align-items: center; gap: 10px; font-size: 23px; font-weight: 700; margin: 0 0 4px; }
-	h2.sec .n { font-size: 12px; font-weight: 600; color: var(--mut); border: 1px solid var(--line); border-radius: 20px; padding: 2px 9px; }
+	h2.sec { display: flex; align-items: center; gap: 10px; font-size: clamp(24px, 2.6vw, 30px); font-weight: 700; letter-spacing: -.03em; margin: 0 0 6px; }
+	h2.sec .n { font-size: 12px; font-weight: 600; letter-spacing: 0; color: var(--mut); background: rgba(255, 255, 255, .08); border-radius: 980px; padding: 3px 10px; }
 	p.sub { color: var(--mut); margin: 0; font-size: 14px; max-width: 70ch; }
-	a.card { display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; color: inherit; text-decoration: none; transition: transform .15s, border-color .15s, box-shadow .15s; }
-	a.card:hover { transform: translateY(-3px); border-color: var(--acc); box-shadow: 0 14px 34px -14px rgba(143, 116, 255, .55); }
-	a.card:focus-visible { outline: 2px solid var(--key); outline-offset: 3px; }
-	a.card.on { border-color: var(--acc); box-shadow: 0 0 0 1px var(--acc); }
+	a.card { display: flex; flex-direction: column; background: var(--card); border: 0; border-radius: 22px; overflow: hidden; color: inherit; text-decoration: none; transition: transform .4s cubic-bezier(.22, 1, .36, 1), box-shadow .3s; }
+	a.card:hover { transform: translateY(-3px); box-shadow: 0 0 0 1px rgba(255, 255, 255, .12), 0 30px 70px -34px rgba(0, 0, 0, .9); }
+	a.card:focus-visible { outline: 2px solid var(--acc); outline-offset: 3px; }
+	a.card.on { box-shadow: 0 0 0 2px var(--acc); }
 	a.card img { display: block; width: 100%; aspect-ratio: 16/9; object-fit: cover; background: #000; }
 	.body { padding: 14px 16px 16px; }
-	.tag { font-size: 12px; font-weight: 600; color: var(--acc); letter-spacing: 1.5px; text-transform: uppercase; }
-	.body h3 { font-size: 18px; margin: 4px 0 6px; line-height: 1.35; }
-	.body p { margin: 0; color: var(--mut); font-size: 14px; }
-	.playing { display: none; font-size: 11px; font-weight: 600; color: #fff; background: linear-gradient(135deg, var(--brand), var(--pink)); padding: 2px 8px; border-radius: 6px; margin-left: 6px; letter-spacing: 0; text-transform: none; }
+	.tag { font-size: 14px; font-weight: 600; color: var(--acc); letter-spacing: 0; }
+	.body h3 { font-size: 21px; margin: 4px 0 6px; line-height: 1.2; font-weight: 600; letter-spacing: -.022em; }
+	.body p { margin: 0; color: var(--mut); font-size: 15px; line-height: 1.47; }
+	.playing { display: none; font-size: 11px; font-weight: 600; color: var(--ink); background: var(--acc); padding: 2px 8px; border-radius: 980px; margin-left: 6px; letter-spacing: 0; text-transform: none; }
 	a.card.on .playing { display: inline-block; }
 	/* a row with one demo: the card lies on its side, picture left */
 	@media (min-width: 1001px) {
@@ -192,18 +193,18 @@ foreach ( $rs_md_sections as $rs_md_s ) {
 	.wwm { position: fixed; right: 22px; bottom: 22px; z-index: 50; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
 	.wwm-btn {
 		all: unset; display: inline-flex; align-items: center; gap: 10px; cursor: pointer;
-		padding: 13px 22px 13px 18px; border-radius: 999px; font: 700 15px/1 var(--serif); color: #fff;
-		background: linear-gradient(135deg, var(--brand), var(--pink));
-		box-shadow: 0 16px 36px -12px rgba(108, 76, 255, .85), 0 0 0 1px rgba(255, 255, 255, .12) inset;
+		padding: 13px 22px 13px 18px; border-radius: 980px; font: 600 15px/1 var(--sans); color: var(--ink);
+		background: var(--acc);
+		box-shadow: 0 16px 36px -14px rgba(0, 0, 0, .8);
 		animation: wwm-float 3.2s ease-in-out infinite;
 	}
-	.wwm-btn:hover { animation-play-state: paused; box-shadow: 0 20px 44px -12px rgba(234, 119, 255, .8), 0 0 0 1px rgba(255, 255, 255, .2) inset; }
-	.wwm-btn:focus-visible { outline: 2px solid var(--key); outline-offset: 4px; }
-	.wwm-btn .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 0 rgba(61, 220, 151, .7); animation: wwm-pulse 2s ease-out infinite; }
+	.wwm-btn:hover { animation-play-state: paused; background: #ff6238; }
+	.wwm-btn:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+	.wwm-btn .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 0 rgba(11, 10, 13, .5); animation: wwm-pulse 2s ease-out infinite; }
 	@keyframes wwm-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-	@keyframes wwm-pulse { 0% { box-shadow: 0 0 0 0 rgba(61, 220, 151, .6); } 100% { box-shadow: 0 0 0 9px rgba(61, 220, 151, 0); } }
+	@keyframes wwm-pulse { 0% { box-shadow: 0 0 0 0 rgba(11, 10, 13, .45); } 100% { box-shadow: 0 0 0 9px rgba(11, 10, 13, 0); } }
 	.wwm-card {
-		width: min(300px, calc(100vw - 32px)); padding: 16px; border-radius: 16px; background: rgba(20, 17, 31, .97);
+		width: min(300px, calc(100vw - 32px)); padding: 16px; border-radius: 22px; background: rgba(22, 22, 23, .97);
 		border: 1px solid var(--line); box-shadow: 0 24px 60px -20px rgba(0, 0, 0, .8); font-size: 14px;
 		transform-origin: bottom right; animation: wwm-in .18s ease-out;
 	}
@@ -212,8 +213,8 @@ foreach ( $rs_md_sections as $rs_md_s ) {
 	.wwm-card .hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: 700; }
 	.wwm-card .x { all: unset; cursor: pointer; color: var(--mut); font-size: 20px; line-height: 1; padding: 2px 6px; border-radius: 6px; }
 	.wwm-card .x:hover { color: var(--fg); }
-	.wwm-card .x:focus-visible { outline: 2px solid var(--key); }
-	.wwm-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--card2); }
+	.wwm-card .x:focus-visible { outline: 2px solid var(--acc); }
+	.wwm-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 0; border-radius: 14px; background: var(--card2); }
 	.wwm-row + .wwm-row { margin-top: 8px; }
 	.wwm-row small { display: block; color: var(--mut); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
 	.wwm-row b { font-size: 14px; overflow-wrap: anywhere; }
@@ -224,17 +225,17 @@ foreach ( $rs_md_sections as $rs_md_s ) {
 	.wwm { pointer-events: none; }
 	.wwm > * { pointer-events: auto; }
 
-	/* Back to top: the site's button (44px circle, 18px arrow) in the portfolio's dark glass, above Work with me.
+	/* Back to top: the site's button (44px circle, 18px arrow) in the showreel's dark glass, above Work with me.
 	   pointer-events comes back after all: unset, which would otherwise inherit the stack's none and leave the button dead. */
 	.to-top {
 		all: unset; pointer-events: auto; box-sizing: border-box; display: grid; place-items: center; width: 44px; height: 44px; cursor: pointer;
-		border: 1px solid var(--line); border-radius: 50%; color: #fff; background: rgba(22, 18, 42, .86);
-		-webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 14px 34px -14px rgba(108, 76, 255, .8);
+		border-radius: 50%; color: #fff; background: rgba(44, 44, 46, .72);
+		-webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), 0 8px 24px rgba(0, 0, 0, .35);
 		opacity: 0; visibility: hidden; transform: translateY(8px); transition: opacity .2s ease, transform .2s ease, visibility .2s ease;
 	}
 	.to-top.is-visible { opacity: 1; visibility: visible; transform: none; }
-	.to-top:hover { border-color: transparent; background: linear-gradient(135deg, var(--brand), var(--pink)); }
-	.to-top:focus-visible { outline: 2px solid var(--key); outline-offset: 3px; }
+	.to-top:hover { color: #000; background: #f5f5f7; }
+	.to-top:focus-visible { outline: 2px solid var(--acc); outline-offset: 3px; }
 	.to-top svg { display: block; }
 	@media (prefers-reduced-motion: reduce) { .wwm-btn, .wwm-btn .dot, .wwm-card { animation: none; } .to-top { transition: none; } html { scroll-behavior: auto; } }
 </style>

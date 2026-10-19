@@ -3,6 +3,8 @@
    ========================================================================== */
 
 .rs-modal--case-study {
+	/* The portfolio's own face, not the reading serif the modals share. */
+	font-family: var(--rs-sans);
 	max-width: 52rem;
 	max-height: 88vh;
 	margin: auto;
@@ -32,15 +34,15 @@
 	margin-bottom: 0.5rem;
 }
 
+/* An orange label on a tint of the orange; no capitals, which a Bengali
+   category does not have. */
 .rs-case-study-badge {
-	font-size: 0.72rem;
-	font-weight: 700;
-	letter-spacing: 0.03em;
-	text-transform: uppercase;
-	color: var(--rs-hover, #a24c00);
-	background: var(--rs-border-30);
-	padding: 0.2rem 0.6rem;
-	border-radius: 9999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--rs-hover, #c9310b);
+	background: rgba(255, 74, 28, 0.14);
+	padding: 0.22rem 0.7rem;
+	border-radius: var(--rs-pill, 980px);
 }
 
 .rs-case-study-type {
@@ -49,10 +51,11 @@
 }
 
 .rs-case-study-title {
-	font-family: var(--rs-serif);
-	font-size: clamp(1.4rem, 3vw, 1.85rem);
+	font-family: var(--rs-display);
+	font-size: clamp(1.6rem, 3.4vw, 2.125rem);
 	font-weight: 700;
-	line-height: 1.3;
+	line-height: 1.18;
+	letter-spacing: var(--rs-track-tight);
 	color: var(--rs-fg);
 	margin: 0 0 0.5rem 0;
 }
@@ -161,7 +164,7 @@
 	align-items: center;
 	gap: 0.4rem;
 	padding: 0.35rem 0.75rem;
-	background: rgba(15, 23, 42, 0.85);
+	background: rgba(29, 29, 31, 0.85);
 	color: #ffffff;
 	border: 1px solid rgba(255, 255, 255, 0.15);
 	border-radius: var(--rs-radius-full, 9999px);
@@ -182,7 +185,7 @@
 .rs-case-study-img-wrap.is-zoomable:hover .rs-case-study-zoom-badge,
 .rs-case-study-img-wrap.is-zoomable:focus-visible .rs-case-study-zoom-badge {
 	opacity: 1;
-	background: rgba(15, 23, 42, 0.96);
+	background: rgba(29, 29, 31, 0.96);
 	transform: scale(1.05);
 	border-color: rgba(255, 255, 255, 0.3);
 }
@@ -190,7 +193,7 @@
 .rs-case-study-zoom-badge.is-clickable {
 	pointer-events: auto;
 	cursor: zoom-in;
-	background: rgba(15, 23, 42, 0.85);
+	background: rgba(29, 29, 31, 0.85);
 	border: 1px solid rgba(255, 255, 255, 0.25);
 	color: #ffffff;
 }
@@ -198,7 +201,7 @@
 .rs-case-study-zoom-badge.is-clickable:hover,
 .rs-case-study-zoom-badge.is-clickable:focus-visible {
 	opacity: 1;
-	background: rgba(15, 23, 42, 0.98);
+	background: rgba(29, 29, 31, 0.98);
 	transform: scale(1.06);
 	border-color: rgba(255, 255, 255, 0.5);
 }
@@ -314,7 +317,7 @@
 	width: 100%;
 	height: 100%;
 	min-height: 220px;
-	background: linear-gradient(135deg, rgba(225, 112, 85, 0.25) 0%, rgba(214, 48, 49, 0.35) 100%), var(--rs-muted);
+	background: linear-gradient(135deg, rgba(255, 74, 28, 0.22) 0%, rgba(255, 179, 64, 0.16) 100%), var(--rs-muted);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -330,10 +333,9 @@
 }
 
 .rs-case-study-video-mockup:hover .rs-portfolio-card__play-btn {
-	transform: scale(1.15);
-	background: var(--rs-primary, #0080ff);
-	color: #fff;
-	box-shadow: 0 8px 24px rgba(0, 128, 255, 0.45);
+	transform: scale(1.08);
+	background: #fff;
+	color: #000;
 }
 
 .rs-case-study-video-label {
@@ -369,7 +371,7 @@
 .rs-case-study-tool-mockup {
 	width: 100%;
 	height: 100%;
-	background: linear-gradient(135deg, rgba(108, 92, 231, 0.25) 0%, rgba(0, 206, 201, 0.25) 100%), var(--rs-muted);
+	background: linear-gradient(135deg, rgba(255, 74, 28, 0.22) 0%, rgba(255, 179, 64, 0.16) 100%), var(--rs-muted);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -398,26 +400,29 @@
 	margin: 0;
 }
 
+/* The showreel's tiles. The challenge is the quieter of the two; the
+   solution carries the orange. */
 .rs-case-study-box {
-	padding: 1.25rem 1.35rem;
-	border-radius: var(--rs-radius-lg);
-	border: 1px solid var(--rs-border-40);
+	padding: 1.35rem 1.5rem;
+	border-radius: var(--rs-radius-xl);
+	border: 0;
 }
 
 .rs-case-study-box--challenge {
 	background: var(--rs-muted);
-	border-left: 4px solid #e17055;
+	box-shadow: inset 3px 0 0 #6e6e73;
 }
 
 .rs-case-study-box--solution {
 	background: var(--rs-surface);
-	border-left: 4px solid #00b894;
+	box-shadow: inset 3px 0 0 #ff4a1c;
 }
 
 .rs-case-study-heading {
-	font-family: var(--rs-serif);
-	font-size: 1.05rem;
+	font-family: var(--rs-display);
+	font-size: 1.1875rem;
 	font-weight: 700;
+	letter-spacing: var(--rs-track);
 	margin: 0 0 0.5rem 0;
 	color: var(--rs-fg);
 }
@@ -503,9 +508,9 @@
 	gap: 0.9rem;
 	margin-top: 1.1rem;
 	padding: 0.85rem 1rem;
-	border: 1px solid rgba(143, 137, 255, 0.45);
-	border-radius: 14px;
-	background: linear-gradient(135deg, rgba(0, 194, 255, 0.1), rgba(108, 99, 255, 0.16));
+	border: 1px solid rgba(255, 74, 28, 0.4);
+	border-radius: 18px;
+	background: rgba(255, 74, 28, 0.1);
 	color: var(--rs-fg);
 	text-decoration: none;
 	transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
@@ -521,9 +526,9 @@
 	place-items: center;
 	width: 42px;
 	height: 42px;
-	border-radius: 12px;
-	background: linear-gradient(135deg, #00c2ff, #6c63ff);
-	color: #fff;
+	border-radius: 50%;
+	background: #ff4a1c;
+	color: #0b0a0d;
 }
 
 .rs-case-study-try__icon svg {
@@ -553,15 +558,14 @@
 	flex: none;
 	width: 18px;
 	height: 18px;
-	color: #8f89ff;
+	color: #ff6a3d;
 	transition: transform 0.2s ease;
 }
 
 @media (hover: hover) {
 	.rs-case-study-try:hover {
-		border-color: #8f89ff;
-		box-shadow: 0 14px 34px -18px rgba(108, 99, 255, 0.8);
-		transform: translateY(-1px);
+		border-color: #ff4a1c;
+		background: rgba(255, 74, 28, 0.16);
 	}
 
 	.rs-case-study-try:hover > svg {

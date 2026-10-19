@@ -45,7 +45,7 @@ When documents disagree: the code, then this file, then the README (whose *What'
 
 1. **Layout Stability (Zero CLS):**
    - Structural heights, placeholders, and fonts must be rock-solid.
-   - Core fonts (`noto-serif-bengali-*.woff2`) are preloaded in `header.php`.
+   - Core fonts are preloaded in `header.php`: the story serif (`noto-serif-bengali-*.woff2`) and the interface face (`anek-bangla-500-bengali.woff2`, or `inter-latin.woff2` on the English edition).
    - Never inject elements asynchronously that push existing content down.
 
 2. **Sources, build and cache busting:**

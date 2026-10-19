@@ -20,7 +20,8 @@
 	gap: 0.375rem;
 	margin-bottom: 2rem;
 	font-family: var(--rs-sans);
-	font-size: 0.75rem;
+	font-size: 0.8125rem;
+	font-weight: 500;
 	color: var(--rs-muted-fg);
 	transition: color 0.15s ease;
 }
@@ -35,9 +36,11 @@
 	gap: 1.5rem;
 	margin-top: 3rem;
 	padding-top: 1.5rem;
-	border-top: 1px solid var(--rs-border-40);
-	font-family: var(--rs-serif);
-	font-size: 0.8125rem;
+	border-top: 1px solid var(--rs-rule);
+	font-family: var(--rs-display);
+	font-size: 0.875rem;
+	font-weight: 500;
+	letter-spacing: var(--rs-track);
 }
 
 .rs-nextprev a {

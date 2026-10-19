@@ -2,31 +2,77 @@
    Fonts — built on their own, and inlined into the page
    ==========================================================================
 
-   Self hosted Noto Bengali, replacing the Google Fonts stylesheet. The
-   unicode-range split from the css2 API is preserved, so a page with no
-   Latin text never fetches the latin subsets.
-
-   These are variable fonts — one file covers the whole weight range, which
-   is why a single @font-face per subset replaces the five Google emitted.
+   Self hosted, replacing the Google Fonts stylesheet. The unicode-range
+   split from the css2 API is preserved, so a page with no Latin text never
+   fetches the latin subsets, and the English edition never fetches a
+   Bengali one it does not draw.
 
    No numeric prefix, so the build writes this to assets/fonts.min.css on
    its own rather than joining it into assets/style.min.css. Nothing
    enqueues that file: rs_inline_fonts() reads it and writes it into the
-   page. Two kilobytes, and where they sit decides when six font files may
+   page. Two kilobytes, and where they sit decides when the font files may
    start downloading — as a stylesheet of their own they cost a round trip
-   first, and inside style.min.css they waited on twenty-seven kilobytes of
-   everything else.
+   first, and inside style.min.css they waited on everything else.
 
    Keep the url()s relative to assets/. rs_inline_fonts() rewrites
    "url(fonts/" to an absolute address, because a relative url() in an
    inline sheet resolves against the page and would find nothing.
 
-   Noto Serif Bengali is licensed under the SIL Open Font License 1.1,
-   which permits redistribution. See fonts/LICENSE.txt.
+   Two families since 9.0.0, the showreel's look carried across the site:
 
-   One family only. Noto Sans Bengali used to sit below this, three more
-   subsets and a hundred and forty-four kilobytes, for the dates and the
-   buttons; --rs-sans now resolves to the serif. */
+   - Noto Serif Bengali, the long-form text of a story (--rs-serif).
+   - Inter for Latin and Anek Bangla for Bengali, one stack in --rs-sans,
+     for headings, titles and every control. Inter has no Bengali glyphs,
+     so the browser takes those from Anek Bangla letter by letter; a mixed
+     line like "CV ও পোর্টফোলিও" reads as one face.
+
+   Anek Bangla is two static weights, not the variable file: 500 for the
+   interface and 700 for headings come to 106 KB, where the variable one is
+   152 KB for weights the design never asks for. A 600 or 800 is matched
+   to the nearest of the two.
+
+   Every face here is licensed under the SIL Open Font License 1.1, which
+   permits redistribution. See fonts/LICENSE.txt. */
+
+/* Inter — latin (47 KB), variable */
+@font-face {
+	font-family: "Inter";
+	font-style: normal;
+	font-weight: 400 800;
+	font-display: swap;
+	src: url("fonts/inter-latin.woff2") format("woff2");
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Inter — latin-ext (83 KB), variable; fetched only for a letter outside latin */
+@font-face {
+	font-family: "Inter";
+	font-style: normal;
+	font-weight: 400 800;
+	font-display: swap;
+	src: url("fonts/inter-latin-ext.woff2") format("woff2");
+	unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Anek Bangla — bengali 500 (50 KB) */
+@font-face {
+	font-family: "Anek Bangla";
+	font-style: normal;
+	font-weight: 500;
+	font-display: swap;
+	src: url("fonts/anek-bangla-500-bengali.woff2") format("woff2");
+	unicode-range: U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0, U+1CD2, U+1CD5-1CD6, U+1CD8, U+1CE1, U+1CEA, U+1CED, U+1CF2, U+1CF5-1CF7, U+200C-200D, U+20B9, U+25CC, U+A8F1;
+}
+
+/* Anek Bangla — bengali 700 (56 KB) */
+@font-face {
+	font-family: "Anek Bangla";
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: url("fonts/anek-bangla-700-bengali.woff2") format("woff2");
+	unicode-range: U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0, U+1CD2, U+1CD5-1CD6, U+1CD8, U+1CE1, U+1CEA, U+1CED, U+1CF2, U+1CF5-1CF7, U+200C-200D, U+20B9, U+25CC, U+A8F1;
+}
 
 /* Noto Serif Bengali — bengali (187 KB) */
 @font-face {

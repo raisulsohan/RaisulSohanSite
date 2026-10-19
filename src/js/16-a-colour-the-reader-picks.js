@@ -188,8 +188,14 @@
 			'--rs-border-50': 'rgba(' + edge + ', ' + ( light ? 0.06 : 0.1 ) + ')',
 			'--rs-border-60': 'rgba(' + edge + ', ' + ( light ? 0.072 : 0.13 ) + ')',
 			'--rs-rule': 'rgba(' + edge + ', ' + ( light ? 0.16 : 0.2 ) + ')',
-			'--rs-grid': 'rgba(' + edge + ', 0.016)',
+			/* No ruled grid since 9.0.0; see 01-tokens.css. */
+			'--rs-grid': 'transparent',
 			'--rs-bg-blur': rgba( bg, 0.85 ),
+			/* The glass the header and the floating buttons are made of,
+			   tinted with the page so the bar does not read grey on it. */
+			'--rs-glass-bar': rgba( bg, light ? 0.78 : 0.72 ),
+			'--rs-glass': light ? rgba( hslToRgb( h, Math.min( s, 25 ), 99 ), 0.72 ) : rgba( shift( 10 ), 0.72 ),
+			'--rs-glass-ring': light ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.14)',
 			'--rs-surface': rgbHex( light ? hslToRgb( h, Math.min( s, 25 ), 99 ) : shift( 6 ) ),
 			'--rs-scrim': light ? 'rgba(0, 0, 0, 0.45)' : 'rgba(0, 0, 0, 0.7)',
 			'--rs-fontctl-sep': rgba( bg, light ? 0.2 : 0.28 ),
@@ -197,7 +203,7 @@
 			'--rs-scrollbar-track': rgbHex( shift( 4 ) ),
 			/* Behind found words, with the page's own text sitting on top,
 			   so these follow the scheme rather than the hue. */
-			'--rs-mark': light ? '#fef08a' : '#4a3aa0',
+			'--rs-mark': light ? '#ffd8c9' : '#80290f',
 			'color-scheme': light ? 'light' : 'dark',
 		};
 
@@ -221,7 +227,7 @@
 
 		/* The accent is the site's own and keeps its hue. It is only moved
 		   when the chosen background would swallow it. */
-		var hover = hexToRgb( light ? '#a24c00' : '#9c8cff' );
+		var hover = hexToRgb( light ? '#c9310b' : '#ff4a1c' );
 
 		if ( contrast( hover, bg ) < 2 ) {
 			var hoverHsl = rgbToHsl( hover );
@@ -261,7 +267,7 @@
 			.getPropertyValue( '--rs-bg' )
 			.trim();
 
-		return hexToRgb( value ) ? rgbHex( hexToRgb( value ) ) : '#eaecf1';
+		return hexToRgb( value ) ? rgbHex( hexToRgb( value ) ) : '#f5f5f7';
 	}
 
 	function clearTint() {

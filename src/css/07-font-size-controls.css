@@ -5,21 +5,26 @@
 .rs-fontctl {
 	display: flex;
 	overflow: hidden;
-	border: 1px solid var(--rs-border-60);
-	border-radius: var(--rs-radius);
-	font-family: sans-serif;
+	/* The showreel's segmented control: a pill of glass, the buttons in
+	   the page's ink, the one under the pointer lifted out of it. */
+	border: 0;
+	border-radius: var(--rs-pill);
+	background: var(--rs-muted);
+	box-shadow: inset 0 0 0 1px var(--rs-border-50);
+	font-family: var(--rs-sans);
 }
 
 .rs-fontctl button {
-	padding: 0.25rem 0.5rem;
+	padding: 0.25rem 0.625rem;
 	font-weight: 700;
-	background: var(--rs-solid-bg);
-	color: var(--rs-solid-fg);
-	transition: opacity 0.15s ease;
+	background: transparent;
+	color: var(--rs-fg);
+	transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .rs-fontctl button:hover:not(:disabled) {
-	opacity: 0.75;
+	background: var(--rs-solid-bg);
+	color: var(--rs-solid-fg);
 }
 
 .rs-fontctl button:disabled {
@@ -41,7 +46,7 @@
 
 .rs-fontctl__sep {
 	width: 1px;
-	background: var(--rs-fontctl-sep);
+	background: var(--rs-border-60);
 }
 
 /* Floating variant, anchored 2rem to the left of the content column. */
@@ -52,11 +57,15 @@
 	transform: translateY(-50%);
 	z-index: 30;
 	flex-direction: column;
-	box-shadow: var(--rs-shadow-md);
+	background: var(--rs-glass);
+	-webkit-backdrop-filter: var(--rs-glass-blur);
+	backdrop-filter: var(--rs-glass-blur);
+	box-shadow: inset 0 0 0 1px var(--rs-glass-ring), var(--rs-shadow-md);
 }
 
 .rs-fontctl--float button {
-	padding: 0.5rem 0.625rem;
+	min-width: 2.375rem;
+	padding: 0.5625rem 0.5rem;
 }
 
 .rs-fontctl--float .rs-fontctl__sep {
@@ -86,13 +95,15 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 2.25rem;
-	height: 2.25rem;
+	width: 2.375rem;
+	height: 2.375rem;
 	color: var(--rs-muted-fg);
-	background: var(--rs-surface);
-	border: 1px solid var(--rs-border);
+	background: var(--rs-glass);
+	-webkit-backdrop-filter: var(--rs-glass-blur);
+	backdrop-filter: var(--rs-glass-blur);
+	border: 0;
 	border-radius: 50%;
-	box-shadow: var(--rs-shadow-md);
+	box-shadow: inset 0 0 0 1px var(--rs-glass-ring), var(--rs-shadow-md);
 	cursor: pointer;
 	transition: color 0.15s ease, background 0.15s ease;
 }
@@ -107,8 +118,7 @@
 }
 
 .rs-floats__anim.is-active {
-	color: var(--rs-fg);
-	background: var(--rs-accent);
+	color: var(--rs-brand);
 }
 
 .rs-tint {
@@ -127,7 +137,7 @@
 	height: 1.75rem;
 	padding: 0;
 	background: none;
-	border: 1px solid var(--rs-border);
+	border: 2px solid var(--rs-surface);
 	border-radius: 50%;
 	box-shadow: var(--rs-shadow-md);
 	cursor: pointer;

@@ -13,7 +13,7 @@
 	gap: 0.5rem;
 	padding: 0.35rem 0.5rem 0.35rem 0.85rem;
 	background: var(--rs-surface, #fff);
-	color: var(--rs-fg, #1a1a1a);
+	color: var(--rs-fg, #1d1d1f);
 	border: 1px solid var(--rs-border, rgba(0, 0, 0, 0.12));
 	border-radius: 9999px;
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
@@ -50,7 +50,7 @@
 }
 
 .rs-install-bar__btn:hover {
-	color: var(--rs-hover, #a24c00);
+	color: var(--rs-hover, #c9310b);
 }
 
 .rs-install-bar__btn svg {
@@ -74,7 +74,7 @@
 
 .rs-install-bar__close:hover {
 	color: var(--rs-fg);
-	background: var(--rs-muted, #dfe3ea);
+	background: var(--rs-muted, #e8e8ed);
 }
 
 @media (max-width: 640px) {

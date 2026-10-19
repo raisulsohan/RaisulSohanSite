@@ -14,15 +14,18 @@
 .rs-notice h1,
 .rs-notice h2 {
 	margin: 0 0 1rem;
-	font-family: var(--rs-serif);
-	font-size: 1.5rem;
+	font-family: var(--rs-display);
+	font-size: 2rem;
 	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: var(--rs-track-tight);
 }
 
 .rs-notice p {
 	margin: 0 0 2rem;
-	font-family: var(--rs-serif);
-	font-size: 0.9375rem;
+	font-family: var(--rs-sans);
+	font-size: 1.0625rem;
+	font-weight: 500;
 	color: var(--rs-muted-fg);
 }
 
@@ -143,7 +146,7 @@
 	font: 0.75rem/1.4 ui-monospace, "Cascadia Code", Consolas, monospace;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	color: #c4bdd8;
+	color: #d2d2d7;
 }
 
 .rs-missing__tc {
@@ -159,18 +162,21 @@
 
 .rs-missing__title {
 	margin: 0 0 0.75rem;
-	font-family: var(--rs-serif);
-	font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+	font-family: var(--rs-display);
+	font-size: clamp(1.75rem, 4vw, 2.5rem);
 	font-weight: 700;
-	line-height: 1.4;
+	line-height: 1.2;
+	letter-spacing: var(--rs-track-tight);
 	text-wrap: balance;
 }
 
 .rs-missing__text {
 	max-width: 32rem;
 	margin: 0 auto 1.75rem;
-	font-family: var(--rs-serif);
-	line-height: 1.8;
+	font-family: var(--rs-sans);
+	font-size: 1.0625rem;
+	font-weight: 500;
+	line-height: 1.6;
 	color: var(--rs-muted-fg);
 }
 
@@ -203,19 +209,24 @@
 }
 
 .rs-missing__btn:hover {
-	border-color: var(--rs-hover);
-	transform: translateY(-1px);
+	border-color: var(--rs-fg);
 }
 
+.rs-missing__btn:active {
+	transform: scale(0.97);
+}
+
+/* The showreel's pill: the orange, with near-black on it. */
 .rs-missing__btn--primary {
 	border-color: transparent;
-	background: var(--rs-solid-bg);
-	color: var(--rs-solid-fg);
+	background: var(--rs-brand);
+	color: var(--rs-brand-ink);
 }
 
 .rs-missing__btn--primary:hover {
-	color: var(--rs-solid-fg);
-	filter: brightness(1.08);
+	border-color: transparent;
+	background: var(--rs-brand-hover);
+	color: var(--rs-brand-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -34,9 +34,12 @@
 }
 
 .rs-row__title {
-	font-family: var(--rs-serif);
+	/* Titles take the showreel's sans; the serif is kept for the story. */
+	font-family: var(--rs-display);
 	font-size: var(--rs-post-size);
-	line-height: 1.625;
+	font-weight: 500;
+	line-height: 1.55;
+	letter-spacing: var(--rs-track);
 	color: var(--rs-fg);
 	transition: color 0.15s ease;
 }
@@ -62,7 +65,11 @@
 	margin-left: 0.75rem;
 	font-family: var(--rs-sans);
 	font-size: 0.75rem;
-	font-style: italic;
+	/* Upright, though it is an <em>: neither face has an italic, and a
+	   slanted Bengali made up by the browser reads as a mistake rather
+	   than as emphasis. */
+	font-style: normal;
+	font-weight: 500;
 	line-height: 1rem;
 	color: var(--rs-cat);
 	white-space: nowrap;
@@ -80,6 +87,7 @@
 .rs-row__read {
 	white-space: nowrap;
 	font-family: var(--rs-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: 0.75rem;
 	line-height: 1rem;
 	color: var(--rs-muted-fg);
@@ -90,6 +98,7 @@
 	flex-shrink: 0;
 	white-space: nowrap;
 	font-family: var(--rs-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: 0.75rem;
 	line-height: 1rem;
 	color: var(--rs-muted-fg);
@@ -126,6 +135,7 @@
 	margin-top: 2.5rem;
 	font-family: var(--rs-sans);
 	font-size: 0.8125rem;
+	font-weight: 500;
 }
 
 .rs-pagination__num,
@@ -138,7 +148,7 @@
 	padding: 0 0.5rem;
 	color: var(--rs-muted-fg);
 	border: 1px solid var(--rs-border-60);
-	border-radius: var(--rs-radius);
+	border-radius: var(--rs-pill);
 	transition: background 0.15s ease, color 0.15s ease;
 }
 

@@ -15,6 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 	<link rel="preload" href="<?php echo esc_url( get_template_directory_uri() . ( rs_is_en() ? '/assets/fonts/noto-serif-bengali-latin.woff2' : '/assets/fonts/noto-serif-bengali-bengali.woff2' ) ); ?>" as="font" type="font/woff2" crossorigin>
+	<?php /* The interface face as well: the header, the titles and every control are set in it, so it is on screen as soon as the serif. */ ?>
+	<link rel="preload" href="<?php echo esc_url( get_template_directory_uri() . ( rs_is_en() ? '/assets/fonts/inter-latin.woff2' : '/assets/fonts/anek-bangla-500-bengali.woff2' ) ); ?>" as="font" type="font/woff2" crossorigin>
 	<?php wp_head(); ?>
 </head>
 

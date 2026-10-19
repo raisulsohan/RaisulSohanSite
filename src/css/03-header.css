@@ -6,8 +6,18 @@
 	position: sticky;
 	top: 0;
 	z-index: 40;
-	background: var(--rs-bg);
+	/* The showreel's local nav: a translucent layer the page scrolls under. */
+	background: var(--rs-glass-bar);
+	-webkit-backdrop-filter: var(--rs-glass-blur);
+	backdrop-filter: var(--rs-glass-blur);
 	border-bottom: 1px solid var(--rs-border-50);
+}
+
+/* Without the blur the translucent fill would let text show through it. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+	.rs-header {
+		background: var(--rs-bg);
+	}
 }
 
 .rs-header__inner {
@@ -33,7 +43,8 @@
 	padding: 0.4rem 0.2rem;
 	margin: -0.4rem -0.2rem;
 	font-family: var(--rs-sans);
-	font-size: 0.75rem;
+	font-size: 0.8125rem;
+	font-weight: 500;
 	line-height: 1rem;
 	color: var(--rs-muted-fg);
 	text-decoration: none;
@@ -55,12 +66,26 @@
 	position: absolute;
 	left: 50%;
 	transform: translateX(-50%);
-	font-family: var(--rs-sans);
-	font-size: 0.875rem;
-	font-weight: 500;
-	letter-spacing: 0.025em;
+	display: inline-flex;
+	align-items: baseline;
+	font-family: var(--rs-display);
+	font-size: 1.0625rem;
+	font-weight: 700;
+	letter-spacing: var(--rs-track-tight);
 	color: var(--rs-fg);
 	white-space: nowrap;
+}
+
+/* The showreel's mark: the name, then an orange dot where a full stop
+   would sit. Drawn, not typed, so it is the same in both scripts. */
+.rs-header__brand::after {
+	content: "";
+	display: inline-block;
+	width: 0.3em;
+	height: 0.3em;
+	margin-left: 0.1em;
+	border-radius: 50%;
+	background: var(--rs-brand);
 }
 
 .rs-icon {
@@ -104,10 +129,14 @@
 	 *
 	 * Taken from the bottom and given to the top, so the pill is the same
 	 * height it always was and only the letters move.
+	 *
+	 * Measured again for 9.0.0, when the letters moved to Inter: at 4x the
+	 * ink of EN and BN spans rows 20 to 51 of a 72 row pill, centre 35.5
+	 * against a box centre of 35.5, so the same pixel still holds.
 	 */
-	padding: calc(0.15rem + 1px) 0.4rem calc(0.15rem - 1px);
+	padding: calc(0.15rem + 1px) 0.5rem calc(0.15rem - 1px);
 	border: 1px solid var(--rs-border);
-	border-radius: var(--rs-radius);
+	border-radius: var(--rs-pill);
 	letter-spacing: 0.04em;
 	text-decoration: none;
 	color: var(--rs-muted-fg);
@@ -212,6 +241,7 @@
 	margin-block: -0.5rem;
 	font-family: var(--rs-sans);
 	font-size: 0.8125rem;
+	font-weight: 500;
 	line-height: 1.25rem;
 	text-align: center;
 	color: var(--rs-muted-fg);
@@ -258,6 +288,7 @@
 .rs-navbar__list .current-menu-item > a::after,
 .rs-navbar__list .current_page_item > a::after,
 .rs-navbar__list .current-menu-ancestor > a::after {
-	background: var(--rs-hover);
+	background: var(--rs-brand);
 	height: 2px;
+	border-radius: 2px;
 }

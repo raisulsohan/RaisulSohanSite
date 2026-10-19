@@ -65,9 +65,9 @@ $rs_num = function ( $n ) use ( $rs_is_en ) {
 	return $rs_is_en ? (string) $n : rs_bn_digits( $n );
 };
 $rs_cats = array(
-	'web'   => array( $rs_is_en ? 'Web' : 'ওয়েব', '#31a8ff' ),
-	'video' => array( $rs_is_en ? 'Video & motion' : 'ভিডিও ও মোশন', '#ea77ff' ),
-	'tools' => array( $rs_is_en ? 'Tools & extensions' : 'টুলস ও এক্সটেনশন', '#b9a8ff' ),
+	'web'   => array( $rs_is_en ? 'Web' : 'ওয়েব', '#f5f5f7' ),
+	'video' => array( $rs_is_en ? 'Video & motion' : 'ভিডিও ও মোশন', '#ff4a1c' ),
+	'tools' => array( $rs_is_en ? 'Tools & extensions' : 'টুলস ও এক্সটেনশন', '#ffb340' ),
 );
 $rs_arrow_right = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 $rs_arrow_out   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>';
@@ -89,7 +89,7 @@ if ( $rs_project && function_exists( 'rs_current_doc' ) && rs_current_doc() ) {
 $pp       = $rs_project;
 $pp_name  = rs_project_name( $pp );
 $pp_acc   = sanitize_hex_color( $pp['accent'] );
-$pp_acc   = $pp_acc ? $pp_acc : '#6c4cff';
+$pp_acc   = $pp_acc ? $pp_acc : '#ff4a1c';
 $pp_list  = array_values( $projects );
 $pp_index = 0;
 foreach ( $pp_list as $pp_i => $pp_item ) {
@@ -298,9 +298,9 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 			<p class="rs-pf__eyebrow rs-pf-rise"><?php echo esc_html( $rs_is_en ? 'Portfolio' : 'পোর্টফোলিও' ); ?></p>
 
 			<ul class="rs-pf__chips rs-pf-rise">
-				<li class="rs-pf-chip" style="--c: #b9a8ff"><?php echo esc_html( $rs_is_en ? 'Creative developer' : 'ক্রিয়েটিভ ডেভেলপার' ); ?></li>
-				<li class="rs-pf-chip" style="--c: #ea77ff"><?php echo esc_html( $rs_is_en ? 'Motion tools maker' : 'মোশন টুলস নির্মাতা' ); ?></li>
-				<li class="rs-pf-chip" style="--c: #31a8ff"><?php echo esc_html( $rs_is_en ? 'Automation geek' : 'অটোমেশন' ); ?></li>
+				<li class="rs-pf-chip" style="--c: #ff4a1c"><?php echo esc_html( $rs_is_en ? 'Creative developer' : 'ক্রিয়েটিভ ডেভেলপার' ); ?></li>
+				<li class="rs-pf-chip" style="--c: #ffb340"><?php echo esc_html( $rs_is_en ? 'Motion tools maker' : 'মোশন টুলস নির্মাতা' ); ?></li>
+				<li class="rs-pf-chip" style="--c: #d2d2d7"><?php echo esc_html( $rs_is_en ? 'Automation geek' : 'অটোমেশন' ); ?></li>
 			</ul>
 
 			<h1 class="rs-pf__title rs-pf-rise rs-pf-rise--2">
@@ -383,16 +383,16 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 				<svg viewBox="0 0 360 230" fill="none">
 					<defs>
 						<linearGradient id="rs-pf-curve-g" x1="40" y1="0" x2="320" y2="0" gradientUnits="userSpaceOnUse">
-							<stop stop-color="#8f74ff"/>
-							<stop offset="1" stop-color="#ea77ff"/>
+							<stop stop-color="#ff4a1c"/>
+							<stop offset="1" stop-color="#ffb340"/>
 						</linearGradient>
 					</defs>
-					<g stroke="#221d34">
+					<g stroke="#2c2c2e">
 						<path d="M20 40H340M20 90H340M20 140H340M20 190H340"/>
 						<path d="M40 20V210M96 20V210M152 20V210M208 20V210M264 20V210M320 20V210"/>
 					</g>
-					<line data-arm="1" x1="40" y1="190" x2="160" y2="190" stroke="#625c7e" stroke-dasharray="4 5"/>
-					<line data-arm="2" x1="320" y1="40" x2="200" y2="40" stroke="#625c7e" stroke-dasharray="4 5"/>
+					<line data-arm="1" x1="40" y1="190" x2="160" y2="190" stroke="#6e6e73" stroke-dasharray="4 5"/>
+					<line data-arm="2" x1="320" y1="40" x2="200" y2="40" stroke="#6e6e73" stroke-dasharray="4 5"/>
 					<path class="rs-pf-curve" data-rs-curve d="M40 190C160 190 200 40 320 40" stroke="url(#rs-pf-curve-g)" stroke-width="3.5" stroke-linecap="round"/>
 					<g fill="#ffd166">
 						<rect x="33" y="183" width="14" height="14" rx="2" transform="rotate(45 40 190)"/>
@@ -409,8 +409,8 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 						<circle class="rs-pf-g-knob" r="5.5"/>
 						<circle class="rs-pf-g-hit" r="18"/>
 					</g>
-					<text x="44" y="224" fill="#625c7e" font-family="ui-monospace, Consolas, monospace" font-size="10">0f</text>
-					<text x="300" y="224" fill="#625c7e" font-family="ui-monospace, Consolas, monospace" font-size="10">24f</text>
+					<text x="44" y="224" fill="#6e6e73" font-family="ui-monospace, Consolas, monospace" font-size="10">0f</text>
+					<text x="300" y="224" fill="#6e6e73" font-family="ui-monospace, Consolas, monospace" font-size="10">24f</text>
 				</svg>
 			</div>
 			<div class="rs-pf__graph-presets">
@@ -436,7 +436,7 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 				<span class="rs-pf-tl__tc"><span data-rs-tc>00:00:02:07</span><span class="rs-pf-tl__speed" data-rs-speed></span></span>
 				<ol class="rs-pf-tl__ruler"><li>0s</li><li>1s</li><li>2s</li><li>3s</li><li>4s</li><li>5s</li><li>6s</li></ol>
 			</div>
-			<div class="rs-pf-tl__row" style="--c: #ea77ff">
+			<div class="rs-pf-tl__row" style="--c: #ff4a1c">
 				<span class="rs-pf-tl__name">
 					<button type="button" tabindex="-1" class="rs-pf-tl__switch" data-rs-eye><?php echo $rs_eye; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
 					<button type="button" tabindex="-1" class="rs-pf-tl__switch" data-rs-lock><?php echo $rs_lock; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
@@ -444,7 +444,7 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 				</span>
 				<span class="rs-pf-tl__track"><i class="rs-pf-tl__bar" style="--x: 3%; --w: 60%"></i><b style="--x: 3%"></b><b style="--x: 28%"></b><b style="--x: 63%"></b></span>
 			</div>
-			<div class="rs-pf-tl__row" style="--c: #31a8ff">
+			<div class="rs-pf-tl__row" style="--c: #ffb340">
 				<span class="rs-pf-tl__name">
 					<button type="button" tabindex="-1" class="rs-pf-tl__switch" data-rs-eye><?php echo $rs_eye; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
 					<button type="button" tabindex="-1" class="rs-pf-tl__switch" data-rs-lock><?php echo $rs_lock; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
@@ -452,7 +452,7 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 				</span>
 				<span class="rs-pf-tl__track"><i class="rs-pf-tl__bar" style="--x: 22%; --w: 72%"></i><b style="--x: 22%"></b><b style="--x: 47%"></b><b style="--x: 94%"></b></span>
 			</div>
-			<div class="rs-pf-tl__row" style="--c: #3ddc97">
+			<div class="rs-pf-tl__row" style="--c: #f5f5f7">
 				<span class="rs-pf-tl__name">
 					<button type="button" tabindex="-1" class="rs-pf-tl__switch" data-rs-eye><?php echo $rs_eye; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
 					<button type="button" tabindex="-1" class="rs-pf-tl__switch" data-rs-lock><?php echo $rs_lock; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
@@ -482,23 +482,23 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 					<li class="rs-pf-tile" style="--bg: #1e0633; --fg: #ea77ff"><b>Pr</b>Premiere Pro</li>
 					<li class="rs-pf-tile" style="--bg: #001e36; --fg: #31a8ff"><b>Ps</b>Photoshop</li>
 					<li class="rs-pf-tile" style="--bg: #330000; --fg: #ff9a00"><b>Ai</b>Illustrator</li>
-					<li class="rs-pf-tile" style="--fg: #a259ff; --bd: #2c2642">
+					<li class="rs-pf-tile" style="--fg: #a259ff; --bd: #2c2c2e">
 						<b><svg viewBox="0 0 2 3" aria-hidden="true"><path d="M.5 0H1V1H.5A.5.5 0 0 1 .5 0Z" fill="#f24e1e"/><path d="M1 0H1.5A.5.5 0 0 1 1.5 1H1Z" fill="#ff7262"/><path d="M.5 1H1V2H.5A.5.5 0 0 1 .5 1Z" fill="#a259ff"/><circle cx="1.5" cy="1.5" r=".5" fill="#1abcfe"/><path d="M1 2V2.5A.5.5 0 1 1 .5 2Z" fill="#0acf83"/></svg></b>Figma
 					</li>
-					<li class="rs-pf-tile rs-pf-tile--3d" style="--fg: #b9a8ff; --bd: #2c2642">
-						<b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.4 7.3 12 12 3.6 7.3Z" fill="#b9a8ff"/><path d="M3.6 7.3 12 12v9.4l-8.4-4.7Z" fill="#6c4cff"/><path d="M20.4 7.3 12 12v9.4l8.4-4.7Z" fill="#ea77ff"/></svg></b>3D
+					<li class="rs-pf-tile rs-pf-tile--3d" style="--fg: #ffa184; --bd: #2c2c2e">
+						<b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.4 7.3 12 12 3.6 7.3Z" fill="#ffa184"/><path d="M3.6 7.3 12 12v9.4l-8.4-4.7Z" fill="#ff4a1c"/><path d="M20.4 7.3 12 12v9.4l8.4-4.7Z" fill="#c9310b"/></svg></b>3D
 					</li>
 				</ul>
 			</div>
 			<div class="rs-pf-toolbox__group">
 				<p class="rs-pf-toolbox__label"><?php echo esc_html( $rs_is_en ? 'Code & automation' : 'কোড ও অটোমেশন' ); ?></p>
 				<ul class="rs-pf-tiles">
-					<li class="rs-pf-tile" style="--fg: #f7df1e; --bd: #2c2642"><b>JS</b>JavaScript</li>
-					<li class="rs-pf-tile" style="--fg: #5a9fe8; --bd: #2c2642"><b>TS</b>TypeScript</li>
-					<li class="rs-pf-tile" style="--fg: #6cc24a; --bd: #2c2642"><b>N</b>Node.js</li>
-					<li class="rs-pf-tile" style="--fg: #b3b7f2; --bd: #2c2642"><b>php</b>PHP</li>
-					<li class="rs-pf-tile" style="--fg: #4fa9da; --bd: #2c2642"><b>W</b>WordPress</li>
-					<li class="rs-pf-tile" style="--fg: #f05032; --bd: #2c2642"><b>git</b>Git</li>
+					<li class="rs-pf-tile" style="--fg: #f7df1e; --bd: #2c2c2e"><b>JS</b>JavaScript</li>
+					<li class="rs-pf-tile" style="--fg: #5a9fe8; --bd: #2c2c2e"><b>TS</b>TypeScript</li>
+					<li class="rs-pf-tile" style="--fg: #6cc24a; --bd: #2c2c2e"><b>N</b>Node.js</li>
+					<li class="rs-pf-tile" style="--fg: #b3b7f2; --bd: #2c2c2e"><b>php</b>PHP</li>
+					<li class="rs-pf-tile" style="--fg: #4fa9da; --bd: #2c2c2e"><b>W</b>WordPress</li>
+					<li class="rs-pf-tile" style="--fg: #f05032; --bd: #2c2c2e"><b>git</b>Git</li>
 				</ul>
 			</div>
 		</div>
@@ -799,7 +799,7 @@ if ( 'SoftwareApplication' === $pp_ld['@type'] ) {
 				$pf_name    = $pf_parts[0];
 				$pf_tagline = isset( $pf_parts[1] ) ? $pf_parts[1] : '';
 				$pf_accent  = sanitize_hex_color( $p['accent'] );
-				$pf_accent  = $pf_accent ? $pf_accent : '#6c4cff';
+				$pf_accent  = $pf_accent ? $pf_accent : '#ff4a1c';
 				$pf_cat     = isset( $rs_cats[ $p['category'] ] ) ? $rs_cats[ $p['category'] ][0] : '';
 				$pf_feature = ( 0 === $rs_i );
 				$pf_tags    = array_slice( $p['tags'], 0, $pf_feature ? 6 : 4 );
@@ -2737,7 +2737,7 @@ echo wp_json_encode( $client_data, JSON_UNESCAPED_UNICODE ); // phpcs:ignore Wor
 
 	function confetti() {
 		var layer = document.createElement('div');
-		var colors = ['#6c4cff', '#ea77ff', '#31a8ff', '#3ddc97', '#ffd166', '#ff9a00'];
+		var colors = ['#ff4a1c', '#ffb340', '#f5f5f7', '#ff6a3d', '#ffd166', '#3ddc97'];
 
 		layer.className = 'rs-pf-confetti';
 		layer.setAttribute('aria-hidden', 'true');

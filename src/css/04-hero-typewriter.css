@@ -51,10 +51,10 @@
 	margin-top:.9rem;
 	text-align: center;
 	font-family: var(--rs-sans);
-	font-size: 0.82rem;
-	font-weight: 400;
+	font-size: 0.875rem;
+	font-weight: 500;
 	color: var(--rs-muted-fg);
-	letter-spacing: 0.02em;
+	letter-spacing: var(--rs-track);
 	position: relative;
 	z-index: 2;
 }
@@ -106,10 +106,10 @@
 	gap: 0.75rem;
 	max-width: var(--rs-wrap);
 	margin: 1.25rem auto 0;
-	padding: 0.625rem 0.875rem;
+	padding: 0.75rem 1rem;
 	background: var(--rs-surface);
-	border: 1px solid var(--rs-rule);
-	box-shadow: 0 4px 12px var(--rs-border-40);
+	border: 1px solid var(--rs-border-50);
+	box-shadow: var(--rs-shadow-md);
 	border-radius: var(--rs-radius-lg);
 }
 
@@ -125,14 +125,16 @@
 .rs-resume__label {
 	flex-shrink: 0;
 	font-family: var(--rs-sans);
-	font-size: 0.6875rem;
-	letter-spacing: 0.04em;
-	color: var(--rs-muted-fg);
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--rs-hover);
 }
 
 .rs-resume__title {
-	font-family: var(--rs-serif);
+	font-family: var(--rs-display);
 	font-size: 0.9375rem;
+	font-weight: 500;
+	letter-spacing: var(--rs-track);
 	line-height: 1.5;
 	color: var(--rs-fg);
 	transition: color 0.15s ease;
@@ -178,18 +180,18 @@
 	display: block;
 	width: 0;
 	height: 100%;
-	background: var(--rs-hover);
+	background: var(--rs-brand);
 }
 
 .rs-hero__title {
 	margin: 0;
-	font-family: var(--rs-serif);
+	/* The showreel's headline: bold sans, set tight in English. Bengali
+	   keeps its natural spacing; see --rs-track-tight. */
+	font-family: var(--rs-display);
 	font-size: 2.25rem;
-	font-weight: 300;
-	line-height: 1.35;
-	/* No tracking: the tight -0.025em was there to hold 700 together, and
-	   negative spacing risks pulling যুক্তাক্ষর apart at light weights. */
-	letter-spacing: normal;
+	font-weight: 700;
+	line-height: 1.25;
+	letter-spacing: var(--rs-track-tight);
 	white-space: nowrap;
 	color: var(--rs-fg);
 }

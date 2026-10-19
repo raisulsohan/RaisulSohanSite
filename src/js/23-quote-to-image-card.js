@@ -182,17 +182,19 @@
 			var ctx = canvas.getContext( '2d' );
 
 			/* Colours from the current theme. */
-			var bg = cssVar( '--rs-bg', '#eaecf1' );
-			var fg = cssVar( '--rs-fg', '#1a1a1a' );
-			var mutedFg = cssVar( '--rs-muted-fg', '#5f6672' );
-			var hover = cssVar( '--rs-hover', '#a24c00' );
+			var bg = cssVar( '--rs-bg', '#f5f5f7' );
+			var fg = cssVar( '--rs-fg', '#1d1d1f' );
+			var mutedFg = cssVar( '--rs-muted-fg', '#6e6e73' );
+			var hover = cssVar( '--rs-hover', '#c9310b' );
+			/* The stripe is a fill, so it takes the brand orange itself. */
+			var brand = cssVar( '--rs-brand', '#ff4a1c' );
 
 			/* Background. */
 			ctx.fillStyle = bg;
 			ctx.fillRect( 0, 0, SIZE, SIZE );
 
 			/* Accent stripe at the very top. */
-			ctx.fillStyle = hover;
+			ctx.fillStyle = brand;
 			ctx.fillRect( 0, 0, SIZE, 5 );
 
 			/* Large decorative opening quote mark. */
@@ -263,7 +265,7 @@
 			ctx.fillRect( PAD, bottomY - 40, 50, 2 );
 			ctx.globalAlpha = 1;
 
-			ctx.font = '18px "Noto Serif Bengali", serif';
+			ctx.font = '600 18px Inter, "Anek Bangla", sans-serif';
 			ctx.fillStyle = mutedFg;
 			ctx.globalAlpha = 0.5;
 			ctx.fillText( window.location.hostname, PAD, bottomY - 14 );

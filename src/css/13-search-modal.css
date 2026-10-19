@@ -21,8 +21,10 @@
 	background: transparent;
 	border: 0;
 	outline: none;
-	font-family: var(--rs-serif);
-	font-size: 0.875rem;
+	font-family: var(--rs-sans);
+	font-size: 1.0625rem;
+	font-weight: 500;
+	letter-spacing: var(--rs-track);
 	color: var(--rs-fg);
 }
 
@@ -66,9 +68,10 @@
 }
 
 .rs-result__title {
-	font-family: var(--rs-serif);
-	font-size: 0.875rem;
+	font-family: var(--rs-display);
+	font-size: 0.9375rem;
 	font-weight: 500;
+	letter-spacing: var(--rs-track);
 	color: var(--rs-fg);
 }
 
@@ -84,7 +87,7 @@
 	display: block;
 	margin: 0;
 	font-family: var(--rs-serif);
-	font-size: 0.75rem;
+	font-size: 0.8125rem;
 	line-height: 1.625;
 	color: var(--rs-muted-fg);
 }

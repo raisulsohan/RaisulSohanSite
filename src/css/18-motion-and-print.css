@@ -32,6 +32,7 @@
 		transform: none;
 		order: -1;
 		flex-basis: 100%;
+		justify-content: center;
 		text-align: center;
 	}
 
@@ -41,17 +42,19 @@
 }
 
 .rs-footer__link {
-	color: inherit;
-	margin-inline-start: 0.75rem;
+	color: var(--rs-muted-fg);
+	margin-inline-start: 1.375rem;
 	text-decoration: none;
-	border-bottom: 1px solid var(--rs-rule);
 	/* Three links can wrap on a phone; each one wraps as a whole. */
 	white-space: nowrap;
+	transition: color 0.15s ease;
 }
 
 .rs-footer__link:hover,
 .rs-footer__link:focus-visible {
-	color: var(--rs-hover);
+	color: var(--rs-fg);
+	text-decoration: underline;
+	text-underline-offset: 3px;
 }
 
 @media print {
@@ -188,24 +191,31 @@
 	display: flex;
 	align-items: center;
 	font-family: var(--rs-sans);
-	font-size: 0.875rem;
+	font-size: 1.0625rem;
+	font-weight: 600;
+	letter-spacing: var(--rs-track);
 	color: var(--rs-hover);
-	margin-bottom: 1.5rem;
+	margin-bottom: 0.75rem;
 }
 
+/* The showreel's eyebrow has no rule; the line becomes its orange dot. */
 .rs-featured__line {
 	display: inline-block;
-	width: 40px;
-	height: 1px;
-	background-color: var(--rs-hover);
-	margin-right: 12px;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background-color: var(--rs-brand);
+	margin-right: 0.625rem;
 }
 
 .rs-featured__title {
-	font-family: var(--rs-serif);
-	font-size: 2.5rem;
-	line-height: 1.2;
-	margin: 0 0 0.5rem 0;
+	font-family: var(--rs-display);
+	font-size: 3rem;
+	font-weight: 700;
+	line-height: 1.12;
+	letter-spacing: var(--rs-track-tight);
+	text-wrap: balance;
+	margin: 0 0 0.75rem 0;
 }
 
 .rs-featured__title a {
@@ -219,6 +229,7 @@
 
 .rs-featured__date {
 	font-family: var(--rs-sans);
+	font-weight: 500;
 	font-size: 0.875rem;
 	color: var(--rs-muted-fg);
 	margin-bottom: 1.5rem;
@@ -249,18 +260,27 @@
 .rs-featured__btn {
 	display: inline-flex;
 	align-items: center;
-	background-color: var(--rs-solid-bg);
-	color: var(--rs-solid-fg);
+	justify-content: center;
+	gap: 0.5rem;
+	min-height: 3rem;
+	/* The showreel's pill: the orange, with near-black on it. */
+	background-color: var(--rs-brand);
+	color: var(--rs-brand-ink);
 	font-family: var(--rs-sans);
-	font-size: 0.875rem;
-	font-weight: 500;
+	font-size: 1rem;
+	font-weight: 600;
+	letter-spacing: var(--rs-track);
 	padding: 0.75rem 1.5rem;
-	border-radius: 2rem;
+	border-radius: var(--rs-pill);
 	text-decoration: none;
-	transition: opacity 0.2s;
+	transition: background-color 0.2s ease, transform 0.12s var(--rs-ease);
 }
 
 .rs-featured__btn:hover {
-	opacity: 0.85;
-	color: var(--rs-solid-fg);
+	background-color: var(--rs-brand-hover);
+	color: var(--rs-brand-ink);
+}
+
+.rs-featured__btn:active {
+	transform: scale(0.97);
 }

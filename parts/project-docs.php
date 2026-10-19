@@ -20,7 +20,7 @@ $pd_name  = rs_project_name( $pd_proj );
 $pd_index = $pd['index'];
 $pd_html  = rs_current_doc_html();
 $pd_acc   = sanitize_hex_color( $pd_proj['accent'] );
-$pd_acc   = $pd_acc ? $pd_acc : '#6c4cff';
+$pd_acc   = $pd_acc ? $pd_acc : '#ff4a1c';
 $pd_order = array_values( array_filter( (array) $pd_index['order'], 'is_string' ) );
 $pd_at    = array_search( $pd['key'], $pd_order, true );
 $pd_prev  = ( false !== $pd_at && $pd_at > 0 ) ? $pd_order[ $pd_at - 1 ] : null;

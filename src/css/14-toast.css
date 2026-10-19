@@ -23,7 +23,8 @@
 	padding: 0.875rem 1rem;
 	background: var(--rs-surface);
 	border-radius: var(--rs-radius-lg);
-	box-shadow: var(--rs-shadow-lg);
+	/* The ring keeps a dark toast apart from a dark page. */
+	box-shadow: var(--rs-shadow-lg), 0 0 0 1px var(--rs-border-50);
 	font-family: var(--rs-sans);
 	animation: rs-toast-in 0.2s ease;
 }
@@ -39,8 +40,8 @@
 }
 
 .rs-toast__title {
-	font-size: 0.8125rem;
-	font-weight: 500;
+	font-size: 0.875rem;
+	font-weight: 600;
 	color: var(--rs-fg);
 }
 

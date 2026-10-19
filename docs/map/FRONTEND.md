@@ -6,14 +6,14 @@
 
 | Part | What it styles |
 |---|---|
-| `01-tokens.css`, `02-reset.css` | Design tokens (colours, the reader-picked accent, spacing); the reset |
+| `01-tokens.css`, `02-reset.css` | Design tokens: the showreel brand's colours for light and dark, the orange, the font stacks, glass, radii, spacing; the reset |
 | `03-header.css`, `04-hero-typewriter.css` | The header; the typewriter heading and heading image |
 | `05-post-list.css`, `06-tooltip.css`, `07-font-size-controls.css`, `08-scroll-to-top.css`, `09-footer.css` | The post grid; tooltips; A- A A+; scroll to top; the footer |
 | `10-modals.css`, `11-article-shared-by-modal-and-single-php.css`, `12-about-modal.css`, `13-search-modal.css`, `14-toast.css` | The modal shells; the article as shown both in the modal and by `single.php`; the About modal; the search modal; toasts |
 | `15-single-post-page-direct-visit-crawler.css`, `16-archive-404.css`, `17-responsive.css`, `18-motion-and-print.css` | A post opened at its own address; archives and 404; breakpoints; motion and print |
 | `19-quote-card.css`, `20-install-bar.css` | The quote-to-image card; the PWA install bar |
 | `21-portfolio-page.css`, `22-case-study-pop-up-modal.css`, `23-story-timeline.css`, `24-command-palette.css`, `25-project-documentation.css` | The portfolio page; the case-study pop-up; the story timeline; the command palette; project documentation pages |
-| `fonts.css` | Page bundle: the self-hosted `@font-face` declarations |
+| `fonts.css` | Page bundle: the self-hosted `@font-face` declarations (Noto Serif Bengali, Inter, Anek Bangla), inlined by `rs_inline_fonts()` |
 | `cv.css` | Page bundle: the CV page (`page-cv.php`), the sheet on the stage and its print rules; loaded only on `/cv/` |
 | `cv-editor.css` | Admin-only page bundle: the CV content metabox; loaded only while editing the page that uses `page-cv.php` |
 | `stats-admin.css` | Admin-only page bundle: Dashboard › Statistics and its panel on the dashboard (`inc/22-statistics-screen.php`) |

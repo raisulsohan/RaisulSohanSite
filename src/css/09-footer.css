@@ -3,14 +3,17 @@
    ========================================================================== */
 
 .rs-footer {
-	border-top: 1px solid var(--rs-border-40);
-	padding: 1.5rem 0;
+	border-top: 1px solid var(--rs-rule);
+	padding: 2rem 0 calc(2rem + env(safe-area-inset-bottom, 0px));
 	text-align: center;
+	/* The showreel's small print: one size for the line and its links. */
+	font-family: var(--rs-sans);
+	font-size: 0.8125rem;
+	font-weight: 500;
+	line-height: 1.6;
+	letter-spacing: var(--rs-track);
 }
 
 .rs-footer span {
-	font-family: var(--rs-sans);
-	font-size: 0.75rem;
-	line-height: 1rem;
 	color: var(--rs-muted-fg);
 }

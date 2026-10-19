@@ -2,15 +2,31 @@
    1. Tokens
    ========================================================================== */
 
+/*
+ * The showreel's look, carried across the site (9.0.0).
+ *
+ * /showreel set the brand: a black stage, neutral greys with no tint of
+ * their own, one orange (#ff4a1c) and bold, tightly set sans headings. The
+ * dark scheme below is that page's palette as it is. The light scheme is
+ * the same system turned over for daytime reading — near-white paper, near-
+ * black ink — because a story is read for minutes, not watched for one, and
+ * a long Bengali text on pure black tires many readers' eyes.
+ *
+ * The orange is in two roles. As a fill (buttons, the dot after the name,
+ * the reading bar) it is always #ff4a1c, with near-black ink on it, 5.9:1.
+ * As text on the page it has to clear 4.5:1, which #ff4a1c does on black
+ * (6.2:1) and does not on paper (3.4:1), so light mode takes a deeper
+ * orange of the same hue for text: --rs-hover.
+ */
 :root {
-	--rs-bg: #eaecf1;
-	--rs-fg: #1a1a1a;
-	/* Cool neighbours, so nothing reads warm against the grey page.
-	   --rs-muted-fg has to be this dark to clear 4.5:1 on #eaecf1, which
-	   is a good deal darker than the old paper background. */
-	--rs-muted: #dfe3ea;
-	--rs-muted-fg: #5f6672;
-	--rs-accent: #dde1e9;
+	--rs-bg: #f5f5f7;
+	--rs-fg: #1d1d1f;
+	/* Neutral, as the showreel's are: no hue of their own, so the orange
+	   is the only colour on the page. --rs-muted-fg clears 4.5:1 on the
+	   page (4.7:1) and on a white panel (5.1:1). */
+	--rs-muted: #e8e8ed;
+	--rs-muted-fg: #6e6e73;
+	--rs-accent: #e8e8ed;
 
 	--rs-border: rgba(0, 0, 0, 0.12);
 	--rs-border-30: rgba(0, 0, 0, 0.036);
@@ -18,43 +34,41 @@
 	--rs-border-50: rgba(0, 0, 0, 0.06);
 	--rs-border-60: rgba(0, 0, 0, 0.072);
 
-	/* Divider between list rows. Deliberately stronger than --rs-border-40,
-	   which disappeared entirely, and stronger than --rs-grid so the rules
-	   read as structure rather than as part of the background pattern. */
-	--rs-rule: rgba(0, 0, 0, 0.16);
+	/* Divider between list rows: the hairline the showreel draws between
+	   its sections, a little stronger so a row still reads as a row. */
+	--rs-rule: rgba(0, 0, 0, 0.13);
 
-	/* Background grid. Faint enough to read as texture rather than ruling;
-	   --rs-rule stays several times stronger so the list dividers still
-	   read as structure. */
-	--rs-grid: rgba(0, 0, 0, 0.016);
+	/* The page used to carry a faint ruled grid. The showreel's stage is
+	   plain, so the grid is off; the token stays because the tint picker
+	   and the body background still name it. */
+	--rs-grid: transparent;
 	--rs-grid-size: 64px;
 
-	/* Burnt rather than bright, because this colour lands on text. The
-	   #f3821d it started as measured 2.21:1 against the page, so hovering
-	   a title made it harder to read than leaving it alone — the opposite
-	   of what a hover state is for. This one is 4.98:1. */
-	--rs-hover: #a24c00;
-	--rs-mark: #fef08a;
+	/* The brand orange darkened to clear 4.5:1 as text: 4.9:1 on the page,
+	   5.4:1 on white. Same hue as #ff4a1c, so it reads as the same colour
+	   in a smaller voice. */
+	--rs-hover: #c9310b;
+	/* Behind selected and found text, with the page's own ink on top. */
+	--rs-mark: #ffd8c9;
 
-	/* --rs-bg at 85%, for the close button floating over scrolling text. */
-	--rs-bg-blur: rgba(234, 236, 241, 0.85);
+	/* --rs-bg at 82%, for the glass that floats over scrolling text. */
+	--rs-bg-blur: rgba(245, 245, 247, 0.82);
 
-	/* Cool teal for the category tag: reads apart from both the dark
-	   title and the grey date without competing with --rs-hover. */
-	--rs-cat: #4a6d7c;
+	/* The category tag: a step darker than the date beside it, so it reads
+	   apart without a second hue competing with the orange. */
+	--rs-cat: #515154;
 
 	/* Long form text sits slightly softer than --rs-fg. */
-	--rs-body-fg: rgba(26, 26, 26, 0.85);
+	--rs-body-fg: rgba(29, 29, 31, 0.86);
 	/* Raised panels that must read lighter than the page, e.g. toasts. */
 	--rs-surface: #ffffff;
 	/* Dimmer behind the modals. */
-	--rs-scrim: rgba(0, 0, 0, 0.45);
+	--rs-scrim: rgba(0, 0, 0, 0.4);
 	/* Divider inside the size control bar. */
-	--rs-fontctl-sep: rgba(234, 236, 241, 0.2);
+	--rs-fontctl-sep: rgba(245, 245, 247, 0.2);
 
-	/* Filled controls: the size bar and the two scroll to top buttons.
-	   Light mode simply inverts the page; dark mode uses the accent
-	   instead, because a white pill on a dark page glares. */
+	/* Filled controls: the size bar, the current page number and the back
+	   to top button on hover. Both schemes simply invert the page. */
 	--rs-solid-bg: var(--rs-fg);
 	--rs-solid-fg: var(--rs-bg);
 
@@ -63,34 +77,62 @@
 	--rs-tooltip-bg: var(--rs-fg);
 	--rs-tooltip-fg: var(--rs-bg);
 
-	/* Without these the browser draws its own scheme default, which is a
-	   neutral grey that sits badly against a tinted page. Inherited, so
-	   the modal's scroller picks it up too. */
-	--rs-scrollbar-thumb: #b9bfcc;
-	--rs-scrollbar-track: #e1e4eb;
+	/* Without these the browser draws its own scheme default. Inherited,
+	   so the modal's scroller picks it up too. */
+	--rs-scrollbar-thumb: #c7c7cc;
+	--rs-scrollbar-track: #ececf0;
+
+	/* The showreel's glass: the sticky bar and the round floating buttons
+	   the page scrolls under. A fill that lets the page show through,
+	   blurred, and a hairline ring so it holds its edge on any colour. */
+	--rs-glass: rgba(255, 255, 255, 0.72);
+	--rs-glass-bar: rgba(245, 245, 247, 0.78);
+	--rs-glass-ring: rgba(0, 0, 0, 0.08);
+	--rs-glass-blur: saturate(180%) blur(20px);
+
 	scrollbar-color: var(--rs-scrollbar-thumb) var(--rs-scrollbar-track);
 
 	color-scheme: light;
 
+	/*
+	 * The brand itself, the same in both schemes. A button filled with it
+	 * carries --rs-brand-ink, never white: white on this orange is 3.4:1.
+	 */
+	--rs-brand: #ff4a1c;
+	--rs-brand-hover: #ff6238;
+	--rs-brand-ink: #0b0a0d;
+
 	--rs-serif: "Noto Serif Bengali", "SolaimanLipi", serif;
 	/*
-	 * One family for the whole site.
-	 *
-	 * Noto Sans Bengali was a hundred and six kilobytes — a fifth of the
-	 * page — for the dates, the size control, the share buttons and the
-	 * footer. The serif already carries every glyph any of them needs, in
-	 * both scripts. The name is kept rather than deleted because sixty
-	 * rules ask for it, and because the distinction is worth having back if
-	 * a second face ever earns its download again.
+	 * The interface and heading face: Inter for Latin, Anek Bangla for
+	 * Bengali, one stack. Inter has no Bengali, so the browser takes those
+	 * letters from the next family on its own. See fonts.css for the files.
 	 *
 	 * var() is substituted where it is used, not where it is written, so
-	 * this follows --rs-serif into the English block below on its own.
+	 * the English block below needs no copy of this.
 	 */
-	--rs-sans: var( --rs-serif );
+	--rs-sans: "Inter", "Anek Bangla", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+	/* Headings, titles and big numbers: the showreel's bold sans. */
+	--rs-display: var(--rs-sans);
+	/*
+	 * Tracking for display type. The showreel pulls its headlines in by
+	 * four hundredths of an em; Bengali cannot take that, because the
+	 * letters of a word hang from one line (the matra) and any tracking
+	 * opens gaps in it or runs যুক্তাক্ষর into each other. So it is zero
+	 * here and only the English edition tightens.
+	 */
+	--rs-track-tight: 0;
+	--rs-track: 0;
 
-	--rs-radius: 0.25rem;
-	--rs-radius-lg: 0.5rem;
-	--rs-radius-xl: 0.75rem;
+	/* The showreel's motion: Apple's ease, and a long settle for entrances. */
+	--rs-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+	--rs-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+	--rs-radius: 0.5rem;
+	--rs-radius-lg: 0.875rem;
+	--rs-radius-xl: 1.375rem;
+	/* Any value larger than the element is a full pill. */
+	--rs-pill: 980px;
 
 	--rs-wrap: 48rem;
 	--rs-gutter: 1.5rem;
@@ -100,69 +142,77 @@
 	   the script runs, so a mismatch shows as a jump on load. */
 	--rs-post-size: 19px;
 
-	--rs-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-	--rs-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-	--rs-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+	--rs-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+	--rs-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.08);
+	--rs-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+	--rs-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.22);
 }
 
 /* English locale typography */
 body.rs-en {
 	--rs-serif: "Noto Serif Bengali", Georgia, Cambria, "Times New Roman", Times, serif;
-	/* --rs-sans follows this line; see the note in :root. */
+	/* Latin takes the showreel's tight headlines. */
+	--rs-track-tight: -0.035em;
+	--rs-track: -0.016em;
 }
 
 /*
- * Dark mode. Only the colour tokens change, so every rule below keeps
- * working untouched. The attribute is written on <html> by an inline
- * script in wp_head, before first paint, so the page never flashes light.
+ * Dark mode: the showreel's own palette. Only the colour tokens change, so
+ * every rule below keeps working untouched. The attribute is written on
+ * <html> by an inline script in wp_head, before first paint, so the page
+ * never flashes light.
  */
 :root[data-theme="dark"] {
-	--rs-bg: #141130;
-	--rs-fg: #f1f0f8;
-	--rs-muted: #201c48;
-	--rs-muted-fg: #8b87ac;
-	--rs-accent: #262157;
+	--rs-bg: #000000;
+	--rs-fg: #f5f5f7;
+	--rs-muted: #161617;
+	--rs-muted-fg: #a1a1a6;
+	--rs-accent: #1d1d1f;
 
-	--rs-border: rgba(255, 255, 255, 0.18);
-	--rs-border-30: rgba(255, 255, 255, 0.06);
-	--rs-border-40: rgba(255, 255, 255, 0.08);
-	--rs-border-50: rgba(255, 255, 255, 0.1);
-	--rs-border-60: rgba(255, 255, 255, 0.13);
+	--rs-border: rgba(255, 255, 255, 0.16);
+	--rs-border-30: rgba(255, 255, 255, 0.05);
+	--rs-border-40: rgba(255, 255, 255, 0.07);
+	--rs-border-50: rgba(255, 255, 255, 0.09);
+	--rs-border-60: rgba(255, 255, 255, 0.12);
 
-	--rs-rule: rgba(255, 255, 255, 0.2);
+	--rs-rule: rgba(255, 255, 255, 0.14);
 
-	--rs-grid: rgba(255, 255, 255, 0.015);
+	--rs-grid: transparent;
 
-	/* Violet stands in for the orange here: on indigo the orange reads as
-	   a stray warm note, and this matches the filled buttons below. */
-	--rs-hover: #9c8cff;
-	/* Violet tinted highlight, so the light --rs-fg on top stays readable. */
-	--rs-mark: #4a3aa0;
+	/* The orange as it is: 6.2:1 on black. */
+	--rs-hover: #ff4a1c;
+	/* A deep orange, so the light --rs-fg on top stays readable (8.6:1). */
+	--rs-mark: #80290f;
 
-	--rs-bg-blur: rgba(20, 17, 48, 0.85);
-	/* Periwinkle rather than the light mode teal, which turns muddy here. */
-	--rs-cat: #9bb4e8;
+	--rs-bg-blur: rgba(22, 22, 23, 0.78);
+	--rs-cat: #c7c7cc;
 
-	--rs-body-fg: rgba(241, 240, 248, 0.82);
-	--rs-surface: #201c48;
-	--rs-scrim: rgba(6, 4, 20, 0.7);
-	--rs-fontctl-sep: rgba(255, 255, 255, 0.28);
+	--rs-body-fg: rgba(245, 245, 247, 0.84);
+	/* The showreel's tile. */
+	--rs-surface: #161617;
+	--rs-scrim: rgba(0, 0, 0, 0.72);
+	--rs-fontctl-sep: rgba(0, 0, 0, 0.18);
 
-	--rs-solid-bg: #6c5ce7;
-	--rs-solid-fg: #ffffff;
+	/* The showreel's main play button: white with black on it. */
+	--rs-solid-bg: #f5f5f7;
+	--rs-solid-fg: #000000;
 
-	--rs-tooltip-bg: #272253;
-	--rs-tooltip-fg: #f1f0f8;
+	--rs-tooltip-bg: #2c2c2e;
+	--rs-tooltip-fg: #f5f5f7;
 
-	/* Indigo rather than the browser's grey, so the scrollbar channel
-	   reads as part of the page. */
-	--rs-scrollbar-thumb: #3d3777;
-	--rs-scrollbar-track: #1c1942;
+	--rs-scrollbar-thumb: #3a3a3c;
+	--rs-scrollbar-track: #0d0d0e;
+
+	/* The showreel's own values: its nav bar and its back-to-top button. */
+	--rs-glass: rgba(44, 44, 46, 0.72);
+	--rs-glass-bar: rgba(22, 22, 23, 0.72);
+	--rs-glass-ring: rgba(255, 255, 255, 0.14);
 
 	color-scheme: dark;
 
 	/* Shadows read as almost nothing on a dark page unless deepened. */
-	--rs-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45), 0 2px 4px -2px rgba(0, 0, 0, 0.45);
-	--rs-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
-	--rs-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+	--rs-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.6);
+	--rs-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6), 0 2px 4px -2px rgba(0, 0, 0, 0.6);
+	--rs-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.65), 0 4px 6px -4px rgba(0, 0, 0, 0.65);
+	--rs-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.85);
 }

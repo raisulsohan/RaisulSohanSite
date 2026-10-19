@@ -91,7 +91,9 @@
 	width: 100%;
 	background: var(--rs-bg);
 	border-radius: var(--rs-radius-xl);
-	box-shadow: var(--rs-shadow-2xl);
+	/* The hairline ring is what separates a black modal from a black page
+	   under the scrim; on paper it is barely there. */
+	box-shadow: var(--rs-shadow-2xl), 0 0 0 1px var(--rs-border-50);
 	font-family: var(--rs-serif);
 }
 
@@ -121,7 +123,7 @@
 	display: block;
 	width: 0;
 	height: 100%;
-	background: var(--rs-hover);
+	background: var(--rs-brand);
 }
 
 .rs-time-left {
@@ -129,12 +131,15 @@
 	top: 1rem;
 	left: 50%;
 	transform: translateX(-50%) translateY(-10px);
-	background: var(--rs-bg);
+	background: var(--rs-glass);
+	-webkit-backdrop-filter: var(--rs-glass-blur);
+	backdrop-filter: var(--rs-glass-blur);
 	color: var(--rs-muted-fg);
 	font-family: var(--rs-sans);
 	font-size: 0.75rem;
+	font-weight: 500;
 	padding: 0.25rem 0.75rem;
-	border-radius: 1rem;
+	border-radius: var(--rs-pill);
 	box-shadow: var(--rs-shadow-sm);
 	z-index: 4;
 	opacity: 0;
@@ -189,17 +194,17 @@
 	height: 2.25rem;
 	border-radius: 50%;
 	/* Opaque enough to stay legible over the text passing beneath it. */
-	background: var(--rs-bg-blur);
-	-webkit-backdrop-filter: blur(8px);
-	backdrop-filter: blur(8px);
-	box-shadow: 0 0 0 1px var(--rs-border-50);
+	background: var(--rs-glass);
+	-webkit-backdrop-filter: var(--rs-glass-blur);
+	backdrop-filter: var(--rs-glass-blur);
+	box-shadow: inset 0 0 0 1px var(--rs-glass-ring);
 	color: var(--rs-muted-fg);
 	transition: color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .rs-modal__close:hover {
 	color: var(--rs-fg);
-	box-shadow: 0 0 0 1px var(--rs-border);
+	box-shadow: inset 0 0 0 1px var(--rs-border);
 }
 
 /*
@@ -230,15 +235,15 @@
 	min-height: 2.25rem;
 	padding: 0 0.8rem;
 	border: 0;
-	background: var(--rs-bg-blur);
-	-webkit-backdrop-filter: blur(8px);
-	backdrop-filter: blur(8px);
-	box-shadow: 0 0 0 1px var(--rs-border-50);
+	background: var(--rs-glass);
+	-webkit-backdrop-filter: var(--rs-glass-blur);
+	backdrop-filter: var(--rs-glass-blur);
+	box-shadow: inset 0 0 0 1px var(--rs-glass-ring);
 }
 
 .rs-modal__lang .rs-lang-pill:hover,
 .rs-modal__lang .rs-lang-pill:focus-visible {
-	background: var(--rs-bg-blur);
+	background: var(--rs-glass);
 	box-shadow: 0 0 0 1px currentColor;
 }
 

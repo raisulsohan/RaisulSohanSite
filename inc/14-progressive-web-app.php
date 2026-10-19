@@ -48,6 +48,8 @@ function rs_serve_sw() {
 			$theme_uri . '/assets/style.min.css?ver=' . RS_VERSION,
 			$theme_uri . '/assets/app.min.js?ver=' . RS_VERSION,
 			$theme_uri . '/assets/fonts/noto-serif-bengali-bengali.woff2',
+			$theme_uri . '/assets/fonts/anek-bangla-500-bengali.woff2',
+			$theme_uri . '/assets/fonts/inter-latin.woff2',
 		),
 	);
 
@@ -74,8 +76,9 @@ function rs_serve_manifest() {
 		'description'      => get_bloginfo( 'description' ),
 		'start_url'        => home_url( '/' ),
 		'display'          => 'standalone',
-		'background_color' => '#eaecf1',
-		'theme_color'      => '#eaecf1',
+		/* The showreel's black: the splash an installed app opens on. */
+		'background_color' => '#000000',
+		'theme_color'      => '#000000',
 		'lang'             => get_bloginfo( 'language' ),
 		'icons'            => array(),
 	);
@@ -133,7 +136,7 @@ add_action( 'template_redirect', 'rs_serve_manifest', 0 );
  */
 function rs_pwa_head() {
 	echo '<link rel="manifest" href="' . esc_url( home_url( '/?rs-manifest' ) ) . "\">\n";
-	echo "<meta name=\"theme-color\" content=\"#eaecf1\">\n";
+	echo "<meta name=\"theme-color\" content=\"#f5f5f7\">\n";
 	echo "<meta name=\"mobile-web-app-capable\" content=\"yes\">\n";
 	echo "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">\n";
 	echo "<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"default\">\n";

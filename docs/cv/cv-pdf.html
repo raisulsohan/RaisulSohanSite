@@ -9,6 +9,10 @@
 
   Open the file in a browser first: each page shows a red outline if its
   content no longer fits, so nothing is cut off in the PDF.
+
+  Colours since 9.0.0 follow the site's showreel brand: the orange #ff4a1c as
+  a fill, and the deeper #c9310b of the same hue wherever it is text, because
+  the bright one is only 3.4:1 on white paper.
 -->
 <html lang="en">
 <head>
@@ -20,12 +24,13 @@
 @page { size: A4; margin: 0; }
 :root {
 	--ink: #111827;
-	--navy: #1e293b;
-	--acc: #6c4cff;
-	--warm: #9a32c7;
+	--navy: #1d1d1f;
+	--acc: #c9310b;
+	--warm: #b45309;
+	--brand: #ff4a1c;
 	--gray: #5b6472;
-	--line: #d6dce6;
-	--tint: #f4f1ff;
+	--line: #dedee3;
+	--tint: #fff1ec;
 	--font: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 * { box-sizing: border-box; }
@@ -64,7 +69,7 @@ b, strong { font-weight: 650; color: var(--navy); }
 .roles { margin: 1.6mm 0 0; font-size: 10pt; font-weight: 600; color: var(--acc); letter-spacing: 0.01em; }
 .contact { margin: 0; padding: 0; list-style: none; text-align: right; font-size: 7.8pt; line-height: 1.55; color: var(--gray); }
 .contact a { color: var(--navy); }
-.rule { height: 1.1mm; margin: 3.4mm 0 3.4mm; border-radius: 1mm; background: linear-gradient(90deg, var(--acc), var(--warm)); }
+.rule { height: 1.1mm; margin: 3.4mm 0 3.4mm; border-radius: 1mm; background: var(--brand); }
 
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.5mm; margin-bottom: 3.4mm; }
 .stat { padding: 2.2mm 3mm; border-radius: 2mm; background: var(--tint); }
@@ -94,7 +99,7 @@ p { margin: 0; }
 .job-org { margin: 0.3mm 0 1mm; font-size: 7.9pt; color: var(--gray); }
 ul.bul { margin: 0; padding: 0; list-style: none; }
 ul.bul li { position: relative; padding-left: 3.4mm; margin-bottom: 0.7mm; }
-ul.bul li::before { content: ""; position: absolute; left: 0.4mm; top: 1.75mm; width: 1.3mm; height: 1.3mm; border-radius: 50%; background: var(--acc); }
+ul.bul li::before { content: ""; position: absolute; left: 0.4mm; top: 1.75mm; width: 1.3mm; height: 1.3mm; border-radius: 50%; background: var(--brand); }
 
 /* ---------- page two ---------- */
 .work { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.4mm; }

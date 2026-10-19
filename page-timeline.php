@@ -47,7 +47,7 @@ $rs_gap_w   = 130;
 $rs_px_min  = 5;
 $rs_clip_lo = 34;
 $rs_lane_h  = 32;
-$rs_palette = array( '#ea77ff', '#31a8ff', '#3ddc97', '#ffd166', '#ff9a00', '#b9a8ff', '#ff6b8b', '#5ce1e6' );
+$rs_palette = array( '#ff4a1c', '#31a8ff', '#3ddc97', '#ffd166', '#ffa184', '#f5f5f7', '#ff6b8b', '#5ce1e6' );
 
 $rs_items   = array();
 $rs_months  = array();

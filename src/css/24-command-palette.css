@@ -10,7 +10,7 @@
 	align-items: flex-start;
 	justify-content: center;
 	padding: min(14vh, 7rem) 16px 16px;
-	background: var(--rs-scrim, rgba(6, 4, 20, 0.6));
+	background: var(--rs-scrim, rgba(0, 0, 0, 0.6));
 	-webkit-backdrop-filter: blur(4px);
 	backdrop-filter: blur(4px);
 }
@@ -25,9 +25,11 @@
 	width: min(640px, 100%);
 	max-height: min(70vh, 560px);
 	overflow: hidden;
-	border-radius: 16px;
+	border-radius: var(--rs-radius-xl, 22px);
 	border: 1px solid var(--rs-border-60, rgba(0, 0, 0, 0.12));
 	background: var(--rs-bg);
+	/* The site's interface face, not the reading serif the body sets. */
+	font-family: var(--rs-sans);
 	box-shadow: var(--rs-shadow-2xl, 0 25px 50px -12px rgba(0, 0, 0, 0.45));
 	animation: rs-cmdk-in 0.18s ease-out;
 }
@@ -92,9 +94,9 @@
 
 .rs-cmdk__group {
 	padding: 0.7rem 0.7rem 0.3rem;
-	font-size: 0.7rem;
+	font-size: 0.75rem;
 	font-weight: 600;
-	color: var(--rs-muted-fg);
+	color: var(--rs-hover);
 }
 
 .rs-cmdk__item {
@@ -103,15 +105,16 @@
 	justify-content: space-between;
 	gap: 1rem;
 	padding: 0.6rem 0.75rem;
-	border-radius: 10px;
+	border-radius: 12px;
 	font-size: 0.95rem;
+	font-weight: 500;
 	color: var(--rs-fg);
 	cursor: pointer;
 }
 
 .rs-cmdk__item.is-active {
 	background: var(--rs-muted);
-	box-shadow: inset 3px 0 0 var(--rs-hover);
+	box-shadow: inset 3px 0 0 var(--rs-brand, #ff4a1c);
 }
 
 .rs-cmdk__label {

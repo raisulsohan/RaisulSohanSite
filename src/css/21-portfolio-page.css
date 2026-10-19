@@ -4,32 +4,35 @@
 
 /*
  * The portfolio is a stage, not a page of prose: it keeps one dark world in
- * both site themes, borrowing the palette of the GitHub profile (indigo
- * ground, dot grid, violet and pink glows) and the vocabulary of a motion
- * designer's tools (a speed graph, a timeline with keyframes and a playhead).
+ * both site themes. Since 9.0.0 that world is the showreel's (/showreel): a
+ * black ground, neutral tiles, one orange and bold sans headings, with the
+ * vocabulary of a motion designer's tools kept (a speed graph, a timeline
+ * with keyframes and a playhead).
  */
 
 .rs-pf,
 #rs-case-study-overlay,
 #rs-image-lightbox {
-	--pf-bg0: #0c0a13;
-	--pf-bg1: #16122a;
-	--pf-panel: #100d19;
-	--pf-panel2: #1b1728;
-	--pf-line: #2c2642;
-	--pf-line-soft: #221d34;
-	--pf-text: #f5f3fb;
-	--pf-text2: #c4bdd8;
-	--pf-muted: #9a93b5;
-	--pf-dim: #625c7e;
-	--pf-brand: #6c4cff;
-	--pf-brand2: #8f74ff;
-	--pf-brand3: #b9a8ff;
-	--pf-pink: #ea77ff;
+	--pf-bg0: #000000;
+	--pf-bg1: #0b0b0c;
+	--pf-panel: #161617;
+	--pf-panel2: #1d1d1f;
+	--pf-line: #2c2c2e;
+	--pf-line-soft: #232325;
+	--pf-text: #f5f5f7;
+	--pf-text2: #d2d2d7;
+	--pf-muted: #a1a1a6;
+	--pf-dim: #6e6e73;
+	--pf-brand: #ff4a1c;
+	--pf-brand2: #ff6a3d;
+	--pf-brand3: #ffa184;
+	--pf-pink: #ffb340;
 	--pf-blue: #31a8ff;
 	--pf-orange: #ff9a00;
 	--pf-green: #3ddc97;
 	--pf-key: #ffd166;
+	/* Near-black for text on the orange, as on the showreel's pills. */
+	--pf-ink: #0b0a0d;
 }
 
 .rs-pf {
@@ -38,21 +41,21 @@
 	overflow: hidden;
 	color: var(--pf-text);
 	font-family: var(--rs-sans);
-	background:
-		radial-gradient(circle, rgba(255, 255, 255, 0.05) 1.1px, transparent 1.3px) 0 0 / 28px 28px,
-		linear-gradient(165deg, var(--pf-bg1), var(--pf-bg0) 55%);
+	/* The showreel's stage is plain black: no dot grid, no glow. */
+	background: var(--pf-bg0);
 	padding-block: clamp(2.5rem, 6vw, 5rem) clamp(3.5rem, 8vw, 6.5rem);
 	color-scheme: dark;
 }
 
 .rs-pf__glow {
+	display: none;
 	position: absolute;
 	z-index: -1;
 	width: 70vmax;
 	aspect-ratio: 1;
 	border-radius: 50%;
 	pointer-events: none;
-	background: radial-gradient(closest-side, rgba(108, 76, 255, 0.3), transparent);
+	background: radial-gradient(closest-side, rgba(255, 74, 28, 0.3), transparent);
 }
 
 .rs-pf__glow--a {
@@ -63,7 +66,7 @@
 .rs-pf__glow--b {
 	top: 18rem;
 	right: -34vmax;
-	background: radial-gradient(closest-side, rgba(234, 119, 255, 0.16), transparent);
+	background: radial-gradient(closest-side, rgba(255, 179, 64, 0.16), transparent);
 }
 
 .rs-pf__wrap {
@@ -79,43 +82,38 @@
 .rs-pf__eyebrow {
 	display: flex;
 	align-items: center;
-	gap: 0.6rem;
-	margin: 0 0 1.1rem;
-	font-size: 0.76rem;
+	margin: 0 0 0.85rem;
+	/* The showreel's eyebrow: orange, at reading size. No capitals or
+	   tracking, which a Bengali label cannot take. */
+	font-size: clamp(1.0625rem, 1.6vw, 1.1875rem);
 	font-weight: 600;
-	letter-spacing: 0.16em;
-	text-transform: uppercase;
-	color: var(--pf-brand3);
-}
-
-.rs-pf__eyebrow::before {
-	content: "";
-	width: 1.75rem;
-	height: 1px;
-	background: linear-gradient(90deg, transparent, var(--pf-brand3));
+	letter-spacing: var(--rs-track);
+	color: var(--pf-brand);
 }
 
 .rs-pf-h {
 	display: flex;
-	align-items: center;
-	gap: 0.7rem;
+	align-items: baseline;
 	margin: 0;
-	font-family: var(--rs-sans);
-	font-size: clamp(1.35rem, 2.6vw, 1.75rem);
+	font-family: var(--rs-display);
+	font-size: clamp(2rem, 4.6vw, 3.5rem);
 	font-weight: 700;
-	line-height: 1.3;
+	line-height: 1.08;
+	letter-spacing: var(--rs-track-tight);
 	color: var(--pf-text);
+	text-wrap: balance;
 }
 
-/* The section marker is a keyframe diamond, as on the GitHub profile. */
-.rs-pf-h::before {
+/* The section marker is the showreel's orange dot, where a full stop would
+   sit; the keyframe diamond it replaces belonged to the violet stage. */
+.rs-pf-h::after {
 	content: "";
 	flex: none;
-	width: 0.7rem;
-	height: 0.7rem;
-	border-radius: 2px;
-	transform: rotate(45deg);
-	background: linear-gradient(135deg, var(--pf-brand2), var(--pf-pink));
+	width: 0.17em;
+	height: 0.17em;
+	margin-left: 0.08em;
+	border-radius: 50%;
+	background: var(--pf-brand);
 }
 
 /* --------------------------------------------------------------------------
@@ -144,9 +142,9 @@
 }
 
 .rs-pf-chip {
-	padding: 0.32rem 0.8rem;
-	border-radius: 999px;
-	font-size: 0.78rem;
+	padding: 0.32rem 0.85rem;
+	border-radius: var(--rs-pill);
+	font-size: 0.8125rem;
 	font-weight: 600;
 	color: var(--c);
 	background: rgba(255, 255, 255, 0.04);
@@ -157,40 +155,30 @@
 
 .rs-pf__title {
 	margin: 0;
-	font-family: var(--rs-sans);
-	font-size: clamp(2.2rem, 5.4vw, 4rem);
+	/* The showreel's hero line: big, bold, set tight in English. */
+	font-family: var(--rs-display);
+	font-size: clamp(2.4rem, 5.2vw, 4.25rem);
 	font-weight: 700;
-	line-height: 1.22;
-	letter-spacing: -0.01em;
+	line-height: 1.12;
+	letter-spacing: var(--rs-track-tight);
 	color: var(--pf-text);
 	text-wrap: balance;
 }
 
+/* The two words that matter, in the one orange. */
 .rs-pf__title em {
 	font-style: normal;
-	color: var(--pf-pink);
-	background: linear-gradient(90deg, var(--pf-brand2), var(--pf-pink));
-	-webkit-background-clip: text;
-	background-clip: text;
-	-webkit-text-fill-color: transparent;
-}
-
-.rs-pf__title em + em,
-.rs-pf__title em:last-of-type {
-	color: var(--pf-blue);
-	background-image: linear-gradient(90deg, var(--pf-blue), var(--pf-green));
-}
-
-.rs-pf__title em:first-of-type {
-	background-image: linear-gradient(90deg, var(--pf-brand2), var(--pf-pink));
+	color: var(--pf-brand);
 }
 
 .rs-pf__bio {
 	max-width: 38rem;
 	margin: 1.4rem 0 0;
-	font-size: 1.05rem;
-	line-height: 1.85;
-	color: var(--pf-text2);
+	font-size: clamp(1.0625rem, 1.5vw, 1.1875rem);
+	font-weight: 500;
+	line-height: 1.6;
+	letter-spacing: var(--rs-track);
+	color: var(--pf-muted);
 }
 
 .rs-pf__actions {
@@ -214,16 +202,21 @@
 	align-items: center;
 	justify-content: center;
 	gap: 0.55rem;
-	min-height: 46px;
-	padding: 0.7rem 1.35rem;
-	border-radius: 999px;
+	min-height: 48px;
+	padding: 0.75rem 1.5rem;
+	border-radius: var(--rs-pill);
 	font-family: var(--rs-sans);
-	font-size: 0.95rem;
+	font-size: 1rem;
 	font-weight: 600;
 	line-height: 1.2;
+	letter-spacing: var(--rs-track);
 	text-decoration: none;
 	cursor: pointer;
-	transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
+	transition: transform 0.12s var(--rs-ease), background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.rs-pf-btn:active {
+	transform: scale(0.97);
 }
 
 .rs-pf-btn svg {
@@ -233,36 +226,40 @@
 }
 
 .rs-pf-btn--primary {
-	color: #fff;
-	background: linear-gradient(135deg, var(--pf-brand), var(--pf-pink));
+	/* The showreel's pill: the orange with near-black on it (5.9:1). */
+	color: var(--pf-ink);
+	background: var(--pf-brand);
 	border: 0;
-	box-shadow: 0 12px 32px -12px rgba(108, 76, 255, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
+/* Apple's secondary pill: a quiet grey fill, no outline. */
 .rs-pf-btn--ghost {
 	color: var(--pf-text);
-	background: rgba(255, 255, 255, 0.04);
-	border: 1px solid var(--pf-line);
+	background: rgba(255, 255, 255, 0.08);
+	border: 1px solid transparent;
 }
 
 @media (hover: hover) {
 	.rs-pf-btn--primary:hover {
-		color: #fff;
-		transform: translateY(-2px);
-		box-shadow: 0 18px 40px -14px rgba(234, 119, 255, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+		color: var(--pf-ink);
+		background: var(--rs-brand-hover);
 	}
 
 	.rs-pf-btn--ghost:hover {
 		color: var(--pf-text);
-		border-color: var(--pf-brand2);
-		background: rgba(143, 116, 255, 0.12);
+		background: rgba(255, 255, 255, 0.14);
 	}
 }
 
 .rs-pf-btn:focus-visible,
 .rs-pf :focus-visible {
-	outline: 2px solid var(--pf-key);
+	outline: 2px solid var(--pf-brand);
 	outline-offset: 3px;
+}
+
+/* On the orange itself an orange ring would vanish. */
+.rs-pf-btn--primary:focus-visible {
+	outline-color: #fff;
 }
 
 .rs-pf__stats {
@@ -287,15 +284,14 @@
 
 .rs-pf__stats dd {
 	margin: 0;
-	font-size: clamp(1.9rem, 3.6vw, 2.5rem);
+	/* The showreel's facts: plain white figures, set tight. */
+	font-family: var(--rs-display);
+	font-size: clamp(2rem, 3.8vw, 2.75rem);
 	font-weight: 700;
 	line-height: 1.1;
+	letter-spacing: -0.035em;
 	font-variant-numeric: tabular-nums;
 	color: var(--pf-text);
-	background: linear-gradient(180deg, #fff, var(--pf-brand3));
-	-webkit-background-clip: text;
-	background-clip: text;
-	-webkit-text-fill-color: transparent;
 }
 
 /* Speed graph */
@@ -303,10 +299,11 @@
 .rs-pf__graph {
 	position: relative;
 	overflow: hidden;
-	border-radius: 24px;
-	border: 1px solid var(--pf-line);
-	background: linear-gradient(180deg, rgba(27, 23, 40, 0.92), rgba(16, 13, 25, 0.96));
-	box-shadow: 0 40px 90px -40px rgba(108, 76, 255, 0.55);
+	/* The showreel's player tile. */
+	border-radius: 28px;
+	border: 0;
+	background: var(--pf-panel);
+	box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.07), 0 40px 90px -30px rgba(0, 0, 0, 0.9);
 }
 
 .rs-pf__graph-bar {
@@ -373,7 +370,7 @@
 	padding: 0.9rem 1.1rem 1rem;
 	border-radius: 20px;
 	border: 1px solid var(--pf-line);
-	background: rgba(16, 13, 25, 0.88);
+	background: rgba(22, 22, 23, 0.88);
 }
 
 .rs-pf-tl__head,
@@ -561,19 +558,18 @@
 }
 
 .rs-pf-toolbox__group {
-	padding: 1.15rem 1.3rem 1.3rem;
-	border-radius: 20px;
-	border: 1px solid var(--pf-line);
-	background: rgba(16, 13, 25, 0.72);
+	padding: 1.25rem 1.4rem 1.4rem;
+	border-radius: 24px;
+	border: 0;
+	background: var(--pf-panel);
 }
 
 .rs-pf-toolbox__label {
 	margin: 0 0 1rem;
-	font-size: 0.72rem;
+	font-size: 0.9375rem;
 	font-weight: 600;
-	letter-spacing: 0.14em;
-	text-transform: uppercase;
-	color: var(--pf-muted);
+	letter-spacing: var(--rs-track);
+	color: var(--pf-text);
 }
 
 .rs-pf-tiles {
@@ -685,16 +681,16 @@
 
 .rs-pf-gh {
 	--l0: rgba(255, 255, 255, 0.055);
-	--l1: #33286a;
-	--l2: #5941c2;
-	--l3: #8f74ff;
-	--l4: #ea77ff;
+	--l1: #5c1d0c;
+	--l2: #c9310b;
+	--l3: #ff6a3d;
+	--l4: #ffb340;
 	position: relative;
 	margin-top: 1.4rem;
 	padding: clamp(1.1rem, 3vw, 1.7rem) clamp(1.1rem, 3vw, 1.9rem);
-	border-radius: 20px;
-	border: 1px solid var(--pf-line);
-	background: rgba(16, 13, 25, 0.72);
+	border-radius: 24px;
+	border: 0;
+	background: var(--pf-panel);
 }
 
 /* The author's span picker, drawn only for them. */
@@ -711,8 +707,8 @@
 	flex-wrap: wrap;
 	padding: 3px;
 	border-radius: 999px;
-	border: 1px dashed rgba(185, 168, 255, 0.45);
-	background: rgba(16, 13, 25, 0.6);
+	border: 1px dashed rgba(255, 161, 132, 0.45);
+	background: rgba(22, 22, 23, 0.6);
 }
 
 .rs-pf-gh__pick-set button {
@@ -734,8 +730,7 @@
 
 .rs-pf-gh__pick-set button[aria-pressed="true"] {
 	background: var(--pf-brand);
-	box-shadow: 0 6px 18px -8px var(--pf-brand);
-	color: #fff;
+	color: var(--pf-ink);
 }
 
 .rs-pf-gh__pick-set button:focus-visible {
@@ -828,14 +823,13 @@
 }
 
 .rs-pf-gh__total strong {
+	font-family: var(--rs-display);
 	font-size: clamp(2.6rem, 6vw, 3.4rem);
 	font-weight: 700;
 	line-height: 1;
+	letter-spacing: -0.035em;
 	font-variant-numeric: tabular-nums;
-	background: linear-gradient(135deg, var(--pf-brand3), var(--pf-pink));
-	-webkit-background-clip: text;
-	background-clip: text;
-	-webkit-text-fill-color: transparent;
+	color: var(--pf-text);
 }
 
 .rs-pf-gh__facts {
@@ -947,8 +941,8 @@
 	left: 0;
 	z-index: 1;
 	padding-right: 0.25rem;
-	background: #0f0c17;
-	box-shadow: 6px 0 8px -4px #0f0c17;
+	background: var(--pf-panel);
+	box-shadow: 6px 0 8px -4px var(--pf-panel);
 }
 
 .rs-pf-gh__days span {
@@ -1022,7 +1016,7 @@
 
 .rs-pf-gh .l4 {
 	background: var(--l4);
-	box-shadow: 0 0 10px -2px rgba(234, 119, 255, 0.7);
+	box-shadow: 0 0 10px -2px rgba(255, 179, 64, 0.7);
 }
 
 /* A calendar page: the date in each square, dark on the light shades. */
@@ -1198,12 +1192,12 @@
 	align-items: center;
 	gap: 0.5rem;
 	min-height: 42px;
-	padding: 0.45rem 1rem;
-	border-radius: 999px;
-	border: 1px solid var(--pf-line);
-	background: rgba(255, 255, 255, 0.03);
+	padding: 0.45rem 1.05rem;
+	border-radius: var(--rs-pill);
+	border: 1px solid transparent;
+	background: rgba(255, 255, 255, 0.08);
 	color: var(--pf-text2);
-	font: 500 0.88rem/1.2 var(--rs-sans);
+	font: 600 0.875rem/1.2 var(--rs-sans);
 	cursor: pointer;
 	transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
@@ -1218,18 +1212,16 @@
 
 .rs-pf-filter .rs-portfolio-filter__btn:hover {
 	color: var(--pf-text);
-	border-color: var(--pf-dim);
+	background: rgba(255, 255, 255, 0.14);
 }
 
 .rs-pf-filter .rs-portfolio-filter__btn.is-active {
-	color: #fff;
-	border-color: transparent;
-	background: linear-gradient(135deg, rgba(108, 76, 255, 0.95), rgba(234, 119, 255, 0.8));
-	box-shadow: 0 10px 26px -12px rgba(108, 76, 255, 0.9);
+	color: var(--pf-ink);
+	background: var(--pf-brand);
 }
 
 .rs-pf-filter .rs-portfolio-filter__btn.is-active::before {
-	background: #fff;
+	background: var(--pf-ink);
 }
 
 .rs-pf-filter__n {
@@ -1252,15 +1244,16 @@
 }
 
 .rs-pf-card {
-	--a: #6c4cff;
+	--a: #ff4a1c;
 	position: relative;
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
-	border-radius: 24px;
-	border: 1px solid var(--pf-line);
-	background: linear-gradient(180deg, rgba(27, 23, 40, 0.94), rgba(16, 13, 25, 0.97));
-	transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.4s ease, box-shadow 0.4s ease;
+	/* The showreel's tile: flat, rounded, a hairline at most. */
+	border-radius: 28px;
+	border: 1px solid rgba(255, 255, 255, 0.06);
+	background: var(--pf-panel);
+	transition: transform 0.4s var(--rs-out), border-color 0.4s ease, box-shadow 0.4s ease;
 }
 
 /* A light that follows the pointer, in the project's own colour. */
@@ -1271,7 +1264,7 @@
 	z-index: 0;
 	pointer-events: none;
 	border-radius: inherit;
-	background: radial-gradient(520px circle at var(--mx, 50%) var(--my, 0%), rgba(108, 76, 255, 0.2), transparent 60%);
+	background: radial-gradient(520px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 74, 28, 0.2), transparent 60%);
 	background: radial-gradient(520px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--a) 24%, transparent), transparent 60%);
 	opacity: 0.6;
 	transition: opacity 0.4s ease;
@@ -1279,9 +1272,9 @@
 
 @media (hover: hover) {
 	.rs-pf-card:hover {
-		transform: translateY(-6px);
-		border-color: color-mix(in srgb, var(--a) 55%, var(--pf-line));
-		box-shadow: 0 34px 80px -36px color-mix(in srgb, var(--a) 70%, transparent);
+		transform: translateY(-4px);
+		border-color: rgba(255, 255, 255, 0.12);
+		box-shadow: 0 34px 80px -36px rgba(0, 0, 0, 0.9);
 	}
 
 	.rs-pf-card:hover::before {
@@ -1303,9 +1296,9 @@
 	overflow: hidden;
 	aspect-ratio: 16 / 9;
 	margin: 0.6rem 0.6rem 0;
-	border-radius: 18px;
-	border: 1px solid rgba(255, 255, 255, 0.06);
-	background: radial-gradient(120% 120% at 0% 0%, #2a2150, var(--pf-bg0));
+	border-radius: 22px;
+	border: 0;
+	background: radial-gradient(120% 120% at 0% 0%, #1d1d1f, var(--pf-bg0));
 	background: radial-gradient(120% 120% at 0% 0%, color-mix(in srgb, var(--a) 38%, var(--pf-bg1)), var(--pf-bg0));
 	cursor: pointer;
 }
@@ -1345,7 +1338,7 @@
 	gap: 5px;
 	height: 30px;
 	padding: 0 0.7rem;
-	background: #1b1728;
+	background: #1d1d1f;
 	border-bottom: 1px solid var(--pf-line);
 }
 
@@ -1394,7 +1387,7 @@
 	padding: 0.28rem 0.7rem;
 	border-radius: 999px;
 	border: 1px solid rgba(255, 255, 255, 0.16);
-	background: rgba(12, 10, 19, 0.66);
+	background: rgba(0, 0, 0, 0.66);
 	-webkit-backdrop-filter: blur(8px);
 	backdrop-filter: blur(8px);
 	font-size: 0.7rem;
@@ -1413,15 +1406,15 @@
 	z-index: 2;
 	display: grid;
 	place-items: center;
-	width: 66px;
-	height: 66px;
-	margin: -33px 0 0 -33px;
+	width: 62px;
+	height: 62px;
+	margin: -31px 0 0 -31px;
 	border-radius: 50%;
-	color: #fff;
-	background: rgba(108, 76, 255, 0.85);
-	background: color-mix(in srgb, var(--a) 78%, #0c0a13);
-	box-shadow: 0 0 0 9px rgba(255, 255, 255, 0.09), 0 14px 34px -10px rgba(0, 0, 0, 0.7);
-	transition: transform 0.3s ease;
+	/* The showreel's play disc: white with black on it, in a ring of glass. */
+	color: #000;
+	background: #fff;
+	box-shadow: 0 0 0 8px rgba(28, 28, 30, 0.45), 0 14px 34px -10px rgba(0, 0, 0, 0.7);
+	transition: transform 0.35s var(--rs-out);
 }
 
 .rs-pf-card__play svg {
@@ -1444,39 +1437,39 @@
 	display: inline-flex;
 	align-self: flex-start;
 	align-items: center;
-	gap: 0.4rem;
-	padding: 0.26rem 0.65rem;
-	border-radius: 999px;
-	border: 1px solid rgba(255, 209, 102, 0.35);
-	background: rgba(255, 209, 102, 0.1);
-	font-size: 0.72rem;
+	gap: 0.45rem;
+	padding: 0.28rem 0.75rem;
+	border-radius: var(--rs-pill);
+	border: 0;
+	background: rgba(255, 74, 28, 0.14);
+	font-size: 0.75rem;
 	font-weight: 600;
-	color: var(--pf-key);
+	color: var(--pf-brand);
 }
 
 .rs-pf-card__flag::before {
 	content: "";
 	width: 7px;
 	height: 7px;
-	transform: rotate(45deg);
-	background: var(--pf-key);
+	border-radius: 50%;
+	background: var(--pf-brand);
 }
 
 .rs-pf-card__type {
 	margin: 0;
-	font-size: 0.76rem;
+	font-size: 0.8125rem;
 	font-weight: 600;
-	letter-spacing: 0.06em;
 	color: var(--pf-brand3);
 	color: color-mix(in srgb, var(--a) 50%, #fff);
 }
 
 .rs-pf-card__title {
 	margin: 0;
-	font-family: var(--rs-sans);
-	font-size: clamp(1.3rem, 2.1vw, 1.55rem);
+	font-family: var(--rs-display);
+	font-size: clamp(1.35rem, 2.1vw, 1.625rem);
 	font-weight: 700;
-	line-height: 1.3;
+	line-height: 1.25;
+	letter-spacing: var(--rs-track-tight);
 }
 
 .rs-pf-card__title button {
@@ -1522,10 +1515,10 @@
 }
 
 .rs-pf-tag {
-	padding: 0.26rem 0.62rem;
-	border-radius: 999px;
-	border: 1px solid var(--pf-line);
-	background: rgba(255, 255, 255, 0.04);
+	padding: 0.26rem 0.65rem;
+	border-radius: var(--rs-pill);
+	border: 0;
+	background: rgba(255, 255, 255, 0.07);
 	font-size: 0.72rem;
 	color: var(--pf-text2);
 }
@@ -1637,40 +1630,73 @@
 .rs-pf-cta {
 	position: relative;
 	overflow: hidden;
-	padding: clamp(2.75rem, 6vw, 4.75rem) clamp(1.25rem, 5vw, 4rem);
+	padding: clamp(3.5rem, 8vw, 6.5rem) clamp(1.25rem, 5vw, 4rem);
 	border-radius: 28px;
-	border: 1px solid var(--pf-line);
+	border: 0;
 	text-align: center;
-	background:
-		radial-gradient(80% 120% at 50% 0%, rgba(108, 76, 255, 0.38), transparent 62%),
-		radial-gradient(60% 90% at 100% 100%, rgba(234, 119, 255, 0.2), transparent 60%),
-		var(--pf-panel);
+	/* The showreel's contact section: its end card's orange, near-black on it. */
+	background: var(--pf-brand);
+	color: var(--pf-ink);
 }
 
 .rs-pf-cta .rs-pf__eyebrow {
 	justify-content: center;
+	color: var(--pf-ink);
+	opacity: 0.78;
 }
 
 .rs-pf-cta__title {
-	max-width: 24ch;
+	max-width: 18ch;
 	margin: 0 auto;
-	font-family: var(--rs-sans);
-	font-size: clamp(1.75rem, 4vw, 2.7rem);
+	font-family: var(--rs-display);
+	font-size: clamp(2.25rem, 5.6vw, 4.25rem);
 	font-weight: 700;
-	line-height: 1.3;
-	color: var(--pf-text);
+	line-height: 1.1;
+	letter-spacing: var(--rs-track-tight);
+	color: var(--pf-ink);
 	text-wrap: balance;
 }
 
 .rs-pf-cta__text {
 	max-width: 40rem;
-	margin: 1rem auto 0;
-	line-height: 1.85;
-	color: var(--pf-text2);
+	margin: 1.25rem auto 0;
+	font-size: clamp(1.0625rem, 1.5vw, 1.1875rem);
+	font-weight: 500;
+	line-height: 1.6;
+	color: rgba(11, 10, 13, 0.8);
 }
 
 .rs-pf-cta .rs-pf__actions {
 	justify-content: center;
+}
+
+.rs-pf-cta .rs-pf-btn--primary {
+	color: #fff;
+	background: var(--pf-ink);
+}
+
+.rs-pf-cta .rs-pf-btn--ghost {
+	color: var(--pf-ink);
+	background: transparent;
+	border-color: transparent;
+	box-shadow: inset 0 0 0 1.5px var(--pf-ink);
+}
+
+@media (hover: hover) {
+	.rs-pf-cta .rs-pf-btn--primary:hover {
+		color: #fff;
+		background: #24222a;
+	}
+
+	.rs-pf-cta .rs-pf-btn--ghost:hover {
+		color: var(--pf-ink);
+		background: rgba(11, 10, 13, 0.08);
+	}
+}
+
+.rs-pf-cta :focus-visible,
+.rs-pf-cta .rs-pf-btn--primary:focus-visible {
+	outline-color: var(--pf-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1692,42 +1718,41 @@
 /* The pop-up joins the stage: the site tokens it is written against are
    pointed at the stage colours while it is open, in either site theme. */
 #rs-case-study-overlay {
-	--rs-bg: #0c0a13;
-	--rs-fg: #f5f3fb;
-	--rs-muted: #1b1728;
-	--rs-muted-fg: #a9a2c3;
-	--rs-surface: #100d19;
-	--rs-body-fg: #c4bdd8;
-	--rs-border: #2c2642;
+	--rs-bg: #000000;
+	--rs-fg: #f5f5f7;
+	--rs-muted: #1d1d1f;
+	--rs-muted-fg: #aeaeb2;
+	--rs-surface: #161617;
+	--rs-body-fg: #d2d2d7;
+	--rs-border: #2c2c2e;
 	--rs-border-30: rgba(255, 255, 255, 0.06);
 	--rs-border-40: rgba(255, 255, 255, 0.09);
 	--rs-border-50: rgba(255, 255, 255, 0.12);
-	--rs-hover: #b9a8ff;
-	--rs-solid-bg: #6c4cff;
+	--rs-hover: #ffa184;
+	--rs-solid-bg: #ff4a1c;
 	--rs-solid-fg: #fff;
-	--rs-primary: #8f74ff;
+	--rs-primary: #ff6a3d;
 	--rs-shadow-md: 0 6px 18px rgba(0, 0, 0, 0.5);
 	--rs-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.65);
 	color-scheme: dark;
 }
 
 #rs-case-study-overlay .rs-modal--case-study {
-	border: 1px solid #2c2642;
-	background:
-		radial-gradient(90% 40% at 50% 0%, rgba(108, 76, 255, 0.22), transparent 70%),
-		#0f0c18;
-	color: #f5f3fb;
+	border: 0;
+	background: #000000;
+	box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 40px 90px -30px rgba(0, 0, 0, 0.9);
+	color: #f5f5f7;
 }
 
-#rs-case-study-overlay .rs-case-study-heading::before {
+/* The showreel's dot, after the heading rather than a diamond before it. */
+#rs-case-study-overlay .rs-case-study-heading::after {
 	content: "";
 	display: inline-block;
-	width: 0.6rem;
-	height: 0.6rem;
-	margin-right: 0.6rem;
-	border-radius: 2px;
-	transform: translateY(-0.1em) rotate(45deg);
-	background: linear-gradient(135deg, #8f74ff, #ea77ff);
+	width: 0.2em;
+	height: 0.2em;
+	margin-left: 0.08em;
+	border-radius: 50%;
+	background: #ff4a1c;
 }
 
 .rs-portfolio-card__browser-bar {
@@ -1764,9 +1789,9 @@
 	width: 56px;
 	height: 56px;
 	border-radius: 50%;
-	background: linear-gradient(135deg, #6c4cff, #ea77ff);
-	color: #fff;
-	box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.08), 0 10px 26px rgba(0, 0, 0, 0.45);
+	background: #fff;
+	color: #000;
+	box-shadow: 0 0 0 8px rgba(28, 28, 30, 0.45), 0 10px 26px rgba(0, 0, 0, 0.45);
 	transition: transform 0.2s ease;
 }
 
@@ -1782,10 +1807,10 @@
 }
 
 .rs-portfolio-tag {
-	padding: 0.26rem 0.62rem;
-	border-radius: 999px;
-	border: 1px solid var(--rs-border);
-	background: var(--rs-muted);
+	padding: 0.26rem 0.65rem;
+	border-radius: var(--rs-pill);
+	border: 0;
+	background: rgba(255, 255, 255, 0.07);
 	font-size: 0.74rem;
 	color: var(--rs-body-fg);
 }
@@ -1803,31 +1828,32 @@
 }
 
 .rs-portfolio-btn--primary {
-	padding: 0.6rem 1.35rem;
-	border-radius: 999px;
+	padding: 0.65rem 1.4rem;
+	border-radius: var(--rs-pill);
 	border: 0;
-	background: linear-gradient(135deg, #6c4cff, #ea77ff);
-	color: #fff !important;
-	box-shadow: 0 10px 26px -12px rgba(108, 76, 255, 0.9);
+	background: #ff4a1c;
+	color: #0b0a0d !important;
 }
 
 .rs-portfolio-btn--primary:hover {
-	color: #fff !important;
-	filter: brightness(1.1);
-	transform: translateY(-1px);
+	color: #0b0a0d !important;
+	background: #ff6238;
 }
 
 .rs-portfolio-btn--secondary {
-	padding: 0.6rem 1.25rem;
-	border-radius: 999px;
-	border: 1px solid var(--rs-border);
-	background: var(--rs-muted);
+	padding: 0.65rem 1.3rem;
+	border-radius: var(--rs-pill);
+	border: 0;
+	background: rgba(255, 255, 255, 0.08);
 	color: var(--rs-fg) !important;
 }
 
 .rs-portfolio-btn--secondary:hover {
-	background: var(--rs-border);
-	transform: translateY(-1px);
+	background: rgba(255, 255, 255, 0.14);
+}
+
+.rs-portfolio-btn:active {
+	transform: scale(0.97);
 }
 
 /* --------------------------------------------------------------------------
@@ -1842,11 +1868,11 @@
  */
 :root:has(body.rs-stage),
 body.rs-stage {
-	--rs-bg: #0c0a13;
-	--rs-fg: #f5f3fb;
-	--rs-muted: #1b1728;
-	--rs-muted-fg: #a9a2c3;
-	--rs-accent: #262157;
+	--rs-bg: #000000;
+	--rs-fg: #f5f5f7;
+	--rs-muted: #1d1d1f;
+	--rs-muted-fg: #aeaeb2;
+	--rs-accent: #1d1d1f;
 	--rs-border: rgba(255, 255, 255, 0.16);
 	--rs-border-30: rgba(255, 255, 255, 0.06);
 	--rs-border-40: rgba(255, 255, 255, 0.08);
@@ -1854,40 +1880,33 @@ body.rs-stage {
 	--rs-border-60: rgba(255, 255, 255, 0.13);
 	--rs-rule: rgba(255, 255, 255, 0.18);
 	--rs-grid: transparent;
-	--rs-hover: #b9a8ff;
-	--rs-mark: #4a3aa0;
-	--rs-bg-blur: rgba(12, 10, 19, 0.8);
-	--rs-cat: #b9a8ff;
-	--rs-body-fg: rgba(245, 243, 251, 0.82);
-	--rs-surface: #100d19;
-	--rs-scrim: rgba(6, 4, 20, 0.72);
-	--rs-solid-bg: #6c4cff;
-	--rs-solid-fg: #fff;
-	--rs-tooltip-bg: #272253;
-	--rs-tooltip-fg: #f1f0f8;
-	--rs-scrollbar-thumb: #3d3777;
-	--rs-scrollbar-track: #0c0a13;
+	--rs-hover: #ff4a1c;
+	--rs-mark: #80290f;
+	--rs-bg-blur: rgba(22, 22, 23, 0.78);
+	--rs-cat: #c7c7cc;
+	--rs-body-fg: rgba(245, 245, 247, 0.84);
+	--rs-surface: #161617;
+	--rs-scrim: rgba(0, 0, 0, 0.72);
+	--rs-solid-bg: #f5f5f7;
+	--rs-solid-fg: #000000;
+	--rs-tooltip-bg: #2c2c2e;
+	--rs-tooltip-fg: #f5f5f7;
+	--rs-glass: rgba(44, 44, 46, 0.72);
+	--rs-glass-bar: rgba(22, 22, 23, 0.72);
+	--rs-glass-ring: rgba(255, 255, 255, 0.14);
+	--rs-scrollbar-thumb: #3a3a3c;
+	--rs-scrollbar-track: #000000;
 	color-scheme: dark;
 }
 
-/* Glass over the stage, so the glows show through as the page scrolls. */
-.rs-stage .rs-header {
-	border-bottom-color: #221d34;
-	background: rgba(12, 10, 19, 0.78);
-	-webkit-backdrop-filter: saturate(140%) blur(14px);
-	backdrop-filter: saturate(140%) blur(14px);
-}
-
+/* The header is the showreel's glass bar already (03-header.css), in the
+   stage's dark tokens above. */
 .rs-stage .rs-header__brand {
 	color: #fff;
 }
 
 .rs-stage .rs-header__link[aria-current="page"] {
-	color: #ea77ff;
-	background: linear-gradient(90deg, #b9a8ff, #ea77ff);
-	-webkit-background-clip: text;
-	background-clip: text;
-	-webkit-text-fill-color: transparent;
+	color: #ff4a1c;
 }
 
 /* The floating controls belong to reading: animation, text size and a page
@@ -1908,12 +1927,7 @@ body.rs-stage {
 	--rs-top-edge: calc(1180px / 2 - 32px + 24px + 44px);
 	right: max(clamp(16px, 2.5vw, 32px), calc(50% - var(--rs-top-edge)));
 	bottom: clamp(16px, 2.5vw, 28px);
-	border-color: #2c2642;
 	color: #fff;
-	background: rgba(22, 18, 42, 0.86);
-	-webkit-backdrop-filter: blur(10px);
-	backdrop-filter: blur(10px);
-	box-shadow: 0 14px 34px -14px rgba(108, 76, 255, 0.8);
 }
 
 .rs-stage--project .rs-top {
@@ -1921,15 +1935,14 @@ body.rs-stage {
 }
 
 .rs-stage .rs-top:hover {
-	border-color: transparent;
-	color: #fff;
-	background: linear-gradient(135deg, #6c4cff, #ea77ff);
+	color: #000;
+	background: #f5f5f7;
 }
 
 .rs-stage .rs-footer {
 	padding-block: 1.75rem 2rem;
-	border-top: 1px solid #221d34;
-	background: #0c0a13;
+	border-top: 1px solid #232325;
+	background: #000000;
 }
 
 .rs-stage .rs-footer .rs-wrap {
@@ -1944,29 +1957,25 @@ body.rs-stage {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.6rem;
-	color: #8c85a6;
+	color: #8e8e93;
 }
 
 .rs-stage .rs-footer span::before {
 	content: "";
 	width: 0.45rem;
 	height: 0.45rem;
-	border-radius: 1px;
-	transform: rotate(45deg);
-	background: linear-gradient(135deg, #8f74ff, #ea77ff);
+	border-radius: 50%;
+	background: #ff4a1c;
 }
 
 .rs-stage .rs-footer__link {
 	margin: 0;
-	font-size: 0.75rem;
-	color: #c4bdd8;
-	border-bottom-color: rgba(185, 168, 255, 0.35);
+	color: #a1a1a6;
 }
 
 .rs-stage .rs-footer__link:hover,
 .rs-stage .rs-footer__link:focus-visible {
 	color: #fff;
-	border-bottom-color: #ea77ff;
 }
 
 /* --------------------------------------------------------------------------
@@ -1988,9 +1997,9 @@ body.rs-stage {
 	min-width: 44px;
 	height: 44px;
 	padding: 0 0.8rem;
-	border-radius: 999px;
-	border: 1px solid var(--pf-line);
-	background: rgba(255, 255, 255, 0.03);
+	border-radius: var(--rs-pill);
+	border: 1px solid transparent;
+	background: rgba(255, 255, 255, 0.08);
 	color: var(--pf-text2);
 	font: 600 0.95rem/1 var(--rs-sans);
 	font-variant-numeric: tabular-nums;
@@ -2009,16 +2018,12 @@ body.rs-stage {
 
 button.rs-pf-page:hover {
 	color: var(--pf-text);
-	border-color: var(--pf-brand2);
-	background: rgba(143, 116, 255, 0.12);
-	transform: translateY(-1px);
+	background: rgba(255, 255, 255, 0.14);
 }
 
 .rs-pf-page.is-current {
-	color: #fff;
-	border-color: transparent;
-	background: linear-gradient(135deg, var(--pf-brand), var(--pf-pink));
-	box-shadow: 0 10px 26px -12px rgba(108, 76, 255, 0.9);
+	color: var(--pf-ink);
+	background: var(--pf-brand);
 	cursor: default;
 }
 
@@ -2100,7 +2105,7 @@ button.rs-pf-page:hover {
 	margin-top: -7px;
 	border-radius: 50%;
 	background: linear-gradient(135deg, var(--pf-brand2), var(--pf-pink));
-	box-shadow: 0 0 14px rgba(234, 119, 255, 0.8);
+	box-shadow: 0 0 14px rgba(255, 179, 64, 0.8);
 }
 
 .rs-pf-g-handle {
@@ -2117,20 +2122,20 @@ button.rs-pf-page:hover {
 }
 
 .rs-pf-g-knob {
-	fill: #16122a;
-	stroke: #b9a8ff;
+	fill: #0b0b0c;
+	stroke: #ffa184;
 	stroke-width: 2;
 	transition: fill 0.2s ease;
 }
 
 .rs-pf-g-handle:hover .rs-pf-g-knob,
 .rs-pf-g-handle.is-dragging .rs-pf-g-knob {
-	fill: #b9a8ff;
+	fill: #ffa184;
 }
 
 .rs-pf-g-ring {
 	fill: none;
-	stroke: #ea77ff;
+	stroke: #ffb340;
 	stroke-width: 1.5;
 	opacity: 0;
 	transform-box: fill-box;
@@ -2221,7 +2226,7 @@ button.rs-pf-page:hover {
 	padding: 0.36rem 0.75rem 0.36rem 0.55rem;
 	border-radius: 999px;
 	background: linear-gradient(135deg, var(--pf-brand), var(--pf-pink));
-	box-shadow: 0 10px 26px -10px rgba(234, 119, 255, 0.85);
+	box-shadow: 0 10px 26px -10px rgba(255, 179, 64, 0.85);
 	font: 600 0.78rem/1.2 var(--rs-sans);
 	white-space: nowrap;
 	color: #fff;
@@ -2287,11 +2292,11 @@ button.rs-pf-page:hover {
 .rs-pf__graph-presets button.is-active {
 	color: #fff;
 	border-color: transparent;
-	background: linear-gradient(135deg, rgba(108, 76, 255, 0.9), rgba(234, 119, 255, 0.75));
+	background: linear-gradient(135deg, rgba(255, 74, 28, 0.9), rgba(255, 179, 64, 0.75));
 }
 
 .rs-pf__graph-copy.is-done {
-	color: #0c0a13;
+	color: #000000;
 	border-color: transparent;
 	background: var(--pf-green);
 }
@@ -2452,8 +2457,8 @@ button.rs-pf-page:hover {
 	z-index: 3;
 	width: 2px;
 	margin-left: -1px;
-	background: #ea77ff;
-	box-shadow: 0 0 10px #ea77ff;
+	background: #ffb340;
+	box-shadow: 0 0 10px #ffb340;
 	opacity: 0;
 	pointer-events: none;
 	transition: opacity 0.2s ease;
@@ -2473,8 +2478,8 @@ button.rs-pf-page:hover {
 	position: relative;
 	overflow: hidden;
 	border-radius: 14px;
-	border: 1px solid #2c2642;
-	background: #0c0a13;
+	border: 1px solid #2c2c2e;
+	background: #000000;
 	-webkit-user-select: none;
 	user-select: none;
 }
@@ -2515,7 +2520,7 @@ button.rs-pf-page:hover {
 	margin: -19px 0 0 -19px;
 	border-radius: 50%;
 	border: 2px solid #fff;
-	background: linear-gradient(135deg, #6c4cff, #ea77ff);
+	background: linear-gradient(135deg, #ff4a1c, #ffb340);
 	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
 }
 
@@ -2546,7 +2551,7 @@ button.rs-pf-page:hover {
 	top: 0.7rem;
 	padding: 0.2rem 0.55rem;
 	border-radius: 999px;
-	background: rgba(12, 10, 19, 0.7);
+	background: rgba(0, 0, 0, 0.7);
 	font-size: 0.7rem;
 	font-weight: 600;
 	color: #fff;
@@ -2585,11 +2590,11 @@ button.rs-pf-page:hover {
 	width: min(92vw, 440px);
 	padding: 0.9rem 1rem 0.85rem;
 	border-radius: 16px;
-	border: 1px solid #2c2642;
-	background: rgba(16, 13, 25, 0.96);
-	box-shadow: 0 30px 70px -20px rgba(108, 76, 255, 0.55);
+	border: 1px solid #2c2c2e;
+	background: rgba(22, 22, 23, 0.96);
+	box-shadow: 0 30px 70px -20px rgba(255, 74, 28, 0.55);
 	font-family: var(--rs-sans);
-	color: #f5f3fb;
+	color: #f5f5f7;
 	opacity: 0;
 	transform: translate(-50%, 24px);
 	transition: opacity 0.35s ease, transform 0.35s ease;
@@ -2614,7 +2619,7 @@ button.rs-pf-page:hover {
 	font: 600 0.7rem/1 ui-monospace, "Cascadia Code", Consolas, monospace;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
-	color: #9a93b5;
+	color: #a1a1a6;
 }
 
 .rs-pf-rq__row {
@@ -2642,7 +2647,7 @@ button.rs-pf-page:hover {
 	height: 8px;
 	margin: 0.6rem 0 0.5rem;
 	border-radius: 8px;
-	background: #221d34;
+	background: #232325;
 }
 
 .rs-pf-rq__bar i {
@@ -2650,7 +2655,7 @@ button.rs-pf-page:hover {
 	width: 0;
 	height: 100%;
 	border-radius: inherit;
-	background: linear-gradient(90deg, #6c4cff, #ea77ff);
+	background: linear-gradient(90deg, #ff4a1c, #ffb340);
 }
 
 .rs-pf-rq.is-done .rs-pf-rq__bar i {
@@ -2659,7 +2664,7 @@ button.rs-pf-page:hover {
 
 .rs-pf-rq__meta {
 	font: 0.7rem/1.4 ui-monospace, "Cascadia Code", Consolas, monospace;
-	color: #8c85a6;
+	color: #8e8e93;
 }
 
 .rs-pf-confetti {
@@ -2723,7 +2728,7 @@ button.rs-pf-page:hover {
 	border-radius: 999px;
 	background: var(--pf-key);
 	font-style: normal;
-	color: #0c0a13;
+	color: #000000;
 }
 
 .rs-pf__graph.is-shared {
@@ -2741,7 +2746,7 @@ button.rs-pf-page:hover {
 	padding: 0.5rem 0.9rem;
 	border-radius: 14px;
 	border: 1px solid var(--pf-line);
-	background: rgba(16, 13, 25, 0.6);
+	background: rgba(22, 22, 23, 0.6);
 	font-size: 0.84rem;
 	color: var(--pf-text2);
 	text-decoration: none;
@@ -2807,8 +2812,14 @@ button.rs-pf-page:hover {
 	padding-top: clamp(1.5rem, 4vw, 3rem);
 }
 
+/* A project page is read, so its section headings step down from the
+   portfolio's display size. */
+.rs-pf--project .rs-pf-h {
+	font-size: clamp(1.75rem, 3.6vw, 2.75rem);
+}
+
 .rs-pf-project {
-	--a: #6c4cff;
+	--a: #ff4a1c;
 	max-width: 880px;
 }
 
@@ -2865,9 +2876,9 @@ button.rs-pf-page:hover {
 	margin: 2.25rem 0 0;
 	border-radius: 22px;
 	border: 1px solid var(--pf-line);
-	background: radial-gradient(120% 120% at 0% 0%, #2a2150, var(--pf-bg0));
+	background: radial-gradient(120% 120% at 0% 0%, #1d1d1f, var(--pf-bg0));
 	background: radial-gradient(120% 120% at 0% 0%, color-mix(in srgb, var(--a) 35%, var(--pf-bg1)), var(--pf-bg0));
-	box-shadow: 0 40px 90px -45px rgba(108, 76, 255, 0.6);
+	box-shadow: 0 40px 90px -45px rgba(255, 74, 28, 0.6);
 	box-shadow: 0 40px 90px -45px color-mix(in srgb, var(--a) 70%, transparent);
 }
 
@@ -2962,7 +2973,7 @@ button.rs-pf-page:hover {
 	padding: 1rem 1.2rem;
 	border-radius: 16px;
 	border: 1px solid var(--pf-line);
-	background: rgba(16, 13, 25, 0.6);
+	background: rgba(22, 22, 23, 0.6);
 	color: var(--pf-text);
 	text-decoration: none;
 	transition: border-color 0.2s ease, transform 0.2s ease;
@@ -3037,18 +3048,18 @@ button.rs-pf-page:hover {
 
 .rs-pf-card__demo svg {
 	color: var(--pf-brand3);
-	color: color-mix(in srgb, var(--a, #8f74ff) 60%, #fff);
+	color: color-mix(in srgb, var(--a, #ff6a3d) 60%, #fff);
 }
 
 .rs-pf-card__demo:focus-visible {
-	outline: 2px solid var(--pf-key, #8f74ff);
+	outline: 2px solid var(--pf-key, #ff6a3d);
 	outline-offset: 2px;
 }
 
 @media (hover: hover) {
 	.rs-pf-card__demo:hover {
-		border-color: color-mix(in srgb, var(--a, #8f74ff) 60%, transparent);
-		background: color-mix(in srgb, var(--a, #8f74ff) 16%, transparent);
+		border-color: color-mix(in srgb, var(--a, #ff6a3d) 60%, transparent);
+		background: color-mix(in srgb, var(--a, #ff6a3d) 16%, transparent);
 		transform: translateY(-1px);
 	}
 }
@@ -3068,8 +3079,8 @@ button.rs-pf-page:hover {
 }
 
 .rs-pf-card__demo[aria-expanded="true"] {
-	border-color: color-mix(in srgb, var(--a, #8f74ff) 60%, transparent);
-	background: color-mix(in srgb, var(--a, #8f74ff) 16%, transparent);
+	border-color: color-mix(in srgb, var(--a, #ff6a3d) 60%, transparent);
+	background: color-mix(in srgb, var(--a, #ff6a3d) 16%, transparent);
 }
 
 .rs-pf-card__demo[aria-expanded="true"] .rs-pf-card__chev {
@@ -3088,9 +3099,9 @@ a.rs-pf-card__demo {
 	gap: 4px;
 	width: 240px;
 	padding: 6px;
-	border: 1px solid var(--pf-line, #2c2642);
+	border: 1px solid var(--pf-line, #2c2c2e);
 	border-radius: 14px;
-	background: var(--pf-bg1, #16122a);
+	background: var(--pf-bg1, #0b0b0c);
 	box-shadow: 0 24px 50px -16px rgba(0, 0, 0, 0.75);
 	animation: rs-pf-demos-in 0.18s ease-out;
 }
@@ -3124,13 +3135,13 @@ a.rs-pf-card__demo {
 	width: 34px;
 	height: 34px;
 	border-radius: 9px;
-	background: rgba(143, 116, 255, 0.2);
-	background: color-mix(in srgb, var(--a, #8f74ff) 22%, transparent);
-	color: color-mix(in srgb, var(--a, #8f74ff) 60%, #fff);
+	background: rgba(255, 106, 61, 0.2);
+	background: color-mix(in srgb, var(--a, #ff6a3d) 22%, transparent);
+	color: color-mix(in srgb, var(--a, #ff6a3d) 60%, #fff);
 }
 
 .rs-pf-demos__icon--try {
-	background: linear-gradient(135deg, #00c2ff, #6c63ff);
+	background: linear-gradient(135deg, #00c2ff, #ff4a1c);
 	color: #fff;
 }
 
@@ -3177,7 +3188,7 @@ a.rs-pf-card__demo {
 	align-items: center;
 	justify-content: center;
 	padding: 12px;
-	background: rgba(5, 5, 10, 0.88);
+	background: rgba(0, 0, 0, 0.88);
 	-webkit-backdrop-filter: blur(6px);
 	backdrop-filter: blur(6px);
 	animation: rs-demo-in 0.22s ease-out;
@@ -3195,7 +3206,7 @@ a.rs-pf-card__demo {
 	border: 1px solid #22222c;
 	border-radius: 14px;
 	background: #07070b;
-	box-shadow: 0 30px 90px -24px rgba(108, 99, 255, 0.5);
+	box-shadow: 0 30px 90px -24px rgba(255, 74, 28, 0.5);
 	animation: rs-demo-rise 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
