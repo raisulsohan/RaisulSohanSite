@@ -80,6 +80,8 @@ add_action( 'template_redirect', 'rs_3d_info_render', 1 );
 /**
  * The page in the sitemap, on the main edition only: its canonical link
  * names raisulsohan.com/3dinformation, so that is the one address offered.
+ * The showreel (inc/20-showreel.php) joins the list through the
+ * rs_standalone_sitemap_urls filter.
  */
 function rs_3d_info_sitemap_provider() {
 	if ( ! class_exists( 'WP_Sitemaps_Provider' ) || rs_seo_plugin_active() || ! is_main_site() ) {
@@ -97,8 +99,14 @@ function rs_3d_info_sitemap_provider() {
 			}
 
 			public function get_url_list( $page_num, $object_subtype = '' ) {
-				return array(
-					array( 'loc' => rs_3d_info_url() ),
+				/** Other standalone pages (the showreel) add their address here. */
+				$urls = apply_filters( 'rs_standalone_sitemap_urls', array( rs_3d_info_url() ) );
+
+				return array_map(
+					function ( $url ) {
+						return array( 'loc' => $url );
+					},
+					$urls
 				);
 			}
 

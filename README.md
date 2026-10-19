@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-7.54.1-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-7.55.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 7.55
+
+**The 2026 showreel gets its own page.**
+
+- **7.55.0: /showreel.** The 60-second Showreel 2026 is served at `/showreel`, with or without the slash, on a film page in Apple's manner: a translucent sticky nav, the headline "I make stories move." with its letters filled by a slowly panning strip of frames from the reel and the reel's orange dot dropping in as the full stop, then the player, the six chapters, the edit rhythm, the two cuts and an orange contact section in the colour of the reel's end card. The reel plays from YouTube (`sY1wSRvi5CM` for 16:9, the Short `5_J27wUs5qI` for 4:5) through the IFrame API on `youtube-nocookie.com`, which loads only when the visitor reaches for play; until then a still from the reel stands in its place, and at the end the still is the reel's end card with Watch again. The cut is picked in the browser before the first paint, so the full page cache keeps one copy: 16:9 on a computer, 4:5 on a phone or a tablet, with a switch under the picture that carries the playhead across and is remembered for the visit. The control bar is the page's own and sits under the picture, never over YouTube's player: restart, frame back and on, play, a seek bar with chapter gaps and a time tip, time and frame (of 3600), speed, loop, mute, volume and full screen (the window on an iPhone), with the keys Space/K, ←/→ (a frame, held to keep stepping), Shift+←/→ (a second), `,`/`.`, Home/End, M, L and F while the player is in view. The chapter cards and the chapter labels play from their time; the edit-rhythm ruler draws the 120 beats, the 85 cuts and the two rests from the reel's own timeline, with a playhead that follows the reel and a click that plays from the cut there. The stills in `assets/img/showreel/` are single frames of the two cuts; `og.jpg` is the reel's YouTube thumbnail. The page has its own share tags and structured data (the two videos, the 16:9 one with its chapters as clips), is listed in the main edition's sitemap beside the 3D asset map (the `standalone` provider now reads the `rs_standalone_sitemap_urls` filter), and is linked from a **Showreel** button in the portfolio's hero (new `film` icon), the footer on every page and the command palette, all to the canonical `raisulsohan.com/showreel`. `inc/20-showreel.php` answers the address; the page is `parts/showreel.php`.
 
 ## What's new in 7.54
 
@@ -579,7 +585,7 @@ raisul-sohan/
 ├── style.css              Theme header only (the stylesheet is built, see below)
 ├── functions.php          Constants, then loads every inc/NN-*.php in order
 ├── inc/
-│   ├── 01-theme-setup.php … 19-3d-information.php   The theme, one file per area
+│   ├── 01-theme-setup.php … 20-showreel.php   The theme, one file per area
 │   ├── github-updater.php Self-updater: checks GitHub for new versions
 │   └── portfolio-cpt.php  Portfolio post type, meta boxes, admin reorder
 ├── src/

@@ -41,6 +41,7 @@
 			var list = [
 				{ label: t( 'Home', 'প্রথম পাতা' ), keys: 'home index front', run: function () { go( home ); } },
 				{ label: t( 'Portfolio', 'পোর্টফোলিও' ), keys: 'portfolio work projects', run: function () { go( home + 'portfolio/' ); } },
+				{ label: t( 'Showreel', 'শোরিল' ), keys: 'showreel reel video motion animation watch', run: function () { go( cfg.showreel || home + 'showreel' ); } },
 				{ label: t( '3D asset map', '3D অ্যাসেট ম্যাপ' ), keys: '3d asset map free models characters hdri textures', run: function () { go( cfg.assetMap || home + '3dinformation' ); } },
 				{ label: t( 'Story timeline', 'লেখার টাইমলাইন' ), keys: 'timeline archive all stories', run: function () { go( home + 'timeline/' ); } },
 				{ label: t( 'A random story', 'যেকোনো একটা লেখা' ), keys: 'random surprise lucky', run: function () { go( home + '?rs_random=1' ); } },
@@ -51,7 +52,7 @@
 			];
 
 			if ( ! document.body.classList.contains( 'rs-stage' ) && document.querySelector( '[data-rs-theme]' ) ) {
-				list.splice( 5, 0, { label: t( 'Switch dark / light mode', 'ডার্ক / লাইট মোড বদলান' ), keys: 'dark light theme mode night', run: function () { click( '[data-rs-theme]' ); } } );
+				list.splice( 6, 0, { label: t( 'Switch dark / light mode', 'ডার্ক / লাইট মোড বদলান' ), keys: 'dark light theme mode night', run: function () { click( '[data-rs-theme]' ); } } );
 			}
 
 			var lang = document.querySelector( '.rs-lang-switcher' );

@@ -200,8 +200,8 @@
 	margin-top: 1.9rem;
 }
 
-/* The pages that show the work (map animation, 3D asset map) share a row of
-   their own, so four buttons sit two and two instead of one left alone. */
+/* The pages that show the work (showreel, map animation, 3D asset map)
+   share a row of their own under the two calls to action. */
 .rs-pf__showcase {
 	display: flex;
 	flex-wrap: wrap;
