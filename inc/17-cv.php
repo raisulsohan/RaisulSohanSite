@@ -485,23 +485,19 @@ function rs_cv_data( $post_id = 0 ) {
 			rs_cv_tool_windows_apps(),
 		),
 
+		/* The reel first: it shows the whole range in a minute. */
 		'films'      => array(
+			rs_cv_showreel_film(),
 			array(
 				'title' => 'Nomolos',
 				'url'   => 'https://www.youtube.com/@nomolosfiles',
 				'meta'  => 'Animated documentary channel',
 				'text'  => rs_cv_channels_text( 'nomolos_film' ),
 			),
-			array(
-				'title' => 'Consciousness',
-				'url'   => 'https://raisulsohan.github.io/Consciousness-animation/',
-				'meta'  => 'Animated science documentary for Bichitro Biggan, 4:08',
-				'text'  => 'A 4:08 science film with nine illustrated scenes, multiplane 3D parallax, volumetric lighting and original sound design.',
-			),
+			rs_cv_map_animation_film(),
 			rs_cv_lingopie_film(),
 			rs_cv_kfc_sniper_film(),
 			rs_cv_lazyeditmirror_work(),
-			rs_cv_showreel_film(),
 		),
 
 		'skills'     => array(
@@ -2527,3 +2523,102 @@ function rs_cv_channels_v2() {
 	update_site_option( $flag, 1 );
 }
 add_action( 'init', 'rs_cv_channels_v2', 35 );
+
+/**
+ * The map animation demos in the selected work. The page keeps adding
+ * styles, so the card names the kinds of map, not single demos or a count.
+ *
+ * @return array
+ */
+function rs_cv_map_animation_film() {
+	return array(
+		'title' => 'Map Animation',
+		'url'   => '/map-animation-demo/',
+		'meta'  => 'Documentary & explainer maps',
+		'text'  => 'Every map a story in motion: explainer, documentary, true-crime, war-front and 3D satellite styles, each with voice-over, in 16:9 and 4:5. Play them all in the browser.',
+	);
+}
+
+/**
+ * Put Showreel 2026 first in a saved CV's selected work and the map
+ * animation demos where Consciousness was, in place (9.1.4).
+ *
+ * The Consciousness entry is found by the link the theme gave it, so an
+ * entry pointed elsewhere by hand stays; the reel is found by its link to
+ * the showreel page and moved to the front.
+ *
+ * @param array $saved Saved CV data, changed in place.
+ * @return bool Whether anything changed.
+ */
+function rs_cv_apply_selected_work_v1( &$saved ) {
+	if ( ! isset( $saved['films'] ) || ! is_array( $saved['films'] ) ) {
+		return false;
+	}
+
+	$changed  = false;
+	$has_maps = false;
+	foreach ( $saved['films'] as $film ) {
+		if ( isset( $film['url'] ) && false !== strpos( (string) $film['url'], 'map-animation-demo' ) ) {
+			$has_maps = true;
+		}
+	}
+
+	foreach ( $saved['films'] as $index => $film ) {
+		if ( isset( $film['url'] ) && 'https://raisulsohan.github.io/Consciousness-animation/' === $film['url'] ) {
+			if ( $has_maps ) {
+				unset( $saved['films'][ $index ] );
+			} else {
+				$saved['films'][ $index ] = rs_cv_map_animation_film();
+				$has_maps                 = true;
+			}
+			$changed = true;
+		}
+	}
+	$saved['films'] = array_values( $saved['films'] );
+
+	foreach ( $saved['films'] as $index => $film ) {
+		if ( isset( $film['url'] ) && false !== stripos( (string) $film['url'], 'showreel' ) ) {
+			if ( $index > 0 ) {
+				array_splice( $saved['films'], $index, 1 );
+				array_unshift( $saved['films'], $film );
+				$changed = true;
+			}
+			break;
+		}
+	}
+
+	return $changed;
+}
+
+/**
+ * Run rs_cv_apply_selected_work_v1() on the saved CV, once. A CV that was
+ * never saved shows the defaults, which already carry it.
+ */
+function rs_cv_selected_work_v1() {
+	$flag = 'rs_cv_selected_work_v1';
+	if ( get_site_option( $flag ) ) {
+		return;
+	}
+
+	$page  = null;
+	$saved = false;
+	if ( is_multisite() ) {
+		$saved = rs_cv_saved_data();
+	} else {
+		$page  = get_page_by_path( 'cv', OBJECT, 'page' );
+		$saved = $page ? get_post_meta( $page->ID, '_rs_cv_data', true ) : false;
+	}
+
+	if ( is_array( $saved ) && rs_cv_apply_selected_work_v1( $saved ) ) {
+		if ( is_multisite() ) {
+			update_site_option( 'rs_cv_shared_data_v1', $saved );
+		} elseif ( $page ) {
+			update_post_meta( $page->ID, '_rs_cv_data', $saved );
+		}
+
+		rs_cv_purge_network_caches();
+	}
+
+	update_site_option( $flag, 1 );
+}
+add_action( 'init', 'rs_cv_selected_work_v1', 36 );
