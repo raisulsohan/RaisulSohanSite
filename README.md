@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-9.1.4-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-9.1.5-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -14,6 +14,7 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 
 **The CV as a spec sheet.**
 
+- **9.1.5: LazyMapLayers takes LazyEditMirror's card in the CV's selected work.** The last card is now the After Effects map panel behind the Map Animation card (frame-exact map animation from the globe to any street, real camera keyframes, routes, labels in every script, data maps, offline), with no counts; LazyEditMirror stays in the Open-source tools row. A once-only migration (`rs_cv_apply_selected_work_v2()`) swaps the card found by its link. The PDF never carried that card, so it and its Google Drive copy are unchanged.
 - **9.1.4: The showreel leads the CV's selected work, and the map animation demos take Consciousness's place.** Showreel 2026 is the first card, since it shows the whole range in a minute; Map Animation (`/map-animation-demo/`, in each edition) follows Nomolos, named by its kinds of map (explainer, documentary, true-crime, war-front and 3D satellite, with voice-over, in 16:9 and 4:5) and with no count, as the page keeps adding styles. A once-only migration (`rs_cv_apply_selected_work_v1()`) moves the reel first and swaps the Consciousness entry found by the theme's link. The PDF is reprinted in the same order; both pages still fit.
 - **9.1.3: Read the CV on Google Drive as well as download it.** A "View on Google Drive" button sits beside Download PDF (and a link in the line under the sheet), opening the same PDF in Drive's viewer in a new tab, so it reads in the browser on any phone without saving a file. The link is a new CV editor field (`pdf_view_url`, empty hides the button); it points at the Drive file that is already shared with anyone who has the link, which is replaced as a new version in Drive whenever the PDF changes, so the link never changes.
 - **9.1.2: The CV's number is a WhatsApp contact, and the channels are not tied to single episodes.** In the Contact row the phone entry is labelled WhatsApp, with the WhatsApp mark, and opens a chat at the CV's WhatsApp link; it falls back to Phone and a call only when no WhatsApp link is set. The channel lines no longer name episodes or subjects (Prohibition, Pearl Harbor, prime editing and the rest), because both channels keep publishing: Nomolos is history's greatest backfires, one decision per episode, and Bichitro Biggan turns new research into animated stories; the count reads 30+ episodes and Shorts. A once-only migration (`rs_cv_apply_channels_v2()`) changes the saved CV only where it still reads as 9.1.1 wrote it. The PDF says the same and links the number to the chat; both pages still fit.

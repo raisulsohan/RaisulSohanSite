@@ -497,7 +497,7 @@ function rs_cv_data( $post_id = 0 ) {
 			rs_cv_map_animation_film(),
 			rs_cv_lingopie_film(),
 			rs_cv_kfc_sniper_film(),
-			rs_cv_lazyeditmirror_work(),
+			rs_cv_lazymaplayers_work(),
 		),
 
 		'skills'     => array(
@@ -2622,3 +2622,80 @@ function rs_cv_selected_work_v1() {
 	update_site_option( $flag, 1 );
 }
 add_action( 'init', 'rs_cv_selected_work_v1', 36 );
+
+/**
+ * LazyMapLayers in the selected work, the tool behind the map animation
+ * card beside it. No counts: the panel keeps growing.
+ *
+ * @return array
+ */
+function rs_cv_lazymaplayers_work() {
+	return array(
+		'title' => 'LazyMapLayers',
+		'url'   => '/portfolio/lazymaplayers/',
+		'meta'  => 'Open-source tool · After Effects panel',
+		'text'  => 'A free After Effects panel for frame-exact map animation, from the globe down to any street: real camera keyframes, routes, labels in every script and data maps, even offline.',
+	);
+}
+
+/**
+ * Put LazyMapLayers where LazyEditMirror was in a saved CV's selected work,
+ * in place (9.1.5). The LazyEditMirror card is found by its link; the tool
+ * itself stays in the Open-source tools row.
+ *
+ * @param array $saved Saved CV data, changed in place.
+ * @return bool Whether anything changed.
+ */
+function rs_cv_apply_selected_work_v2( &$saved ) {
+	if ( ! isset( $saved['films'] ) || ! is_array( $saved['films'] ) ) {
+		return false;
+	}
+
+	foreach ( $saved['films'] as $film ) {
+		if ( isset( $film['url'] ) && false !== stripos( (string) $film['url'], 'lazymaplayers' ) ) {
+			return false;
+		}
+	}
+
+	foreach ( $saved['films'] as $index => $film ) {
+		if ( isset( $film['url'] ) && false !== stripos( (string) $film['url'], 'lazyeditmirror' ) ) {
+			$saved['films'][ $index ] = rs_cv_lazymaplayers_work();
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Run rs_cv_apply_selected_work_v2() on the saved CV, once. A CV that was
+ * never saved shows the defaults, which already carry it.
+ */
+function rs_cv_selected_work_v2() {
+	$flag = 'rs_cv_selected_work_v2';
+	if ( get_site_option( $flag ) ) {
+		return;
+	}
+
+	$page  = null;
+	$saved = false;
+	if ( is_multisite() ) {
+		$saved = rs_cv_saved_data();
+	} else {
+		$page  = get_page_by_path( 'cv', OBJECT, 'page' );
+		$saved = $page ? get_post_meta( $page->ID, '_rs_cv_data', true ) : false;
+	}
+
+	if ( is_array( $saved ) && rs_cv_apply_selected_work_v2( $saved ) ) {
+		if ( is_multisite() ) {
+			update_site_option( 'rs_cv_shared_data_v1', $saved );
+		} elseif ( $page ) {
+			update_post_meta( $page->ID, '_rs_cv_data', $saved );
+		}
+
+		rs_cv_purge_network_caches();
+	}
+
+	update_site_option( $flag, 1 );
+}
+add_action( 'init', 'rs_cv_selected_work_v2', 37 );
