@@ -273,6 +273,77 @@ function rs_cv_rich( $text ) {
 }
 
 /**
+ * The contact details as one list of labelled entries, for the Contact row
+ * at the top of the sheet: where, phone and mail, then each contact link.
+ *
+ * A link's label above its value is taken from where it points (LinkedIn,
+ * GitHub, YouTube, the showreel, else the website), and the value drops
+ * the host that label already names: "linkedin.com/in/raisulsohan" under
+ * "LinkedIn" reads as "in/raisulsohan".
+ *
+ * @param array $cv rs_cv_data().
+ * @return array[] Each { key, value, url, icon, external }.
+ */
+function rs_cv_contact_items( $cv ) {
+	$labels = $cv['labels'];
+	$items  = array();
+
+	if ( $cv['location'] ) {
+		$items[] = array( 'key' => $labels['location'], 'value' => $cv['location'], 'url' => '', 'icon' => 'pin', 'external' => false );
+	}
+	if ( $cv['phone'] ) {
+		$items[] = array( 'key' => $labels['phone'], 'value' => $cv['phone'], 'url' => 'tel:' . preg_replace( '/[^0-9+]/', '', $cv['phone'] ), 'icon' => 'phone', 'external' => false );
+	}
+	if ( $cv['email'] ) {
+		$items[] = array( 'key' => $labels['email'], 'value' => $cv['email'], 'url' => 'mailto:' . $cv['email'], 'icon' => 'mail', 'external' => false );
+	}
+
+	$kinds = array(
+		'linkedin.com' => array( $labels['linkedin'], 'linkedin' ),
+		'github.com'   => array( 'GitHub', 'github' ),
+		'youtube.com'  => array( 'YouTube', 'youtube' ),
+	);
+	foreach ( is_array( $cv['links'] ) ? $cv['links'] : array() as $link ) {
+		if ( empty( $link['label'] ) || empty( $link['url'] ) ) {
+			continue;
+		}
+		$url   = rs_cv_resolve_url( $link['url'] );
+		$host  = preg_replace( '/^www\./', '', strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) ) );
+		$value = $link['label'];
+		$key   = $labels['website'];
+		$icon  = 'globe';
+		if ( isset( $kinds[ $host ] ) ) {
+			list( $key, $icon ) = $kinds[ $host ];
+			$short = preg_replace( '~^(?:https?://)?(?:www\.)?' . preg_quote( $host, '~' ) . '/+~i', '', $value );
+			$value = '' !== trim( (string) $short, '/' ) ? untrailingslashit( $short ) : $value;
+		} elseif ( false !== stripos( $url, 'showreel' ) ) {
+			$key  = $labels['showreel'];
+			$icon = 'play';
+		}
+		$items[] = array( 'key' => $key, 'value' => $value, 'url' => $url, 'icon' => $icon, 'external' => true );
+	}
+
+	return $items;
+}
+
+/**
+ * Split a highlight's lead into its figure and the words after it, so the
+ * figure can be set large: "200K+ organic views" gives "200K+" and "organic
+ * views". A lead that does not start with a figure comes back whole.
+ *
+ * @param string $lead The highlight's bold lead.
+ * @return array { figure, words }
+ */
+function rs_cv_highlight_parts( $lead ) {
+	$lead = (string) $lead;
+	if ( preg_match( '/^(\d[\d.,]*(?:%|[KkMm]\+?|\+)?)\s+(.+)$/u', $lead, $m ) ) {
+		return array( 'figure' => $m[1], 'words' => $m[2] );
+	}
+
+	return array( 'figure' => '', 'words' => $lead );
+}
+
+/**
  * Everything the CV says, in the order the page says it.
  *
  * Lines may use **bold** and [label](url); see rs_cv_rich().
@@ -484,6 +555,12 @@ function rs_cv_data( $post_id = 0 ) {
 			'showcase_intro'     => 'A few projects that show how I combine visual craft, storytelling and creative technology.',
 			'view_project'       => 'View project',
 			'sheet_aria_label'   => 'Curriculum vitae',
+			'sheet_title'        => 'Résumé',
+			'contact'            => 'Contact',
+			'location'           => 'Location',
+			'phone'              => 'Phone',
+			'website'            => 'Website',
+			'showreel'           => 'Showreel',
 			'profile'            => 'Profile',
 			'highlights'         => 'Highlights',
 			'experience'         => 'Experience',
@@ -691,10 +768,12 @@ function rs_cv_render_editor_box( $post ) {
 	echo '<details class="rs-cv-editor__section"><summary>Page labels and buttons</summary><div class="rs-cv-editor__fields">';
 	$label_fields = array(
 		'hero_eyebrow' => 'Top label', 'download_pdf' => 'Download PDF button', 'print' => 'Print button',
-		'email' => 'Email button', 'whatsapp' => 'WhatsApp button', 'linkedin' => 'LinkedIn button', 'copy_email' => 'Email copy screen-reader text',
+		'email' => 'Email button and contact label', 'whatsapp' => 'WhatsApp button', 'linkedin' => 'LinkedIn button and contact label', 'copy_email' => 'Email copy screen-reader text',
 		'selected_work' => 'Selected work label', 'showcase_title' => 'Selected work title',
 		'showcase_intro' => 'Selected work introduction', 'view_project' => 'Project link label',
-		'sheet_aria_label' => 'CV sheet screen-reader label', 'profile' => 'Profile heading',
+		'sheet_aria_label' => 'CV sheet screen-reader label', 'sheet_title' => 'CV sheet title',
+		'contact' => 'Contact heading', 'location' => 'Location label', 'phone' => 'Phone label',
+		'website' => 'Website link label', 'showreel' => 'Showreel link label', 'profile' => 'Profile heading',
 		'highlights' => 'Highlights heading', 'experience' => 'Experience heading',
 		'open_source_tools' => 'Tools heading', 'tools_note' => 'Tools note', 'skills' => 'Skills heading',
 		'education' => 'Education heading', 'languages' => 'Languages heading',

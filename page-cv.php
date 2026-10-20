@@ -2,7 +2,7 @@
 /**
  * Template Name: CV
  *
- * The résumé as a bento sheet on the portfolio's dark stage, with a printable
+ * The résumé as a spec sheet on the portfolio's dark stage, with a printable
  * version and the downloadable PDF a click away. The content comes from
  * rs_cv_data() in inc/17-cv.php and is the same in both editions; only the
  * header and footer around it change language.
@@ -33,6 +33,19 @@ $rs_pdf = rs_cv_pdf();
 $rs_icon_download = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg>';
 $rs_icon_print    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/></svg>';
 $rs_icon_out      = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>';
+
+/* One glyph per kind of contact entry; rs_cv_contact_items() names them. */
+$rs_contact_svg   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">%s</svg>';
+$rs_contact_icons = array(
+	'pin'      => sprintf( $rs_contact_svg, '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>' ),
+	'phone'    => sprintf( $rs_contact_svg, '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>' ),
+	'mail'     => sprintf( $rs_contact_svg, '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>' ),
+	'globe'    => sprintf( $rs_contact_svg, '<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>' ),
+	'linkedin' => sprintf( $rs_contact_svg, '<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/>' ),
+	'github'   => sprintf( $rs_contact_svg, '<path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/>' ),
+	'youtube'  => sprintf( $rs_contact_svg, '<path d="M2.5 17a24.1 24.1 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.6 49.6 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.1 24.1 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.6 49.6 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/>' ),
+	'play'     => sprintf( $rs_contact_svg, '<circle cx="12" cy="12" r="10"/><path d="m10 8 6 4-6 4Z"/>' ),
+);
 ?>
 
 <main class="rs-pf rs-cv" id="rs-content">
@@ -112,121 +125,162 @@ $rs_icon_out      = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 		</div>
 	</section>
 
-	<section class="rs-pf__wrap rs-cv__section" aria-label="<?php echo esc_attr( $rs_cv['labels']['sheet_aria_label'] ); ?>">
-		<article class="rs-cv__sheet" id="rs-cv-sheet">
+	<section class="rs-pf__wrap rs-cv__section" aria-labelledby="rs-cv-sheet-title">
+		<div class="rs-cv__sheet-head">
+			<h2 class="rs-cv__sheet-title" id="rs-cv-sheet-title"><?php echo esc_html( $rs_cv['labels']['sheet_title'] ); ?></h2>
+			<p class="rs-cv__updated"><?php echo esc_html( $rs_cv['labels']['updated_prefix'] . ' ' . $rs_cv['updated'] ); ?></p>
+		</div>
+
+		<?php /* Laid out like Apple's spec sheets: each part of the CV is one
+		   row, its name on the left and its content on the right, with a
+		   hairline between rows and no box inside a box. Print turns the
+		   same rows into the paper CV, with the name and roles on top. */ ?>
+		<article class="rs-cv__sheet" id="rs-cv-sheet" aria-label="<?php echo esc_attr( $rs_cv['labels']['sheet_aria_label'] ); ?>">
 			<header class="rs-cv__head">
-				<div>
-					<p class="rs-cv__name"><?php echo esc_html( $rs_cv['name'] ); ?></p>
-					<p class="rs-cv__tag"><?php echo esc_html( implode( '  ·  ', $rs_cv['roles'] ) ); ?></p>
-				</div>
-				<ul class="rs-cv__contact">
-					<?php if ( $rs_cv['location'] ) : ?><li><?php echo esc_html( $rs_cv['location'] ); ?></li><?php endif; ?>
-					<?php if ( $rs_cv['phone'] ) : ?><li><a href="tel:<?php echo esc_attr( preg_replace( '/[^0-9+]/', '', $rs_cv['phone'] ) ); ?>"><?php echo esc_html( $rs_cv['phone'] ); ?></a></li><?php endif; ?>
-					<?php if ( $rs_cv['email'] ) : ?><li><a href="mailto:<?php echo esc_attr( $rs_cv['email'] ); ?>"><?php echo esc_html( $rs_cv['email'] ); ?></a></li><?php endif; ?>
-					<?php foreach ( $rs_cv['links'] as $rs_link ) : ?>
-						<?php if ( ! empty( $rs_link['label'] ) && ! empty( $rs_link['url'] ) ) : ?><li><a href="<?php echo esc_url( rs_cv_resolve_url( $rs_link['url'] ) ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $rs_link['label'] ); ?></a></li><?php endif; ?>
-					<?php endforeach; ?>
-				</ul>
+				<p class="rs-cv__name"><?php echo esc_html( $rs_cv['name'] ); ?></p>
+				<p class="rs-cv__tag"><?php echo esc_html( implode( '  ·  ', $rs_cv['roles'] ) ); ?></p>
 			</header>
 
-			<?php /* Each section is its own bento tile. The experience list spans
-			   the full row so a taller reference column cannot leave a blank void
-			   beside the last job. */ ?>
-			<div class="rs-cv__grid">
-				<section class="rs-cv__card rs-cv__card--profile" aria-labelledby="rs-cv-profile-title">
-					<h2 class="rs-cv__h" id="rs-cv-profile-title"><?php echo esc_html( $rs_cv['labels']['profile'] ); ?></h2>
-					<p class="rs-cv__lede"><?php echo esc_html( $rs_cv['profile'] ); ?></p>
-				</section>
+			<section class="rs-cv__row rs-cv__row--contact" aria-labelledby="rs-cv-contact-title">
+				<h3 class="rs-cv__h" id="rs-cv-contact-title"><?php echo esc_html( $rs_cv['labels']['contact'] ); ?></h3>
+				<ul class="rs-cv__contact">
+					<?php foreach ( rs_cv_contact_items( $rs_cv ) as $rs_item ) : ?>
+						<?php
+						$rs_inner = '<span class="rs-cv__contact-icon" aria-hidden="true">' . ( isset( $rs_contact_icons[ $rs_item['icon'] ] ) ? $rs_contact_icons[ $rs_item['icon'] ] : '' ) . '</span>'
+							. '<span class="rs-cv__contact-key">' . esc_html( $rs_item['key'] ) . '</span>'
+							. '<span class="rs-cv__contact-value">' . esc_html( $rs_item['value'] ) . '</span>';
+						?>
+						<li>
+							<?php if ( $rs_item['url'] ) : ?>
+								<a class="rs-cv__contact-item" href="<?php echo esc_url( $rs_item['url'] ); ?>"<?php echo $rs_item['external'] ? ' target="_blank" rel="noopener noreferrer"' : ''; ?>><?php echo $rs_inner; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG and escaped text. ?></a>
+							<?php else : ?>
+								<span class="rs-cv__contact-item"><?php echo $rs_inner; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG and escaped text. ?></span>
+							<?php endif; ?>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+			</section>
 
-				<section class="rs-cv__card rs-cv__card--highlights" aria-labelledby="rs-cv-highlights-title">
-					<h2 class="rs-cv__h" id="rs-cv-highlights-title"><?php echo esc_html( $rs_cv['labels']['highlights'] ); ?></h2>
-					<ul class="rs-cv__hl">
-						<?php foreach ( $rs_cv['highlights'] as $rs_hl ) : ?>
-							<li><strong><?php echo esc_html( $rs_hl['lead'] ); ?></strong> <?php echo esc_html( $rs_hl['text'] ); ?></li>
-						<?php endforeach; ?>
-					</ul>
-				</section>
+			<section class="rs-cv__row" aria-labelledby="rs-cv-profile-title">
+				<h3 class="rs-cv__h" id="rs-cv-profile-title"><?php echo esc_html( $rs_cv['labels']['profile'] ); ?></h3>
+				<p class="rs-cv__lede"><?php echo esc_html( $rs_cv['profile'] ); ?></p>
+			</section>
 
-				<section class="rs-cv__card rs-cv__card--experience" aria-labelledby="rs-cv-experience-title">
-					<h2 class="rs-cv__h" id="rs-cv-experience-title"><?php echo esc_html( $rs_cv['labels']['experience'] ); ?></h2>
-					<div class="rs-cv__jobs">
-						<?php foreach ( $rs_cv['experience'] as $rs_job ) : ?>
-							<section class="rs-cv__job">
-								<div class="rs-cv__job-head">
-									<h3 class="rs-cv__job-title"><?php echo esc_html( $rs_job['title'] ); ?></h3>
-									<span class="rs-cv__job-dates"><?php echo esc_html( $rs_job['dates'] ); ?></span>
-								</div>
-								<p class="rs-cv__job-org"><?php echo esc_html( $rs_job['org'] . ' · ' . $rs_job['place'] ); ?></p>
-								<ul class="rs-cv__list">
-									<?php foreach ( $rs_job['bullets'] as $rs_line ) : ?>
-										<li><?php echo rs_cv_rich( $rs_line ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped in rs_cv_rich(). ?></li>
-									<?php endforeach; ?>
-								</ul>
-							</section>
-						<?php endforeach; ?>
-					</div>
-				</section>
+			<section class="rs-cv__row" aria-labelledby="rs-cv-highlights-title">
+				<h3 class="rs-cv__h" id="rs-cv-highlights-title"><?php echo esc_html( $rs_cv['labels']['highlights'] ); ?></h3>
+				<ul class="rs-cv__hl">
+					<?php foreach ( $rs_cv['highlights'] as $rs_hl ) : ?>
+						<?php $rs_hl_parts = rs_cv_highlight_parts( $rs_hl['lead'] ); ?>
+						<li>
+							<?php if ( $rs_hl_parts['figure'] ) : ?><span class="rs-cv__hl-figure"><?php echo esc_html( $rs_hl_parts['figure'] ); ?></span><?php endif; ?>
+							<strong class="rs-cv__hl-lead"><?php echo esc_html( $rs_hl_parts['words'] ); ?></strong>
+							<span class="rs-cv__hl-text"><?php echo esc_html( $rs_hl['text'] ); ?></span>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+			</section>
 
-				<section class="rs-cv__card rs-cv__card--tools" aria-labelledby="rs-cv-tools-title">
-					<h2 class="rs-cv__h" id="rs-cv-tools-title"><?php echo esc_html( $rs_cv['labels']['open_source_tools'] ); ?> <small><?php echo esc_html( $rs_cv['labels']['tools_note'] ); ?></small></h2>
-					<div class="rs-cv__tools">
-						<?php foreach ( $rs_cv['tools'] as $rs_tool ) : ?>
-							<div class="rs-cv__tool">
-								<div class="rs-cv__tool-names">
-									<?php if ( ! empty( $rs_tool['links'] ) ) : ?>
-										<?php foreach ( $rs_tool['links'] as $rs_link_index => $rs_tool_link ) : ?>
-											<?php if ( $rs_link_index ) : ?><span class="rs-cv__tool-name-separator" aria-hidden="true">·</span><?php endif; ?>
-											<?php if ( ! empty( $rs_tool_link['url'] ) ) : ?><a class="rs-cv__tool-name" href="<?php echo esc_url( rs_cv_resolve_url( $rs_tool_link['url'] ) ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $rs_tool_link['label'] ? $rs_tool_link['label'] : $rs_tool['name'] ); ?></a><?php else : ?><span class="rs-cv__tool-name"><?php echo esc_html( $rs_tool_link['label'] ? $rs_tool_link['label'] : $rs_tool['name'] ); ?></span><?php endif; ?>
-										<?php endforeach; ?>
-									<?php else : ?>
-										<span class="rs-cv__tool-name"><?php echo esc_html( $rs_tool['name'] ); ?></span>
-									<?php endif; ?>
-								</div>
-								<span class="rs-cv__tool-kind"><?php echo esc_html( $rs_tool['kind'] ); ?></span>
-								<span><?php echo esc_html( $rs_tool['text'] ); ?></span>
+			<section class="rs-cv__row" aria-labelledby="rs-cv-experience-title">
+				<h3 class="rs-cv__h" id="rs-cv-experience-title"><?php echo esc_html( $rs_cv['labels']['experience'] ); ?></h3>
+				<div class="rs-cv__jobs">
+					<?php foreach ( $rs_cv['experience'] as $rs_job ) : ?>
+						<section class="rs-cv__job">
+							<div class="rs-cv__job-head">
+								<h4 class="rs-cv__job-title"><?php echo esc_html( $rs_job['title'] ); ?></h4>
+								<span class="rs-cv__job-dates"><?php echo esc_html( $rs_job['dates'] ); ?></span>
 							</div>
-						<?php endforeach; ?>
-					</div>
-				</section>
+							<p class="rs-cv__job-org"><?php echo esc_html( $rs_job['org'] . ' · ' . $rs_job['place'] ); ?></p>
+							<ul class="rs-cv__list">
+								<?php foreach ( $rs_job['bullets'] as $rs_line ) : ?>
+									<li><?php echo rs_cv_rich( $rs_line ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped in rs_cv_rich(). ?></li>
+								<?php endforeach; ?>
+							</ul>
+						</section>
+					<?php endforeach; ?>
+				</div>
+			</section>
 
-				<section class="rs-cv__card rs-cv__card--skills" aria-labelledby="rs-cv-skills-title">
-					<h2 class="rs-cv__h" id="rs-cv-skills-title"><?php echo esc_html( $rs_cv['labels']['skills'] ); ?></h2>
-					<div class="rs-cv__skills">
-						<?php foreach ( $rs_cv['skills'] as $rs_group ) : ?>
-							<section class="rs-cv__skill">
-								<h3 class="rs-cv__skill-group"><?php echo esc_html( $rs_group['group'] ); ?></h3>
-								<ul class="rs-cv__list rs-cv__list--tight">
-									<?php foreach ( $rs_group['items'] as $rs_item ) : ?>
-										<li><?php echo esc_html( $rs_item ); ?></li>
-									<?php endforeach; ?>
-								</ul>
-							</section>
-						<?php endforeach; ?>
-					</div>
-				</section>
+			<section class="rs-cv__row" aria-labelledby="rs-cv-tools-title">
+				<h3 class="rs-cv__h" id="rs-cv-tools-title"><?php echo esc_html( $rs_cv['labels']['open_source_tools'] ); ?> <small><?php echo esc_html( $rs_cv['labels']['tools_note'] ); ?></small></h3>
+				<div class="rs-cv__tools">
+					<?php foreach ( $rs_cv['tools'] as $rs_tool ) : ?>
+						<?php
+						/* The tool's own pages are its names; a GitHub link is
+						   set apart as a small "GitHub" pill after them. */
+						$rs_names = array();
+						$rs_repos = array();
+						foreach ( ! empty( $rs_tool['links'] ) ? $rs_tool['links'] : array() as $rs_tool_link ) {
+							$rs_label = ! empty( $rs_tool_link['label'] ) ? $rs_tool_link['label'] : $rs_tool['name'];
+							$rs_url   = ! empty( $rs_tool_link['url'] ) ? rs_cv_resolve_url( $rs_tool_link['url'] ) : '';
+							if ( $rs_url && false !== stripos( (string) wp_parse_url( $rs_url, PHP_URL_HOST ), 'github.com' ) ) {
+								$rs_repos[] = array( $rs_label, $rs_url );
+							} else {
+								$rs_names[] = array( $rs_label, $rs_url );
+							}
+						}
+						if ( ! $rs_names ) {
+							array_unshift( $rs_names, array( $rs_tool['name'], '' ) );
+						}
+						?>
+						<div class="rs-cv__tool">
+							<div class="rs-cv__tool-names">
+								<?php foreach ( $rs_names as $rs_name_index => $rs_name ) : ?>
+									<?php if ( $rs_name_index ) : ?><span class="rs-cv__tool-name-separator" aria-hidden="true">·</span><?php endif; ?>
+									<?php if ( $rs_name[1] ) : ?><a class="rs-cv__tool-name" href="<?php echo esc_url( $rs_name[1] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $rs_name[0] ); ?></a><?php else : ?><span class="rs-cv__tool-name"><?php echo esc_html( $rs_name[0] ); ?></span><?php endif; ?>
+								<?php endforeach; ?>
+								<?php foreach ( $rs_repos as $rs_repo ) : ?>
+									<a class="rs-cv__tool-repo" href="<?php echo esc_url( $rs_repo[1] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $rs_repo[0] ); ?><?php echo $rs_icon_out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></a>
+								<?php endforeach; ?>
+							</div>
+							<span class="rs-cv__tool-kind"><?php echo esc_html( $rs_tool['kind'] ); ?></span>
+							<p class="rs-cv__tool-text"><?php echo esc_html( $rs_tool['text'] ); ?></p>
+						</div>
+					<?php endforeach; ?>
+				</div>
+			</section>
 
-				<section class="rs-cv__card rs-cv__card--learning" aria-labelledby="rs-cv-education-title">
-					<h2 class="rs-cv__h" id="rs-cv-education-title"><?php echo esc_html( $rs_cv['labels']['education'] ); ?></h2>
-					<div class="rs-cv__education">
-						<?php foreach ( $rs_cv['education'] as $rs_edu ) : ?>
-							<p class="rs-cv__edu"><strong><?php echo esc_html( $rs_edu['lead'] ); ?></strong><span><?php echo esc_html( $rs_edu['text'] ); ?></span></p>
-						<?php endforeach; ?>
-					</div>
-					<div class="rs-cv__languages">
-						<h3 class="rs-cv__skill-group"><?php echo esc_html( $rs_cv['labels']['languages'] ); ?></h3>
-						<p><?php echo esc_html( $rs_cv['languages'] ); ?></p>
-					</div>
-				</section>
-			</div>
+			<section class="rs-cv__row" aria-labelledby="rs-cv-skills-title">
+				<h3 class="rs-cv__h" id="rs-cv-skills-title"><?php echo esc_html( $rs_cv['labels']['skills'] ); ?></h3>
+				<div class="rs-cv__skills">
+					<?php foreach ( $rs_cv['skills'] as $rs_group ) : ?>
+						<section class="rs-cv__skill">
+							<h4 class="rs-cv__skill-group"><?php echo esc_html( $rs_group['group'] ); ?></h4>
+							<ul class="rs-cv__plain">
+								<?php foreach ( $rs_group['items'] as $rs_item ) : ?>
+									<li><?php echo esc_html( $rs_item ); ?></li>
+								<?php endforeach; ?>
+							</ul>
+						</section>
+					<?php endforeach; ?>
+				</div>
+			</section>
+
+			<section class="rs-cv__row" aria-labelledby="rs-cv-education-title">
+				<h3 class="rs-cv__h" id="rs-cv-education-title"><?php echo esc_html( $rs_cv['labels']['education'] ); ?></h3>
+				<div class="rs-cv__education">
+					<?php foreach ( $rs_cv['education'] as $rs_edu ) : ?>
+						<p class="rs-cv__edu"><strong><?php echo esc_html( $rs_edu['lead'] ); ?></strong><span><?php echo esc_html( $rs_edu['text'] ); ?></span></p>
+					<?php endforeach; ?>
+				</div>
+			</section>
+
+			<?php if ( $rs_cv['languages'] ) : ?>
+			<section class="rs-cv__row" aria-labelledby="rs-cv-languages-title">
+				<h3 class="rs-cv__h" id="rs-cv-languages-title"><?php echo esc_html( $rs_cv['labels']['languages'] ); ?></h3>
+				<p class="rs-cv__languages"><?php echo esc_html( $rs_cv['languages'] ); ?></p>
+			</section>
+			<?php endif; ?>
 		</article>
 
+		<?php if ( $rs_pdf || $rs_cv['work_url'] ) : ?>
 		<p class="rs-cv__note">
-			<?php echo esc_html( $rs_cv['labels']['updated_prefix'] . ' ' . $rs_cv['updated'] ); ?>
 			<?php if ( $rs_pdf ) : ?>
-				&nbsp;·&nbsp; <a href="<?php echo esc_url( $rs_pdf ); ?>" download="<?php echo esc_attr( $rs_cv['pdf_filename'] ? $rs_cv['pdf_filename'] : 'Raisul_Sohan_CV.pdf' ); ?>"><?php echo esc_html( $rs_cv['labels']['also_pdf'] ); ?></a>
+				<a href="<?php echo esc_url( $rs_pdf ); ?>" download="<?php echo esc_attr( $rs_cv['pdf_filename'] ? $rs_cv['pdf_filename'] : 'Raisul_Sohan_CV.pdf' ); ?>"><?php echo esc_html( $rs_cv['labels']['also_pdf'] ); ?></a>
 			<?php endif; ?>
-			<?php if ( $rs_cv['work_url'] ) : ?>&nbsp;·&nbsp; <a href="<?php echo esc_url( rs_cv_resolve_url( $rs_cv['work_url'] ) ); ?>"><?php echo esc_html( $rs_cv['labels']['see_work'] ); ?><?php echo $rs_icon_out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></a><?php endif; ?>
+			<?php if ( $rs_pdf && $rs_cv['work_url'] ) : ?>&nbsp;·&nbsp;<?php endif; ?>
+			<?php if ( $rs_cv['work_url'] ) : ?><a href="<?php echo esc_url( rs_cv_resolve_url( $rs_cv['work_url'] ) ); ?>"><?php echo esc_html( $rs_cv['labels']['see_work'] ); ?><?php echo $rs_icon_out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></a><?php endif; ?>
 		</p>
+		<?php endif; ?>
 	</section>
 </main>
 

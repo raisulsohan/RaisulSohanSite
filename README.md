@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-9.0.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-9.1.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 9.1
+
+**The CV as a spec sheet.**
+
+- **9.1.0: The CV reads like one of Apple's spec sheets.** The résumé on `/cv/` is no longer a panel of boxes inside boxes: each part (Contact, Profile, Highlights, Experience, Open-source tools, Skills, Education, Languages) is one row on the black stage, its name on the left and its content on the right, with a hairline between rows and the row's name staying in view while a long row scrolls. The stacked, right-aligned list of orange contact links is now a Contact row: a small label over each value, four to a line (Location, Phone, Email, Website, LinkedIn, GitHub, YouTube, Showreel), with the link's host dropped where the label already says it (`in/raisulsohan`), and on a phone an inset grouped list as in iOS Settings. Highlights set their figure large in the orange (100%, 200K+, 13, 3); jobs run one under another with the dates on the right; each tool's GitHub link is a small grey pill. The name, the two section titles and "Résumé" end in the orange dot, the selected-work cards lose their coloured bars and capital labels, and their titles line up when a label wraps. Print turns the same rows into a white A4 page. New labels in the CV editor: the sheet title, the Contact heading and the Location, Phone, Website and Showreel labels. The downloadable PDF is unchanged.
 
 ## What's new in 9.0
 
