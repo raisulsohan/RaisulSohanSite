@@ -291,7 +291,11 @@ function rs_cv_contact_items( $cv ) {
 	if ( $cv['location'] ) {
 		$items[] = array( 'key' => $labels['location'], 'value' => $cv['location'], 'url' => '', 'icon' => 'pin', 'external' => false );
 	}
-	if ( $cv['phone'] ) {
+	/* The number opens a WhatsApp chat when there is a WhatsApp link, and
+	   dials it only when there is not. */
+	if ( $cv['phone'] && $cv['whatsapp'] ) {
+		$items[] = array( 'key' => $labels['whatsapp'], 'value' => $cv['phone'], 'url' => $cv['whatsapp'], 'icon' => 'whatsapp', 'external' => true );
+	} elseif ( $cv['phone'] ) {
 		$items[] = array( 'key' => $labels['phone'], 'value' => $cv['phone'], 'url' => 'tel:' . preg_replace( '/[^0-9+]/', '', $cv['phone'] ), 'icon' => 'phone', 'external' => false );
 	}
 	if ( $cv['email'] ) {
@@ -768,7 +772,7 @@ function rs_cv_render_editor_box( $post ) {
 	echo '<details class="rs-cv-editor__section"><summary>Page labels and buttons</summary><div class="rs-cv-editor__fields">';
 	$label_fields = array(
 		'hero_eyebrow' => 'Top label', 'download_pdf' => 'Download PDF button', 'print' => 'Print button',
-		'email' => 'Email button and contact label', 'whatsapp' => 'WhatsApp button', 'linkedin' => 'LinkedIn button and contact label', 'copy_email' => 'Email copy screen-reader text',
+		'email' => 'Email button and contact label', 'whatsapp' => 'WhatsApp button and contact label', 'linkedin' => 'LinkedIn button and contact label', 'copy_email' => 'Email copy screen-reader text',
 		'selected_work' => 'Selected work label', 'showcase_title' => 'Selected work title',
 		'showcase_intro' => 'Selected work introduction', 'view_project' => 'Project link label',
 		'sheet_aria_label' => 'CV sheet screen-reader label', 'sheet_title' => 'CV sheet title',
@@ -2252,9 +2256,9 @@ function rs_cv_instagram_link() {
  * with them (October 2026).
  *
  * Nomolos and Bichitro Biggan publish new episodes and Shorts all the time,
- * so the CV names each channel and what it covers rather than two films
- * that soon read as the whole output. Kept in one place for the defaults
- * and for rs_cv_apply_channels_v1().
+ * so the CV names each channel and its subject, never single films or
+ * topics, which would soon read as the whole output. Kept in one place for
+ * the defaults and the migrations (rs_cv_apply_channels_v1() and _v2()).
  *
  * @param string $key Which line.
  * @return string|array A line, or for 'channels_highlight' a highlight.
@@ -2263,11 +2267,11 @@ function rs_cv_channels_text( $key ) {
 	$texts = array(
 		'profile'             => 'Motion designer and 2D animator with 10+ years of story-led work for international development, technology and media teams, including UNICEF, USAID, GIZ, UNDP, the World Bank and WHO. I run two animated documentary channels, Nomolos and Bichitro Biggan, from research and script to final sound, and build free production tools for Adobe, Figma, Chrome and Windows. I pair hands-on craft with production leadership: clear storyboards, fast feedback loops and on-time delivery.',
 		'tools_highlight'     => 'for Windows, Adobe CC, Figma and Chrome, alongside 1,400+ GitHub contributions in the last six months.',
-		'channels_highlight'  => array( 'lead' => '30 documentary episodes and Shorts', 'text' => 'on Nomolos and Bichitro Biggan, each one researched, written, illustrated, animated and sound-designed solo.' ),
-		'nomolos_bullet'      => 'Run **Nomolos** ([youtube.com/@nomolosfiles](https://www.youtube.com/@nomolosfiles)), an animated documentary channel on history\'s greatest backfires, from Prohibition to Pearl Harbor; research, write, illustrate, animate and sound-design every episode, and cut each one into Shorts and [Instagram Reels](https://www.instagram.com/lettertosohan/reels/).',
-		'biggan_bullet'       => 'Write and animate **Bichitro Biggan** ([youtube.com/@Bichitrobiggan](https://www.youtube.com/@Bichitrobiggan)), a science channel in Bengali and English that explains new research, from prime editing to consciousness and mirror bacteria.',
+		'channels_highlight'  => array( 'lead' => '30+ documentary episodes and Shorts', 'text' => 'on Nomolos and Bichitro Biggan, each one researched, written, illustrated, animated and sound-designed solo.' ),
+		'nomolos_bullet'      => 'Run **Nomolos** ([youtube.com/@nomolosfiles](https://www.youtube.com/@nomolosfiles)), an animated documentary channel on history\'s greatest backfires; research, write, illustrate, animate and sound-design every episode, and cut each one into Shorts and [Instagram Reels](https://www.instagram.com/lettertosohan/reels/).',
+		'biggan_bullet'       => 'Write and animate **Bichitro Biggan** ([youtube.com/@Bichitrobiggan](https://www.youtube.com/@Bichitrobiggan)), a science channel in Bengali and English that turns new research into animated stories.',
 		'think_school_bullet' => 'Edited and animated 20+ educational videos on Bangladesh\'s science, history and culture, and handled their storyboards and YouTube SEO.',
-		'nomolos_film'        => 'History\'s greatest backfires, one decision per episode, from **Prohibition** to **Pearl Harbor**. Research, script, illustration, animation and sound design, all made solo.',
+		'nomolos_film'        => 'History\'s greatest backfires, one decision per episode. Research, script, illustration, animation and sound design, all made solo.',
 	);
 
 	return isset( $texts[ $key ] ) ? $texts[ $key ] : '';
@@ -2425,3 +2429,95 @@ function rs_cv_channels_v1() {
 	update_site_option( $flag, 1 );
 }
 add_action( 'init', 'rs_cv_channels_v1', 34 );
+
+/**
+ * Take the named episodes and subjects out of a saved CV's channel lines,
+ * in place (9.1.2).
+ *
+ * The 9.1.1 text named Prohibition, Pearl Harbor and three science
+ * subjects, which read as the whole output of channels that keep growing,
+ * and counted exactly 30 uploads. Only text still exactly as 9.1.1 wrote
+ * it is changed; anything edited by hand keeps the edit.
+ *
+ * @param array $saved Saved CV data, changed in place.
+ * @return bool Whether anything changed.
+ */
+function rs_cv_apply_channels_v2( &$saved ) {
+	$changed = false;
+	$lines   = array(
+		'Run **Nomolos** ([youtube.com/@nomolosfiles](https://www.youtube.com/@nomolosfiles)), an animated documentary channel on history\'s greatest backfires, from Prohibition to Pearl Harbor; research, write, illustrate, animate and sound-design every episode, and cut each one into Shorts and [Instagram Reels](https://www.instagram.com/lettertosohan/reels/).' => rs_cv_channels_text( 'nomolos_bullet' ),
+		'Write and animate **Bichitro Biggan** ([youtube.com/@Bichitrobiggan](https://www.youtube.com/@Bichitrobiggan)), a science channel in Bengali and English that explains new research, from prime editing to consciousness and mirror bacteria.' => rs_cv_channels_text( 'biggan_bullet' ),
+	);
+
+	if ( isset( $saved['experience'] ) && is_array( $saved['experience'] ) ) {
+		foreach ( $saved['experience'] as &$job ) {
+			if ( ! isset( $job['bullets'] ) || ! is_array( $job['bullets'] ) ) {
+				continue;
+			}
+			foreach ( $job['bullets'] as &$line ) {
+				if ( is_string( $line ) && isset( $lines[ $line ] ) ) {
+					$line    = $lines[ $line ];
+					$changed = true;
+				}
+			}
+			unset( $line );
+		}
+		unset( $job );
+	}
+
+	if ( isset( $saved['films'] ) && is_array( $saved['films'] ) ) {
+		foreach ( $saved['films'] as &$film ) {
+			if ( isset( $film['text'] ) && 'History\'s greatest backfires, one decision per episode, from **Prohibition** to **Pearl Harbor**. Research, script, illustration, animation and sound design, all made solo.' === $film['text'] ) {
+				$film['text'] = rs_cv_channels_text( 'nomolos_film' );
+				$changed      = true;
+			}
+		}
+		unset( $film );
+	}
+
+	if ( isset( $saved['highlights'] ) && is_array( $saved['highlights'] ) ) {
+		$highlight_new = rs_cv_channels_text( 'channels_highlight' );
+		foreach ( $saved['highlights'] as &$highlight ) {
+			if ( isset( $highlight['lead'], $highlight['text'] ) && '30 documentary episodes and Shorts' === $highlight['lead'] && $highlight_new['text'] === $highlight['text'] ) {
+				$highlight['lead'] = $highlight_new['lead'];
+				$changed           = true;
+			}
+		}
+		unset( $highlight );
+	}
+
+	return $changed;
+}
+
+/**
+ * Run rs_cv_apply_channels_v2() on the saved CV, once. A CV that was never
+ * saved shows the defaults, which already carry it.
+ */
+function rs_cv_channels_v2() {
+	$flag = 'rs_cv_channels_v2';
+	if ( get_site_option( $flag ) ) {
+		return;
+	}
+
+	$page  = null;
+	$saved = false;
+	if ( is_multisite() ) {
+		$saved = rs_cv_saved_data();
+	} else {
+		$page  = get_page_by_path( 'cv', OBJECT, 'page' );
+		$saved = $page ? get_post_meta( $page->ID, '_rs_cv_data', true ) : false;
+	}
+
+	if ( is_array( $saved ) && rs_cv_apply_channels_v2( $saved ) ) {
+		if ( is_multisite() ) {
+			update_site_option( 'rs_cv_shared_data_v1', $saved );
+		} elseif ( $page ) {
+			update_post_meta( $page->ID, '_rs_cv_data', $saved );
+		}
+
+		rs_cv_purge_network_caches();
+	}
+
+	update_site_option( $flag, 1 );
+}
+add_action( 'init', 'rs_cv_channels_v2', 35 );
