@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Highlights (live) · Bahrain map animations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700;1,800&display=swap" rel="stylesheet">
+</head><body>
+<script src="lib/kit.js?v=415f4781"></script><script src="lib/player.js?v=08d8417c"></script><script src="lib/geomap.js?v=093ba538"></script><script src="lib/ui.js?v=768da4a4"></script><script src="lib/fx.js?v=9a762e1b"></script>
+<script src="data/layers.js?v=67ced978"></script><script src="data/geo.js?v=c2ca02bf"></script><script src="data/parts.js?v=ebfc596a"></script><script src="data/places.js?v=1ba056af"></script>
+<script src="highlights/edl.js?v=b3fb5a9e"></script><script src="highlights/hl.js?v=c62f4fdf"></script><script src="highlights/email-track.js?v=3bf0d59e"></script>
+<script>window.Part = (key, o) => { (window.SCENES = window.SCENES || {})[key] = o; };   // keep each part's settings, start no player</script>
+<script src="highlights/scenes.js?v=89e2381c"></script>
+<script>
+// 23 s highlights of the Bahrain map parts, drawn live: the same cut as highlights.html (highlights/edl.js), but each
+// shot is its part's own scene (highlights/scenes.js, built by tools/build_live_scenes.js) drawn on one shared map at
+// the cut's source time, so nothing here is a video file. The sound is the same pre-mixed highlights/mix.wav.
+
+const E = K.ease, cl = K.clamp, S = HL.shots;
+
+MapPlayer({
+  title: 'Highlights · 23 s',
+  DUR: HL.dur, FPS: HL.fps,
+  audio: 'highlights/mix.mp3',
+  async setup(stage, info) {
+    // the picture is always built 1920×1080 (g); 16:9 shows it as it is, 4:5 (?ar=45, 1080×1350) puts it in a band
+    // over a blurred copy of itself, with a headline above and the email below (m = the stage canvas)
+    const SW = info.W, SH = info.H, VERT = info.VERT, W = 1920, H = 1080;
+    const cv = document.createElement('canvas'); cv.width = SW; cv.height = SH; stage.appendChild(cv);
+    const m = cv.getContext('2d'), PC = VERT ? K.canvas(W, H) : cv, g = PC.getContext('2d');
+    const loader = document.getElementById('loader'), say = msg => { if (loader) loader.innerHTML = msg; };
+    const VF = HL.VFPS, shotAt = t => { let i = 0; while (i < S.length - 1 && t >= S[i + 1].t0 - 1e-6) i++; return i; };
+    const KEYS = [...new Set(S.map(s => s.clip.slice(0, 2)))];
+    // the layers of every part, merged in drawing order (coarse → fine, as each part lists them)
+    const order = [];
+    for (const k of KEYS) { let at = -1; for (const id of SCENES[k].layers) { const j = order.indexOf(id); if (j < 0) order.splice(++at, 0, id); else at = j; } }
+    // opened from disk (double-click): the images come inside data/texjs/*.js, as in the part pages
+    if (location.protocol === 'file:') {
+      const files = [...new Set(order.flatMap(id => [GM_LAYERS[id].src, GM_LAYERS[id].land]))];
+      let n = 0;
+      for (const f of files) {
+        if (!(window.GM_TEX && GM_TEX[f])) {
+          say(`Loading map… ${Math.round(100 * n / files.length)}%`);
+          await new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = 'data/texjs/' + f.split('/').pop() + '.js'; sc.onload = ok; sc.onerror = () => no(new Error('missing ' + sc.src)); document.head.appendChild(sc); });
+        }
+        n++;
+      }
+    }
+    say('Preparing map…');
+    await UI.fonts();
+    // one map for every shot, drawn off screen and copied into the picture
+    const map = await GM.create(document.createElement('div'), { W, H, layers: order, progress: (d, n) => say(`Preparing map… ${Math.round(100 * d / n)}%`) });
+    const LP = ['opacity', 'adj', 'gain', 'feather', 'zfade', 'landLvl', 'wgain'];
+    const copy = v => Array.isArray(v) ? v.slice() : v;
+    const snap = () => ({
+      look: Object.fromEntries(Object.entries(map.look).map(([k, v]) => [k, copy(v)])),
+      layers: Object.fromEntries(order.map(id => [id, Object.fromEntries(LP.map(p => [p, copy(map.layers[id][p])]))])),
+    });
+    const restore = s => {
+      for (const [k, v] of Object.entries(s.look)) map.look[k] = copy(v);
+      for (const id of order) for (const p of LP) { if (s.layers[id][p] === undefined) delete map.layers[id][p]; else map.layers[id][p] = copy(s.layers[id][p]); }
+    };
+    // each part's scene, set up as its own page sets it up (its layers, layer settings and look), on the shared map
+    const base = snap(), SC = {}, norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+    for (const k of KEYS) {
+      const o = SCENES[k], P = PARTS[k];
+      const word = (str, n = 1) => { const q = norm(str); let c = 0; for (const w of P.words) if (norm(w[2]) === q && ++c === n) return w; throw new Error('word not in part ' + k + ': ' + str); };
+      restore(base);
+      for (const id of order) map.layers[id].opacity = o.layers.includes(id) ? 1 : 0;
+      for (const [id, v] of Object.entries(o.layerSet || {})) Object.assign(map.layers[id], v);
+      Object.assign(map.look, o.look || {});
+      say(`Preparing map… ${k}`);
+      const scene = await o.scene({ map, P, info: { ...info, W, H, VERT: false }, key: k, w: (s, n) => word(s, n)[0], we: (s, n) => word(s, n)[1] });
+      SC[k] = { scene, state: snap(), blur: o.blur ?? 1 / 60, dur: P.dur };
+    }
+    window.__hlMap = map;   // QA
+
+    // the source time of a shot at highlight time t (speed ramps from the cut list), inside its part
+    const localOf = (i, t) => Math.min(HL.srcOf(S[i], t - S[i].t0), SC[S[i].clip.slice(0, 2)].dur - .02);
+    window.__hlSrc = localOf;   // QA
+    // draw shot i at source time u: the part's own frame, motion blur as in the part page (fewer samples while
+    // frames come slowly during playback, all 8 when paused)
+    let last = 0, ema = 16;
+    function picture(i, u) {
+      const X = SC[S[i].clip.slice(0, 2)], sc = X.scene, playing = !!(window.__player && __player.P.playing), now = performance.now();
+      if (playing && last) ema = ema * .9 + Math.min(200, now - last) * .1;
+      last = playing ? now : 0;
+      const samples = !playing ? 8 : ema > 45 ? 1 : ema > 30 ? 2 : ema > 22 ? 4 : 6;
+      let camAt = sc.cam;
+      if (sc.cuts && sc.cuts.length) {
+        const s0 = Math.max(0, ...sc.cuts.filter(c => c <= u)), s1 = Math.min(1e9, ...sc.cuts.filter(c => c > u));
+        camAt = ts => sc.cam(Math.min(s1 - 1e-4, Math.max(s0, ts)));
+      }
+      restore(X.state);
+      map.frame(u, camAt, (api, c) => sc.draw(api, c, u), { blur: X.blur, samples, pre: sc.pre && ((api, c) => sc.pre(api, c, u)) });
+      return map.gl.canvas;
+    }
+
+    // end card on any canvas size: kicker, title, the call to work together (wrapped to the safe width), contacts
+    function title(t, c, w, h) {
+      const T = HL.title, u = t - T.t;
+      if (u < 0) return;
+      // the picture dims as a whole (no dark band behind the words), the title grows in
+      c.fillStyle = `rgba(4,8,14,${.8 * E.out(cl(u / .4))})`; c.fillRect(0, 0, w, h);
+      const k = E.out(cl(u / .4)), cx = w / 2, maxW = Math.min(1560, w - 120);
+      const font = (wt, sz) => `${wt} ${sz}px ${UI.F}`, LS = 26, VS = 32, gap = 18, sep = 70;
+      const width = (str, wt, sz, sp) => { c.font = font(wt, sz); if ('letterSpacing' in c) c.letterSpacing = sp + 'px'; const mw = c.measureText(str).width + sp; if ('letterSpacing' in c) c.letterSpacing = '0px'; return mw; };
+      const wrap = (str, wt, sz, sp) => {
+        const out = []; let cur = '';
+        for (const wd of str.split(' ')) { const tr = cur ? cur + ' ' + wd : wd; if (cur && width(tr, wt, sz, sp) > maxW) { out.push(cur); cur = wd; } else cur = tr; }
+        return out.concat(cur);
+      };
+      const cta = [...wrap(T.cta[0], 800, 42, 1.5).map(x => [x, '#ffffff', 800]), ...wrap(T.cta[1], 900, 42, 1.5).map(x => [x, '#FFD23F', 900])];
+      const items = T.contacts.map(([l, v]) => ({ l, v, wl: width(l, 800, LS, 3), wv: width(v, 700, VS, .5) }));
+      // contact rows that fit inside the safe width; each row centred, one shared baseline per row
+      const rows = [[]], rowW = r => r.reduce((a, it) => a + it.wl + gap + it.wv, 0) + sep * (r.length - 1);
+      items.forEach(it => { const r = rows[rows.length - 1]; if (r.length && rowW([...r, it]) > maxW) rows.push([it]); else r.push(it); });
+      // vertical stack, centred: kicker → title 90 → call 140 → lines 64 → contacts 116 → rows 62
+      const yCta = 230, yRow = yCta + 64 * (cta.length - 1) + 116, span = yRow + 62 * (rows.length - 1), y0 = h / 2 - span / 2 - 14;
+      c.save(); c.translate(cx, h / 2); c.scale(.88 + .12 * k, .88 + .12 * k); c.translate(-cx, -h / 2);
+      UI.text3d(c, T.kicker, cx, y0, { size: 28, weight: 800, fill: '#FFD23F', spacing: 9, align: 'center', alpha: cl(u / .25) });
+      UI.text3d(c, T.main, cx, y0 + 90, { size: 120, weight: 900, fill: '#ffffff', spacing: 12, align: 'center', alpha: cl((u - .04) / .25) });
+      cta.forEach(([str, col, wt], n) => UI.text3d(c, str, cx, y0 + yCta + 64 * n, { size: 42, weight: wt, fill: col, spacing: 1.5, align: 'center', alpha: cl((u - .12 - n * .08) / .3) }));
+      c.save(); c.fillStyle = 'rgba(255,210,63,.5)';
+      let j = 0;
+      rows.forEach((r, ri) => {
+        let x = cx - rowW(r) / 2; const cyC = y0 + yRow + ri * 62;
+        r.forEach((it, kk) => {
+          const a = cl((u - .32 - j++ * .08) / .3);
+          // one shared baseline for every label and value (a 'middle' base centres each word on its own letters, so
+          // words with and without descenders sat at different heights)
+          UI.text3d(c, it.l, x, cyC + 11, { size: LS, weight: 800, fill: '#FFD23F', spacing: 3, base: 'alphabetic', alpha: a });
+          UI.text3d(c, it.v, x + it.wl + gap, cyC + 11, { size: VS, weight: 700, fill: '#ffffff', spacing: .5, base: 'alphabetic', alpha: a });
+          x += it.wl + gap + it.wv;
+          if (kk < r.length - 1) { c.globalAlpha = a; c.fillRect(x + sep / 2 - 2, cyC - 16, 4, 32); c.globalAlpha = 1; x += sep; }
+        });
+      });
+      c.restore();
+      c.restore();
+    }
+
+    // 4:5: the 16:9 picture in a band over a blurred, dimmed copy of itself; a headline above, the email below
+    function frame45(t) {
+      const F = HL.frame45, bh = Math.round(SW * H / W), by = Math.round((SH - bh) / 2) + 12;
+      m.fillStyle = '#000'; m.fillRect(0, 0, SW, SH);
+      m.save(); m.filter = 'blur(28px) saturate(1.2)'; const sc = SH / H * 1.08; m.drawImage(PC, (SW - W * sc) / 2, (SH - H * sc) / 2, W * sc, H * sc); m.restore();
+      m.fillStyle = 'rgba(4,8,14,.55)'; m.fillRect(0, 0, SW, SH);
+      m.drawImage(PC, 0, by, SW, bh);
+      // the words of the band give way to the end card
+      const a = 1 - E.out(cl((t - HL.title.t) / .35)), cx = SW / 2;
+      if (a <= 0) return;
+      const top = by / 2;
+      UI.text3d(m, F.kicker, cx, top - 78, { size: 28, weight: 800, fill: '#FFD23F', spacing: 8, align: 'center', alpha: a });
+      F.head.forEach((str, n) => UI.text3d(m, str, cx, top - 6 + n * 72, { size: 62, weight: 900, fill: '#ffffff', spacing: 2, align: 'center', alpha: a }));
+      const bot = by + bh + (SH - by - bh) / 2;
+      UI.text3d(m, F.foot[0], cx, bot - 30, { size: 32, weight: 800, fill: '#ffffff', spacing: 2, align: 'center', alpha: a });
+      UI.text3d(m, F.foot[1], cx, bot + 30, { size: 40, weight: 800, fill: '#FFD23F', spacing: 1, align: 'center', alpha: a });
+    }
+
+    // ── the email, written into the map: on the sand ("terrain": pressed into the ground, dark with a light rim) or
+    // under the sea ("water": pale, soft and slowly rippling). The label grid follows the map frame by frame
+    // (highlights/email-track.js), so it moves, zooms and tilts with the map like any map feature.
+    const TW = 1600, TH = Math.round(TW * HL.AR), tex = K.canvas(TW, TH);
+    {
+      const x = tex.getContext('2d'); let fs = 150;
+      const set = () => { x.font = `700 ${fs}px ${UI.F}`; if ('letterSpacing' in x) x.letterSpacing = (fs * .08) + 'px'; };
+      set(); while (x.measureText(HL.email.text).width > TW * .94 && fs > 20) { fs -= 2; set(); }
+      x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(HL.email.text, TW / 2 + fs * .04, TH / 2 + fs * .04);
+    }
+    const LYR = K.canvas(W, H), lg = LYR.getContext('2d'), TMP = K.canvas(W, H), tg = TMP.getContext('2d');
+    const SUBX = 3, SUBY = 3;
+    function warp(pts, wob) {
+      // grid points (GX+1)×(GY+1) → finer bilinear grid, each cell = two textured triangles
+      const GX = HL.GX, GY = HL.GY, NX = GX * SUBX, NY = GY * SUBY, P = (i, j) => [pts[2 * (j * (GX + 1) + i)] / 2, pts[2 * (j * (GX + 1) + i) + 1] / 2];
+      const Q = [];
+      for (let j = 0; j <= NY; j++) for (let i = 0; i <= NX; i++) {
+        const gi = Math.min(GX - 1, Math.floor(i / SUBX)), gj = Math.min(GY - 1, Math.floor(j / SUBY)), fu = i / SUBX - gi, fv = j / SUBY - gj;
+        const a = P(gi, gj), b = P(gi + 1, gj), c = P(gi, gj + 1), d = P(gi + 1, gj + 1);
+        let x = (a[0] * (1 - fu) + b[0] * fu) * (1 - fv) + (c[0] * (1 - fu) + d[0] * fu) * fv;
+        let y = (a[1] * (1 - fu) + b[1] * fu) * (1 - fv) + (c[1] * (1 - fu) + d[1] * fu) * fv;
+        if (wob) { const ph = wob.t * 1.3 + i / NX * 7; x += wob.ax * Math.sin(ph * 1.7 + j); y += wob.ay * Math.sin(ph); }
+        Q.push([x, y]);
+      }
+      let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+      for (const [x, y] of Q) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+      x0 = Math.max(0, Math.floor(x0) - 12); y0 = Math.max(0, Math.floor(y0) - 12); x1 = Math.min(W, Math.ceil(x1) + 12); y1 = Math.min(H, Math.ceil(y1) + 12);
+      if (x1 <= x0 || y1 <= y0) return null;
+      lg.setTransform(1, 0, 0, 1, 0, 0); lg.clearRect(x0, y0, x1 - x0, y1 - y0);
+      const tri = (s0, s1, s2, d0, d1, d2) => {
+        // grow the target triangle by 0.6 px around its centre, so neighbours overlap and no seam shows
+        const cx = (d0[0] + d1[0] + d2[0]) / 3, cy = (d0[1] + d1[1] + d2[1]) / 3;
+        const gr = p => { const dx = p[0] - cx, dy = p[1] - cy, l = Math.hypot(dx, dy) || 1; return [p[0] + dx / l * .6, p[1] + dy / l * .6]; };
+        const e0 = gr(d0), e1 = gr(d1), e2 = gr(d2);
+        const den = s0[0] * (s1[1] - s2[1]) + s1[0] * (s2[1] - s0[1]) + s2[0] * (s0[1] - s1[1]);
+        const m = k => [(d0[k] * (s1[1] - s2[1]) + d1[k] * (s2[1] - s0[1]) + d2[k] * (s0[1] - s1[1])) / den,
+                        (d0[k] * (s2[0] - s1[0]) + d1[k] * (s0[0] - s2[0]) + d2[k] * (s1[0] - s0[0])) / den,
+                        (d0[k] * (s1[0] * s2[1] - s2[0] * s1[1]) + d1[k] * (s2[0] * s0[1] - s0[0] * s2[1]) + d2[k] * (s0[0] * s1[1] - s1[0] * s0[1])) / den];
+        const [a, c, e] = m(0), [b, d, f] = m(1);
+        lg.save(); lg.beginPath(); lg.moveTo(e0[0], e0[1]); lg.lineTo(e1[0], e1[1]); lg.lineTo(e2[0], e2[1]); lg.closePath(); lg.clip();
+        lg.setTransform(a, b, c, d, e, f); lg.drawImage(tex, 0, 0); lg.restore();
+      };
+      for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
+        const s00 = [i / NX * TW, j / NY * TH], s10 = [(i + 1) / NX * TW, j / NY * TH], s01 = [i / NX * TW, (j + 1) / NY * TH], s11 = [(i + 1) / NX * TW, (j + 1) / NY * TH];
+        const q = (ii, jj) => Q[jj * (NX + 1) + ii];
+        tri(s00, s10, s11, q(i, j), q(i + 1, j), q(i + 1, j + 1));
+        tri(s00, s11, s01, q(i, j), q(i + 1, j + 1), q(i, j + 1));
+      }
+      return [x0, y0, x1 - x0, y1 - y0];
+    }
+    // the warped letters in one colour, put on the picture with a blend mode
+    function put(bb, color, op, alpha, blur, dx = 0, dy = 0) {
+      const [x, y, w, h] = bb;
+      tg.setTransform(1, 0, 0, 1, 0, 0); tg.globalCompositeOperation = 'copy'; tg.drawImage(LYR, x, y, w, h, x, y, w, h);
+      tg.globalCompositeOperation = 'source-in'; tg.fillStyle = color; tg.fillRect(x, y, w, h); tg.globalCompositeOperation = 'source-over';
+      g.save(); g.globalCompositeOperation = op; g.globalAlpha = alpha; if (blur > .05) g.filter = `blur(${blur.toFixed(2)}px)`;
+      g.drawImage(TMP, x, y, w, h, x + dx, y + dy, w, h); g.restore();
+    }
+    function emails(i, want) {
+      const tr = window.HL_TRACK && HL_TRACK[i]; if (!tr) return;
+      // the labels were tracked on the rendered parts frame by frame: frame f shows part time f / 29.97
+      const f = Math.floor((want + .004) * VF + 1e-6), k = f - tr.f0;
+      for (const L of tr.labels) {
+        const lb = HL.email.labels[L.id], pts = L.frames[k], a = HL.labelA(lb, f / VF);
+        if (!pts || a <= 0) continue;
+        // the map moves fast in places (motion blur in the picture): blur the letters as much
+        const prev = L.frames[k - 1]; let mv = 0;
+        if (prev) { for (let n = 0; n < pts.length; n += 2) mv += Math.hypot(pts[n] - prev[n], pts[n + 1] - prev[n + 1]) / 2; mv /= pts.length / 2; }
+        const mb = Math.min(10, mv * .3), hgt = Math.hypot(pts[2 * (HL.GX + 1)] - pts[0], pts[2 * (HL.GX + 1) + 1] - pts[1]) / 2 * HL.GY;
+        if (lb.style === 'water') {
+          const bb = warp(pts, { t: f / VF, ax: hgt * .012, ay: hgt * .035 }); if (!bb) continue;
+          put(bb, '#9fd8ff', 'soft-light', .55 * a, 1.4 + mb);
+          put(bb, '#bfe8ff', 'screen', .13 * a, 2.2 + mb);
+        } else {
+          const bb = warp(pts, null); if (!bb) continue;
+          put(bb, '#5a3a1c', 'multiply', .42 * a, .6 + mb);
+          put(bb, '#fff1d2', 'soft-light', .4 * a, .8 + mb, -1.2, -1.2);
+        }
+      }
+    }
+
+    return (t) => {
+      const i = shotAt(t), s = S[i], u = t - s.t0, want = localOf(i, t);
+      const pic = picture(i, want);
+      g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
+      // a cut settles from a small zoom; the first shot fades up from black
+      const z = s.fx ? 1 + .05 * (1 - E.out(cl(u / .4))) : 1;
+      g.save(); g.translate(W / 2, H / 2); g.scale(z, z); g.translate(-W / 2, -H / 2);
+      g.drawImage(pic, 0, 0, W, H); emails(i, want);
+      g.restore();
+      if (i === 0 && t < .2) { g.fillStyle = `rgba(0,0,0,${1 - t / .2})`; g.fillRect(0, 0, W, H); }
+      if (s.fx === 'flash' && u < .2) {
+        g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = `rgba(255,244,225,${.32 * (1 - u / .2) ** 2})`; g.fillRect(0, 0, W, H); g.restore();
+      }
+      if (VERT) { frame45(t); title(t, m, SW, SH); } else title(t, g, W, H);
+      // the end: fade to black over the last 0.3 s so the loop restarts clean
+      const e = HL.dur - t; if (e < .3) { m.fillStyle = `rgba(0,0,0,${1 - e / .3})`; m.fillRect(0, 0, SW, SH); }
+    };
+  },
+});
+</script>
+</body></html>

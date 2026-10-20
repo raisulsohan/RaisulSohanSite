@@ -2,13 +2,20 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-9.1.5-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-9.2.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 9.2
+
+**The map animation page, made for clients.**
+
+- **9.2.0: `/map-animation-demo/` in the showreel's look, built to sell, and the Bahrain client documentary added.** A glass bar with Work with me; a short pitch (timed to your voice-over, real map data, 16:9 and 4:5) with three plain facts; a Featured player with two tabs, Strait of Hormuz (the 3D satellite news map) and Bahrain, that shows a sharp poster and loads the demo only when clicked, with its frame switch, Open and the data credits; every style as a card with a one-line description and filters (Documentary & news, Explainer, True crime, City reveal) that plays in a large pop-up player with previous / next, 16:9 / 4:5, Esc to close and keyboard focus kept inside; a contact band that copies the email; and the credits and keys in the footer. No counts on the page: the library keeps growing. Links to one map (`#13`, `#05-45`) open it in the pop-up. The floating Work with me button is gone (the bar and the contact band carry it); back to top stays.
+  - **Bahrain, drawn live.** The 23 s highlights of the map scenes made for a client's YouTube documentary are drawn in code like every other demo, not played from video: `highlights-live.html` in the Bahrain project plays each shot's own part scene (collected into `highlights/scenes.js` by its `tools/build_live_scenes.js`) on one shared map at the cut list's source time, with the same email in the sea, flash cuts, end card and 4:5 frame as the rendered version, matched frame by frame against it. `scripts/map-demo-sync.js` copies it into `assets/demo/map-animation/bahrain/` with its own player, map engine, map data and sound (the two big JPEG satellite pictures as WebP, 7 MB lighter with no visible change; the mix as MP3), and the featured posters (`thumbs/13-poster.jpg`, `thumbs/14-poster.jpg`) come from the two projects too.
 
 ## What's new in 9.1
 

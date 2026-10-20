@@ -1,0 +1,16 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Map Animation Demos</title>
+<meta name="robots" content="noindex">
+<script>
+var root = location.pathname.split( '/wp-content/' )[ 0 ];
+var win = window, from = document.referrer;
+try {
+	if ( window.top !== window ) {
+		from = window.top.location.pathname;
+		win = window.top;
+	}
+} catch ( e ) {}
+win.location.replace( root + ( /\/en\//.test( from ) ? '/en' : '' ) + '/map-animation-demo/' );
+</script>
+<a href="/map-animation-demo/">Map Animation Demos</a>

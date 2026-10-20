@@ -31,6 +31,14 @@
  *   4:5 cut hormuz-v2-4x5.html. The map images ship as files, not as the
  *   25 MB data/tex.js that inlines them for file://, and the CodeFlow-only
  *   <audio> tags are dropped. hormuz-v2.html?ar=45 opens the 4:5 file.
+ * - Bahrain (demo 14) comes from the client documentary's map parts in
+ *   "07. Business Basic/…/map-animations/feedback": its 23 s highlights,
+ *   drawn live from the parts' code (highlights-live.html, whose scenes
+ *   tools/build_live_scenes.js collects into highlights/scenes.js; the sync
+ *   stops if a part page is newer than that file). It goes into bahrain/
+ *   with its own player, map engine, map data and sound: the two big JPEG
+ *   satellite pictures as WebP (needs ffmpeg), the mix as MP3, and an
+ *   index.html for the player's "All demos" link. ?ar=45 is its 4:5 cut.
  *
  * Only the demos in PAGES are copied. Add a number here and a card in
  * parts/map-animation-demo.php to publish another one.
@@ -48,6 +56,7 @@ const SHORES = '11';
 const SRC = path.resolve( process.argv[ 2 ] || 'D:/GitHub/04. Animation for video/05. Fun/map animation demo' );
 const VOX = path.join( SRC, '..', 'Vox Map Demo' );
 const HORMUZ = path.join( SRC, '..', 'Map Animation for client work' );
+const BAHRAIN = path.join( SRC, '..', '..', '07. Business Basic', 'Why 1.5 Million People Live on a Desert Island With No Rivers', 'map-animations', 'feedback' );
 const OUT = path.join( __dirname, '..', 'assets', 'demo', 'map-animation' );
 
 const read = ( f ) => fs.readFileSync( f, 'utf8' );
@@ -61,9 +70,9 @@ function replaceOnce( text, from, to, file ) {
 	return from instanceof RegExp ? text.replace( from, to ) : text.split( from ).join( to );
 }
 
-/* Every src="lib/…js", "audio/…js", "data/…js" or "showreel/…js" gets the hash of the copied file in `dir`. */
+/* Every src="lib/…js", "audio/…js", "data/…js", "showreel/…js" or "highlights/…js" gets the hash of the copied file in `dir`. */
 function stamp( html, dir = OUT ) {
-	return html.replace( /src="((?:lib|audio|data|showreel)\/[\w./-]+\.js)"/g, ( m, rel ) => {
+	return html.replace( /src="((?:lib|audio|data|showreel|highlights)\/[\w./-]+\.js)"/g, ( m, rel ) => {
 		const f = path.join( dir, rel );
 		if ( ! fs.existsSync( f ) ) {
 			throw new Error( `missing ${ rel }` );
@@ -77,6 +86,14 @@ const CLIPS = path.join( SRC, 'showreel', 'clips.js' );
 for ( const n of fs.readdirSync( SRC ).filter( ( f ) => /^\d\d-.+\.html$/.test( f ) ) ) {
 	if ( fs.statSync( path.join( SRC, n ) ).mtimeMs > fs.statSync( CLIPS ).mtimeMs ) {
 		throw new Error( `${ n } is newer than showreel/clips.js: run  node showreel/build.mjs  in the demo folder first` );
+	}
+}
+
+/* The Bahrain highlights play the scenes collected from its part pages; a changed part needs them collected again. */
+const SCENES = path.join( BAHRAIN, 'highlights', 'scenes.js' );
+for ( const n of fs.readdirSync( BAHRAIN ).filter( ( f ) => /^\d\d-.+\.html$/.test( f ) ) ) {
+	if ( fs.statSync( path.join( BAHRAIN, n ) ).mtimeMs > fs.statSync( SCENES ).mtimeMs ) {
+		throw new Error( `${ n } is newer than highlights/scenes.js: run  node tools/build_live_scenes.js  in the Bahrain feedback folder first` );
 	}
 }
 
@@ -155,6 +172,8 @@ for ( const f of fs.readdirSync( path.join( HORMUZ, 'data' ) ).filter( ( n ) => 
 }
 fullVolume( path.join( HZ, 'lib', 'player.js' ) );
 fs.copyFileSync( path.join( HORMUZ, 'thumbs', 'hormuz-v2.jpg' ), path.join( OUT, 'thumbs', '13.jpg' ) );
+/* The page's featured player shows a large poster of each featured demo before it loads. */
+fs.copyFileSync( path.join( HORMUZ, 'thumbs', 'hormuz-v2-poster.jpg' ), path.join( OUT, 'thumbs', '13-poster.jpg' ) );
 for ( const name of [ 'hormuz-v2.html', 'hormuz-v2-4x5.html' ] ) {
 	let html = read( path.join( HORMUZ, name ) );
 	html = replaceOnce( html, /<script src="data\/tex\.js"[^>]*><\/script>\r?\n/, '', name );
@@ -165,10 +184,40 @@ for ( const name of [ 'hormuz-v2.html', 'hormuz-v2-4x5.html' ] ) {
 	fs.writeFileSync( path.join( HZ, name ), stamp( html, HZ ) );
 }
 
+/* Bahrain highlights, in bahrain/ with their own player, engine, map data and sound. */
+const BH = path.join( OUT, 'bahrain' );
+for ( const d of [ 'lib', 'data/tex', 'highlights' ] ) {
+	fs.mkdirSync( path.join( BH, d ), { recursive: true } );
+}
+for ( const f of [ 'lib/kit.js', 'lib/player.js', 'lib/geomap.js', 'lib/ui.js', 'lib/fx.js', 'data/geo.js', 'data/parts.js', 'data/places.js',
+	'highlights/edl.js', 'highlights/hl.js', 'highlights/email-track.js', 'highlights/scenes.js' ] ) {
+	fs.copyFileSync( path.join( BAHRAIN, f ), path.join( BH, f ) );
+}
+fullVolume( path.join( BH, 'lib', 'player.js' ) );
+let bhLayers = read( path.join( BAHRAIN, 'data', 'layers.js' ) );
+for ( const f of fs.readdirSync( path.join( BAHRAIN, 'data', 'tex' ) ) ) {
+	const from = path.join( BAHRAIN, 'data', 'tex', f );
+	if ( /\.jpe?g$/.test( f ) ) {
+		const webp = f.replace( /\.jpe?g$/, '.webp' );
+		execFileSync( 'ffmpeg', [ '-v', 'error', '-y', '-i', from, '-c:v', 'libwebp', '-quality', '90', path.join( BH, 'data', 'tex', webp ) ] );
+		bhLayers = replaceOnce( bhLayers, `data/tex/${ f }`, `data/tex/${ webp }`, 'bahrain layers.js' );
+	} else {
+		fs.copyFileSync( from, path.join( BH, 'data', 'tex', f ) );
+	}
+}
+fs.writeFileSync( path.join( BH, 'data', 'layers.js' ), bhLayers );
+execFileSync( 'ffmpeg', [ '-v', 'error', '-y', '-i', path.join( BAHRAIN, 'highlights', 'mix.wav' ), '-codec:a', 'libmp3lame', '-b:a', '192k', path.join( BH, 'highlights', 'mix.mp3' ) ] );
+let bhPage = read( path.join( BAHRAIN, 'highlights-live.html' ) );
+bhPage = replaceOnce( bhPage, "audio: 'highlights/mix.wav'", "audio: 'highlights/mix.mp3'", 'highlights-live.html' );
+fs.writeFileSync( path.join( BH, 'highlights.html' ), stamp( bhPage, BH ) );
+fs.copyFileSync( path.join( BAHRAIN, 'highlights', 'thumb.jpg' ), path.join( OUT, 'thumbs', '14.jpg' ) );
+fs.copyFileSync( path.join( BAHRAIN, 'highlights', 'poster.jpg' ), path.join( OUT, 'thumbs', '14-poster.jpg' ) );
+
 /* The players' "All demos" link points at index.html. A player in the
    portfolio's demo pop-up opens the page in the whole window, not inside the
-   pop-up, and the window's address says which edition it came from. */
-fs.writeFileSync( path.join( OUT, 'index.html' ), `<!doctype html>
+   pop-up, and the window's address says which edition it came from. The
+   Bahrain player has the link too, so bahrain/ gets the same page. */
+const INDEX_HTML = `<!doctype html>
 <meta charset="utf-8">
 <title>Map Animation Demos</title>
 <meta name="robots" content="noindex">
@@ -184,7 +233,9 @@ try {
 win.location.replace( root + ( /\\/en\\//.test( from ) ? '/en' : '' ) + '/map-animation-demo/' );
 </script>
 <a href="/map-animation-demo/">Map Animation Demos</a>
-` );
+`;
+fs.writeFileSync( path.join( OUT, 'index.html' ), INDEX_HTML );
+fs.writeFileSync( path.join( BH, 'index.html' ), INDEX_HTML );
 
 let bytes = 0;
 const walk = ( d ) => fs.readdirSync( d, { withFileTypes: true } ).forEach( ( e ) => {
@@ -196,4 +247,4 @@ const walk = ( d ) => fs.readdirSync( d, { withFileTypes: true } ).forEach( ( e 
 	}
 } );
 walk( OUT );
-console.log( `map-animation: ${ PAGES.length + 2 } demos and the showreel, ${ ( bytes / 1048576 ).toFixed( 1 ) } MB in ${ path.relative( process.cwd(), OUT ) }` );
+console.log( `map-animation: ${ PAGES.length + 3 } demos and the showreel, ${ ( bytes / 1048576 ).toFixed( 1 ) } MB in ${ path.relative( process.cwd(), OUT ) }` );
