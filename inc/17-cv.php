@@ -543,12 +543,17 @@ function rs_cv_data( $post_id = 0 ) {
 		'linkedin_url' => 'https://www.linkedin.com/in/raisulsohan/',
 		'work_url'     => '/portfolio/',
 		'pdf_filename' => 'Raisul_Sohan_CV.pdf',
+		/* The same PDF on Google Drive, for reading it in the browser on any
+		   device; the file is replaced in Drive as a new version, so the link
+		   stays. Empty hides the button. */
+		'pdf_view_url' => 'https://drive.google.com/file/d/1VNQG-s9-xGC63K8xg_oR9VzhXIBGkCQb/view',
 		'pdf_attachment_id' => 0,
 		'pdf_attachment_blog_id' => 0,
 
 		'labels'       => array(
 			'hero_eyebrow'       => 'Curriculum vitae',
 			'download_pdf'       => 'Download PDF',
+			'view_pdf'           => 'View on Google Drive',
 			'print'              => 'Print',
 			'email'              => 'Email',
 			'whatsapp'           => 'WhatsApp',
@@ -758,6 +763,7 @@ function rs_cv_render_editor_box( $post ) {
 	rs_cv_editor_field( 'work_url', 'Portfolio URL or site path', $cv['work_url'] );
 	rs_cv_editor_field( 'updated', 'Last updated text', $cv['updated'] );
 	rs_cv_editor_field( 'pdf_filename', 'PDF download filename', $cv['pdf_filename'] );
+	rs_cv_editor_field( 'pdf_view_url', 'PDF on Google Drive (view link; empty hides the button)', $cv['pdf_view_url'], 'url' );
 	rs_cv_editor_field( 'summary', 'Short summary', $cv['summary'], 'textarea', true );
 	rs_cv_editor_field( 'profile', 'Profile', $cv['profile'], 'textarea', true );
 	$pdf_attachment = rs_cv_pdf_attachment( $cv['pdf_attachment_id'], $cv['pdf_attachment_blog_id'] );
@@ -771,7 +777,7 @@ function rs_cv_render_editor_box( $post ) {
 
 	echo '<details class="rs-cv-editor__section"><summary>Page labels and buttons</summary><div class="rs-cv-editor__fields">';
 	$label_fields = array(
-		'hero_eyebrow' => 'Top label', 'download_pdf' => 'Download PDF button', 'print' => 'Print button',
+		'hero_eyebrow' => 'Top label', 'download_pdf' => 'Download PDF button', 'view_pdf' => 'Google Drive view button', 'print' => 'Print button',
 		'email' => 'Email button and contact label', 'whatsapp' => 'WhatsApp button and contact label', 'linkedin' => 'LinkedIn button and contact label', 'copy_email' => 'Email copy screen-reader text',
 		'selected_work' => 'Selected work label', 'showcase_title' => 'Selected work title',
 		'showcase_intro' => 'Selected work introduction', 'view_project' => 'Project link label',
@@ -913,7 +919,7 @@ function rs_cv_save_editor_data( $post_id, $post ) {
 			$clean[ $key ] = sanitize_text_field( $input[ $key ] );
 		}
 	}
-	foreach ( array( 'whatsapp', 'linkedin_url', 'work_url' ) as $key ) {
+	foreach ( array( 'whatsapp', 'linkedin_url', 'work_url', 'pdf_view_url' ) as $key ) {
 		if ( isset( $input[ $key ] ) && is_scalar( $input[ $key ] ) ) {
 			$clean[ $key ] = esc_url_raw( $input[ $key ] );
 		}

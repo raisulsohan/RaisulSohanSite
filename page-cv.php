@@ -32,6 +32,7 @@ $rs_pdf = rs_cv_pdf();
 
 $rs_icon_download = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg>';
 $rs_icon_print    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/></svg>';
+$rs_icon_view     = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 $rs_icon_out      = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>';
 
 /* One glyph per kind of contact entry; rs_cv_contact_items() names them. */
@@ -69,6 +70,14 @@ $rs_contact_icons = array(
 				<a class="rs-pf-btn rs-pf-btn--primary" href="<?php echo esc_url( $rs_pdf ); ?>" download="<?php echo esc_attr( $rs_cv['pdf_filename'] ? $rs_cv['pdf_filename'] : 'Raisul_Sohan_CV.pdf' ); ?>">
 					<?php echo $rs_icon_download; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
 					<?php echo esc_html( $rs_cv['labels']['download_pdf'] ); ?>
+				</a>
+			<?php endif; ?>
+			<?php /* The same PDF on Google Drive: read it in the browser, on a
+			   phone too, without saving a file. */ ?>
+			<?php if ( $rs_cv['pdf_view_url'] ) : ?>
+				<a class="rs-pf-btn rs-pf-btn--ghost" href="<?php echo esc_url( $rs_cv['pdf_view_url'] ); ?>" target="_blank" rel="noopener noreferrer">
+					<?php echo $rs_icon_view; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>
+					<?php echo esc_html( $rs_cv['labels']['view_pdf'] ); ?>
 				</a>
 			<?php endif; ?>
 			<button type="button" class="rs-pf-btn rs-pf-btn--ghost" data-rs-cv-print>
@@ -279,7 +288,9 @@ $rs_contact_icons = array(
 			<?php if ( $rs_pdf ) : ?>
 				<a href="<?php echo esc_url( $rs_pdf ); ?>" download="<?php echo esc_attr( $rs_cv['pdf_filename'] ? $rs_cv['pdf_filename'] : 'Raisul_Sohan_CV.pdf' ); ?>"><?php echo esc_html( $rs_cv['labels']['also_pdf'] ); ?></a>
 			<?php endif; ?>
-			<?php if ( $rs_pdf && $rs_cv['work_url'] ) : ?>&nbsp;·&nbsp;<?php endif; ?>
+			<?php if ( $rs_pdf && $rs_cv['pdf_view_url'] ) : ?>&nbsp;·&nbsp;<?php endif; ?>
+			<?php if ( $rs_cv['pdf_view_url'] ) : ?><a href="<?php echo esc_url( $rs_cv['pdf_view_url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $rs_cv['labels']['view_pdf'] ); ?><?php echo $rs_icon_out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></a><?php endif; ?>
+			<?php if ( ( $rs_pdf || $rs_cv['pdf_view_url'] ) && $rs_cv['work_url'] ) : ?>&nbsp;·&nbsp;<?php endif; ?>
 			<?php if ( $rs_cv['work_url'] ) : ?><a href="<?php echo esc_url( rs_cv_resolve_url( $rs_cv['work_url'] ) ); ?>"><?php echo esc_html( $rs_cv['labels']['see_work'] ); ?><?php echo $rs_icon_out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></a><?php endif; ?>
 		</p>
 		<?php endif; ?>
