@@ -22,7 +22,8 @@
  *   portfolio's demo pop-up too.
  * - The showreel (showreel.html, its 4:5 cut showreel-4x5.html and the
  *   showreel/clips.js it plays the demos through) comes along; it is the Map
- *   Animation Showreel project's demo on the portfolio. clips.js is made in
+ *   Animation Showreel project's demo on the portfolio. Its Strait of Hormuz
+ *   shots load their map files from hormuz/data/, shared with demo 13. clips.js is made in
  *   the source by `node showreel/build.mjs`, so the sync stops if a demo page
  *   is newer than it.
  * - Strait of Hormuz (demo 13) comes from "Map Animation for client work"
@@ -154,8 +155,10 @@ shores = replaceOnce( shores, 'let volume = 0.8;', 'let volume = 1;', 'Shifting 
 shores = replaceOnce( shores, 'id="vol" type="range" min="0" max="1" step="0.01" value="0.8"', 'id="vol" type="range" min="0" max="1" step="0.01" value="1"', 'Shifting Shores' );
 fs.writeFileSync( path.join( OUT, 'shifting-shores.html' ), stamp( shores ) );
 
-/* The showreel. Its 4:5 page only reloads showreel.html with ?ar=45, so it goes as it is. */
-fs.copyFileSync( CLIPS, path.join( OUT, 'showreel', 'clips.js' ) );
+/* The showreel. Its 4:5 page only reloads showreel.html with ?ar=45, so it goes as it is. Its Strait of
+   Hormuz shots read the same map files as the Hormuz demo, so they read them from hormuz/data/ instead of
+   a second copy in showreel/hormuz/ (and a visit to one warms the cache for the other). */
+fs.writeFileSync( path.join( OUT, 'showreel', 'clips.js' ), replaceOnce( read( CLIPS ), 'showreel/hormuz/', 'hormuz/data/', 'showreel/clips.js' ) );
 fs.writeFileSync( path.join( OUT, 'showreel.html' ), stamp( read( path.join( SRC, 'showreel.html' ) ) ) );
 fs.copyFileSync( path.join( SRC, 'showreel-4x5.html' ), path.join( OUT, 'showreel-4x5.html' ) );
 

@@ -185,6 +185,9 @@ $rs_md_icon_play = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v
 	/* the featured player: a poster until it is clicked, then the demo itself */
 	.stage { position: relative; height: 600px; border-radius: 28px; overflow: hidden; background: #050506; box-shadow: 0 0 0 1px rgba(255, 255, 255, .07), 0 40px 90px -30px rgba(0, 0, 0, .9); }
 	.stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #050506; }
+	/* loaded in the background, paused under its poster */
+	.stage iframe.pre { z-index: 0; }
+	.stage .poster { z-index: 1; }
 	.poster { all: unset; position: absolute; inset: 0; cursor: pointer; display: block; }
 	.poster[hidden] { display: none; }
 	.poster img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .8s var(--out), filter .4s; }
@@ -484,17 +487,36 @@ function showFeatured(id) {
   $('fPtag').textContent = F.kicker; $('fKicker').textContent = F.kicker; $('fTitle').textContent = F.title; $('fText').textContent = F.text; $('fCredit').textContent = d.note;
   $('fOpen').href = openUrl(d);
 }
+// The featured demo loads in the background once the page is idle, paused under its poster, so a click starts it
+// at once (as the first demo of the old page did). Not with Data Saver on or on a 2G or 3G connection.
+const conn = navigator.connection;
+const lightNet = () => !!(conn && (conn.saveData || /^(slow-)?2g$|^3g$/.test(conn.effectiveType || '')));
+const preKey = () => S.f + (S.vert ? '-45' : '');
+const idle = fn => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 2500 }) : setTimeout(fn, 1200));
+const start = fr => fr.contentWindow.postMessage({ mapdemo: 'key', key: ' ' }, '*');   // the player's own play / pause key
+function preloadFeatured() {
+  if (S.fOn || !modal.hidden || lightNet() || S.pre === preKey()) return;
+  S.pre = preKey(); S.fReady = false; S.playOnReady = false;
+  fFrame.classList.add('pre'); fFrame.tabIndex = -1; fFrame.setAttribute('aria-hidden', 'true'); fFrame.hidden = false;
+  fFrame.src = url(byId(S.f), false) + '&paused';
+}
 function playFeatured(keepTime) {
   closeModal(true);
-  const d = byId(S.f);
+  const d = byId(S.f), ready = !keepTime && S.pre === preKey();
   if (!keepTime) S.t = 0;
-  S.fOn = true; fPoster.hidden = true; fFrame.hidden = false;
-  fFrame.src = url(d, keepTime);
+  S.fOn = true; S.pre = null; fPoster.hidden = true; fFrame.hidden = false;
+  fFrame.classList.remove('pre'); fFrame.removeAttribute('aria-hidden'); fFrame.removeAttribute('tabindex');
+  if (ready) {
+    // already loaded under the poster: start it now, or the moment it is ready
+    if (S.fReady) start(fFrame); else S.playOnReady = true;
+  } else {
+    fFrame.src = url(d, keepTime);
+  }
   try { fFrame.focus(); } catch {}
 }
 function stopFeatured() {
-  if (!S.fOn) return;
-  S.fOn = false; fFrame.src = 'about:blank'; fFrame.hidden = true; fPoster.hidden = false;
+  if (!S.fOn && !S.pre) return;
+  S.fOn = false; S.pre = null; S.playOnReady = false; fFrame.src = 'about:blank'; fFrame.hidden = true; fPoster.hidden = false;
 }
 fPoster.addEventListener('click', () => playFeatured(false));
 // "Watch the work" goes to the featured player and starts it (the click lets it play with sound)
@@ -506,7 +528,7 @@ $('watch').addEventListener('click', e => {
 document.querySelectorAll('[data-f]').forEach(b => b.addEventListener('click', () => {
   if (b.dataset.f === S.f) return;
   const was = S.fOn; showFeatured(b.dataset.f);
-  if (was) playFeatured(false);
+  if (was) playFeatured(false); else preloadFeatured();
 }));
 // arrow keys move between the two tabs, as in a tab list
 document.querySelector('[role="tablist"]').addEventListener('keydown', e => {
@@ -550,6 +572,7 @@ function closeModal(quiet) {
   mFrame.src = 'about:blank'; S.m = null;
   history.replaceState(null, '', location.pathname + location.search);
   if (!quiet && lastFocus) lastFocus.focus({ preventScroll: true });
+  idle(preloadFeatured);
 }
 const step = k => { const i = DEMOS.findIndex(d => d.id === S.m); openModal(DEMOS[(i + k + DEMOS.length) % DEMOS.length].id); };
 $('mPrev').onclick = () => step(-1);
@@ -578,6 +601,7 @@ function setVert(v) {
   fitFeatured();
   if (!modal.hidden) loadModal(true);
   else if (S.fOn) playFeatured(true);
+  else if (S.pre) preloadFeatured();
   $('fOpen').href = openUrl(byId(S.f));
 }
 document.querySelectorAll('[data-ar]').forEach(b => {
@@ -594,6 +618,11 @@ document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () =
 // ── the players report back (only the one that is playing counts)
 const active = () => (!modal.hidden ? mFrame : S.fOn ? fFrame : null);
 addEventListener('message', e => {
+  // the featured demo loading under its poster says when it is ready to start
+  if (e.source === fFrame.contentWindow && e.data && e.data.mapdemo === 'ready' && !S.fReady) {
+    S.fReady = true;
+    if (S.playOnReady) { S.playOnReady = false; start(fFrame); }
+  }
   const fr = active(); if (!fr || e.source !== fr.contentWindow) return;
   const d = e.data; if (!d || typeof d !== 'object') return;
   if (d.mapdemo === 'time') { S.t = d.t; S.playing = d.playing; }
@@ -660,6 +689,7 @@ topBtn();
 showFeatured(S.f);
 fitFeatured();
 readHash();
+if (document.readyState === 'complete') idle(preloadFeatured); else addEventListener('load', () => idle(preloadFeatured));
 </script>
 <?php if ( function_exists( 'rs_stats_beacon' ) ) { rs_stats_beacon(); } ?>
 </body>

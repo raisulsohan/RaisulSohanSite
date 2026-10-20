@@ -12,11 +12,13 @@
 <script src="lib/city.js?v=3eafbebb"></script>
 <script src="data/korea/geo.js?v=7ad4aba1"></script>
 <script src="lib/player.js?v=0d740b1f"></script>
+<!-- the three.js add-ons that Hormuz imports ask for "three" by its bare name: one URL, so only one copy loads (the same as demo 04) -->
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }</script>
 <script>
 // The demos register here. showreel/clips.js wraps each demo's own script (node showreel/build.mjs makes it).
 window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { this.clips[id] = o; }).catch(e => console.warn(`showreel: demo ${id} did not load`, e))); } };
 </script>
-<script src="showreel/clips.js?v=5141e6da"></script>
+<script src="showreel/clips.js?v=1bf6c41c"></script>
 <style>
   #loader { display: none !important; }
   #reelLoad { position: absolute; inset: 0; display: grid; place-content: center; gap: 26px; background: #05070b; color: #e8ecf3; text-align: center;
@@ -24,15 +26,22 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
   #reelLoad b { font: 400 150px Anton, Impact, sans-serif; letter-spacing: 3px; line-height: 1; }
   #reelLoad i { display: block; width: 720px; height: 6px; margin: 0 auto; border-radius: 3px; background: #1a1f29; overflow: hidden; }
   #reelLoad i span { display: block; width: 0; height: 100%; background: #ffcc2e; transition: width .3s; }
+  /* a demo shown live (Hormuz: WebGL + CSS 3D words + DOM tags) sits between the reel's picture canvas and its overlay canvas */
+  .reel-live { position: absolute; left: 0; top: 0; overflow: hidden; transform-origin: 50% 50%; background: #06121a; }
+  .reel-live > canvas { position: absolute; left: 0; top: 0; display: block; }
+  /* the grain: one canvas over everything, blended like the old in-canvas grain ('overlay' at 4.5 %) */
+  #stage > canvas.reel-grain { mix-blend-mode: overlay; opacity: .045; pointer-events: none; }
 </style>
 </head>
 <body>
 <script>
-// Map animation showreel: 20 s at 120 BPM, so a beat is 0.5 s and a bar is 2 s. Every cut, word and hit sits on that grid.
+// Map animation showreel: 22 s at 120 BPM, so a beat is 0.5 s and a bar is 2 s. Every cut, word and hit sits on that grid.
 // The pictures are the real demos, played through time-remaps; the reel adds the type, the transitions and its own score.
 //   0 – 2   hook: MAPS · THAT · MOVE, each word a window onto a demo; the camera dives through the last word
-//   2 – 17  montage: explainer → data → true crime → history, the shots get shorter toward the climax
-//  17 – 20  the drop: a wall of all twelve styles and the end title
+//   2 – 19  montage: explainer → data → true crime → geopolitics → history, the shots get shorter toward the climax
+//  19 – 22  the drop: a wall of all thirteen styles and the end title
+// Layers in #stage: the picture canvas (every canvas demo, the hook, the end card) → a live demo layer (Hormuz, only in its
+// shot: part of its picture is DOM) → the overlay canvas (stamps, pill, flashes, the dip) → the grain canvas.
 (() => {
   const { clamp, lerp, prog, ease: E } = K;
   const BEAT = .5;
@@ -42,17 +51,22 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
     EXPLAINER: { col: '#ffcc2e', ink: '#14120e' },
     DATA: { col: '#4fe3ff', ink: '#03131d' },
     'TRUE CRIME': { col: '#ff2d3d', ink: '#ffffff' },
+    GEOPOLITICS: { col: '#ff7a1e', ink: '#1a0b02' },   // the missile flare of the Hormuz piece
     HISTORY: { col: '#8fb3ff', ink: '#06122a' },
   };
   const NAME = {
     '01': ['VOX EXPLAINER', 'EXPLAINER'], '02': ['GLOBE DIVE', 'EXPLAINER'], '03': ['NEON DATA ROUTES', 'DATA'], '04': ['3D DATA MAP', 'DATA'],
     '05': ['EVIDENCE BOARD', 'TRUE CRIME'], '06': ['SURVEILLANCE', 'TRUE CRIME'], '07': ['CASE DOSSIER', 'TRUE CRIME'], '08': ['SEARCH GRID', 'TRUE CRIME'],
     '09': ['VOX CITY REVEAL', 'EXPLAINER'], '10': ['NIGHT GOLD CITY', 'EXPLAINER'], '11': ['SHIFTING SHORES', 'EXPLAINER'], '12': ['WAR FRONT MAP', 'HISTORY'],
+    '13': ['STRAIT OF HORMUZ', 'GEOPOLITICS'],
   };
+  const COUNT = String(Object.keys(NAME).length);
+  // demos shown live in their own DOM layer, and the file each cut uses (13v = the re-laid-out 4:5 file of the same piece)
+  const LIVE = { '13': { h: '13', v: '13v' } };
 
   // ── cut list: reel seconds → demo seconds (linear between keys unless an ease is named; outside the keys it runs on at the edge speed)
   const SHOTS = [
-    { id: '02', a: 1.0, b: 4.0, map: [[1.0, 1.7], [2.0, 3.3], [4.0, 6.35]] },                     // seen through "MOVE", then the dive; its flash lands on 4.0
+    { id: '02', a: 2.0, b: 4.0, map: [[1.0, 1.7], [2.0, 3.3], [4.0, 6.35]] },                     // out of the dive through "MOVE", on the downbeat; its flash lands on 4.0
     { id: '01', a: 4.0, b: 6.0, map: [[4.0, 4.0], [6.0, 7.1]] },                                  // rivers draw, labels pop, the halftone starts
     { id: '09', a: 6.0, b: 7.0, map: [[6.0, 1.85], [7.0, 3.65]] },                                // Manhattan fills block by block
     { id: '10', a: 7.0, b: 8.0, map: [[7.0, 2.3], [8.0, 4.4]] },                                  // Dhaka switches on
@@ -62,14 +76,16 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
     { id: '06', a: 12.0, b: 13.0, map: [[12.0, 7.9], [12.5, 8.9], [13.0, 9.35, 'out']] },          // SIGNAL LOST on 12.5
     { id: '08', a: 13.0, b: 14.0, map: [[13.0, 6.9], [14.0, 8.5]] },                              // the find, outside the search zone
     { id: '05', a: 14.0, b: 15.0, map: [[14.0, 7.5], [14.5, 8.2], [15.0, 8.75, 'out']] },          // UNSOLVED on 14.5
-    { id: '12', a: 15.0, b: 17.0, map: [[15.0, 7.0], [16.5, 13.98, 'inOutSine'], [17.0, 14.5, 'out']] },   // a year of war in 1.5 s; China strikes on 16.5
+    { id: '13', a: 15.0, b: 17.0, map: [[15.0, 13.55], [15.5, 13.95], [16.0, 14.55], [17.0, 16.4]] },  // three launches on 15.5 · 15.75 · 16.0, then out over the water
+    { id: '12', a: 17.0, b: 19.0, map: [[17.0, 7.0], [18.5, 13.98, 'inOutSine'], [19.0, 14.5, 'out']] },   // a year of war in 1.5 s; China strikes on 18.5
   ];
   const HOOK = [
     { word: 'MAPS', id: '10', a: 0, b: .5, map: [[0, 3.2], [.5, 3.8]] },
     { word: 'THAT', id: '12', a: .5, b: 1.0, map: [[.5, 9.3], [1.0, 9.9]] },
-    { word: 'MOVE', id: '02', a: 1.0, b: 2.0, map: SHOTS[0].map },
+    { word: 'MOVE', id: '13', a: 1.0, b: 2.0, map: [[1.0, 14.15], [1.25, 14.55], [2.0, 16.3]] },   // Hormuz live in the letters: the third missile off the rail on 1.25, then all three race out
   ];
-  // transitions: d = [s before the cut, s after it]
+  // transitions: d = [s before the cut, s after it]. Next to a live layer only flash and pullOut (made with CSS on the layer
+  // plus the overlay canvas); glitch and RGB split need its pixels.
   const TRANS = [
     { at: 4.0, type: 'flash', d: [.12, .32] },
     { at: 6.0, type: 'push', d: [.12, .12] },
@@ -81,24 +97,27 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
     { at: 13.0, type: 'glitch', d: [.08, .14] },
     { at: 14.0, type: 'pushIn', d: [.12, .16] },
     { at: 15.0, type: 'flash', d: [.08, .3] },
+    { at: 17.0, type: 'pullOut', d: [.1, .24] },
   ];
-  const STAMPS = [[4.0, 'EXPLAINER'], [8.0, 'DATA'], [11.0, 'TRUE CRIME'], [15.0, 'HISTORY']];
-  const IMPACTS = [[0, 5], [.5, 5], [1.0, 5], [2.0, 9], [4.0, 6], [10.0, 14], [12.5, 7], [14.5, 6], [16.5, 12], [17.0, 18]];   // [s, px of shake]
+  const STAMPS = [[4.0, 'EXPLAINER'], [8.0, 'DATA'], [11.0, 'TRUE CRIME'], [15.0, 'GEOPOLITICS'], [17.0, 'HISTORY']];
+  const IMPACTS = [[0, 5], [.5, 5], [1.0, 5], [2.0, 9], [4.0, 6], [10.0, 14], [12.5, 7], [14.5, 6], [15.5, 9], [15.75, 7], [16.0, 8], [18.5, 12], [19.0, 18]];   // [s, px of shake]
+  const DROP = 19.0, BRK = 18.75;   // the end card lands on DROP; BRK → DROP is silent
 
   // ── the score, in code: F minor, 120 BPM (i – VI – III – VII), a break before the drop, Ab major at the end
   const SCORE = {
     master: .5, peak: .89, fadeIn: 0, seed: 2026, wet: .3, root: 56,
     compose({ ac, out, osc, nsrc, filt, env, hz, fx, master }) {
-      const B = BEAT, BRK = 16.75;   // BRK → 17.0 is silent: the drop lands out of nothing
-      const m = SCORE.master; master.gain.setValueAtTime(m, BRK - .03); master.gain.linearRampToValueAtTime(m * .05, BRK + .05); master.gain.setValueAtTime(m * .05, 16.995); master.gain.linearRampToValueAtTime(m, 17);
-      const ok = t => t < BRK - .01 || t >= 17;
-      const CHORD = t => t < 4 ? 'Fm' : t < 6 ? 'Db' : t < 8 ? 'Ab' : t < 10 ? 'Eb' : t < 12 ? 'Fm' : t < 14 ? 'Db' : t < 16 ? 'Ab' : t < 17 ? 'C' : t < 18 ? 'Fm' : t < 19 ? 'Db' : 'Ab';
+      const B = BEAT;   // BRK → DROP is silent: the drop lands out of nothing
+      const m = SCORE.master; master.gain.setValueAtTime(m, BRK - .03); master.gain.linearRampToValueAtTime(m * .05, BRK + .05); master.gain.setValueAtTime(m * .05, DROP - .005); master.gain.linearRampToValueAtTime(m, DROP);
+      const ok = t => t < BRK - .01 || t >= DROP;
+      // i – VI – III – VII round and round (a bar each from 2 s); the half bar before the break is the dominant, C; the drop is i again
+      const CHORD = t => t < 4 ? 'Fm' : t < 6 ? 'Db' : t < 8 ? 'Ab' : t < 10 ? 'Eb' : t < 12 ? 'Fm' : t < 14 ? 'Db' : t < 16 ? 'Ab' : t < 18 ? 'Eb' : t < DROP ? 'C' : t < 20 ? 'Fm' : t < 21 ? 'Db' : 'Ab';
       const BASS = { Fm: 41, Db: 37, Ab: 44, Eb: 39, C: 36 };
       const VOX = { Fm: [65, 68, 72, 77], Db: [65, 68, 73, 77], Ab: [63, 68, 72, 75], Eb: [63, 67, 70, 75], C: [64, 67, 72, 76] };
 
       // sidechain: pads and bass dip under every kick
       const pump = ac.createGain(); out(pump, .2);
-      const KICKS = [0, .5, 1.0]; for (let t = 2; t < BRK; t += B) KICKS.push(t); KICKS.push(17, 18);
+      const KICKS = [0, .5, 1.0]; for (let t = 2; t < BRK; t += B) KICKS.push(t); KICKS.push(DROP, DROP + 1);
       for (const t of KICKS) { pump.gain.setValueAtTime(.3, t); pump.gain.setTargetAtTime(1, t + .02, .08); }
 
       const kick = (t, v = .85) => {
@@ -141,20 +160,29 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
         const o = osc('triangle', 200, t, .1), g2 = ac.createGain(); o.frequency.exponentialRampToValueAtTime(140, t + .08); env(g2, t, .001, v * .5, .07); o.connect(g2); out(g2, .1);
       };
       const crash = (t, v = .14, d = 1.6) => { const s = nsrc(t, d), f = filt('highpass', 5000), g = ac.createGain(); env(g, t, .002, v, d); s.connect(f).connect(g); out(g, .5); };
+      const sonar = (t, ch, v = .05) => {   // a radar ping: a high sine on the chord's top note that bends down a little and rings out in the reverb
+        const n = VOX[ch][3] + 12, o = osc('sine', hz(n), t, .9), g = ac.createGain(); o.frequency.exponentialRampToValueAtTime(hz(n) * .97, t + .6);
+        env(g, t, .003, v, .7); o.connect(g); out(g, .9, .15);
+      };
+      const ignite = (t, v = .3, pan = 0) => {        // a missile off the rail: a hard noise burst that roars down
+        const s = nsrc(t, .7), f = filt('lowpass', 6000, .7), g = ac.createGain(); f.frequency.setValueAtTime(6000, t); f.frequency.exponentialRampToValueAtTime(500, t + .6);
+        env(g, t, .002, v, .6); s.connect(f).connect(g); out(g, .35, pan);
+      };
       const sub = (t, n, d, v = .45) => { const o = osc('sine', hz(n), t, d), g = ac.createGain(); o.frequency.exponentialRampToValueAtTime(hz(n) * .5, t + d); env(g, t, .01, v, d); o.connect(g); out(g, 0); };
 
       // ── hook (0 – 2): three words, three hits; a riser and a whoosh carry the dive through "MOVE"
       for (const t of [0, .5, 1.0]) { kick(t, .9); sub(t, 29, .5, .32); stab(t, VOX.Fm.map(n => n - 12), .035, .3, 1400); fx.tick(t, .18); }
       pad(0, 2, VOX.Fm, .015, 600);
       fx.riser(1.0, 1.0, .2); fx.whoosh(1.5, .5, .36);
+      ignite(1.25, .24, .25); fx.boom(1.25, .22); fx.whoosh(1.3, .45, .18);   // "MOVE": the third missile off the rail, then the race out
 
-      // ── groove (2 – 16.75)
+      // ── groove (2 – 18.75)
       crash(2, .13, 1.6);
       for (let t = 2; t < BRK - 1e-6; t += B) {
         const ch = CHORD(t), beat = Math.round(t / B) % 4, bn = BASS[ch];
         kick(t, .8);
-        if (t >= 4 && t < 15 && beat % 2) clap(t, .28);
-        if (t < 8 || t >= 15) { if (ok(t + B / 2)) hat(t + B / 2, .055, t >= 15); }
+        if (t >= 4 && t < 17 && beat % 2) clap(t, .28);
+        if (t < 8 || t >= 17) { if (ok(t + B / 2)) hat(t + B / 2, .055, t >= 17); }
         else for (let k = 0; k < 4; k++) hat(t + k * B / 4, k === 2 ? .06 : .032, false, k % 2 ? .25 : -.15);
         if (t < 8) { if (ok(t + B / 2)) bass(t + B / 2, bn, .2, .14); }
         else for (let k = 1; k < 4; k++) if (ok(t + k * B / 4)) bass(t + k * B / 4, bn + (k === 3 ? 12 : 0), .1, .1);
@@ -163,11 +191,12 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
           for (let k = 0; k < 4; k++) { const s = Math.round(t / B) * 4 + k, n = v[[0, 1, 2, 3, 2, 1, 3, 2][s % 8]] + (s % 16 >= 8 ? 12 : 0); pluck(t + k * B / 4, n, t < 8 ? .045 : .036, t < 8 ? 'triangle' : 'square', t < 8 ? 3200 : 1800, k % 2 ? .3 : -.3); }
         }
         if (t >= 11 && t < 15) for (let k = 0; k < 4; k++) fx.tick(t + k * B / 4, k ? .045 : .08);   // true crime: a clock in 16ths
-        if (t >= 15) { tom(t, 45, .28); if (ok(t + B / 2)) tom(t + B / 2, 41, .2); }               // history: war drums
+        if (t >= 15 && t < 17) { sonar(t, ch); }                                                    // geopolitics: a radar ping on every beat
+        if (t >= 17) { tom(t, 45, .28); if (ok(t + B / 2)) tom(t + B / 2, 41, .2); }               // history: war drums
       }
       for (let t = 2; t < BRK; t += 2) { const t1 = Math.min(t + 2, BRK); pad(t, t1, VOX[CHORD(t)], .02, t >= 11 && t < 15 ? 650 : 950, t1 === BRK ? .04 : .3); }
-      for (let t = 16, k = 0; t < BRK - .01; k++) { snare(t, .08 + .18 * (t - 16) / .75); t += k < 4 ? B / 4 : B / 8; }   // roll into the break
-      fx.riser(15.0, 1.75, .26);
+      for (let t = 18, k = 0; t < BRK - .01; k++) { snare(t, .08 + .18 * (t - 18) / .75); t += k < 4 ? B / 4 : B / 8; }   // roll into the break
+      fx.riser(17.0, 1.75, .26);
 
       // ── transitions
       fx.hit(4, .45); crash(4, .1, 1.2); fx.shimmer(4.02, .06);
@@ -183,24 +212,30 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
       for (const t of [13.12, 13.22, 13.32]) fx.blip(t, 1.3, .06);
       fx.whoosh(13.87, .3, .28);
       fx.boom(14.5, .55);
-      fx.hit(15, .42); crash(15, .1, 1.2);
-      fx.boom(16.5, .45);
+      fx.hit(15, .42); crash(15, .1, 1.2); fx.blip(15.02, .75, .05);   // geopolitics: the flash in, a lock-on blip
+      // Hormuz: three launches on 15.5 · 15.75 · 16.0 (8ths), then the missiles streak out over the water until the cut
+      [[15.5, .4, .34], [15.75, .26, .28], [16.0, .34, .3]].forEach(([t, b, ig], i) => { fx.boom(t, b); ignite(t, ig, (i - 1) * .3); });
+      fx.whoosh(16.02, .9, .3); fx.whoosh(16.3, .7, .2);
+      fx.whoosh(16.86, .3, .26);                                       // the pull-out to the war map
+      fx.hit(17, .4); crash(17, .09, 1.2);
+      fx.boom(18.5, .45);
 
-      // ── the drop (17) and the end title
-      kick(17, 1); sub(17, 29, 1.8, .5); crash(17, .2, 2.4); fx.boom(17, .6); fx.shimmer(17.02, .09);
-      stab(17, VOX.Fm, .075, .7, 3400); stab(17, VOX.Fm.map(n => n - 12), .045, .7, 2000);
-      pad(17, 18, VOX.Fm, .026, 1500); pad(18, 19, VOX.Db, .026, 1500); pad(19, 20.4, VOX.Ab, .028, 1600);
-      fx.hit(17.4, .22); fx.whoosh(17.66, .34, .2);
-      kick(18, .65); stab(18, VOX.Db, .042, .5, 2600); crash(18, .07, 1.4);
-      fx.type(18.0, 14, .4, .1); fx.type(18.1, 12, .3, .08);   // the genre line and the contact heading type themselves
-      fx.pop(18.2, 1.2, .12); fx.pop(18.32, 1.5, .12);         // the contact chips land
-      stab(19, VOX.Ab, .038, 1.2, 2200); fx.shimmer(19, .07); fx.note(19, 44, .12, 1.6);
+      // ── the drop (19) and the end title
+      const D = DROP;
+      kick(D, 1); sub(D, 29, 1.8, .5); crash(D, .2, 2.4); fx.boom(D, .6); fx.shimmer(D + .02, .09);
+      stab(D, VOX.Fm, .075, .7, 3400); stab(D, VOX.Fm.map(n => n - 12), .045, .7, 2000);
+      pad(D, D + 1, VOX.Fm, .026, 1500); pad(D + 1, D + 2, VOX.Db, .026, 1500); pad(D + 2, D + 3.4, VOX.Ab, .028, 1600);
+      fx.hit(D + .4, .22); fx.whoosh(D + .66, .34, .2);
+      kick(D + 1, .65); stab(D + 1, VOX.Db, .042, .5, 2600); crash(D + 1, .07, 1.4);
+      fx.type(D + 1.0, 14, .4, .1); fx.type(D + 1.1, 12, .3, .08);   // the genre line and the contact heading type themselves
+      fx.pop(D + 1.2, 1.2, .12); fx.pop(D + 1.32, 1.5, .12);         // the contact chips land
+      stab(D + 2, VOX.Ab, .038, 1.2, 2200); fx.shimmer(D + 2, .07); fx.note(D + 2, 44, .12, 1.6);
     },
   };
 
   MapPlayer({
     title: 'Map Animation Showreel',
-    DUR: 20,
+    DUR: 22,
     score: SCORE,
     async setup(stage, { W, H, FPS, VERT }) {
       const U = Math.min(W, H) / 1080, inExpo = u => u <= 0 ? 0 : Math.pow(2, 10 * u - 10);
@@ -216,23 +251,31 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
 
       // most demos need the same world map: fetch it once
       const lw = K.loadWorld, worlds = {}; K.loadWorld = res => worlds[res] || (worlds[res] = lw(res));
-      // thumbnails: the end wall, and a stand-in for any demo that cannot load
+      // thumbnails: the end wall, and a stand-in for any demo that cannot load (a live demo's 4:5 file has its own 4:5 still)
       const thumbs = {};
-      const thumbJobs = Object.keys(NAME).map(id => new Promise(res => { const i = new Image(); i.onload = () => { thumbs[id] = i; res(); }; i.onerror = res; i.src = `thumbs/${id}.jpg`; }));
+      const thumbJobs = [...Object.keys(NAME), ...Object.values(LIVE).map(l => l.v)].map(id => new Promise(res => { const i = new Image(); i.onload = () => { thumbs[id] = i; res(); }; i.onerror = res; i.src = `thumbs/${id}.jpg`; }));
 
-      // every demo gets its own detached stage; its canvases are read from there each frame
-      const C = {}, ids = Object.keys(REEL.clips).sort(); let done = 0;
+      // every canvas demo gets its own detached stage; its canvases are read from there each frame.
+      // A live demo gets a layer in #stage instead (in the page while it sets up, hidden: its tags measure their text);
+      // only the file of this cut is set up (13 for 16:9, 13v for 4:5), and it is kept under the shot's id.
+      const C = {}, other = new Set(Object.values(LIVE).map(l => VERT ? l.h : l.v));
+      const ids = Object.keys(REEL.clips).filter(id => !other.has(id)).sort(); let done = 0;
       say(`PREPARING ${ids.length} MAPS`, 0);
       await Promise.all(ids.map(async id => {
-        const o = REEL.clips[id], el = document.createElement('div'), dur = o.DUR || 10;
-        try { const draw = await o.setup(el, { W, H, FPS, DUR: dur, VERT }); C[id] = { draw, dur, cvs: [...el.querySelectorAll('canvas')] }; }
-        catch (e) { console.warn(`showreel: demo ${id} failed, its thumbnail stands in`, e); }
+        const o = REEL.clips[id], dur = o.DUR || 10, key = Object.keys(LIVE).find(k => LIVE[k].h === id || LIVE[k].v === id), el = document.createElement('div');
+        if (key) { el.className = `reel-live reel-${id}`; Object.assign(el.style, { width: W + 'px', height: H + 'px', visibility: 'hidden' }); stage.appendChild(el); }
+        try { const draw = await o.setup(el, { W, H, FPS, DUR: dur, VERT }); C[key || id] = key ? { draw, dur, live: el } : { draw, dur, cvs: [...el.querySelectorAll('canvas')] }; }
+        catch (e) { console.warn(`showreel: demo ${id} failed, its thumbnail stands in`, e); if (key) el.remove(); }
         say(`PREPARING MAPS   ${++done} / ${ids.length}`, done / ids.length);
       }));
       await Promise.all(thumbJobs);
-      box.remove();
+      if (VERT) for (const k in LIVE) if (thumbs[LIVE[k].v]) thumbs['stand' + k] = thumbs[LIVE[k].v];
 
-      const cv = K.canvas(W, H); stage.appendChild(cv); const g = cv.getContext('2d');
+      // the picture canvas under the live layers, the overlay canvas and the grain over them
+      const cv = K.canvas(W, H); stage.insertBefore(cv, stage.firstChild); const g0 = cv.getContext('2d');
+      const cvO = K.canvas(W, H); stage.appendChild(cvO); const gO = cvO.getContext('2d');
+      const cvG = K.canvas(W, H); cvG.className = 'reel-grain'; stage.appendChild(cvG); const gG = cvG.getContext('2d');
+      let g = g0;   // the context the drawing helpers use: the picture, or the overlay while the overlays are drawn
       const grain = K.grainTile(7, 256, 60);
       let frameNo = 0, SH = { x: 0, y: 0, s: 1 };
       const cache = new Map();
@@ -243,7 +286,7 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
         const c = C[id] || (C[id] = { stand: true }); let out;
         if (c.stand) {   // the thumbnail with a slow push
           if (!c.comp) c.comp = K.canvas(W, H);
-          const x = c.comp.getContext('2d'), im = thumbs[id]; x.fillStyle = '#0a0c10'; x.fillRect(0, 0, W, H);
+          const x = c.comp.getContext('2d'), im = thumbs['stand' + id] || thumbs[id]; x.fillStyle = '#0a0c10'; x.fillRect(0, 0, W, H);
           if (im) { const s = Math.max(W / im.width, H / im.height) * (1.04 + .015 * ct); x.drawImage(im, (W - im.width * s) / 2, (H - im.height * s) / 2, im.width * s, im.height * s); }
           out = c.comp;
         } else {
@@ -265,6 +308,22 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
       }
       const shotAt = t => SHOTS.find(s => t >= s.a && t < s.b) || SHOTS[SHOTS.length - 1];
       const shotPic = (s, t) => pic(s.id, remap(s.map, t));
+
+      // a live demo in its layer: CSS moves it (scale about the centre, shake, fade, blur), the demo draws itself.
+      // A layer not shown in a frame is display:none and its draw is not called.
+      const isLive = s => !!(C[s.id] && C[s.id].live), shown = new Set();
+      function liveAt(s, t, { s: k = 1, a = 1, blur = 0 } = {}) {
+        const c = C[s.id], st = c.live.style; shown.add(c);
+        st.display = ''; st.transform = `translate(${SH.x.toFixed(2)}px, ${SH.y.toFixed(2)}px) scale(${(k * SH.s).toFixed(5)})`;
+        st.opacity = a < 1 ? a.toFixed(3) : ''; st.filter = blur > .5 ? `blur(${blur.toFixed(1)}px)` : ''; st.clipPath = '';
+        c.draw(clamp(remap(s.map, t), 0, c.dur - 1 / FPS), frameNo);
+      }
+      const blank = () => { g0.fillStyle = '#06121a'; g0.fillRect(0, 0, W, H); };   // the picture canvas behind a full-frame layer
+      // the first frame of a WebGL scene compiles its shaders and uploads its textures: do that now, not on the cut
+      for (const s of SHOTS) if (isLive(s)) {
+        const c = C[s.id]; for (const t of [s.a, (s.a + s.b) / 2, s.b]) c.draw(clamp(remap(s.map, t), 0, c.dur - 1 / FPS), 0);
+        Object.assign(c.live.style, { display: 'none', visibility: '' });
+      }
 
       // ── drawing helpers: a frame scaled about (cx, cy), optionally soft (blur px); and a zoom streak (a few soft copies, averaged: copy i at alpha 1/(i+1))
       function put(src, { s = 1, x = 0, y = 0, a = 1, cx = W / 2, cy = H / 2, blur = 0 } = {}) {
@@ -383,6 +442,24 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
           const k = 1 - Math.abs(t - x.at) / .1; if (k > 0) { g.fillStyle = `rgba(255,255,255,${(k * .5).toFixed(3)})`; g.fillRect(0, 0, W, H); }
         },
       };
+      // the same two moves with a live layer on one side (a, b: the shots): the layer moves by CSS, a canvas shot that must sit
+      // above the layer is drawn on the overlay canvas, and the flash goes there too. The curves match TR.flash / TR.pullOut.
+      const TRL = {
+        flash(t, x, a, b) {
+          const pre = t < x.at, s = pre ? a : b, sc = pre ? 1 : 1 + .05 * (1 - E.outExpo(prog(t, x.at, x.at + .35)));
+          if (isLive(s)) { blank(); liveAt(s, t, { s: sc }); } else put(shotPic(s, t), { s: sc });
+          const k = pre ? E.in(prog(t, x.at - x.d[0], x.at)) : Math.pow(1 - prog(t, x.at, x.at + x.d[1]), 2);
+          gO.fillStyle = `rgba(255,251,240,${(k * .92).toFixed(3)})`; gO.fillRect(0, 0, W, H);
+        },
+        pullOut(t, x, a, b) {   // the old shot shrinks away over the new one (a layer has no zoom streak, so it fades a little later and shrinks further)
+          const u = prog(t, x.at - x.d[0], x.at + x.d[1]), sB = lerp(1.7, 1, E.outExpo(u)), la = isLive(a);
+          const sA = la ? lerp(1, .35, E.inOut(u)) : lerp(1, .3, E.in(u)), aA = la ? 1 - E.in(prog(u, .35, .95)) : 1 - E.inOut(prog(u, .2, .6));
+          if (isLive(b)) { blank(); liveAt(b, t, { s: sB, blur: 14 * U * (1 - E.outExpo(u)) }); } else zoomBlur(shotPic(b, t), { s: sB }, .1 * (1 - u), 14 * U * (1 - E.outExpo(u)));
+          if (aA <= 0) return;
+          if (isLive(a)) liveAt(a, t, { s: sA, a: aA, blur: 10 * U * u });
+          else { g = gO; zoomBlur(shotPic(a, t), { s: sA, a: aA }, .12 * u, 10 * U * u); g = g0; }
+        },
+      };
 
       // ── hook: one type size for the three words.
       //    16:9: one word at a time, centred, the widest fills 84 % of the frame.
@@ -408,11 +485,28 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
         return best;
       })();
 
+      // a live demo seen through a word: its layer is clipped by an SVG clipPath holding the same word (font, size, transform)
+      const clipSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      Object.assign(clipSvg.style, { position: 'absolute', width: 0, height: 0 });
+      clipSvg.innerHTML = `<defs><clipPath id="hookClip" clipPathUnits="userSpaceOnUse"><text text-anchor="middle" font-family="Anton" font-size="${FS}"></text><circle r="0"></circle></clipPath></defs>`;
+      stage.appendChild(clipSvg); const clipText = clipSvg.querySelector('text'), clipDisc = clipSvg.querySelector('circle');
+      // the dive: a disc grows out of the dive point inside the stroke, so the picture fills the whole frame before the cut on 2.0
+      // (the letters alone leave dark wedges beside a diagonal stroke, which show against a bright map)
+      function liveWord(h, t, base, tf, dy, zu) {
+        const c = C[h.id], st = c.live.style, m = new DOMMatrix().translate(0, -dy).multiply(tf);   // in the layer's own box (the layer is moved by dy)
+        clipDisc.setAttribute('cx', (ZP[0] + SH.x).toFixed(1)); clipDisc.setAttribute('cy', (ZP[1] + SH.y - dy).toFixed(1));
+        clipDisc.setAttribute('r', (Math.hypot(W, H) * E.inOut(prog(zu, .5, .95))).toFixed(1));
+        clipText.textContent = h.word; clipText.setAttribute('x', W / 2); clipText.setAttribute('y', base);
+        clipText.setAttribute('transform', `matrix(${[m.a, m.b, m.c, m.d, m.e, m.f].map(v => +v.toFixed(5)).join(' ')})`);
+        shown.add(c); st.display = ''; st.transform = `translate(0px, ${dy.toFixed(2)}px)`; st.opacity = ''; st.filter = ''; st.clipPath = 'url(#hookClip)';
+        c.draw(clamp(remap(h.map, t), 0, c.dur - 1 / FPS), frameNo);
+      }
+
       function furniture(t, a) {   // viewfinder corners and labels around the hook
         const m = 44 * U, l = 40 * U, F = mono(500, 20), col = 'rgba(232,236,243,.82)';
         g.save(); g.globalAlpha = a; g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 2 * U;
         for (const [x, y, sx, sy] of [[m, m, 1, 1], [W - m, m, -1, 1], [m, H - m, 1, -1], [W - m, H - m, -1, -1]]) { g.beginPath(); g.moveTo(x, y + sy * l); g.lineTo(x, y); g.lineTo(x + sx * l, y); g.stroke(); }
-        const tl = 'MAP ANIMATION', tr = 'SHOWREEL 2026', bl = '12 STYLES  ·  4 GENRES', f = Math.floor(t * FPS + 1e-6);
+        const tl = 'MAP ANIMATION', tr = 'SHOWREEL 2026', bl = `${COUNT} STYLES  ·  ${Object.keys(SEC).length} GENRES`, f = Math.floor(t * FPS + 1e-6);
         const tc = `00:00:${String(Math.floor(f / FPS)).padStart(2, '0')}:${String(f % FPS).padStart(2, '0')}`;
         K.text(g, scramble(tl, t, .05, .45), m + 18 * U, m + 34 * U, { font: F, color: col, spacing: 3 });
         textAt(scramble(tr, t, .1, .5), tr, W - m - 18 * U, m + 34 * U, { font: F, color: col, spacing: 3, align: 'right' });
@@ -440,16 +534,21 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
           mg.font = `400 ${FS}px Anton`; mg.textAlign = 'center'; mg.fillStyle = '#fff'; mg.fillText(h.word, W / 2, base);
           // 4:5: the map is moved so its middle sits behind the word's row (and slides back to full frame during the dive)
           const dy = STACK ? (wy - H / 2) * (i === HOOK.length - 1 ? 1 - E.inOut(zu) : 1) : 0;
-          lg.globalCompositeOperation = 'copy'; lg.drawImage(live ? pic(h.id, remap(h.map, t)) : held(i), 0, dy);
-          lg.globalCompositeOperation = 'destination-in'; lg.drawImage(mask, 0, 0); lg.globalCompositeOperation = 'source-over';
-          g.save(); g.globalAlpha = live ? 1 : .5 * furn; g.drawImage(lay, 0, 0); g.restore();
+          const inLayer = live && isLive(h);   // a live demo: its own layer, so the flash and the outline go on the overlay canvas above it
+          if (inLayer) { liveWord(h, t, base, tf, dy, i === HOOK.length - 1 ? zu : 0); g = gO; }
+          else {
+            lg.globalCompositeOperation = 'copy'; lg.drawImage(live ? pic(h.id, remap(h.map, t)) : held(i), 0, dy);
+            lg.globalCompositeOperation = 'destination-in'; lg.drawImage(mask, 0, 0); lg.globalCompositeOperation = 'source-over';
+            g.save(); g.globalAlpha = live ? 1 : .5 * furn; g.drawImage(lay, 0, 0); g.restore();
+          }
           const fl = 1 - prog(t, h.a, h.a + .13); if (fl > 0) { g.save(); g.globalAlpha = fl * .95; g.drawImage(mask, 0, 0); g.restore(); }   // each word lands white, then opens onto its map
           if (furn > 0) {   // a thin outline keeps the word readable where its map is dark
             g.save(); g.setTransform(tf); g.font = `400 ${FS}px Anton`; g.textAlign = 'center'; g.strokeStyle = `rgba(255,255,255,${((live ? .4 : .3) * furn).toFixed(3)})`;
             g.lineWidth = 2 * U / (zs * es); g.strokeText(h.word, W / 2, base); g.restore();
           }
+          g = g0;
         }
-        if (furn > 0) furniture(t, furn);
+        if (furn > 0) { g = gO; furniture(t, furn); g = g0; }   // over the words (and over a live word's layer)
       }
       // a word that is no longer the newest keeps its map's last frame (made once, so scrubbing stays exact)
       const helds = {};
@@ -461,10 +560,12 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
       // ── montage
       function montage(t) {
         const x = TRANS.find(x => t >= x.at - x.d[0] && t < x.at + x.d[1]);
-        if (x) { const a = shotAt(x.at - 1e-4), b = shotAt(x.at); TR[x.type](t, x, () => shotPic(a, t), () => shotPic(b, t)); }
-        else put(shotPic(shotAt(t), t));
-        const dk = E.in(prog(t, 16.8, 17.0)); if (dk > 0) { g.fillStyle = `rgba(0,0,0,${(dk * .85).toFixed(3)})`; g.fillRect(0, 0, W, H); }   // dip before the drop
+        if (x) {
+          const a = shotAt(x.at - 1e-4), b = shotAt(x.at);
+          if (isLive(a) || isLive(b)) TRL[x.type](t, x, a, b); else TR[x.type](t, x, () => shotPic(a, t), () => shotPic(b, t));
+        } else { const s = shotAt(t); if (isLive(s)) { blank(); liveAt(s, t); } else put(shotPic(s, t)); }
       }
+      function dip(t) { const dk = E.in(prog(t, DROP - .2, DROP)); if (dk > 0) { g.fillStyle = `rgba(0,0,0,${(dk * .85).toFixed(3)})`; g.fillRect(0, 0, W, H); } }   // dip before the drop
       // a group title on a colour bar that wipes in and out (0.85 s)
       function stamps(t) {
         STAMPS.forEach(([t0, word], i) => {
@@ -478,13 +579,13 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
           K.text(g, word, x0 + pad - (1 - E.outExpo(prog(u, .04, .32))) * fs * .5 + u * 26 * U, yc + fs * .37, { font: F, color: S.ink, spacing: 2 * U });
           g.restore();
           const ta = E.out(prog(u, .08, .2)) * (1 - prog(u, .55, .7));
-          K.text(g, `0${i + 1} / 04`, x0, yc - bh / 2 - 18 * U, { font: mono(700, 20), color: '#fff', spacing: 4, alpha: ta, shadow: ['rgba(0,0,0,.6)', 8] });
+          K.text(g, `0${i + 1} / 0${STAMPS.length}`, x0, yc - bh / 2 - 18 * U, { font: mono(700, 20), color: '#fff', spacing: 4, alpha: ta, shadow: ['rgba(0,0,0,.6)', 8] });
         });
       }
       // the style's name in a pill at the bottom; it re-types itself on every cut
-      const pillW = id => { const [nm, sec] = NAME[id]; g.font = mono(700, 17); g.letterSpacing = '3px'; const a = g.measureText(sec).width; g.font = mono(500, 20); g.letterSpacing = '2px'; const b = g.measureText(`${id} / 12   ${nm}`).width; g.letterSpacing = '0px'; return [a, b]; };
+      const pillW = id => { const [nm, sec] = NAME[id]; g.font = mono(700, 17); g.letterSpacing = '3px'; const a = g.measureText(sec).width; g.font = mono(500, 20); g.letterSpacing = '2px'; const b = g.measureText(`${id} / ${COUNT}   ${nm}`).width; g.letterSpacing = '0px'; return [a, b]; };
       function pill(t) {
-        const a = E.out(prog(t, 2.05, 2.35)) * (1 - prog(t, 16.6, 16.85)); if (a <= 0) return;
+        const a = E.out(prog(t, 2.05, 2.35)) * (1 - prog(t, DROP - .4, DROP - .15)); if (a <= 0) return;
         const i = SHOTS.indexOf(shotAt(t)), s = SHOTS[i], [nm, sec] = NAME[s.id], since = t - Math.max(s.a, 2.0);
         const ph = 46 * U, pad = 22 * U, dot = 10 * U, gap = 16 * U, wOf = id => { const [p, q] = pillW(id); return pad * 2 + dot + gap + p + gap * 1.6 + q; };
         const w = i > 0 && since < .3 ? lerp(wOf(SHOTS[i - 1].id), wOf(s.id), E.outExpo(since / .3)) : wOf(s.id), [ws] = pillW(s.id);
@@ -493,26 +594,36 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
         g.fillStyle = 'rgba(6,8,12,.74)'; g.beginPath(); g.roundRect(x, y, w, ph, ph / 2); g.fill(); g.strokeStyle = 'rgba(255,255,255,.14)'; g.lineWidth = 1.5 * U; g.stroke(); g.clip();
         g.fillStyle = col; g.beginPath(); g.arc(x + pad + dot / 2, y + ph / 2, dot / 2, 0, 7); g.fill();
         K.text(g, sec, x + pad + dot + gap, y + ph / 2 + 6 * U, { font: mono(700, 17), color: col, spacing: 3 });
-        K.text(g, scramble(`${s.id} / 12   ${nm}`, since, 0, .3), x + pad + dot + gap + ws + gap * 1.6, y + ph / 2 + 7 * U, { font: mono(500, 20), color: '#f0f3f8', spacing: 2 });
+        K.text(g, scramble(`${s.id} / ${COUNT}   ${nm}`, since, 0, .3), x + pad + dot + gap + ws + gap * 1.6, y + ph / 2 + 7 * U, { font: mono(500, 20), color: '#f0f3f8', spacing: 2 });
         g.restore();
       }
 
-      // ── the end: a wall of all twelve styles, then the title
-      const WALL = Object.keys(NAME);
+      // ── the end: a wall of all thirteen styles, then the title.
+      // 13 fills no full grid, so the rows are bricks (long and short rows, offset by half a tile): 4 · 5 · 4 in 16:9,
+      // 3 · 2 · 3 · 2 · 3 in 4:5, every style once, Hormuz in the middle. Around them, rings of repeats (dimmed) so the
+      // tilted wall runs off every edge.
+      const WALL = VERT ? [['02', '12', '01'], ['03', '10'], ['07', '13', '04'], ['05', '08'], ['06', '09', '11']]
+        : [['07', '02', '12', '01'], ['03', '10', '13', '04', '05'], ['08', '06', '09', '11']];
+      const tw = (VERT ? .4 : .22) * W, th = tw * 9 / 16, wgap = 22 * U, ALL = WALL.flat();
+      const TILES = (() => {
+        const R = WALL.length, MX = Math.max(...WALL.map(r => r.length)), other = n => n === MX ? MX - 1 : MX, out = [];
+        for (let r = -2; r <= R + 1; r++) {
+          const edge = r < 0 ? 0 : r >= R ? R - 1 : r, n = r === edge || Math.abs(r - edge) % 2 === 0 ? WALL[edge].length : other(WALL[edge].length);
+          for (let c = -2; c < n + 2; c++) {
+            const inner = r === edge && c >= 0 && c < n, id = inner ? WALL[r][c] : ALL[Math.floor(K.hash((r + 5) * 17 + c + 7) * ALL.length)];
+            const x = (c - (n - 1) / 2) * (tw + wgap), y = (r - (R - 1) / 2) * (th + wgap);
+            out.push({ id, x, y, inner, d: Math.hypot(x / tw, y / th) });
+          }
+        }
+        [...out].sort((a, b) => a.d - b.d).forEach((o, k) => { o.t0 = k * (o.inner ? .028 : .013); });
+        return out;
+      })();
       function endCard(t) {
-        const u = t - 17, cols = VERT ? 3 : 4, rows = Math.ceil(WALL.length / cols), tw = (VERT ? .4 : .265) * W, th = tw * 9 / 16, gap = 22 * U;
+        const u = t - DROP;
         g.fillStyle = '#05070b'; g.fillRect(0, 0, W, H);
         const ws = lerp(1.22, 1, E.outExpo(prog(u, 0, .7))) * (1 + .012 * u), dim = E.inOut(prog(u, .3, .9));
         g.save(); g.translate(W / 2 + SH.x, H / 2 + SH.y); g.rotate(-.075); g.transform(1, 0, -.16, 1, 0, 0); g.scale(ws, ws); g.translate(-u * 26 * U, -u * 8 * U);
-        // the twelve in the middle, a ring of repeats around them so the tilted wall runs off every edge
-        const tiles = [];
-        for (let r = -1; r <= rows; r++) for (let c = -1; c <= cols; c++) {
-          const inner = c >= 0 && c < cols && r >= 0 && r < rows, id = inner ? WALL[r * cols + c] : WALL[Math.floor(K.hash((r + 3) * 17 + c + 5) * WALL.length)];
-          const x = (c - (cols - 1) / 2) * (tw + gap), y = (r - (rows - 1) / 2) * (th + gap);
-          tiles.push({ id, x, y, inner, d: Math.hypot(x / tw, y / th) });
-        }
-        [...tiles].sort((a, b) => a.d - b.d).forEach((o, k) => { o.t0 = k * (o.inner ? .028 : .016); });
-        for (const o of tiles) {
+        for (const o of TILES) {
           const k = prog(u, o.t0, o.t0 + .4); if (k <= 0) continue;
           const sc = lerp(1.3, 1, E.outExpo(k)), [nm, sec] = NAME[o.id], im = thumbs[o.id];
           g.save(); g.translate(o.x, o.y); g.scale(sc, sc); g.globalAlpha = clamp(k * 5) * (o.inner ? 1 : .45);
@@ -543,6 +654,11 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
         K.text(g, val, cx, y + chipH / 2 + 9 * U, { font: chipFonts[1], color: '#f4f6fa', spacing: 1 });
         g.restore();
       }
+      // the genre line under the title, in reel order; smaller type when it would not fit the frame (five genres in 4:5)
+      const GENRES = Object.keys(SEC).join('  ·  '), GENRE_F = (() => {
+        g.font = mono(500, 24); g.letterSpacing = '4px'; const w = g.measureText(GENRES).width; g.letterSpacing = '0px';
+        return mono(500, 24 * Math.min(1, .82 * W / w));
+      })();
       function title(u) {
         const fs = Math.round(Math.min(H * .165, W * .12)), F = `400 ${fs}px Anton`, sp = 2 * U;
         // measured cap height, so the marker has the same margin above and below the words
@@ -561,8 +677,7 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
         const rv = E.out(prog(u, .8, 1.15));
         if (rv > 0) { g.save(); g.beginPath(); g.rect(x2 - e, top - tilt, (w2 + e * 2) * rv, bot - top + tilt); g.clip(); g.textAlign = 'left'; g.fillStyle = '#14120e'; g.fillText(L2, x2, y2); g.restore(); }
         g.letterSpacing = '0px';
-        const sub = 'EXPLAINER  ·  DATA  ·  TRUE CRIME  ·  HISTORY';
-        textAt(scramble(sub, u, 1.0, 1.4), sub, W / 2, bot + subH, { font: mono(500, 24), color: 'rgba(232,236,243,.86)', align: 'center', spacing: 4, alpha: E.out(prog(u, 1.0, 1.2)) });
+        textAt(scramble(GENRES, u, 1.0, 1.4), GENRES, W / 2, bot + subH, { font: GENRE_F, color: 'rgba(232,236,243,.86)', align: 'center', spacing: 4, alpha: E.out(prog(u, 1.0, 1.2)) });
         // contact: a heading, then the chips rise in one after the other
         const ly = bot + subH + 76 * U, cy = ly + 28 * U;
         textAt(scramble(CTA, u, 1.1, 1.4), CTA, W / 2, ly, { font: mono(700, 22), color: '#ffcc2e', align: 'center', spacing: 5, alpha: E.out(prog(u, 1.1, 1.3)) });
@@ -574,14 +689,26 @@ window.REEL = { clips: {}, jobs: [], load(id, fn) { this.jobs.push(fn(o => { thi
         });
       }
 
-      return (t, frame) => {
-        frameNo = frame; cache.clear(); SH = shake(t);
-        g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.letterSpacing = '0px';
+      const frameAt = (t, frame) => {
+        frameNo = frame; cache.clear(); SH = shake(t); shown.clear();
+        for (const x of [g0, gO]) { x.setTransform(1, 0, 0, 1, 0, 0); x.globalAlpha = 1; x.globalCompositeOperation = 'source-over'; x.letterSpacing = '0px'; }
+        gO.clearRect(0, 0, W, H); g = g0;
         if (t < 2) hook(t);
-        else if (t < 17) { montage(t); stamps(t); pill(t); }
+        else if (t < DROP) { montage(t); g = gO; dip(t); stamps(t); pill(t); g = g0; }
         else endCard(t);
-        K.drawGrain(g, grain, W, H, frame, .045);
+        for (const c of Object.values(C)) if (c.live && !shown.has(c)) c.live.style.display = 'none';
+        K.drawGrain(gG, grain, W, H, frame, 1, 'source-over');   // the canvas itself blends as overlay at 4.5 % (CSS)
       };
+      // warm-up under the loading screen: each transition and the live shot once, with a paint after each, so the first
+      // play has no first-use stalls (a demo's first draw at a new time, the live layer's first paint, its first CSS blur)
+      stage.appendChild(box); say('READY IN A MOMENT', 1);
+      const warm = new Set([1.0, 1.13, 1.25, 1.5, 1.75, 1.9, 1.98, 2.0, ...SHOTS.map(s => (s.a + s.b) / 2), DROP, DROP + .5]);
+      for (const x of TRANS) for (const t of [x.at - x.d[0], x.at - .04, x.at, x.at + .04, x.at + x.d[1] * .5, x.at + x.d[1]]) warm.add(t);
+      // (a hidden tab or a paused embed gets no animation frames: the time limit keeps the load from waiting for ever)
+      const painted = () => new Promise(r => { requestAnimationFrame(() => requestAnimationFrame(r)); setTimeout(r, 80); });
+      for (const t of [...warm].sort((a, b) => a - b)) { frameAt(t, Math.round(t * FPS)); await painted(); }
+      box.remove();
+      return frameAt;
     },
   });
 })();
