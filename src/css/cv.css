@@ -329,7 +329,8 @@
 	}
 }
 
-/* Contact: a label over each value, four to a line, like a spec table. */
+/* Contact: a label over each value, like a spec table; three to a line on
+   wide screens, so the nine entries make three even lines. */
 
 .rs-cv__contact {
 	display: grid;
@@ -338,6 +339,12 @@
 	margin: 0;
 	padding: 0;
 	list-style: none;
+}
+
+@media (min-width: 900px) {
+	.rs-cv__contact {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
 }
 
 .rs-cv__contact li {
@@ -663,13 +670,18 @@ a.rs-cv__contact-item:focus-visible .rs-cv__contact-value {
 	line-height: 1.55;
 }
 
-/* Skills and education: three columns of plain lines. */
+/* Skills and education: columns of plain lines, three for the skills and as
+   many as there are entries for education. */
 
 .rs-cv__skills,
 .rs-cv__education {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 1.75rem clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.rs-cv__education {
+	grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
 }
 
 .rs-cv__skill-group {
@@ -865,7 +877,7 @@ a.rs-cv__contact-item:focus-visible .rs-cv__contact-value {
 	}
 
 	.rs-cv__contact {
-		grid-template-columns: repeat(4, minmax(0, 1fr));
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: 2mm 4mm;
 	}
 
@@ -973,6 +985,10 @@ a.rs-cv__contact-item:focus-visible .rs-cv__contact-value {
 	.rs-cv__education {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: 3mm 5mm;
+	}
+
+	.rs-cv__education {
+		grid-template-columns: repeat(auto-fit, minmax(40mm, 1fr));
 	}
 
 	.rs-cv__plain li + li {

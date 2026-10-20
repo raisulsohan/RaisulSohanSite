@@ -299,9 +299,10 @@ function rs_cv_contact_items( $cv ) {
 	}
 
 	$kinds = array(
-		'linkedin.com' => array( $labels['linkedin'], 'linkedin' ),
-		'github.com'   => array( 'GitHub', 'github' ),
-		'youtube.com'  => array( 'YouTube', 'youtube' ),
+		'linkedin.com'  => array( $labels['linkedin'], 'linkedin' ),
+		'github.com'    => array( 'GitHub', 'github' ),
+		'youtube.com'   => array( 'YouTube', 'youtube' ),
+		'instagram.com' => array( 'Instagram', 'instagram' ),
 	);
 	foreach ( is_array( $cv['links'] ) ? $cv['links'] : array() as $link ) {
 		if ( empty( $link['label'] ) || empty( $link['url'] ) ) {
@@ -365,26 +366,27 @@ function rs_cv_data( $post_id = 0 ) {
 			array( 'label' => 'linkedin.com/in/raisulsohan', 'url' => 'https://www.linkedin.com/in/raisulsohan/' ),
 			array( 'label' => 'github.com/raisulsohan', 'url' => 'https://github.com/raisulsohan' ),
 			array( 'label' => 'youtube.com/@nomolosfiles', 'url' => 'https://www.youtube.com/@nomolosfiles' ),
+			rs_cv_instagram_link(),
 			array( 'label' => 'Showreel 2026', 'url' => rs_showreel_url() ),
 		),
 
 		/* One sentence for the hero and the search result. */
 		'summary'    => 'Motion designer and 2D animator with 10+ years turning complex briefs into clear visual stories. I work from concept and storyboard through animation and sound, and build free tools that help creative teams move faster.',
 
-		'profile'    => 'Motion designer and 2D animator with 10+ years of experience on story-led work for international development, technology and editorial teams. Selected clients include UNDP, UNICEF, GIZ, USAID, the World Bank and WHO. Alongside client work, I build free tools for Adobe, Figma, Chrome and Windows, and direct animated documentaries from script to final sound. I pair hands-on craft with production leadership, carrying projects from the first storyboard to delivery and improving the workflow for the next one.',
+		'profile'    => rs_cv_channels_text( 'profile' ),
 
 		'stats'      => array(
 			array( 'label' => 'Years in motion', 'value' => '10+' ),
 			array( 'label' => 'Open-source tools', 'value' => '13' ),
-			array( 'label' => 'Documentary films', 'value' => '3' ),
+			array( 'label' => 'Documentary channels', 'value' => '2' ),
 			array( 'label' => 'Organisations served', 'value' => '12' ),
 		),
 
 		'highlights' => array(
 			array( 'lead' => '100% on-time delivery', 'text' => 'across Vidiosa client campaigns; a new storyboard-and-feedback workflow cut turnaround by 15%.' ),
 			array( 'lead' => '200K+ organic views', 'text' => 'on campaigns where I directed the creative, with measurable audience engagement.' ),
-			array( 'lead' => '13 free open-source tools', 'text' => 'for Windows, Adobe CC, Figma and Chrome, alongside 1,100+ GitHub contributions in the past year.' ),
-			array( 'lead' => '3 animated documentaries', 'text' => 'written, illustrated, animated and sound-designed for Nomolos and Bichitro Biggan.' ),
+			array( 'lead' => '13 free open-source tools', 'text' => rs_cv_channels_text( 'tools_highlight' ) ),
+			rs_cv_channels_text( 'channels_highlight' ),
 		),
 
 		'experience' => array(
@@ -394,8 +396,8 @@ function rs_cv_data( $post_id = 0 ) {
 				'place'   => 'Dhaka, Bangladesh',
 				'dates'   => 'Apr 2026 – Present',
 				'bullets' => array(
-					'Created **Nomolos** ([youtube.com/@nomolosfiles](https://www.youtube.com/@nomolosfiles)); wrote, illustrated, animated and sound-designed **Prohibition** (9:40) and **Cobra Effect** (8:49, 23 scenes).',
-					'Write and animate science stories for **Bichitro Biggan**; created **Consciousness** (4:08) with nine hand-drawn scenes, 3D parallax and volumetric lighting.',
+					rs_cv_channels_text( 'nomolos_bullet' ),
+					rs_cv_channels_text( 'biggan_bullet' ),
 					'Build and maintain thirteen free creative and desktop tools; built two bilingual PHP / JavaScript WordPress platforms: **bichitrobiggan.com** and **raisulsohan.com**.',
 				),
 			),
@@ -438,8 +440,7 @@ function rs_cv_data( $post_id = 0 ) {
 				'place'   => 'Bangladesh & UK',
 				'dates'   => '2015 – 2017',
 				'bullets' => array(
-					'Edited and animated 20+ educational videos on Bangladesh\'s science, history and culture.',
-					'Also handled storyboarding and YouTube SEO for the series.',
+					rs_cv_channels_text( 'think_school_bullet' ),
 				),
 			),
 			array(
@@ -485,7 +486,7 @@ function rs_cv_data( $post_id = 0 ) {
 				'title' => 'Nomolos',
 				'url'   => 'https://www.youtube.com/@nomolosfiles',
 				'meta'  => 'Animated documentary channel',
-				'text'  => 'Two films about history\'s backfires: **Prohibition** (9:40) and **Cobra Effect** (8:49). Script, illustration, animation and sound design, all created solo.',
+				'text'  => rs_cv_channels_text( 'nomolos_film' ),
 			),
 			array(
 				'title' => 'Consciousness',
@@ -531,7 +532,6 @@ function rs_cv_data( $post_id = 0 ) {
 
 		'education'  => array(
 			array( 'lead' => 'B.S.S. (Hons.) in Social Science', 'text' => 'Government Bangla College, Dhaka · 2014' ),
-			array( 'lead' => 'HSC, Science (2007) · SSC, Science', 'text' => 'Motijheel Model High School & College (2005)' ),
 			array( 'lead' => 'Continuing education', 'text' => 'Motion Design School, LinkedIn Learning, Skillshare (motion graphics, video editing, graphic design)' ),
 		),
 
@@ -2237,3 +2237,191 @@ function rs_cv_showreel_2026_v1() {
 	update_site_option( $flag, 1 );
 }
 add_action( 'init', 'rs_cv_showreel_2026_v1', 33 );
+
+/**
+ * The Instagram Reels link in the contact list.
+ *
+ * @return array
+ */
+function rs_cv_instagram_link() {
+	return array( 'label' => '@lettertosohan', 'url' => 'https://www.instagram.com/lettertosohan/reels/' );
+}
+
+/**
+ * The CV's lines about the two documentary channels, and the lines tightened
+ * with them (October 2026).
+ *
+ * Nomolos and Bichitro Biggan publish new episodes and Shorts all the time,
+ * so the CV names each channel and what it covers rather than two films
+ * that soon read as the whole output. Kept in one place for the defaults
+ * and for rs_cv_apply_channels_v1().
+ *
+ * @param string $key Which line.
+ * @return string|array A line, or for 'channels_highlight' a highlight.
+ */
+function rs_cv_channels_text( $key ) {
+	$texts = array(
+		'profile'             => 'Motion designer and 2D animator with 10+ years of story-led work for international development, technology and media teams, including UNICEF, USAID, GIZ, UNDP, the World Bank and WHO. I run two animated documentary channels, Nomolos and Bichitro Biggan, from research and script to final sound, and build free production tools for Adobe, Figma, Chrome and Windows. I pair hands-on craft with production leadership: clear storyboards, fast feedback loops and on-time delivery.',
+		'tools_highlight'     => 'for Windows, Adobe CC, Figma and Chrome, alongside 1,400+ GitHub contributions in the last six months.',
+		'channels_highlight'  => array( 'lead' => '30 documentary episodes and Shorts', 'text' => 'on Nomolos and Bichitro Biggan, each one researched, written, illustrated, animated and sound-designed solo.' ),
+		'nomolos_bullet'      => 'Run **Nomolos** ([youtube.com/@nomolosfiles](https://www.youtube.com/@nomolosfiles)), an animated documentary channel on history\'s greatest backfires, from Prohibition to Pearl Harbor; research, write, illustrate, animate and sound-design every episode, and cut each one into Shorts and [Instagram Reels](https://www.instagram.com/lettertosohan/reels/).',
+		'biggan_bullet'       => 'Write and animate **Bichitro Biggan** ([youtube.com/@Bichitrobiggan](https://www.youtube.com/@Bichitrobiggan)), a science channel in Bengali and English that explains new research, from prime editing to consciousness and mirror bacteria.',
+		'think_school_bullet' => 'Edited and animated 20+ educational videos on Bangladesh\'s science, history and culture, and handled their storyboards and YouTube SEO.',
+		'nomolos_film'        => 'History\'s greatest backfires, one decision per episode, from **Prohibition** to **Pearl Harbor**. Research, script, illustration, animation and sound design, all made solo.',
+	);
+
+	return isset( $texts[ $key ] ) ? $texts[ $key ] : '';
+}
+
+/**
+ * Bring a saved CV up to the October 2026 text, in place.
+ *
+ * As in rs_cv_apply_showreel_2026_v1(), only text that still reads exactly
+ * as the theme wrote it is changed; anything edited by hand keeps the edit.
+ * The two channel bullets, the Nomolos card, the profile, the documentary
+ * stat and highlight, the GitHub figure and the Think School bullets are
+ * rewritten; the HSC/SSC entry goes; the Instagram Reels link is added
+ * before the showreel if no Instagram link is there yet.
+ *
+ * @param array $saved Saved CV data, changed in place.
+ * @return bool Whether anything changed.
+ */
+function rs_cv_apply_channels_v1( &$saved ) {
+	$changed = false;
+
+	if ( isset( $saved['profile'] ) && 'Motion designer and 2D animator with 10+ years of experience on story-led work for international development, technology and editorial teams. Selected clients include UNDP, UNICEF, GIZ, USAID, the World Bank and WHO. Alongside client work, I build free tools for Adobe, Figma, Chrome and Windows, and direct animated documentaries from script to final sound. I pair hands-on craft with production leadership, carrying projects from the first storyboard to delivery and improving the workflow for the next one.' === $saved['profile'] ) {
+		$saved['profile'] = rs_cv_channels_text( 'profile' );
+		$changed          = true;
+	}
+
+	if ( isset( $saved['stats'] ) && is_array( $saved['stats'] ) ) {
+		foreach ( $saved['stats'] as &$stat ) {
+			if ( isset( $stat['label'], $stat['value'] ) && 'Documentary films' === $stat['label'] && '3' === $stat['value'] ) {
+				$stat    = array( 'label' => 'Documentary channels', 'value' => '2' );
+				$changed = true;
+			}
+		}
+		unset( $stat );
+	}
+
+	if ( isset( $saved['highlights'] ) && is_array( $saved['highlights'] ) ) {
+		foreach ( $saved['highlights'] as &$highlight ) {
+			if ( ! isset( $highlight['lead'], $highlight['text'] ) ) {
+				continue;
+			}
+			if ( '13 free open-source tools' === $highlight['lead'] && 'for Windows, Adobe CC, Figma and Chrome, alongside 1,100+ GitHub contributions in the past year.' === $highlight['text'] ) {
+				$highlight['text'] = rs_cv_channels_text( 'tools_highlight' );
+				$changed           = true;
+			} elseif ( '3 animated documentaries' === $highlight['lead'] && 'written, illustrated, animated and sound-designed for Nomolos and Bichitro Biggan.' === $highlight['text'] ) {
+				$highlight = rs_cv_channels_text( 'channels_highlight' );
+				$changed   = true;
+			}
+		}
+		unset( $highlight );
+	}
+
+	$bullets = array(
+		'Created **Nomolos** ([youtube.com/@nomolosfiles](https://www.youtube.com/@nomolosfiles)); wrote, illustrated, animated and sound-designed **Prohibition** (9:40) and **Cobra Effect** (8:49, 23 scenes).' => rs_cv_channels_text( 'nomolos_bullet' ),
+		'Write and animate science stories for **Bichitro Biggan**; created **Consciousness** (4:08) with nine hand-drawn scenes, 3D parallax and volumetric lighting.' => rs_cv_channels_text( 'biggan_bullet' ),
+	);
+	$think_school = array(
+		'Edited and animated 20+ educational videos on Bangladesh\'s science, history and culture.',
+		'Also handled storyboarding and YouTube SEO for the series.',
+	);
+	if ( isset( $saved['experience'] ) && is_array( $saved['experience'] ) ) {
+		foreach ( $saved['experience'] as &$job ) {
+			if ( ! isset( $job['bullets'] ) || ! is_array( $job['bullets'] ) ) {
+				continue;
+			}
+			if ( $think_school === $job['bullets'] ) {
+				$job['bullets'] = array( rs_cv_channels_text( 'think_school_bullet' ) );
+				$changed        = true;
+				continue;
+			}
+			foreach ( $job['bullets'] as &$line ) {
+				if ( is_string( $line ) && isset( $bullets[ $line ] ) ) {
+					$line    = $bullets[ $line ];
+					$changed = true;
+				}
+			}
+			unset( $line );
+		}
+		unset( $job );
+	}
+
+	if ( isset( $saved['education'] ) && is_array( $saved['education'] ) ) {
+		$before             = count( $saved['education'] );
+		$saved['education'] = array_values(
+			array_filter(
+				$saved['education'],
+				function ( $entry ) {
+					return ! ( is_array( $entry ) && isset( $entry['lead'], $entry['text'] ) && 'HSC, Science (2007) · SSC, Science' === $entry['lead'] && 'Motijheel Model High School & College (2005)' === $entry['text'] );
+				}
+			)
+		);
+		$changed = $changed || count( $saved['education'] ) !== $before;
+	}
+
+	if ( isset( $saved['films'] ) && is_array( $saved['films'] ) ) {
+		foreach ( $saved['films'] as &$film ) {
+			if ( isset( $film['text'] ) && 'Two films about history\'s backfires: **Prohibition** (9:40) and **Cobra Effect** (8:49). Script, illustration, animation and sound design, all created solo.' === $film['text'] ) {
+				$film['text'] = rs_cv_channels_text( 'nomolos_film' );
+				$changed      = true;
+			}
+		}
+		unset( $film );
+	}
+
+	if ( isset( $saved['links'] ) && is_array( $saved['links'] ) ) {
+		$has_instagram = false;
+		$showreel_at   = count( $saved['links'] );
+		foreach ( $saved['links'] as $index => $link ) {
+			$url = isset( $link['url'] ) ? (string) $link['url'] : '';
+			if ( false !== stripos( $url, 'instagram.com' ) ) {
+				$has_instagram = true;
+			}
+			if ( false !== stripos( $url, 'showreel' ) ) {
+				$showreel_at = min( $showreel_at, $index );
+			}
+		}
+		if ( ! $has_instagram ) {
+			array_splice( $saved['links'], $showreel_at, 0, array( rs_cv_instagram_link() ) );
+			$changed = true;
+		}
+	}
+
+	return $changed;
+}
+
+/**
+ * Run rs_cv_apply_channels_v1() on the saved CV, once. A CV that was never
+ * saved shows the defaults, which already carry it.
+ */
+function rs_cv_channels_v1() {
+	$flag = 'rs_cv_channels_v1';
+	if ( get_site_option( $flag ) ) {
+		return;
+	}
+
+	$page  = null;
+	$saved = false;
+	if ( is_multisite() ) {
+		$saved = rs_cv_saved_data();
+	} else {
+		$page  = get_page_by_path( 'cv', OBJECT, 'page' );
+		$saved = $page ? get_post_meta( $page->ID, '_rs_cv_data', true ) : false;
+	}
+
+	if ( is_array( $saved ) && rs_cv_apply_channels_v1( $saved ) ) {
+		if ( is_multisite() ) {
+			update_site_option( 'rs_cv_shared_data_v1', $saved );
+		} elseif ( $page ) {
+			update_post_meta( $page->ID, '_rs_cv_data', $saved );
+		}
+
+		rs_cv_purge_network_caches();
+	}
+
+	update_site_option( $flag, 1 );
+}
+add_action( 'init', 'rs_cv_channels_v1', 34 );

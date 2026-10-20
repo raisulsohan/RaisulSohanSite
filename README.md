@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-9.1.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-9.1.1-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -14,6 +14,7 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 
 **The CV as a spec sheet.**
 
+- **9.1.1: The CV's words, and its PDF, brought up to date.** Nomolos and Bichitro Biggan are named as the running channels they are (history's greatest backfires; science in Bengali and English), not as two films; the profile is tighter; the stats and highlights say 2 documentary channels and 30 episodes and Shorts (counted on both channels on 20 October 2026) and 1,400+ GitHub contributions in six months; Instagram Reels (`@lettertosohan`) joins the contact list, which now runs three to a line; the HSC/SSC entry is gone and the Think School lines are one. A once-only migration (`rs_cv_apply_channels_v1()`) changes the saved CV only where it still reads as the theme wrote it. The PDF takes the same words and the spec-sheet look of the web CV (Inter, a 30 mm name column, hairlines, the figures in the head), still two A4 pages: 23 px left on page 1, 116 px on page 2.
 - **9.1.0: The CV reads like one of Apple's spec sheets.** The résumé on `/cv/` is no longer a panel of boxes inside boxes: each part (Contact, Profile, Highlights, Experience, Open-source tools, Skills, Education, Languages) is one row on the black stage, its name on the left and its content on the right, with a hairline between rows and the row's name staying in view while a long row scrolls. The stacked, right-aligned list of orange contact links is now a Contact row: a small label over each value, four to a line (Location, Phone, Email, Website, LinkedIn, GitHub, YouTube, Showreel), with the link's host dropped where the label already says it (`in/raisulsohan`), and on a phone an inset grouped list as in iOS Settings. Highlights set their figure large in the orange (100%, 200K+, 13, 3); jobs run one under another with the dates on the right; each tool's GitHub link is a small grey pill. The name, the two section titles and "Résumé" end in the orange dot, the selected-work cards lose their coloured bars and capital labels, and their titles line up when a label wraps. Print turns the same rows into a white A4 page. New labels in the CV editor: the sheet title, the Contact heading and the Location, Phone, Website and Showreel labels. The downloadable PDF is unchanged.
 
 ## What's new in 9.0
