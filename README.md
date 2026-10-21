@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-9.2.1-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-9.3.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 9.3
+
+**Statistics for all time.**
+
+- **9.3.0: An All time tab on the Statistics screen.** After Last year comes All time: everything counted from the first day to today. The chart goes by the day, and by the month once counting runs past a year (`rs_stats_by_month()`; the days are added up in PHP, so the query stays the same on MySQL and SQLite). There is no period before all time, so the "vs the period before" figures and the Climbing tile are left out on that tab.
 
 ## What's new in 9.2
 

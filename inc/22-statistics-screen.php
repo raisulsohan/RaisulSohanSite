@@ -29,6 +29,7 @@ function rs_stats_ranges() {
 		'30d'  => __( 'Last 30 days', 'raisul-sohan' ),
 		'90d'  => __( 'Last 90 days', 'raisul-sohan' ),
 		'365d' => __( 'Last year', 'raisul-sohan' ),
+		'all'  => __( 'All time', 'raisul-sohan' ),
 	);
 }
 
@@ -453,10 +454,11 @@ function rs_stats_nice_ceiling( $highest ) {
  * the top, and the SVG holds only the lines, their thickness pinned by
  * vector-effect. stats-admin.js reads the points off data-rs-chart.
  *
- * @param array $series From rs_stats_series().
- * @param bool  $hourly One point per hour.
+ * @param array $series  From rs_stats_series().
+ * @param bool  $hourly  One point per hour.
+ * @param bool  $monthly One point per month.
  */
-function rs_stats_chart( array $series, $hourly ) {
+function rs_stats_chart( array $series, $hourly, $monthly = false ) {
 	$rows  = array_values( $series );
 	$count = count( $rows );
 
@@ -484,7 +486,7 @@ function rs_stats_chart( array $series, $hourly ) {
 			'y' => $y( $row['hits'] ),
 			'v' => rs_stats_number( $row['hits'] ),
 			's' => rs_stats_number( $row['visits'] ),
-			'l' => $hourly ? wp_date( 'j M, g:00 a', $row['time'] ) : wp_date( 'D j M Y', $row['time'] ),
+			'l' => wp_date( $hourly ? 'j M, g:00 a' : ( $monthly ? 'F Y' : 'D j M Y' ), $row['time'] ),
 		);
 	}
 
@@ -516,7 +518,7 @@ function rs_stats_chart( array $series, $hourly ) {
 		$labels[] = array(
 			'i'    => $i,
 			'x'    => $x( $i ),
-			'text' => $hourly ? wp_date( 'g a', $row['time'] ) : wp_date( 'j M', $row['time'] ),
+			'text' => wp_date( $hourly ? 'g a' : ( $monthly ? 'M Y' : 'j M' ), $row['time'] ),
 		);
 	}
 	?>
@@ -758,7 +760,10 @@ function rs_stats_page() {
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Choosing how far back to look changes nothing.
 	$key    = isset( $_GET['range'] ) ? sanitize_key( wp_unslash( $_GET['range'] ) ) : '24h';
 	$key    = isset( $ranges[ $key ] ) ? $key : '24h';
-	$hourly = '24h' === $key;
+	$hourly  = '24h' === $key;
+	$monthly = rs_stats_by_month( $key );
+	/* All time has no period before it, so nothing on it is compared or "climbing". */
+	$all = 'all' === $key;
 
 	/*
 	 * The lists are kept short on purpose. A tile that runs to fifteen rows
@@ -766,7 +771,7 @@ function rs_stats_page() {
 	 * said something the eighth did not.
 	 */
 	$totals    = rs_stats_totals( $key );
-	$before    = rs_stats_totals( $key, true );
+	$before    = $all ? null : rs_stats_totals( $key, true );
 	$series    = rs_stats_series( $key );
 	$stories   = rs_stats_top_stories( $key, 8 );
 	$pages     = rs_stats_top_pages( $key, 8 );
@@ -775,7 +780,7 @@ function rs_stats_page() {
 	$hours     = rs_stats_by_hour( $key );
 	$weekdays  = rs_stats_by_weekday( $key );
 	$entries   = rs_stats_entry_pages( $key, 8 );
-	$climbing  = rs_stats_climbing( $key, 6 );
+	$climbing  = $all ? array() : rs_stats_climbing( $key, 6 );
 	$sources   = rs_stats_grouped( 'source', $key, 8 );
 	$countries = rs_stats_grouped( 'country', $key, 8 );
 	$devices   = rs_stats_grouped( 'device', $key );
@@ -830,12 +835,20 @@ function rs_stats_page() {
 			<div class="rs-stats-figure">
 				<span class="rs-stats-figure__label"><?php esc_html_e( 'Views', 'raisul-sohan' ); ?></span>
 				<strong class="rs-stats-figure__value"><?php echo esc_html( rs_stats_number( $totals['hits'] ) ); ?></strong>
-				<?php rs_stats_change( $totals['hits'], $before['hits'] ); ?>
+				<?php
+				if ( ! $all ) {
+					rs_stats_change( $totals['hits'], $before['hits'] );
+				}
+				?>
 			</div>
 			<div class="rs-stats-figure">
 				<span class="rs-stats-figure__label"><?php esc_html_e( 'Visits', 'raisul-sohan' ); ?></span>
 				<strong class="rs-stats-figure__value"><?php echo esc_html( rs_stats_number( $totals['visits'] ) ); ?></strong>
-				<?php rs_stats_change( $totals['visits'], $before['visits'] ); ?>
+				<?php
+				if ( ! $all ) {
+					rs_stats_change( $totals['visits'], $before['visits'] );
+				}
+				?>
 				<span class="rs-stats-figure__note">
 					<?php
 					/* translators: %s: average number of pages opened in one visit. */
@@ -875,8 +888,16 @@ function rs_stats_page() {
 		<?php /* The one tile that earns the whole width: a line across time reads better the wider it gets. */ ?>
 		<div class="rs-stats__full">
 			<?php
-			rs_stats_tile_open( $hourly ? __( 'Views by the hour', 'raisul-sohan' ) : __( 'Views per day', 'raisul-sohan' ), __( 'Every page and story opened. Point at the line for the figure.', 'raisul-sohan' ) );
-			rs_stats_chart( $series, $hourly );
+			if ( $hourly ) {
+				$chart_title = __( 'Views by the hour', 'raisul-sohan' );
+			} elseif ( $monthly ) {
+				$chart_title = __( 'Views per month', 'raisul-sohan' );
+			} else {
+				$chart_title = __( 'Views per day', 'raisul-sohan' );
+			}
+
+			rs_stats_tile_open( $chart_title, __( 'Every page and story opened. Point at the line for the figure.', 'raisul-sohan' ) );
+			rs_stats_chart( $series, $hourly, $monthly );
 			rs_stats_tile_close();
 			?>
 		</div>
@@ -989,6 +1010,7 @@ function rs_stats_page() {
 		?>
 		<div class="rs-stats__bento">
 
+			<?php if ( ! $all ) : ?>
 			<?php rs_stats_tile_open( __( 'Climbing', 'raisul-sohan' ), __( 'Stories read far more than in the period before. Ones with a handful of reads are left out.', 'raisul-sohan' ) ); ?>
 				<?php if ( empty( $climbing ) ) : ?>
 					<p class="rs-stats__empty"><?php esc_html_e( 'Nothing is climbing in this period.', 'raisul-sohan' ); ?></p>
@@ -1006,8 +1028,9 @@ function rs_stats_page() {
 					</table>
 				<?php endif; ?>
 			<?php rs_stats_tile_close(); ?>
+			<?php endif; ?>
 
-			<?php rs_stats_tile_open( __( 'Which day', 'raisul-sohan' ), __( 'The days of the week readers turn up on.', 'raisul-sohan' ) ); ?>
+			<?php rs_stats_tile_open( __( 'Which day', 'raisul-sohan' ),__( 'The days of the week readers turn up on.', 'raisul-sohan' ) ); ?>
 				<?php
 				$names = array(
 					__( 'Sunday', 'raisul-sohan' ),

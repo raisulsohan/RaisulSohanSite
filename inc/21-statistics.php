@@ -961,7 +961,43 @@ function rs_stats_windows() {
 			'mode'   => 'days',
 			'length' => 365,
 		),
+		/* From the first day counted to today. The period before it is the
+		   stretch before counting began, so it always comes back empty. */
+		'all'  => array(
+			'mode'   => 'days',
+			'length' => rs_stats_all_days(),
+		),
 	);
+}
+
+/**
+ * How many days "all time" covers: the first day counted to today, at least one.
+ *
+ * @return int
+ */
+function rs_stats_all_days() {
+	static $days = null;
+
+	if ( null === $days ) {
+		$first = rs_stats_first_day();
+		$start = $first ? strtotime( $first . ' 12:00:00' ) : false;
+		$today = strtotime( wp_date( 'Y-m-d' ) . ' 12:00:00' );
+
+		$days = $start ? max( 1, (int) round( ( $today - $start ) / DAY_IN_SECONDS ) + 1 ) : 1;
+	}
+
+	return $days;
+}
+
+/**
+ * Whether the chart for a window goes by the month: all time, once it runs
+ * past a year, would be too many days for one line to show.
+ *
+ * @param string $key Window key.
+ * @return bool
+ */
+function rs_stats_by_month( $key ) {
+	return 'all' === $key && rs_stats_all_days() > 366;
 }
 
 /**
@@ -1101,7 +1137,37 @@ function rs_stats_series( $key ) {
 	}
 
 	$series = array();
-	$step   = $hourly ? HOUR_IN_SECONDS : DAY_IN_SECONDS;
+
+	/* One point per calendar month, from the first one counted to this one.
+	   The days are added up here rather than in SQL, so nothing depends on a
+	   string function SQLite might not have. */
+	if ( rs_stats_by_month( $key ) ) {
+		$month = substr( rs_stats_first_day(), 0, 7 ) . '-01';
+		$last  = wp_date( 'Y-m' );
+
+		while ( substr( $month, 0, 7 ) <= $last ) {
+			$series[ substr( $month, 0, 7 ) ] = array(
+				'hits'   => 0,
+				'visits' => 0,
+				'time'   => strtotime( $month . ' 12:00:00' ),
+			);
+
+			$month = gmdate( 'Y-m-d', strtotime( $month . ' +1 month' ) );
+		}
+
+		foreach ( $rows as $row ) {
+			$slot = substr( $row['day'], 0, 7 );
+
+			if ( isset( $series[ $slot ] ) ) {
+				$series[ $slot ]['hits']   += (int) $row['hits'];
+				$series[ $slot ]['visits'] += (int) $row['visits'];
+			}
+		}
+
+		return $series;
+	}
+
+	$step = $hourly ? HOUR_IN_SECONDS : DAY_IN_SECONDS;
 
 	for ( $i = (int) $window['length'] - 1; $i >= 0; $i-- ) {
 		$time = time() - $i * $step;
