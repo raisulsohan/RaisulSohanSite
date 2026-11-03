@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-9.4.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-9.4.1-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -14,6 +14,7 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 
 **LazyReply joins the portfolio.**
 
+- **9.4.1: Claude Usage Widget's case study follows its redesign.** The widget dropped the pixel robot, its three layouts and the session limit for a strip on the taskbar (`51% until Fri`, with a mark for the share of the week gone) and a Windows 11 panel with the pace (On track, Tight or Over pace), a column for each day of the week, today's budget, each product's part of the weekly limit, motion and a theme button. Its bilingual titles, summary, role, context, challenge, solution and highlights say so, and the card is a new screenshot, `assets/img/claudeusagewidget-v2.webp` (1280×720, replacing `claudeusagewidget.webp`): the real dark panel and the light and dark taskbar strips, captured from the widget at 2× with sample data. `rs_sync_claude_usage_widget_v2()` writes those fields and the picture into the stored project once; its links and place in the list stay as they are.
 - **9.4.0: LazyReply in the portfolio, behind the featured project.** The Windows tray app that turns Bangla or Banglish typed in any chat box into three English versions (Professional, Friendly, Short) just above the box, follows Avro's mode, and never sends anything by itself, gets its bilingual case study (`rs_sync_new_portfolio_projects()` adds it once). The card, `assets/img/lazyreply.webp`, is built from the app's 4:5 poster: its real inline box and chat box on the right, the Bangla headline on the left. The pop-up demo, `assets/demo/lazyreply-demo.html` (seeded once by `rs_seed_portfolio_demo()`), plays the README animation from the LazyReply repository (`docs/demo.svg`, a 16 s SMIL timeline held paused and moved by the page's own player, so seek, frame steps and speed are exact) on a 16:9 stage, with key-switch, air and low thump sounds made in code from the same timeline and the full control bar that keeps the volume and mute in `vp_prefs`. Download Free opens the latest GitHub release.
 
 ## What's new in 9.3
