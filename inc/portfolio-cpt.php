@@ -2359,6 +2359,59 @@ function rs_get_default_portfolio_projects() {
 			'github_url'  => 'https://github.com/raisulsohan/ClaudeUsageWidget',
 			'order'       => 13,
 		),
+		array(
+			'id'          => 'lazyreply',
+			'category'    => 'tools',
+			'type_bn'     => 'উইন্ডোজ ট্রে অ্যাপ ও এআই অনুবাদ',
+			'type_en'     => 'Windows Tray App & AI Translation',
+			'badge_bn'    => 'উইন্ডোজ ১০ ও ১১ • ফ্রি ও ওপেন সোর্স',
+			'badge_en'    => 'Windows 10 & 11 • Free & Open Source',
+			'title_bn'    => 'LazyReply — বাংলায় লিখুন, ইংরেজি পাঠান: যেকোনো চ্যাট বক্সে বাংলা বা Banglish লিখলেই বক্সের ঠিক উপরে তিন রকম গোছানো ইংরেজি',
+			'title_en'    => 'LazyReply — Type Bangla, Send English: Three Clean English Versions Just Above Any Chat Box, From Bangla or Banglish',
+			'summary_bn'  => 'বাংলাদেশের অনেক ফ্রিল্যান্সার ক্লায়েন্টকে কী বলতে চান তা জানেন, কিন্তু ইংরেজিতে গুছিয়ে লিখতে সময় যায়, আর অনুবাদের সাইটে কপি-পেস্ট করতে করতে কাজের মনোযোগ ভাঙে। LazyReply উইন্ডোজের একটি ছোট ট্রে অ্যাপ: যেকোনো অ্যাপের চ্যাট বক্সে (ব্রাউজারের চ্যাট বক্সসহ) বাংলা বা Banglish লিখুন, বাক্য শেষে দাঁড়ি দিন, আর বক্সের ঠিক উপরে আসে তিনটি ইংরেজি সংস্করণ: Professional, Friendly আর Short। Alt+1, Alt+2 বা Alt+3 চাপলে চ্যাট বক্সের লেখা সেই ইংরেজিতে বদলে যায়; Ctrl ধরে ↓ / ↑ চাপলে একটার পর একটা বসে, আর Ctrl+Enter-এ পাঠানো যায়। অভ্রের সাথে নিজে নিজেই চলে: অভ্র বাংলায় গেলে বক্স খোলে, ইংরেজিতে ফিরলে বন্ধ হয়। অভ্র না থাকলে নিজের শর্টকাট দিন, তাই যেকোনো কীবোর্ডে চলে। চাইলে উল্টোটাও: ক্লায়েন্টের ইংরেজি বার্তার বাংলা অর্থ। এআই হিসেবে বেছে নিন নিজের Claude অ্যাকাউন্ট, Claude বা Gemini-এর API কী, অথবা OpenAI-এর মতো API আছে এমন যেকোনো সার্ভিস (OpenRouter, Groq, DeepSeek, এমনকি নিজের পিসিতে Ollama)। LazyReply নিজে কখনো কিছু পাঠায় না: শেষ Enter সবসময় আপনার।',
+			'summary_en'  => 'Many Bangladeshi freelancers know exactly what they want to tell a client, but writing it in clean English takes time, and copying text to a translation site and back breaks the flow of work. LazyReply is a small Windows tray app: type Bangla or Banglish in the chat box of any app (chat boxes in the browser included), end the sentence, and three English versions appear just above the box: Professional, Friendly and Short. Alt+1, Alt+2 or Alt+3 turns the chat box text into that version; hold Ctrl and press Down or Up to put them in one after another, and Ctrl+Enter sends it. It follows Avro on its own: when Avro goes to Bangla the box opens, when it goes back to English the box closes. Without Avro, a shortcut of your own does the same, so it works with any keyboard. It also works the other way: the meaning of a client\'s English message in Bangla. The AI is your choice: your own Claude account, a Claude or Gemini API key, or any service with an OpenAI-compatible API (OpenRouter, Groq, DeepSeek, even Ollama on your own PC). LazyReply never sends anything by itself: the last Enter is always yours.',
+			'role_bn'     => 'একক ডেভেলপার — উইন্ডোজ ডেস্কটপ ইঞ্জিনিয়ারিং, কীবোর্ড হুক ও এআই ইন্টিগ্রেশন',
+			'role_en'     => 'Solo Developer — Windows Desktop Engineering, Keyboard Hooks & AI Integration',
+			'context_bn'  => 'উইন্ডোজ ১০ ও ১১ • C#, .NET Framework 4.x, WinForms • UI Automation • Claude, Gemini ও OpenAI-সমমানের API • v1.0.0',
+			'context_en'  => 'Windows 10 & 11 • C#, .NET Framework 4.x, WinForms • UI Automation • Claude, Gemini & OpenAI-Compatible APIs • v1.0.0',
+			'challenge_bn'=> "ক্লায়েন্টের সাথে কথা হয় Fiverr, Upwork, WhatsApp, Messenger বা Slack-এর চ্যাট বক্সে। অনুবাদের সাধারণ পথ হলো লেখা কপি করা, অনুবাদের সাইটে পেস্ট করা, ফল কপি করে আবার চ্যাটে ফেরা, আর প্রতিটি বার্তায় এই কাজ চলতে থাকে। লক্ষ্য ছিল অনুবাদকে চ্যাট বক্সের ভেতরেই আনা, এমনভাবে যে লেখার গতি একটুও না কমে।\n\nপ্রধান কারিগরি চ্যালেঞ্জসমূহ:\n১. যেকোনো অ্যাপের চ্যাট বক্স: প্রতিটি অ্যাপ আলাদা, অনেকগুলো ব্রাউজারের ভেতরে, আর কোনো অ্যাপই বাইরের প্রোগ্রামকে নিজের লেখার বক্স দেয় না।\n২. ফোকাস না কাড়া: পরামর্শের বক্স দেখা যাবে চ্যাট বক্সের ঠিক উপরে, অথচ কীবোর্ড থাকবে চ্যাট বক্সেই, যাতে লেখা থামাতে না হয়।\n৩. অভ্রের মোড বোঝা: অভ্র কোথাও লিখে রাখে না সে এখন বাংলায় না ইংরেজিতে, আর মাউস দিয়ে মোড বদলালে কোনো কী-চাপও হয় না।\n৪. কখন অনুবাদ করবে: মাঝপথের প্রতিটি বিরতিতে অনুবাদ চাইলে এআই-এর খরচ বাড়ে আর ভুল ফল আসে; আবার দাঁড়ি ছাড়া ছোট বার্তাও (\"ok bhai\") বাদ পড়বে না।\n৫. গতি: নিজের Claude অ্যাকাউন্টে Claude Code প্রতিবার চালু হতে ১–২ সেকেন্ড নেয়, যা চ্যাটের জন্য অনেক বেশি।\n৬. ইনস্টল ছাড়া এক ফাইল: সাধারণ ব্যবহারকারীর পিসিতে কোনো রানটাইম বা প্যাকেজ ম্যানেজার না রেখেই চলতে হবে।",
+			'challenge_en'=> "Client conversations happen in the chat boxes of Fiverr, Upwork, WhatsApp, Messenger or Slack. The usual way to translate is to copy the text, paste it into a translation site, copy the result and go back to the chat, for every single message. The goal was to bring the translation into the chat box itself, without slowing the typing down at all.\n\nCore Technical Challenges:\n1. The Chat Box of Any App: every app is different, many live inside a browser, and none of them hands its text box to an outside program.\n2. Never Taking the Focus: the suggestions must float just above the chat box while the keyboard stays in the chat box, so typing never stops.\n3. Knowing Avro's Mode: Avro keeps no readable flag that says Bangla or English, and a mode change with the mouse presses no key at all.\n4. When to Translate: asking at every pause mid-sentence costs AI calls and gives wrong results, yet a short message with no full stop (\"ok bhai\") must not be missed.\n5. Speed: on a Claude account, Claude Code takes 1–2 s to start each time, far too slow for a chat.\n6. One File, No Install: it has to run on an ordinary PC with no runtime or package manager to add.",
+			'solution_bn' => "১. UI Automation দিয়ে চ্যাট বক্স পড়া: যে বক্সে কীবোর্ড আছে, শুধু সেটাই পড়া হয় Windows UI Automation দিয়ে, ব্রাউজারের ভেতরের বক্সসহ। পাসওয়ার্ডের বক্স বা পুরো ওয়েব পাতা কখনো পড়ে না, আর ব্যস্ত অ্যাপে আটকে না যেতে পড়াটা চলে সময়সীমাসহ আলাদা থ্রেডে।\n\n২. ক্লিপবোর্ড দিয়ে বসানো: বেছে নেওয়া ইংরেজি বসে Ctrl+A আর Ctrl+V দিয়ে, যা প্রতিটি অ্যাপে চলে আর নিজে কখনো Enter চাপে না; পুরোনো এডিট বক্স Ctrl+A না মানলে পায় select-all বার্তা। ব্যবহারকারীর আগের ক্লিপবোর্ড, লেখা হোক বা ছবি, এক সেকেন্ডের মধ্যে ফিরে আসে। Alt+1 চাপার পর ধরে রাখা Alt আগে ছাড়া হয়, যাতে অ্যাপ Ctrl+Alt+A না দেখে, আর ধরে রাখা Ctrl থেকে যায়, যাতে পরের Ctrl+↓ ঠিকমতো কাজ করে।\n\n৩. ফোকাস না নেওয়া বক্স: পরামর্শের বক্সটি চ্যাট বক্সের ঠিক উপরে ভাসে (জায়গা না থাকলে নিচে) আর কখনো কীবোর্ড নেয় না। তিনটি সংস্করণ আসে যেমন যেমন লেখা শেষ হয়, আর বেছে নেওয়া সারিতে নীল হাইলাইট মসৃণভাবে সরে যায়।\n\n৪. অভ্রকে অনুসরণ: অভ্রের রেজিস্ট্রি থেকে তার নিজের সুইচ-কী পড়া হয় (সাধারণত Ctrl+Space)। সাথে আছে লেখা থেকে প্রমাণ: বাংলা মোডে অভ্র প্রতিটি অক্ষরের জবাবে পাঠায় ইউনিকোড কী, তাই অক্ষরের সাথে সেই প্রতিধ্বনি থাকলে বাংলা, না থাকলে ইংরেজি। মাউসে মোড বদলালেও প্রথম অক্ষরেই LazyReply ঠিক হয়ে যায়। কীবোর্ড হুক শুধু দেখে, কোনো কী আটকায় না, আর অভ্র পুনরায় চালু হলে হুকটি আবার বসে, যাতে অভ্রের আগে সুইচ-কী দেখা যায়।\n\n৫. ঠিক সময়ে অনুবাদ: দাঁড়ি, ., ? বা ! দিলে সাথে সাথে অনুবাদ শুরু; দাঁড়ি ছাড়া বার্তা অনুবাদ হয় ৩ সেকেন্ড না লিখলে। দশমিকের বিন্দু (2.5) বাক্যের শেষ ধরা হয় না, আর একই লেখা আবার এলে আগের উত্তর সাথে সাথে ফেরে।\n\n৬. চার রকম এআই, এক ফরম্যাট: Claude-এর Messages API, Gemini, আর OpenAI-সমমানের যেকোনো সার্ভিস, সবই সরাসরি HTTP দিয়ে, কোনো SDK ছাড়া। এমন সার্ভিসে প্রথমে চাওয়া হয় JSON schema, না পারলে সাধারণ JSON, তারপর সাধারণ লেখা, আর যেটা কাজ করে সেটা মনে থাকে। Gemini-এর ফ্রি সার্ভার ব্যস্ত থাকলে বা দিনের সীমা শেষ হলে অনুরোধ যায় পরের ফ্রি Flash মডেলে।\n\n৭. নিজের Claude অ্যাকাউন্টে দ্রুত: দুটি Claude Code প্রসেস আগে থেকেই চালু থেকে অপেক্ষা করে, প্রতিটি বার্তা যায় নতুন টার্ন হিসেবে, তাই চালু হওয়ার সময় লাগে একবারই। একটি প্রসেস পুরোনো উত্তর শেষ করতে থাকলে অন্যটি নতুন বার্তা নেয়, আর উত্তর আসে স্ট্রিম হয়ে; প্রথম বাক্য আসে প্রায় ১.৪ সেকেন্ডে। Claude Code চলে --safe-mode আর কোনো টুল ছাড়া, তাই নিজের CLAUDE.md বা হুক অনুবাদে অংশ নেয় না।\n\n৮. এক ফাইল, গোপনীয়তা আগে: উইন্ডোজের সাথে আসা C# কম্পাইলার দিয়েই বানানো, তাই ফলাফল ২০০ KB-এর কম একটি EXE, ইনস্টলার বা Python লাগে না। API কী সংরক্ষিত থাকে Windows DPAPI-তে, লগে কখনো আপনার লেখা থাকে না, আর লেখা যায় শুধু আপনার বেছে নেওয়া এআই সার্ভিসে; Ollama বা LM Studio হলে পিসি ছেড়েই যায় না। অ্যাপের পুরো ইন্টারফেস বাংলায়, আর আলো-অন্ধকার রং চলে উইন্ডোজের সেটিং ধরে।",
+			'solution_en' => "1. Reading the Chat Box Through UI Automation: only the text box that has the keyboard focus is read, through Windows UI Automation, chat boxes inside the browser included. It never reads a password box or a whole web page, and the read runs on its own thread with a time limit, so a busy app can never freeze it.\n\n2. Putting Text In Through the Clipboard: the chosen English goes in with Ctrl+A and Ctrl+V, which works in every app and never presses Enter by itself; a classic edit box that ignores Ctrl+A gets the select-all message instead. The user's own clipboard, text or picture, comes back within one second. An Alt still held from Alt+1 is released first, so the app never sees Ctrl+Alt+A, while a held Ctrl stays held, so the next Ctrl+Down still works.\n\n3. A Box That Never Takes the Focus: the suggestion box floats just above the chat box (below it when there is no room) and never takes the keyboard. The three versions appear as each one is complete, and a blue highlight glides to the row that is in the chat box.\n\n4. Following Avro: Avro's own switch key (usually Ctrl+Space) is read from Avro's registry settings. Proof from typing backs it up: in Bangla mode Avro answers every letter with injected Unicode keys, so a letter with that echo means Bangla and one without means English. Even after a mode change with the mouse, LazyReply corrects itself on the first letter. The keyboard hook only watches and passes every key on, and it is installed again when Avro restarts, so it sees the switch key before Avro does.\n\n5. Translating at the Right Moment: a dari, a full stop, ? or ! starts the translation at once; a message without one is translated after 3 seconds without typing. A decimal point (2.5) never ends a sentence, and the same text again is answered at once from the last answer.\n\n6. Four AI Options, One Answer Format: Claude's Messages API, Gemini and any OpenAI-compatible service, all over plain HTTP with no SDK. For such a service it asks for a JSON schema first, then plain JSON, then plain text, and remembers the one that worked. When Gemini's free servers are busy or a model's daily limit runs out, the request moves to the next free Flash model.\n\n7. Fast on a Claude Account: two Claude Code processes wait ready, and each message goes in as a new turn, so the start-up is paid once. While one process finishes an answer nobody needs any more, the other takes the new message, and the answer streams in; the first sentence arrives in about 1.4 s. Claude Code runs with --safe-mode and no tools, so the user's own CLAUDE.md and hooks never take part in a translation.\n\n8. One File, Privacy First: it is built with the C# compiler that ships with Windows, so the result is one EXE under 200 KB that needs no installer and no Python. API keys are kept with Windows DPAPI, the log never holds the user's text, and the text goes only to the AI service the user picked; with Ollama or LM Studio it never leaves the PC. The whole app interface is in Bangla, and its light and dark colours follow the Windows setting.",
+			'highlights_bn'=> array(
+				'যেকোনো অ্যাপের চ্যাট বক্সে, ব্রাউজারসহ: কপি-পেস্ট লাগে না',
+				'তিন সংস্করণ: Professional, Friendly ও Short',
+				'Alt+1/2/3-এ বক্সে বসে; Ctrl+↓/↑-এ বদলায়, Ctrl+Enter-এ পাঠানো যায়',
+				'অভ্রের সাথে নিজে চলে; অভ্র ছাড়া নিজের শর্টকাটে যেকোনো কীবোর্ডে',
+				'উল্টো অনুবাদ: ক্লায়েন্টের ইংরেজির বাংলা অর্থ, আর আলাদা অনুবাদ উইন্ডো',
+				'নিজের Claude অ্যাকাউন্ট, Claude বা Gemini API, বা OpenAI-সমমানের যেকোনো API (Ollama-সহ)',
+				'নিজের অ্যাকাউন্টে প্রথম বাক্য প্রায় ১.৪ সেকেন্ডে',
+				'নিজে কখনো কিছু পাঠায় না; API কী DPAPI-তে, লগে আপনার লেখা নেই',
+				'২০০ KB-এর কম একটি EXE, ইনস্টল লাগে না; MIT লাইসেন্সে ফ্রি ও ওপেন সোর্স'
+			),
+			'highlights_en'=> array(
+				'In the chat box of any app, browsers included: no copy and paste',
+				'Three versions: Professional, Friendly and Short',
+				'Alt+1/2/3 puts one in the box; Ctrl+Down/Up walks through them, Ctrl+Enter sends',
+				'Follows Avro on its own; without Avro, a shortcut of your own on any keyboard',
+				'Reverse translation: a client\'s English in Bangla, plus a separate translator window',
+				'Your own Claude account, a Claude or Gemini key, or any OpenAI-compatible API (Ollama too)',
+				'First sentence in about 1.4 s on a Claude account',
+				'Never sends anything by itself; keys kept with DPAPI, your text never logged',
+				'One EXE under 200 KB, nothing to install; free and open source under MIT'
+			),
+			'tags'        => array( 'Windows 10/11', 'C#', '.NET Framework', 'AI Translation', 'Bengali', 'Avro', 'Open Source' ),
+			'accent'      => '#5b6cf0',
+			'icon'        => 'terminal',
+			'image'       => get_template_directory_uri() . '/assets/img/lazyreply.webp',
+			'image_fit'   => 'cover',
+			'action_type' => 'code',
+			'action_bn'   => 'ফ্রি ডাউনলোড',
+			'action_en'   => 'Download Free',
+			'direct_url'  => 'https://github.com/raisulsohan/LazyReply/releases/latest',
+			'github_url'  => 'https://github.com/raisulsohan/LazyReply',
+			'order'       => 14,
+		),
 	);
 }
 
@@ -3363,6 +3416,7 @@ function rs_sync_new_portfolio_projects() {
 			'lazyfinds'               => false,
 			'map-animation-showreel'  => false,
 			'claudeusagewidget'       => false,
+			'lazyreply'               => false,
 		);
 		foreach ( $new_projects as $slug => $as_first ) {
 			if ( ! get_option( 'rs_portfolio_added_' . $slug ) ) {
@@ -3383,6 +3437,7 @@ function rs_sync_new_portfolio_projects() {
 	rs_seed_portfolio_demo( 'lazytyper', 'lazytyper-demo.html', '' );
 	rs_seed_portfolio_demo( 'lazyfinds', 'lazyfinds-demo.html', '' );
 	rs_seed_portfolio_demo( 'map-animation-showreel', 'map-animation/showreel.html', 'map-animation/showreel-4x5.html' );
+	rs_seed_portfolio_demo( 'lazyreply', 'lazyreply-demo.html', '' );
 
 	rs_seed_portfolio_tutorials( 'lazymaplayers', 'https://youtu.be/FkpwM74xt-s', 'https://www.youtube.com/playlist?list=PLdM39o5SFdHk' );
 

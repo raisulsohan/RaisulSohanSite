@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-9.3.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-9.4.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 9.4
+
+**LazyReply joins the portfolio.**
+
+- **9.4.0: LazyReply in the portfolio, behind the featured project.** The Windows tray app that turns Bangla or Banglish typed in any chat box into three English versions (Professional, Friendly, Short) just above the box, follows Avro's mode, and never sends anything by itself, gets its bilingual case study (`rs_sync_new_portfolio_projects()` adds it once). The card, `assets/img/lazyreply.webp`, is built from the app's 4:5 poster: its real inline box and chat box on the right, the Bangla headline on the left. The pop-up demo, `assets/demo/lazyreply-demo.html` (seeded once by `rs_seed_portfolio_demo()`), plays the README animation from the LazyReply repository (`docs/demo.svg`, a 16 s SMIL timeline held paused and moved by the page's own player, so seek, frame steps and speed are exact) on a 16:9 stage, with key-switch, air and low thump sounds made in code from the same timeline and the full control bar that keeps the volume and mute in `vp_prefs`. Download Free opens the latest GitHub release.
 
 ## What's new in 9.3
 
