@@ -15,6 +15,11 @@
  * the chapters and the cut times below are the reel's own timeline
  * (D:\GitHub\Showreel\reel\timeline.js).
  *
+ * Further down, the 3D Showreel 2026 (17 seconds) has a section and a
+ * player of its own, built from the same markup and script: one reel plays
+ * at a time, the cut picked holds for both, and the keys go to the player
+ * in use. Volume and mute are kept in the vp_prefs cookie.
+ *
  * @package raisul-sohan
  */
 
@@ -31,7 +36,7 @@ $rs_sr_phone = '+880 1775 860544';
 $rs_sr_wa    = 'https://wa.me/8801775860544';
 
 $rs_sr_title = 'Showreel 2026';
-$rs_sr_desc  = 'The 2026 motion design and animation showreel of Raisul Sohan: 24 works in 60 seconds. Documentary and explainer animation, maps, 3D, character and UI motion, cut on every beat to an original score.';
+$rs_sr_desc  = 'The 2026 motion design and animation showreel of Raisul Sohan: 24 works in 60 seconds, and a 17-second 3D showreel. Documentary and explainer animation, maps, 3D, character and UI motion, cut on every beat to an original score.';
 
 /* The two cuts on YouTube: the same 60 seconds on the same beat. */
 $rs_sr_cuts = array(
@@ -74,6 +79,53 @@ $rs_sr_cut_times = array_merge(
 );
 /* The two rests: half a beat of silence before the drop and before the end card. */
 $rs_sr_rests = array( array( 29.5, 30 ), array( 51.5, 52 ) );
+
+/*
+ * The 3D Showreel 2026: 17 seconds, 19 shots, 30 frames a second (512 frames), every cut on a beat of 128 a minute
+ * (D:\GitHub\04. Animation for video\24. Showreel). The same two cuts on YouTube; the stills in assets/img/showreel/3d-*
+ * are frames of the renders, the posters its thumbnails. The moments start on their shots' first beats.
+ */
+$rs_sr_3d_beat = 60 / 128;
+$rs_sr_3d      = array(
+	'dur'     => 512 / 30,
+	'fps'     => 30,
+	'cuts'    => array(
+		'169' => array(
+			'id'    => 'Jl0WwBXFsSQ',
+			'watch' => 'https://www.youtube.com/watch?v=Jl0WwBXFsSQ',
+			'name'  => '3D Showreel 2026 | Raisul Sohan',
+			'date'  => '2026-11-13T00:51:09-08:00',
+			'w'     => 1920,
+			'h'     => 1080,
+		),
+		'45'  => array(
+			'id'    => 'pJWwODCmnng',
+			'watch' => 'https://www.youtube.com/shorts/pJWwODCmnng',
+			'name'  => '3D Showreel 2026 | Raisul Sohan',
+			'date'  => '2026-11-13T00:52:22-08:00',
+			'w'     => 1080,
+			'h'     => 1350,
+		),
+	),
+	'moments' => array(
+		array( 'b' => 0, 'img' => 'a380', 'name' => 'The drop', 'text' => 'An A380 passes over the camera, and the name lands with it.' ),
+		array( 'b' => 3, 'img' => 'bride', 'name' => 'The aisle', 'text' => 'A bride walks the aisle between the candles.' ),
+		array( 'b' => 5, 'img' => 'printer', 'name' => 'Paper jam', 'text' => 'A hand presses the button, and PAPER JAM turns READY on the beat.' ),
+		array( 'b' => 8, 'img' => 'xray', 'name' => 'Muscle x-ray', 'text' => 'The lats fire through an athlete’s back, every muscle named.' ),
+		array( 'b' => 10, 'img' => 'storm', 'name' => 'Storm wave', 'text' => 'A ten-metre wave slams into a bridge pier.' ),
+		array( 'b' => 11, 'img' => 'vault', 'name' => 'The vault', 'text' => 'The dial turns, and the bolts open.' ),
+		array( 'b' => 14, 'img' => 'wall', 'name' => 'Up the wall', 'text' => 'A roadster races straight up a vertical wall into the stop.' ),
+		array( 'b' => 16, 'img' => 'bombs', 'name' => 'Second drop', 'text' => 'Bombs land on the relief map, each with a real explosion.' ),
+		array( 'b' => 20, 'img' => 'soldiers', 'name' => 'Taking aim', 'text' => 'Soldiers take aim at a boy with his hands up.' ),
+		array( 'b' => 27, 'img' => 'flip', 'name' => 'The flip', 'text' => 'The roadster flips over a row of cars and trucks.' ),
+		array( 'b' => 29, 'img' => 'tank', 'name' => 'Tank at sunset', 'text' => 'The tank in the sight fires.' ),
+		array( 'b' => 31, 'img' => 'finale', 'name' => 'Finale', 'text' => 'The roadster drives out of the smoke, the name over it.' ),
+	),
+);
+foreach ( $rs_sr_3d['moments'] as $rs_sr_n => $rs_sr_m ) {
+	$rs_sr_3d['moments'][ $rs_sr_n ]['t'] = round( $rs_sr_m['b'] * $rs_sr_3d_beat, 3 );
+}
+
 
 /* The beat ruler, drawn once here: 20 units a second, 120 beats, a bar line every four. */
 $rs_sr_beats = '';
@@ -143,6 +195,21 @@ foreach ( $rs_sr_cuts as $rs_sr_key => $rs_sr_cut ) {
 	}
 	$rs_sr_graph[] = $rs_sr_video;
 }
+foreach ( $rs_sr_3d['cuts'] as $rs_sr_key => $rs_sr_cut ) {
+	$rs_sr_graph[] = array(
+		'@type'        => 'VideoObject',
+		'name'         => $rs_sr_cut['name'],
+		'description'  => 'The 3D showreel of Raisul Sohan: 17 seconds of 3D scenes, aircraft, vehicles, characters, interiors and war maps, every cut on the beat of a score made for it.',
+		'thumbnailUrl' => array( $rs_sr_img . '3d-poster-' . $rs_sr_key . '.webp' . $rs_sr_ver ),
+		'uploadDate'   => $rs_sr_cut['date'],
+		'duration'     => 'PT17S',
+		'embedUrl'     => 'https://www.youtube.com/embed/' . $rs_sr_cut['id'],
+		'url'          => $rs_sr_cut['watch'],
+		'width'        => $rs_sr_cut['w'],
+		'height'       => $rs_sr_cut['h'],
+		'author'       => array( '@id' => $rs_sr_person['@id'] ),
+	);
+}
 
 /* Small inline icons (24 × 24, drawn with the text colour). */
 $rs_sr_icons = array(
@@ -163,6 +230,74 @@ $rs_sr_icons = array(
 );
 $rs_sr_icon = function ( $name, $class = '' ) use ( $rs_sr_icons ) {
 	return '<svg class="ic' . ( $class ? ' ' . $class : '' ) . '" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . $rs_sr_icons[ $name ] . '</svg>';
+};
+
+/*
+ * One player: the still with its play button, then the control bar under it. Both reels use it; the script finds
+ * each part by data-r inside the player, and the reel's data (cuts, length, frames) by data-reel.
+ *
+ * $p: key, watch (the 16:9 link), aria (the still's label), play (the button's words), small (under them),
+ * dur (seconds), frames, total ("1:00"), ticks (seconds), stills (the <img> tags, already escaped).
+ */
+$rs_sr_player = function ( $p ) use ( $rs_sr_icon ) {
+	$k = $p['key'];
+	?>
+	<div class="player" data-reel="<?php echo esc_attr( $k ); ?>" tabindex="-1">
+		<div class="screen" data-r="screen">
+			<a class="facade" data-r="facade" href="<?php echo esc_url( $p['watch'] ); ?>" aria-label="<?php echo esc_attr( $p['aria'] ); ?>">
+				<?php echo $p['stills']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built from escaped parts by the caller. ?>
+				<span class="bigplay"><span class="disc"><?php echo $rs_sr_icon( 'play' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></span><span><b data-r="flabel"><?php echo esc_html( $p['play'] ); ?></b><small><?php echo esc_html( $p['small'] ); ?></small></span></span>
+			</a>
+		</div>
+		<div class="bar" role="group" aria-label="Player controls">
+			<div class="seek" data-r="seekwrap">
+				<input class="seekr" data-r="seek" type="range" min="0" max="<?php echo esc_attr( $p['dur'] ); ?>" step="any" value="0" aria-label="Seek" aria-valuetext="<?php echo esc_attr( '0:00 of ' . $p['total'] ); ?>">
+				<div class="ticks" aria-hidden="true">
+					<?php foreach ( $p['ticks'] as $t ) : ?>
+						<i style="left:<?php echo esc_attr( round( $t / $p['dur'] * 100, 4 ) ); ?>%"></i>
+					<?php endforeach; ?>
+				</div>
+				<div class="tip" data-r="tip" aria-hidden="true"></div>
+			</div>
+			<div class="ctl">
+				<div class="grp t-grp">
+					<button type="button" class="ib" data-r="restart" aria-label="Restart" title="Restart (Home)"><?php echo $rs_sr_icon( 'restart' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
+					<button type="button" class="ib" data-r="back" aria-label="Previous frame" title="Previous frame (← or ,)"><?php echo $rs_sr_icon( 'back' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
+					<button type="button" class="ib main" data-r="play" aria-label="Play" title="Play (Space or K)"><?php echo $rs_sr_icon( 'play', 'i-play' ) . $rs_sr_icon( 'pause', 'i-pause' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
+					<button type="button" class="ib" data-r="fwd" aria-label="Next frame" title="Next frame (→ or .)"><?php echo $rs_sr_icon( 'fwd' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
+				</div>
+				<div class="read">
+					<span><b data-r="tnow">0:00</b> / <?php echo esc_html( $p['total'] ); ?></span>
+					<span>Frame <b data-r="fnow">1</b> / <?php echo esc_html( $p['frames'] ); ?></span>
+				</div>
+				<span class="spacer"></span>
+				<div class="spd">
+					<label class="sr" for="<?php echo esc_attr( 'speed-' . $k ); ?>">Playback speed</label>
+					<select class="speed" id="<?php echo esc_attr( 'speed-' . $k ); ?>" data-r="speed" title="Playback speed">
+						<option value="0.25">0.25×</option>
+						<option value="0.5">0.5×</option>
+						<option value="0.75">0.75×</option>
+						<option value="1" selected>1×</option>
+						<option value="1.25">1.25×</option>
+						<option value="1.5">1.5×</option>
+						<option value="2">2×</option>
+					</select>
+				</div>
+				<div class="grp o-grp">
+					<button type="button" class="ib" data-r="loop" aria-pressed="false" aria-label="Loop" title="Loop (L)"><?php echo $rs_sr_icon( 'loop' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
+					<button type="button" class="ib" data-r="mute" aria-pressed="false" aria-label="Mute" title="Mute (M)"><?php echo $rs_sr_icon( 'sound', 'i-sound' ) . $rs_sr_icon( 'muted', 'i-muted' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
+					<input class="volr" data-r="vol" type="range" min="0" max="100" step="1" value="100" aria-label="Volume" title="Volume">
+					<button type="button" class="ib" data-r="full" aria-label="Full screen" title="Full screen (F)"><?php echo $rs_sr_icon( 'full', 'i-full' ) . $rs_sr_icon( 'exit', 'i-exit' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<?php
+};
+
+/* An <img> for a player's still. */
+$rs_sr_still = function ( $class, $file, $w, $h, $alt, $extra = '' ) use ( $rs_sr_img, $rs_sr_ver ) {
+	return '<img class="' . esc_attr( $class ) . '" src="' . esc_url( $rs_sr_img . $file . $rs_sr_ver ) . '" width="' . (int) $w . '" height="' . (int) $h . '" alt="' . esc_attr( $alt ) . '"' . $extra . '>';
 };
 ?><!doctype html>
 <html lang="en" data-cut="169">
@@ -351,14 +486,14 @@ $rs_sr_icon = function ( $name, $class = '' ) use ( $rs_sr_icons ) {
 	.bar { --barbg: var(--tile); container: bar / inline-size; padding: 8px clamp(10px, 1.6vw, 18px) 12px; background: var(--barbg); user-select: none; -webkit-user-select: none; }
 	.seek { position: relative; height: 26px; display: flex; align-items: center; }
 	input[type=range] { -webkit-appearance: none; appearance: none; margin: 0; background: transparent; cursor: pointer; touch-action: none; }
-	#seek { width: 100%; height: 26px; --p: 0%; --b: 0%; }
-	#seek::-webkit-slider-runnable-track { height: 5px; border-radius: 5px; background: linear-gradient(to right, var(--acc) 0 var(--p), rgba(255, 255, 255, .4) var(--p) max(var(--p), var(--b)), rgba(255, 255, 255, .16) 0); }
-	#seek::-moz-range-track { height: 5px; border-radius: 5px; background: linear-gradient(to right, var(--acc) 0 var(--p), rgba(255, 255, 255, .4) var(--p) max(var(--p), var(--b)), rgba(255, 255, 255, .16) 0); }
-	#seek::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; margin-top: -5px; border-radius: 50%; background: #fff; box-shadow: 0 1px 5px rgba(0, 0, 0, .45); transform: scale(.8); transition: transform .15s var(--ease); }
-	#seek::-moz-range-thumb { width: 15px; height: 15px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 1px 5px rgba(0, 0, 0, .45); transform: scale(.8); transition: transform .15s var(--ease); }
-	.seek:hover #seek::-webkit-slider-thumb, #seek:active::-webkit-slider-thumb, #seek:focus-visible::-webkit-slider-thumb { transform: scale(1.05); }
-	.seek:hover #seek::-moz-range-thumb, #seek:active::-moz-range-thumb { transform: scale(1.05); }
-	#seek:focus-visible { outline-offset: 1px; }
+	.seekr { width: 100%; height: 26px; --p: 0%; --b: 0%; }
+	.seekr::-webkit-slider-runnable-track { height: 5px; border-radius: 5px; background: linear-gradient(to right, var(--acc) 0 var(--p), rgba(255, 255, 255, .4) var(--p) max(var(--p), var(--b)), rgba(255, 255, 255, .16) 0); }
+	.seekr::-moz-range-track { height: 5px; border-radius: 5px; background: linear-gradient(to right, var(--acc) 0 var(--p), rgba(255, 255, 255, .4) var(--p) max(var(--p), var(--b)), rgba(255, 255, 255, .16) 0); }
+	.seekr::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; margin-top: -5px; border-radius: 50%; background: #fff; box-shadow: 0 1px 5px rgba(0, 0, 0, .45); transform: scale(.8); transition: transform .15s var(--ease); }
+	.seekr::-moz-range-thumb { width: 15px; height: 15px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 1px 5px rgba(0, 0, 0, .45); transform: scale(.8); transition: transform .15s var(--ease); }
+	.seek:hover .seekr::-webkit-slider-thumb, .seekr:active::-webkit-slider-thumb, .seekr:focus-visible::-webkit-slider-thumb { transform: scale(1.05); }
+	.seek:hover .seekr::-moz-range-thumb, .seekr:active::-moz-range-thumb { transform: scale(1.05); }
+	.seekr:focus-visible { outline-offset: 1px; }
 	.ticks i { position: absolute; top: 50%; width: 3px; height: 9px; margin-left: -1.5px; transform: translateY(-50%); background: var(--barbg); pointer-events: none; }
 	.tip {
 		position: absolute; bottom: 30px; left: 0; z-index: 3; padding: 5px 9px; border-radius: 8px; white-space: nowrap; pointer-events: none;
@@ -389,12 +524,12 @@ $rs_sr_icon = function ( $name, $class = '' ) use ( $rs_sr_icons ) {
 	.speed { appearance: none; -webkit-appearance: none; height: 32px; padding: 0 12px; border: 0; border-radius: 9px; background: rgba(255, 255, 255, .09); font-size: 13px; font-weight: 600; letter-spacing: 0; cursor: pointer; text-align: center; }
 	.speed:hover { background: rgba(255, 255, 255, .14); }
 	.speed option { background: #2c2c2e; color: var(--fg); }
-	#vol { width: 84px; height: 26px; margin: 0 6px 0 2px; --v: 100%; }
-	#vol::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: linear-gradient(to right, var(--fg) 0 var(--v), rgba(255, 255, 255, .2) var(--v)); }
-	#vol::-moz-range-track { height: 4px; border-radius: 4px; background: linear-gradient(to right, var(--fg) 0 var(--v), rgba(255, 255, 255, .2) var(--v)); }
-	#vol::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; margin-top: -4.5px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, .4); }
-	#vol::-moz-range-thumb { width: 13px; height: 13px; border: 0; border-radius: 50%; background: #fff; }
-	@media (pointer: coarse) { .ib { width: 44px; height: 44px; } .ib.main { width: 48px; height: 48px; } #vol { display: none; } }
+	.volr { width: 84px; height: 26px; margin: 0 6px 0 2px; --v: 100%; }
+	.volr::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: linear-gradient(to right, var(--fg) 0 var(--v), rgba(255, 255, 255, .2) var(--v)); }
+	.volr::-moz-range-track { height: 4px; border-radius: 4px; background: linear-gradient(to right, var(--fg) 0 var(--v), rgba(255, 255, 255, .2) var(--v)); }
+	.volr::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; margin-top: -4.5px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, .4); }
+	.volr::-moz-range-thumb { width: 13px; height: 13px; border: 0; border-radius: 50%; background: #fff; }
+	@media (pointer: coarse) { .ib { width: 44px; height: 44px; } .ib.main { width: 48px; height: 48px; } .volr { display: none; } }
 	.spd { display: flex; align-items: center; }
 	/* a narrow player (a phone, or the 4:5 cut): the buttons on one row, the readouts and the speed under them */
 	@container bar (max-width: 600px) {
@@ -575,6 +710,23 @@ $rs_sr_icon = function ( $name, $class = '' ) use ( $rs_sr_icons ) {
 	.top-btn.on { opacity: 1; visibility: visible; transform: none; transition: opacity .3s, transform .4s var(--out); }
 	.top-btn .ic { width: 18px; height: 18px; }
 
+	/* the 3D Showreel: its own section, player and moments, after the minute reel's */
+	.new3d {
+		display: inline-flex; align-items: center; gap: 10px; margin-top: clamp(22px, 2.6vw, 30px); padding: 6px 14px 6px 6px; border-radius: 980px;
+		background: rgba(255, 255, 255, .08); color: var(--fg); font-size: 15px; font-weight: 600; letter-spacing: -.01em; text-decoration: none; transition: background-color .2s;
+	}
+	.new3d:hover { background: rgba(255, 255, 255, .13); }
+	.new3d b { padding: 3px 9px; border-radius: 980px; background: var(--acc); color: var(--ink); font-size: 12px; font-weight: 700; letter-spacing: 0; }
+	.new3d .ic { width: 15px; height: 15px; color: var(--fg2); }
+	.sect.s3d { padding-top: clamp(88px, 13vw, 168px); border-top: 1px solid var(--line); }
+	.f3d { margin-top: clamp(40px, 6vw, 72px); }
+	.under .more.sm { font-size: 14px; margin-left: 4px; white-space: nowrap; }
+	.under .more.sm .ic { width: 13px; height: 13px; }
+	.m3head { margin-top: clamp(64px, 9vw, 112px); }
+	.m3head h3 { margin: 0; font-size: clamp(26px, 3vw, 36px); line-height: 1.12; font-weight: 700; letter-spacing: -.03em; }
+	.m3head p { margin: 8px 0 0; color: var(--fg2); font-size: 17px; }
+	.m3head + .gallery { padding-top: clamp(24px, 3vw, 36px); }
+
 	@media (prefers-reduced-motion: reduce) {
 		.fill, .js .dot, .js .rise { animation: none; }
 		.js .rv { transform: none; transition: opacity .4s; }
@@ -598,6 +750,7 @@ $rs_sr_icon = function ( $name, $class = '' ) use ( $rs_sr_icons ) {
 		<a class="brand" href="<?php echo esc_url( $rs_sr_home ); ?>">Raisul Sohan<i aria-hidden="true"></i></a>
 		<span class="ntitle">Showreel 2026</span>
 		<nav class="nlinks" aria-label="On this page">
+			<a href="#reel3d">3D reel</a>
 			<a href="#chapters">Chapters</a>
 			<a href="#rhythm">Rhythm</a>
 			<a href="#formats">Formats</a>
@@ -617,65 +770,34 @@ $rs_sr_icon = function ( $name, $class = '' ) use ( $rs_sr_icons ) {
 		<p class="lede rise d3"><b>24 works. 60 seconds.</b> A cut on every beat.</p>
 		<div class="cta rise d4">
 			<a class="pill" href="#watch" data-play><?php echo $rs_sr_icon( 'play' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?>Watch the reel</a>
-			<a class="more" id="ytLink" href="<?php echo esc_url( $rs_sr_cuts['169']['watch'] ); ?>" target="_blank" rel="noopener">Watch on YouTube<?php echo $rs_sr_icon( 'out' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></a>
+			<a class="more" data-yt="main" href="<?php echo esc_url( $rs_sr_cuts['169']['watch'] ); ?>" target="_blank" rel="noopener">Watch on YouTube<?php echo $rs_sr_icon( 'out' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></a>
 		</div>
+		<a class="new3d rise d4" href="#reel3d"><b>New</b>3D Showreel 2026: 17 seconds of 3D<?php echo $rs_sr_icon( 'right' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></a>
 	</section>
 
 	<section class="stage" id="watch" aria-label="The reel">
 		<div class="frame">
-			<div class="player" id="player" tabindex="-1">
-				<div class="screen" id="screen">
-					<a class="facade" id="facade" href="<?php echo esc_url( $rs_sr_cuts['169']['watch'] ); ?>" aria-label="Play the reel, 1 minute">
-						<img class="v169" src="<?php echo esc_url( $rs_sr_img . 'poster-169.webp' . $rs_sr_ver ); ?>" srcset="<?php echo esc_url( $rs_sr_img . 'poster-169-960.webp' . $rs_sr_ver ); ?> 960w, <?php echo esc_url( $rs_sr_img . 'poster-169.webp' . $rs_sr_ver ); ?> 1920w" sizes="(max-width: 1272px) calc(100vw - 32px), 1240px" width="1920" height="1080" alt="A giant cartoon fish rising out of the sea at sunset, the first shot of the reel" fetchpriority="high">
-						<img class="v45" src="<?php echo esc_url( $rs_sr_img . 'poster-45.webp' . $rs_sr_ver ); ?>" srcset="<?php echo esc_url( $rs_sr_img . 'poster-45-720.webp' . $rs_sr_ver ); ?> 720w, <?php echo esc_url( $rs_sr_img . 'poster-45.webp' . $rs_sr_ver ); ?> 1080w" sizes="(max-width: 632px) calc(100vw - 32px), 600px" width="1080" height="1350" alt="A giant cartoon fish rising out of the sea at sunset, the first shot of the reel">
-						<img class="v169 vend" src="<?php echo esc_url( $rs_sr_img . 'ch-52-169.webp' . $rs_sr_ver ); ?>" width="960" height="540" alt="The reel's end card: Raisul Sohan, motion designer and animator, connect with me" loading="lazy">
-						<img class="v45 vend" src="<?php echo esc_url( $rs_sr_img . 'ch-52-45.webp' . $rs_sr_ver ); ?>" width="720" height="900" alt="The reel's end card: Raisul Sohan, motion designer and animator, connect with me" loading="lazy">
-						<span class="bigplay"><span class="disc"><?php echo $rs_sr_icon( 'play' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></span><span><b id="fLabel">Play the reel</b><small>1:00 · sound on</small></span></span>
-					</a>
-				</div>
-				<div class="bar" role="group" aria-label="Player controls">
-					<div class="seek" id="seekWrap">
-						<input id="seek" type="range" min="0" max="60" step="any" value="0" aria-label="Seek" aria-valuetext="0:00 of 1:00">
-						<div class="ticks" aria-hidden="true">
-							<?php foreach ( array_slice( $rs_sr_chapters, 1 ) as $rs_sr_c ) : ?>
-								<i style="left:<?php echo esc_attr( round( $rs_sr_c['t'] / 60 * 100, 4 ) ); ?>%"></i>
-							<?php endforeach; ?>
-						</div>
-						<div class="tip" id="tip" aria-hidden="true"></div>
-					</div>
-					<div class="ctl">
-						<div class="grp t-grp">
-							<button type="button" class="ib" id="bRestart" aria-label="Restart" title="Restart (Home)"><?php echo $rs_sr_icon( 'restart' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
-							<button type="button" class="ib" id="bBack" aria-label="Previous frame" title="Previous frame (← or ,)"><?php echo $rs_sr_icon( 'back' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
-							<button type="button" class="ib main" id="bPlay" aria-label="Play" title="Play (Space or K)"><?php echo $rs_sr_icon( 'play', 'i-play' ) . $rs_sr_icon( 'pause', 'i-pause' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
-							<button type="button" class="ib" id="bFwd" aria-label="Next frame" title="Next frame (→ or .)"><?php echo $rs_sr_icon( 'fwd' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
-						</div>
-						<div class="read">
-							<span><b id="tNow">0:00</b> / 1:00</span>
-							<span>Frame <b id="fNow">1</b> / 3600</span>
-						</div>
-						<span class="spacer"></span>
-						<div class="spd">
-							<label class="sr" for="speed">Playback speed</label>
-							<select class="speed" id="speed" title="Playback speed">
-								<option value="0.25">0.25×</option>
-								<option value="0.5">0.5×</option>
-								<option value="0.75">0.75×</option>
-								<option value="1" selected>1×</option>
-								<option value="1.25">1.25×</option>
-								<option value="1.5">1.5×</option>
-								<option value="2">2×</option>
-							</select>
-						</div>
-						<div class="grp o-grp">
-							<button type="button" class="ib" id="bLoop" aria-pressed="false" aria-label="Loop" title="Loop (L)"><?php echo $rs_sr_icon( 'loop' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
-							<button type="button" class="ib" id="bMute" aria-pressed="false" aria-label="Mute" title="Mute (M)"><?php echo $rs_sr_icon( 'sound', 'i-sound' ) . $rs_sr_icon( 'muted', 'i-muted' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
-							<input id="vol" type="range" min="0" max="100" step="1" value="100" aria-label="Volume" title="Volume">
-							<button type="button" class="ib" id="bFull" aria-label="Full screen" title="Full screen (F)"><?php echo $rs_sr_icon( 'full', 'i-full' ) . $rs_sr_icon( 'exit', 'i-exit' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
-						</div>
-					</div>
-				</div>
-			</div>
+			<?php
+			$rs_sr_alt_first = 'A giant cartoon fish rising out of the sea at sunset, the first shot of the reel';
+			$rs_sr_alt_end   = "The reel's end card: Raisul Sohan, motion designer and animator, connect with me";
+			$rs_sr_player(
+				array(
+					'key'    => 'main',
+					'watch'  => $rs_sr_cuts['169']['watch'],
+					'aria'   => 'Play the reel, 1 minute',
+					'play'   => 'Play the reel',
+					'small'  => '1:00 · sound on',
+					'dur'    => 60,
+					'frames' => 3600,
+					'total'  => '1:00',
+					'ticks'  => wp_list_pluck( array_slice( $rs_sr_chapters, 1 ), 't' ),
+					'stills' => $rs_sr_still( 'v169', 'poster-169.webp', 1920, 1080, $rs_sr_alt_first, ' srcset="' . esc_url( $rs_sr_img . 'poster-169-960.webp' . $rs_sr_ver ) . ' 960w, ' . esc_url( $rs_sr_img . 'poster-169.webp' . $rs_sr_ver ) . ' 1920w" sizes="(max-width: 1272px) calc(100vw - 32px), 1240px" fetchpriority="high"' )
+						. $rs_sr_still( 'v45', 'poster-45.webp', 1080, 1350, $rs_sr_alt_first, ' srcset="' . esc_url( $rs_sr_img . 'poster-45-720.webp' . $rs_sr_ver ) . ' 720w, ' . esc_url( $rs_sr_img . 'poster-45.webp' . $rs_sr_ver ) . ' 1080w" sizes="(max-width: 632px) calc(100vw - 32px), 600px"' )
+						. $rs_sr_still( 'v169 vend', 'ch-52-169.webp', 960, 540, $rs_sr_alt_end, ' loading="lazy"' )
+						. $rs_sr_still( 'v45 vend', 'ch-52-45.webp', 720, 900, $rs_sr_alt_end, ' loading="lazy"' ),
+				)
+			);
+			?>
 			<div class="under">
 				<p><b>Documentary, maps, 3D, character and UI motion</b>, cut to an original score. <span class="keys">Space plays, the arrow keys step one frame.</span></p>
 				<div class="segwrap">
@@ -696,9 +818,9 @@ $rs_sr_icon = function ( $name, $class = '' ) use ( $rs_sr_icons ) {
 			<h2 class="h2 rv" id="chTitle">Six chapters.<br>One minute.</h2>
 			<p class="intro rv">Pick a chapter and <b>the reel plays from there.</b></p>
 		</div>
-		<div class="gallery rv" id="gallery">
+		<div class="gallery rv" data-gal="main">
 			<?php foreach ( $rs_sr_chapters as $rs_sr_n => $rs_sr_c ) : ?>
-				<a class="card" href="<?php echo esc_url( $rs_sr_cuts['169']['watch'] . '&t=' . $rs_sr_c['t'] . 's' ); ?>" data-t="<?php echo esc_attr( $rs_sr_c['t'] ); ?>" aria-label="<?php echo esc_attr( 'Play from ' . $rs_sr_fmt( $rs_sr_c['t'] ) . ', ' . $rs_sr_c['name'] ); ?>">
+				<a class="card" data-reel="main" href="<?php echo esc_url( $rs_sr_cuts['169']['watch'] . '&t=' . $rs_sr_c['t'] . 's' ); ?>" data-t="<?php echo esc_attr( $rs_sr_c['t'] ); ?>" aria-label="<?php echo esc_attr( 'Play from ' . $rs_sr_fmt( $rs_sr_c['t'] ) . ', ' . $rs_sr_c['name'] ); ?>">
 					<span class="media">
 						<img class="v169" src="<?php echo esc_url( $rs_sr_img . 'ch-' . $rs_sr_c['img'] . '-169.webp' . $rs_sr_ver ); ?>" width="960" height="540" alt="" loading="lazy" decoding="async">
 						<img class="v45" src="<?php echo esc_url( $rs_sr_img . 'ch-' . $rs_sr_c['img'] . '-45.webp' . $rs_sr_ver ); ?>" width="720" height="900" alt="" loading="lazy" decoding="async">
@@ -711,8 +833,8 @@ $rs_sr_icon = function ( $name, $class = '' ) use ( $rs_sr_icons ) {
 			<?php endforeach; ?>
 		</div>
 		<div class="col paddles">
-			<button type="button" class="paddle" id="galPrev" aria-label="Previous chapters" disabled><?php echo $rs_sr_icon( 'left' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
-			<button type="button" class="paddle" id="galNext" aria-label="More chapters"><?php echo $rs_sr_icon( 'right' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
+			<button type="button" class="paddle" data-gal-prev="main" aria-label="Previous chapters" disabled><?php echo $rs_sr_icon( 'left' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
+			<button type="button" class="paddle" data-gal-next="main" aria-label="More chapters"><?php echo $rs_sr_icon( 'right' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
 		</div>
 	</section>
 
@@ -780,6 +902,77 @@ $rs_sr_icon = function ( $name, $class = '' ) use ( $rs_sr_icons ) {
 		</div>
 	</section>
 
+	<section class="sect s3d" id="reel3d" aria-labelledby="r3Title">
+		<div class="col">
+			<p class="kicker rv">New · 3D Showreel 2026</p>
+			<h2 class="h2 rv" id="r3Title">Seventeen seconds.<br>All 3D.</h2>
+			<p class="intro rv">An A380 on the drop, a vault cracking open, muscles firing through an athlete’s back, a roadster up a vertical wall, bombs on the second drop and a finale out of the smoke. <b>Every cut on the beat.</b></p>
+		</div>
+		<div class="frame f3d">
+			<?php
+			$rs_sr_alt_3d  = '3D Showreel: an A380, a muscle x-ray, a bride and a roadster flipping through smoke';
+			$rs_sr_alt_3de = '3D Showreel end card: Raisul Sohan, 3D animation, motion design, explainers, over the roadster in the smoke';
+			$rs_sr_player(
+				array(
+					'key'    => '3d',
+					'watch'  => $rs_sr_3d['cuts']['169']['watch'],
+					'aria'   => 'Play the 3D showreel, 17 seconds',
+					'play'   => 'Play the 3D reel',
+					'small'  => '0:17 · sound on',
+					'dur'    => round( $rs_sr_3d['dur'], 4 ),
+					'frames' => (int) round( $rs_sr_3d['dur'] * $rs_sr_3d['fps'] ),
+					'total'  => '0:17',
+					'ticks'  => array( 16 * $rs_sr_3d_beat, 31 * $rs_sr_3d_beat ),
+					'stills' => $rs_sr_still( 'v169', '3d-poster-169.webp', 1920, 1080, $rs_sr_alt_3d, ' srcset="' . esc_url( $rs_sr_img . '3d-poster-169-960.webp' . $rs_sr_ver ) . ' 960w, ' . esc_url( $rs_sr_img . '3d-poster-169.webp' . $rs_sr_ver ) . ' 1920w" sizes="(max-width: 1272px) calc(100vw - 32px), 1240px" loading="lazy" decoding="async"' )
+						. $rs_sr_still( 'v45', '3d-poster-45.webp', 1080, 1350, $rs_sr_alt_3d, ' srcset="' . esc_url( $rs_sr_img . '3d-poster-45-720.webp' . $rs_sr_ver ) . ' 720w, ' . esc_url( $rs_sr_img . '3d-poster-45.webp' . $rs_sr_ver ) . ' 1080w" sizes="(max-width: 632px) calc(100vw - 32px), 600px" loading="lazy" decoding="async"' )
+						. $rs_sr_still( 'v169 vend', '3d-end-169.webp', 960, 540, $rs_sr_alt_3de, ' loading="lazy"' )
+						. $rs_sr_still( 'v45 vend', '3d-end-45.webp', 720, 900, $rs_sr_alt_3de, ' loading="lazy"' ),
+				)
+			);
+			?>
+			<div class="under">
+				<p><b>Aircraft, vehicles, characters, interiors and war maps</b>, with a score made for the reel and real explosions on the bombs and the tank. <a class="more sm" data-yt="3d" href="<?php echo esc_url( $rs_sr_3d['cuts']['169']['watch'] ); ?>" target="_blank" rel="noopener">Watch on YouTube<?php echo $rs_sr_icon( 'out' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></a></p>
+				<div class="segwrap">
+					<div class="seg" role="radiogroup" aria-label="Cut of the 3D reel">
+						<span class="knob" aria-hidden="true"></span>
+						<button type="button" role="radio" aria-checked="true" data-cut="169">Widescreen<span>16:9</span></button>
+						<button type="button" role="radio" aria-checked="false" data-cut="45">Vertical<span>4:5</span></button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col m3head">
+			<h3 class="rv">Twelve moments</h3>
+			<p class="rv">Pick one and the 3D reel plays from there.</p>
+		</div>
+		<div class="gallery rv" data-gal="3d">
+			<?php foreach ( $rs_sr_3d['moments'] as $rs_sr_m ) : ?>
+				<a class="card m3" data-reel="3d" href="<?php echo esc_url( $rs_sr_3d['cuts']['169']['watch'] . '&t=' . floor( $rs_sr_m['t'] ) . 's' ); ?>" data-t="<?php echo esc_attr( $rs_sr_m['t'] ); ?>" aria-label="<?php echo esc_attr( 'Play the 3D reel from ' . $rs_sr_fmt( $rs_sr_m['t'] ) . ', ' . $rs_sr_m['name'] ); ?>">
+					<span class="media">
+						<img class="v169" src="<?php echo esc_url( $rs_sr_img . '3d-' . $rs_sr_m['img'] . '-169.webp' . $rs_sr_ver ); ?>" width="960" height="540" alt="" loading="lazy" decoding="async">
+						<img class="v45" src="<?php echo esc_url( $rs_sr_img . '3d-' . $rs_sr_m['img'] . '-45.webp' . $rs_sr_ver ); ?>" width="720" height="900" alt="" loading="lazy" decoding="async">
+						<span class="mini"><?php echo $rs_sr_icon( 'play' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></span>
+					</span>
+					<span class="tc"><?php echo esc_html( $rs_sr_fmt( $rs_sr_m['t'] ) ); ?><em>Now</em></span>
+					<h3><?php echo esc_html( $rs_sr_m['name'] ); ?></h3>
+					<p><?php echo esc_html( $rs_sr_m['text'] ); ?></p>
+				</a>
+			<?php endforeach; ?>
+		</div>
+		<div class="col paddles">
+			<button type="button" class="paddle" data-gal-prev="3d" aria-label="Previous moments" disabled><?php echo $rs_sr_icon( 'left' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
+			<button type="button" class="paddle" data-gal-next="3d" aria-label="More moments"><?php echo $rs_sr_icon( 'right' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static SVG. ?></button>
+		</div>
+		<div class="col">
+			<dl class="facts rv">
+				<div><dt>seconds</dt><dd>17</dd></div>
+				<div><dt>shots, every cut on a beat</dt><dd>19</dd></div>
+				<div><dt>beats a minute</dt><dd>128</dd></div>
+				<div><dt>frames a second</dt><dd>30</dd></div>
+			</dl>
+		</div>
+	</section>
+
 	<section class="contact" id="contact" aria-labelledby="ctTitle">
 		<div class="col">
 			<p class="kicker rv">Let's work together</p>
@@ -804,7 +997,8 @@ $rs_sr_icon = function ( $name, $class = '' ) use ( $rs_sr_icons ) {
 			<a href="<?php echo esc_url( home_url( '/cv/' ) ); ?>">CV</a>
 			<a href="https://www.youtube.com/@lettertosohan" target="_blank" rel="noopener">YouTube</a>
 		</nav>
-		<p>The reel plays from YouTube, and nothing from YouTube loads until you go to play it. The true-crime cases in the reel are fictional. Map data © OpenStreetMap contributors, Natural Earth, NASA Blue Marble and GEBCO; satellite imagery by Esri, Maxar, Earthstar Geographics and the GIS User Community.</p>
+		<p>The reels play from YouTube, and nothing from YouTube loads until you go to play one. The true-crime cases in the reel are fictional. Map data © OpenStreetMap contributors, Natural Earth, NASA Blue Marble and GEBCO; satellite imagery by Esri, Maxar, Earthstar Geographics and the GIS User Community.</p>
+		<p>3D Showreel: “Radiant Bride in Lace” and “Bride in Lace Wedding Dress with Bouquet” by restore50, “Flower Bouquet” by ice and “wedding_bouquet” by tech.service.allwe, all <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> on Sketchfab. Explosions and sound effects from Pixabay.</p>
 		<p>© <?php echo esc_html( gmdate( 'Y' ) ); ?> Raisul Sohan · <a href="<?php echo esc_url( $rs_sr_home ); ?>">raisulsohan.com</a></p>
 	</div>
 </footer>
@@ -814,11 +1008,30 @@ $rs_sr_icon = function ( $name, $class = '' ) use ( $rs_sr_icons ) {
 <script>
 (() => {
 'use strict';
-// The two cuts on YouTube, the reel's chapters and its cuts (seconds).
-const CUTS = <?php echo wp_json_encode( array_map( function ( $c ) { return array( 'id' => $c['id'], 'watch' => $c['watch'] ); }, $rs_sr_cuts ) ); ?>;
-const CH = <?php echo wp_json_encode( array_map( function ( $c ) { return array( 't' => $c['t'], 'name' => $c['name'] ); }, $rs_sr_chapters ) ); ?>;
+// The two reels: each one's cuts on YouTube, its parts (seconds, for the tip and the readout), length and frame rate.
+const REELS = <?php
+echo wp_json_encode(
+	array(
+		'main' => array(
+			'cuts'  => array_map( function ( $c ) { return array( 'id' => $c['id'], 'watch' => $c['watch'] ); }, $rs_sr_cuts ),
+			'ch'    => array_map( function ( $c ) { return array( 't' => $c['t'], 'name' => $c['name'] ); }, $rs_sr_chapters ),
+			'dur'   => 60,
+			'fps'   => 60,
+			'title' => 'Raisul Sohan, Showreel 2026 (YouTube)',
+			'play'  => 'Play the reel',
+		),
+		'3d'   => array(
+			'cuts'  => array_map( function ( $c ) { return array( 'id' => $c['id'], 'watch' => $c['watch'] ); }, $rs_sr_3d['cuts'] ),
+			'ch'    => array_map( function ( $m ) { return array( 't' => $m['t'], 'name' => $m['name'] ); }, $rs_sr_3d['moments'] ),
+			'dur'   => round( $rs_sr_3d['dur'], 4 ),
+			'fps'   => $rs_sr_3d['fps'],
+			'title' => 'Raisul Sohan, 3D Showreel 2026 (YouTube)',
+			'play'  => 'Play the 3D reel',
+		),
+	)
+);
+?>;
 const CUT_T = <?php echo wp_json_encode( array_values( $rs_sr_cut_times ) ); ?>;
-const DUR = 60, FPS = 60, FRAMES = DUR * FPS;
 
 const root = document.documentElement;
 const $ = id => document.getElementById(id);
@@ -826,16 +1039,26 @@ const $$ = (sel, el = document) => Array.from(el.querySelectorAll(sel));
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const fmt = t => { t = Math.max(0, t); const s = Math.floor(t + 1e-6); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
-const frameAt = t => Math.min(FRAMES, Math.floor(t * FPS + 1e-6) + 1);
-const chapterAt = t => { let i = 0; CH.forEach((c, k) => { if (t + 1e-6 >= c.t) i = k; }); return i; };
+let cut = root.dataset.cut === '45' ? '45' : '169';
 
-const player = $('player'), screenEl = $('screen'), facade = $('facade'), seekEl = $('seek'), volEl = $('vol'), speedEl = $('speed');
-const cards = $$('.card'), ruler = $('ruler'), grid = $('grid'), head = $('head');
-
-// S.t is the playhead in seconds; YT is the YouTube player once it exists.
-const S = { cut: root.dataset.cut === '45' ? '45' : '169', t: 0, playing: false, wantPlay: false, holdPause: false, holdT: 0, ready: false, pending: false,
-	rate: 1, loop: false, muted: false, vol: 100, dragging: false, inView: false, pseudo: false, lastCt: 0, lastAt: 0, ovr: null, ci: -1, failed: false, cancelled: false, loadedCut: null };
-let YT = null, revealT = 0, raf = 0;
+/* ── Volume and mute follow the visitor across reloads and visits: the vp_prefs cookie, localStorage as the fallback ── */
+const PREF = { vol: 100, muted: false };
+function readPrefs() {
+	let p = null;
+	try { const m = document.cookie.match(/(?:^|;\s*)vp_prefs=([^;]*)/); if (m) p = JSON.parse(decodeURIComponent(m[1])); } catch (err) { /* none */ }
+	if (!p) try { p = JSON.parse(localStorage.getItem('vp_prefs')); } catch (err) { /* none */ }
+	if (!p || typeof p !== 'object') return false;
+	const v = +p.volume;
+	PREF.vol = isFinite(v) ? Math.round(clamp(v, 0, 1) * 100) : 100;
+	PREF.muted = p.muted === true;
+	return true;
+}
+function savePrefs() {
+	const s = JSON.stringify({ volume: PREF.vol / 100, muted: PREF.muted });
+	try { document.cookie = 'vp_prefs=' + encodeURIComponent(s) + '; path=/; max-age=34560000; SameSite=Lax'; } catch (err) { /* blocked */ }
+	try { localStorage.setItem('vp_prefs', s); } catch (err) { /* blocked */ }
+}
+if (readPrefs()) savePrefs();   // renew the expiry
 
 /* ── YouTube's IFrame API: fetched the first time someone reaches for play ── */
 let apiP = null;
@@ -864,375 +1087,465 @@ function warm() {
 	api().catch(() => {});
 }
 
-function create(t, play) {
-	S.t = clamp(t, 0, DUR); S.wantPlay = play;
-	if (S.pending || YT) return;
-	S.pending = true; S.failed = false; S.cancelled = false; S.loadedCut = S.cut;
-	busy(true);
-	api().then(Y => {
-		const host = document.createElement('div');
-		screenEl.appendChild(host);
-		YT = new Y.Player(host, {
-			host: 'https://www.youtube-nocookie.com',
-			videoId: CUTS[S.cut].id,
-			width: '100%', height: '100%',
-			playerVars: { autoplay: S.wantPlay ? 1 : 0, controls: 0, disablekb: 1, fs: 0, iv_load_policy: 3, playsinline: 1, rel: 0, modestbranding: 1, start: Math.floor(S.t), origin: location.origin },
-			events: { onReady: ready, onStateChange: changed, onPlaybackRateChange: e => { S.rate = e.data; speedEl.value = String(S.rate); }, onError: fail },
-		});
-	}, fail);
-}
-function ready() {
-	S.ready = true; S.pending = false;
-	const f = YT.getIframe();
-	f.title = 'Raisul Sohan, Showreel 2026 (YouTube)';
-	f.tabIndex = -1;   // the bar below is the keyboard way in
-	keepFocus();
-	YT.setVolume(S.vol);
-	if (S.muted) YT.mute(); else YT.unMute();
-	if (S.rate !== 1) YT.setPlaybackRate(S.rate);
-	if (S.loadedCut !== S.cut) { S.loadedCut = S.cut; YT.cueVideoById({ videoId: CUTS[S.cut].id, startSeconds: S.t }); }
-	else if (S.t > 0.01 || S.holdPause) YT.seekTo(S.t, true);
-	if (S.wantPlay) YT.playVideo();
-	stamp(S.t);
-	clearTimeout(revealT);
-	// If the browser holds back autoplay (iOS can), show YouTube's own frame so a tap on it starts the reel.
-	revealT = setTimeout(() => { if (YT) { live(true); busy(false); } }, S.wantPlay || S.holdPause ? 1600 : 0);
-}
-function changed(e) {
-	const st = e.data;
-	if (st === 1) {
-		if (S.holdPause || S.cancelled) {
-			// started only to show a frame (or paused before it was ready): stop, and land on the exact frame asked for
-			YT.pauseVideo();
-			if (S.holdPause) seek(S.holdT, true);
-			S.holdPause = false; S.cancelled = false;
+const reels = [];
+let active = null;   // the reel used last: the keys go to it when both are in view
+
+/* ── One player: the still, the YouTube frame once played, and the bar under it ── */
+function Reel(player) {
+	const key = player.dataset.reel, C = REELS[key];
+	const DUR = C.dur, FPS = C.fps, FRAMES = Math.round(DUR * FPS), TOTAL = fmt(DUR);
+	const q = r => player.querySelector('[data-r="' + r + '"]');
+	const screenEl = q('screen'), facade = q('facade'), seekEl = q('seek'), volEl = q('vol'), speedEl = q('speed');
+	const fLabel = q('flabel'), bPlay = q('play'), bMute = q('mute'), bLoop = q('loop'), bFull = q('full'), tNow = q('tnow'), fNow = q('fnow');
+	const frameAt = t => Math.min(FRAMES, Math.floor(t * FPS + 1e-6) + 1);
+	const chapterAt = t => { let i = 0; C.ch.forEach((c, k) => { if (t + 1e-6 >= c.t) i = k; }); return i; };
+
+	// S.t is the playhead in seconds; YT is the YouTube player once it exists.
+	const S = { cut, t: 0, playing: false, wantPlay: false, holdPause: false, holdT: 0, ready: false, pending: false,
+		rate: 1, loop: false, muted: PREF.muted, vol: PREF.vol, dragging: false, inView: false, ratio: 0, pseudo: false, lastCt: 0, lastAt: 0, ovr: null, failed: false, cancelled: false, loadedCut: null };
+	let YT = null, revealT = 0, raf = 0;
+	const R = { key, player, S, C, onSync: null };
+
+	function create(t, play) {
+		S.t = clamp(t, 0, DUR); S.wantPlay = play;
+		if (S.pending || YT) return;
+		S.pending = true; S.failed = false; S.cancelled = false; S.loadedCut = S.cut;
+		busy(true);
+		api().then(Y => {
+			const host = document.createElement('div');
+			screenEl.appendChild(host);
+			YT = new Y.Player(host, {
+				host: 'https://www.youtube-nocookie.com',
+				videoId: C.cuts[S.cut].id,
+				width: '100%', height: '100%',
+				playerVars: { autoplay: S.wantPlay ? 1 : 0, controls: 0, disablekb: 1, fs: 0, iv_load_policy: 3, playsinline: 1, rel: 0, modestbranding: 1, start: Math.floor(S.t), origin: location.origin },
+				events: { onReady: ready, onStateChange: changed, onPlaybackRateChange: e => { S.rate = e.data; speedEl.value = String(S.rate); }, onError: fail },
+			});
+		}, fail);
+	}
+	function ready() {
+		S.ready = true; S.pending = false;
+		const f = YT.getIframe();
+		f.title = C.title;
+		f.tabIndex = -1;   // the bar below is the keyboard way in
+		keepFocus();
+		YT.setVolume(S.vol);
+		if (S.muted) YT.mute(); else YT.unMute();
+		if (S.rate !== 1) YT.setPlaybackRate(S.rate);
+		if (S.loadedCut !== S.cut) { S.loadedCut = S.cut; YT.cueVideoById({ videoId: C.cuts[S.cut].id, startSeconds: S.t }); }
+		else if (S.t > 0.01 || S.holdPause) YT.seekTo(S.t, true);
+		if (S.wantPlay) YT.playVideo();
+		stamp(S.t);
+		clearTimeout(revealT);
+		// If the browser holds back autoplay (iOS can), show YouTube's own frame so a tap on it starts the reel.
+		revealT = setTimeout(() => { if (YT) { live(true); busy(false); } }, S.wantPlay || S.holdPause ? 1600 : 0);
+	}
+	function changed(e) {
+		const st = e.data;
+		if (st === 1) {
+			if (S.holdPause || S.cancelled) {
+				// started only to show a frame (or paused before it was ready): stop, and land on the exact frame asked for
+				YT.pauseVideo();
+				if (S.holdPause) seek(S.holdT, true);
+				S.holdPause = false; S.cancelled = false;
+			}
+			else { S.wantPlay = true; others(); }   // also when the start came from a tap on YouTube's own picture
+			S.playing = true; live(true); busy(false);
+		} else if (st === 2) {
+			S.playing = false; S.wantPlay = false; busy(false);
+		} else if (st === 0) {
+			if (S.loop) { YT.seekTo(0, true); YT.playVideo(); return; }
+			S.playing = false; S.wantPlay = false; S.t = DUR;
+			end();
 		}
-		else S.wantPlay = true;   // also when the start came from a tap on YouTube's own picture
-		S.playing = true; live(true); busy(false);
-	} else if (st === 2) {
-		S.playing = false; S.wantPlay = false; busy(false);
-	} else if (st === 0) {
-		if (S.loop) { YT.seekTo(0, true); YT.playVideo(); return; }
-		S.playing = false; S.wantPlay = false; S.t = DUR;
-		end();
+		stamp(YT ? YT.getCurrentTime() : S.t);
+		keepFocus();
+		ui(); tick();
 	}
-	stamp(YT ? YT.getCurrentTime() : S.t);
-	keepFocus();
-	ui(); tick();
-}
-function fail() {
-	S.pending = false; S.failed = true;
-	destroy();
-	busy(false);
-	$('fLabel').textContent = 'Watch on YouTube';
-	if (!$('oops')) {
-		const p = document.createElement('p');
-		p.id = 'oops'; p.className = 'oops'; p.textContent = 'The player could not load here. The link opens the reel on YouTube.';
-		screenEl.appendChild(p);
+	function fail() {
+		S.pending = false; S.failed = true;
+		destroy();
+		busy(false);
+		fLabel.textContent = 'Watch on YouTube';
+		if (!screenEl.querySelector('.oops')) {
+			const p = document.createElement('p');
+			p.className = 'oops'; p.textContent = 'The player could not load here. The link opens the reel on YouTube.';
+			screenEl.appendChild(p);
+		}
 	}
-}
-function destroy() {
-	if (YT) { try { YT.destroy(); } catch (err) { /* already gone */ } }
-	YT = null; S.ready = false; S.pending = false; S.playing = false;
-	$$('iframe', screenEl).forEach(f => f.remove());
-	live(false); ui();
-}
-function end() {
-	destroy();
-	sync(DUR);
-	ui();
-}
-const live = on => player.classList.toggle('is-live', on);
-const busy = on => player.classList.toggle('is-busy', on);
+	function destroy() {
+		if (YT) { try { YT.destroy(); } catch (err) { /* already gone */ } }
+		YT = null; S.ready = false; S.pending = false; S.playing = false;
+		$$('iframe', screenEl).forEach(f => f.remove());
+		live(false); ui();
+	}
+	function end() {
+		destroy();
+		sync(DUR);
+		ui();
+	}
+	const live = on => player.classList.toggle('is-live', on);
+	const busy = on => player.classList.toggle('is-busy', on);
+	// Only one reel plays at a time.
+	const others = () => { active = R; reels.forEach(o => { if (o !== R) o.stop(); }); };
 
-/* ── The clock: YouTube reports a few times a second; between reports the playhead runs on ── */
-function stamp(t) { S.lastCt = t; S.lastAt = performance.now(); }
-function cur() {
-	if (!YT || !S.ready) return S.t;
-	const now = performance.now();
-	const ct = YT.getCurrentTime() || 0;
-	if (S.ovr) {
-		if (ct === S.ovr.from && now - S.ovr.at < 1500) return (S.t = clamp(S.ovr.t + (S.playing ? (now - S.ovr.at) / 1000 * S.rate : 0), 0, DUR));
-		S.ovr = null; stamp(ct);
+	/* the clock: YouTube reports a few times a second; between reports the playhead runs on */
+	function stamp(t) { S.lastCt = t; S.lastAt = performance.now(); }
+	function cur() {
+		if (!YT || !S.ready) return S.t;
+		const now = performance.now();
+		const ct = YT.getCurrentTime() || 0;
+		if (S.ovr) {
+			if (ct === S.ovr.from && now - S.ovr.at < 1500) return (S.t = clamp(S.ovr.t + (S.playing ? (now - S.ovr.at) / 1000 * S.rate : 0), 0, DUR));
+			S.ovr = null; stamp(ct);
+		}
+		if (ct !== S.lastCt) stamp(ct);
+		const run = S.playing ? Math.min((now - S.lastAt) / 1000 * S.rate, 0.4 * S.rate) : 0;
+		return (S.t = clamp(ct + run, 0, DUR));
 	}
-	if (ct !== S.lastCt) stamp(ct);
-	const run = S.playing ? Math.min((now - S.lastAt) / 1000 * S.rate, 0.4 * S.rate) : 0;
-	return (S.t = clamp(ct + run, 0, DUR));
-}
-function tick() {
-	if (raf) return;
-	const frame = () => {
-		raf = 0;
-		if (!S.playing) { sync(cur()); return; }
-		if (!S.dragging) sync(cur());
+	function tick() {
+		if (raf) return;
+		const frame = () => {
+			raf = 0;
+			if (!S.playing) { sync(cur()); return; }
+			if (!S.dragging) sync(cur());
+			raf = requestAnimationFrame(frame);
+		};
 		raf = requestAnimationFrame(frame);
+	}
+
+	/* what the controls do */
+	function play() {
+		others();
+		if (S.t >= DUR - 0.02) S.t = 0;
+		if (S.failed) { location.href = C.cuts[S.cut].watch; return; }
+		if (!YT) { create(S.t, true); return; }
+		S.wantPlay = true;
+		if (S.ready) YT.playVideo();
+	}
+	function pause() {
+		if (S.pending && S.wantPlay) S.cancelled = true;   // paused before the player was ready: hold it when it starts
+		S.wantPlay = false;
+		if (YT && S.ready) YT.pauseVideo();
+		ui();
+	}
+	const busyNow = () => S.playing || (S.pending && S.wantPlay);
+	const toggle = () => (busyNow() ? pause() : play());
+	function seek(t, exact = true) {
+		t = clamp(t, 0, DUR);
+		S.t = t;
+		if (YT && S.ready) {
+			S.ovr = { t, from: YT.getCurrentTime() || 0, at: performance.now() };
+			YT.seekTo(t, exact);
+		}
+		sync(t);
+		if (!YT) ui();   // the still's label: Watch again only at the end
+	}
+	function playAt(t) {
+		others();
+		t = clamp(t, 0, DUR - 0.05);
+		if (!YT) { create(t, true); sync(t); return; }
+		S.wantPlay = true;
+		if (!S.ready) { S.t = t; return; }
+		seek(t);
+		YT.playVideo();
+	}
+	function step(n) {
+		active = R;
+		const base = S.ovr ? S.ovr.t : cur();
+		const t = clamp(Math.round(base * FPS) + n, 0, FRAMES - 1) / FPS;
+		if (!YT) { S.holdPause = true; S.holdT = t; create(t, false); sync(t); return; }
+		if (S.playing) pause();
+		seek(t);
+	}
+	function jump(d) { seek(clamp((S.ovr ? S.ovr.t : cur()) + d, 0, DUR - 1 / FPS)); }
+	function restart() { if (YT) { seek(0); if (!S.playing) play(); } else playAt(0); }
+	function toEnd() { if (S.playing) pause(); seek((FRAMES - 1) / FPS); }
+	// Volume and mute are the visitor's, shared by both reels and kept for the next visit.
+	function sound() {
+		volEl.value = String(S.vol);
+		if (YT && S.ready) { YT.setVolume(S.vol); if (S.muted) YT.mute(); else YT.unMute(); }
+		ui();
+	}
+	function setMute(m) {
+		S.muted = m;
+		if (!m && S.vol === 0) S.vol = 60;
+		share();
+	}
+	function share() {
+		PREF.vol = S.vol; PREF.muted = S.muted;
+		savePrefs();
+		reels.forEach(o => o.prefs());
+	}
+	function setLoop(l) { S.loop = l; ui(); }
+	function setRate(r) { S.rate = r; if (YT && S.ready) YT.setPlaybackRate(r); }
+
+	const isFull = () => (document.fullscreenElement || document.webkitFullscreenElement) === player || S.pseudo;
+	function pseudo(on) {
+		S.pseudo = on;
+		player.classList.toggle('is-pseudo', on);
+		document.body.style.overflow = on ? 'hidden' : '';
+		ui();
+	}
+	function toggleFull() {
+		if (S.pseudo) { pseudo(false); return; }
+		if (document.fullscreenElement || document.webkitFullscreenElement) {
+			(document.exitFullscreen || document.webkitExitFullscreen).call(document);
+			return;
+		}
+		if (player.requestFullscreen) player.requestFullscreen().catch(() => pseudo(true));
+		else if (player.webkitRequestFullscreen) player.webkitRequestFullscreen();
+		else pseudo(true);   // iPhone Safari: no element full screen, so the player fills the window instead
+	}
+
+	/* cuts: 16:9 or 4:5, the same timeline, so the playhead carries over */
+	function cutTo(c) {
+		if (c === S.cut) return;
+		S.cut = c;
+		facade.href = C.cuts[c].watch;
+		$$('[data-yt="' + key + '"]').forEach(a => { a.href = C.cuts[c].watch; });
+		if (YT && S.ready) {
+			const t = cur();
+			if (S.playing || S.wantPlay) { S.ovr = null; S.loadedCut = c; YT.loadVideoById({ videoId: C.cuts[c].id, startSeconds: t }); S.t = t; stamp(t); }
+			else { destroy(); S.t = t; sync(t); }
+		}
+	}
+
+	/* the screen: readouts and the seek bar; onSync draws what the page shows outside the player */
+	function sync(t) {
+		S.t = t;
+		const p = (t / DUR * 100).toFixed(3) + '%';
+		if (!S.dragging) seekEl.value = String(t);
+		seekEl.style.setProperty('--p', p);
+		if (YT && S.ready && YT.getVideoLoadedFraction) seekEl.style.setProperty('--b', (YT.getVideoLoadedFraction() * 100).toFixed(2) + '%');
+		const ci = chapterAt(t);
+		seekEl.setAttribute('aria-valuetext', fmt(t) + ' of ' + TOTAL + ', ' + C.ch[ci].name);
+		tNow.textContent = fmt(t);
+		fNow.textContent = frameAt(t);
+		if (R.onSync) R.onSync(t, p, ci, !!YT);
+	}
+	function ui() {
+		const playing = busyNow();
+		player.classList.toggle('is-playing', playing);
+		bPlay.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+		bPlay.title = playing ? 'Pause (Space or K)' : 'Play (Space or K)';
+		player.classList.toggle('is-muted', S.muted || S.vol === 0);
+		bMute.setAttribute('aria-pressed', String(S.muted));
+		bMute.setAttribute('aria-label', S.muted ? 'Unmute' : 'Mute');
+		bLoop.setAttribute('aria-pressed', String(S.loop));
+		volEl.style.setProperty('--v', (S.muted ? 0 : S.vol) + '%');
+		const full = isFull();
+		player.classList.toggle('is-full', full);
+		bFull.setAttribute('aria-label', full ? 'Exit full screen' : 'Full screen');
+		const ended = !YT && S.t >= DUR - 0.05;
+		player.classList.toggle('is-ended', ended);
+		if (!S.failed) fLabel.textContent = ended ? 'Watch again' : C.play;
+	}
+	// YouTube's frame can take the focus (on load, or on a click on its picture); bring it back so the keys keep working.
+	function keepFocus() {
+		setTimeout(() => {
+			const f = YT && S.ready && YT.getIframe();
+			if (f && document.activeElement === f) player.focus({ preventScroll: true });
+		}, 0);
+	}
+
+	/* wiring */
+	['pointerenter', 'focusin', 'touchstart'].forEach(ev => player.addEventListener(ev, warm, { passive: true, once: true }));
+	player.addEventListener('pointerdown', () => { active = R; }, { passive: true });
+	facade.addEventListener('click', e => {
+		if (S.failed) return;   // the link itself opens YouTube
+		e.preventDefault();
+		play();
+	});
+	bPlay.onclick = toggle;
+	q('restart').onclick = restart;
+	q('back').onclick = () => step(-1);
+	q('fwd').onclick = () => step(1);
+	bLoop.onclick = () => setLoop(!S.loop);
+	bMute.onclick = () => setMute(!S.muted);
+	bFull.onclick = toggleFull;
+	speedEl.onchange = () => setRate(parseFloat(speedEl.value));
+	volEl.addEventListener('input', () => {
+		S.vol = parseInt(volEl.value, 10);
+		S.muted = S.vol === 0;
+		share();
+	});
+
+	// The seek bar: drag to scrub, the frame follows; a tip shows the time and the part.
+	const tip = q('tip'), seekWrap = q('seekwrap');
+	seekEl.addEventListener('pointerdown', () => { S.dragging = true; active = R; });
+	seekEl.addEventListener('input', () => {
+		const t = Math.round(parseFloat(seekEl.value) * FPS) / FPS;
+		S.t = t;
+		if (YT && S.ready) { S.ovr = { t, from: YT.getCurrentTime() || 0, at: performance.now() }; YT.seekTo(t, false); }
+		sync(t);
+	});
+	const release = () => {
+		S.dragging = false;
+		seek(Math.round(parseFloat(seekEl.value) * FPS) / FPS, true);
 	};
-	raf = requestAnimationFrame(frame);
+	seekEl.addEventListener('change', release);
+	seekEl.addEventListener('pointerup', release);
+	seekWrap.addEventListener('pointermove', e => {
+		const r = seekWrap.getBoundingClientRect();
+		const x = clamp(e.clientX - r.left, 0, r.width), t = x / r.width * DUR;
+		tip.innerHTML = '<b>' + fmt(t) + '</b>' + C.ch[chapterAt(t)].name;
+		tip.style.left = clamp(x, tip.offsetWidth / 2, r.width - tip.offsetWidth / 2) + 'px';
+		tip.classList.add('on');
+	});
+	seekWrap.addEventListener('pointerleave', () => tip.classList.remove('on'));
+
+	if ('IntersectionObserver' in window) {
+		new IntersectionObserver(es => { S.ratio = es[0].isIntersecting ? es[0].intersectionRatio : 0; S.inView = S.ratio >= 0.3; }, { threshold: [0, 0.3, 0.6, 0.9] }).observe(player);
+	} else S.inView = true;
+
+	Object.assign(R, {
+		play, pause, toggle, seek, playAt, step, jump, toEnd, setLoop, setMute, toggleFull, pseudo, isFull, keepFocus, cutTo, sync, ui,
+		busy: busyNow,
+		stop() { if (busyNow()) pause(); },
+		prefs() { S.vol = PREF.vol; S.muted = PREF.muted; sound(); },
+		start() { facade.href = C.cuts[S.cut].watch; $$('[data-yt="' + key + '"]').forEach(a => { a.href = C.cuts[S.cut].watch; }); volEl.value = String(S.vol); sync(0); ui(); },
+	});
+	return R;
 }
 
-/* ── What the controls do ── */
-function play() {
-	if (S.t >= DUR - 0.02) S.t = 0;
-	if (S.failed) { location.href = CUTS[S.cut].watch; return; }
-	if (!YT) { create(S.t, true); return; }
-	S.wantPlay = true;
-	if (S.ready) YT.playVideo();
-}
-function pause() {
-	if (S.pending && S.wantPlay) S.cancelled = true;   // paused before the player was ready: hold it when it starts
-	S.wantPlay = false;
-	if (YT && S.ready) YT.pauseVideo();
-	ui();
-}
-const toggle = () => (S.playing || (S.pending && S.wantPlay) ? pause() : play());
-function seek(t, exact = true) {
-	t = clamp(t, 0, DUR);
-	S.t = t;
-	if (YT && S.ready) {
-		S.ovr = { t, from: YT.getCurrentTime() || 0, at: performance.now() };
-		YT.seekTo(t, exact);
-	}
-	sync(t);
-	if (!YT) ui();   // the still's label: Watch again only at the end
-}
-function playAt(t) {
-	t = clamp(t, 0, DUR - 0.05);
-	if (!YT) { create(t, true); sync(t); return; }
-	S.wantPlay = true;
-	if (!S.ready) { S.t = t; return; }
-	seek(t);
-	YT.playVideo();
-}
-function step(n) {
-	const base = S.ovr ? S.ovr.t : cur();
-	const t = clamp(Math.round(base * FPS) + n, 0, FRAMES - 1) / FPS;
-	if (!YT) { S.holdPause = true; S.holdT = t; create(t, false); sync(t); return; }
-	if (S.playing) pause();
-	seek(t);
-}
-function jump(d) { seek(clamp((S.ovr ? S.ovr.t : cur()) + d, 0, DUR - 1 / FPS)); }
-function restart() { if (YT) { seek(0); if (!S.playing) play(); } else playAt(0); }
-function toEnd() { if (S.playing) pause(); seek((FRAMES - 1) / FPS); }
-function setMute(m) {
-	S.muted = m;
-	if (!m && S.vol === 0) { S.vol = 60; volEl.value = 60; }
-	if (YT && S.ready) { m ? YT.mute() : YT.unMute(); if (!m) YT.setVolume(S.vol); }
-	ui();
-}
-function setLoop(l) { S.loop = l; ui(); }
-function setRate(r) { S.rate = r; if (YT && S.ready) YT.setPlaybackRate(r); }
+$$('.player[data-reel]').forEach(p => reels.push(Reel(p)));
+const reel = k => reels.find(r => r.key === k);
+const main = reel('main'), r3d = reel('3d');
 
-const isFull = () => !!(document.fullscreenElement || document.webkitFullscreenElement) || S.pseudo;
-function pseudo(on) {
-	S.pseudo = on;
-	player.classList.toggle('is-pseudo', on);
-	document.body.style.overflow = on ? 'hidden' : '';
-	ui();
-}
-function toggleFull() {
-	if (S.pseudo) { pseudo(false); return; }
-	if (document.fullscreenElement || document.webkitFullscreenElement) {
-		(document.exitFullscreen || document.webkitExitFullscreen).call(document);
-		return;
-	}
-	if (player.requestFullscreen) player.requestFullscreen().catch(() => pseudo(true));
-	else if (player.webkitRequestFullscreen) player.webkitRequestFullscreen();
-	else pseudo(true);   // iPhone Safari: no element full screen, so the player fills the window instead
-}
-document.addEventListener('fullscreenchange', ui);
-document.addEventListener('webkitfullscreenchange', ui);
-
-/* ── Cuts: 16:9 or 4:5, the same timeline, so the playhead carries over ── */
-function setCut(c, by) {
-	if (c !== '45' && c !== '169') return;
-	if (by === 'visitor') { root.dataset.picked = 'visitor'; try { sessionStorage.setItem('rs-showreel-cut', c); } catch (err) { /* private mode */ } }
-	if (c === S.cut) return;
-	S.cut = c;
-	root.dataset.cut = c;
-	$$('.seg button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.cut === c)));
-	$('ytLink').href = CUTS[c].watch;
-	facade.href = CUTS[c].watch;
-	if (YT && S.ready) {
-		const t = cur();
-		if (S.playing || S.wantPlay) { S.ovr = null; S.loadedCut = c; YT.loadVideoById({ videoId: CUTS[c].id, startSeconds: t }); S.t = t; stamp(t); }
-		else { destroy(); S.t = t; sync(t); }
-	}
-	galUpdate();
-}
-
-/* ── The screen: readouts, the seek bar, the ruler's playhead, the chapter now playing ── */
-function sync(t) {
-	S.t = t;
-	const p = (t / DUR * 100).toFixed(3) + '%';
-	if (!S.dragging) seekEl.value = String(t);
-	seekEl.style.setProperty('--p', p);
-	if (YT && S.ready && YT.getVideoLoadedFraction) seekEl.style.setProperty('--b', (YT.getVideoLoadedFraction() * 100).toFixed(2) + '%');
-	const ci = chapterAt(t);
-	seekEl.setAttribute('aria-valuetext', fmt(t) + ' of 1:00, ' + CH[ci].name);
-	$('tNow').textContent = fmt(t);
-	$('fNow').textContent = frameAt(t);
-	head.style.setProperty('--p', p);
-	const on = !!YT || t > 0;
-	ruler.classList.toggle('on', on);
-	const now = YT ? ci : -1;
-	if (now !== S.ci) { S.ci = now; cards.forEach((c, i) => c.classList.toggle('is-now', i === now)); }
-}
-function ui() {
-	const playing = S.playing || (S.pending && S.wantPlay);
-	player.classList.toggle('is-playing', playing);
-	$('bPlay').setAttribute('aria-label', playing ? 'Pause' : 'Play');
-	$('bPlay').title = playing ? 'Pause (Space or K)' : 'Play (Space or K)';
-	player.classList.toggle('is-muted', S.muted || S.vol === 0);
-	$('bMute').setAttribute('aria-pressed', String(S.muted));
-	$('bMute').setAttribute('aria-label', S.muted ? 'Unmute' : 'Mute');
-	$('bLoop').setAttribute('aria-pressed', String(S.loop));
-	volEl.style.setProperty('--v', (S.muted ? 0 : S.vol) + '%');
-	const full = isFull();
-	player.classList.toggle('is-full', full);
-	$('bFull').setAttribute('aria-label', full ? 'Exit full screen' : 'Full screen');
-	const ended = !YT && S.t >= DUR - 0.05;
-	player.classList.toggle('is-ended', ended);
-	if (!S.failed) $('fLabel').textContent = ended ? 'Watch again' : 'Play the reel';
-}
-
-/* ── Wiring ── */
-$$('[data-play]').forEach(a => a.addEventListener('click', e => {
-	e.preventDefault();
-	toPlayer();
-	if (!S.playing) play();
-}));
-['pointerenter', 'focusin', 'touchstart'].forEach(ev => {
-	player.addEventListener(ev, warm, { passive: true, once: true });
-	$$('[data-play]').forEach(a => a.addEventListener(ev, warm, { passive: true, once: true }));
-});
-facade.addEventListener('click', e => {
-	if (S.failed) return;   // the link itself opens YouTube
-	e.preventDefault();
-	play();
-});
-$('bPlay').onclick = toggle;
-$('bRestart').onclick = restart;
-$('bBack').onclick = () => step(-1);
-$('bFwd').onclick = () => step(1);
-$('bLoop').onclick = () => setLoop(!S.loop);
-$('bMute').onclick = () => setMute(!S.muted);
-$('bFull').onclick = toggleFull;
-speedEl.onchange = () => setRate(parseFloat(speedEl.value));
-volEl.addEventListener('input', () => {
-	S.vol = parseInt(volEl.value, 10);
-	if (YT && S.ready) YT.setVolume(S.vol);
-	setMute(S.vol === 0);
-});
-
-// The seek bar: drag to scrub, the frame follows; a tip shows the time and the chapter.
-const tip = $('tip'), seekWrap = $('seekWrap');
-seekEl.addEventListener('pointerdown', () => { S.dragging = true; });
-seekEl.addEventListener('input', () => {
-	const t = Math.round(parseFloat(seekEl.value) * FPS) / FPS;
-	S.t = t;
-	if (YT && S.ready) { S.ovr = { t, from: YT.getCurrentTime() || 0, at: performance.now() }; YT.seekTo(t, false); }
-	sync(t);
-});
-const release = () => {
-	S.dragging = false;
-	seek(Math.round(parseFloat(seekEl.value) * FPS) / FPS, true);
-};
-seekEl.addEventListener('change', release);
-seekEl.addEventListener('pointerup', release);
-seekWrap.addEventListener('pointermove', e => {
-	const r = seekWrap.getBoundingClientRect();
-	const x = clamp(e.clientX - r.left, 0, r.width), t = x / r.width * DUR;
-	tip.innerHTML = '<b>' + fmt(t) + '</b>' + CH[chapterAt(t)].name;
-	tip.style.left = clamp(x, tip.offsetWidth / 2, r.width - tip.offsetWidth / 2) + 'px';
-	tip.classList.add('on');
-});
-seekWrap.addEventListener('pointerleave', () => tip.classList.remove('on'));
+document.addEventListener('fullscreenchange', () => reels.forEach(r => r.ui()));
+document.addEventListener('webkitfullscreenchange', () => reels.forEach(r => r.ui()));
+window.addEventListener('blur', () => reels.forEach(r => r.keepFocus()));
+// Another tab may have changed the volume: read it again on the way back.
+document.addEventListener('visibilitychange', () => { if (!document.hidden && readPrefs()) reels.forEach(r => r.prefs()); });
 
 // Keys: Space/K play, ←/→ a frame (hold to keep stepping), Shift+←/→ a second, , and . a frame, Home/End, M, L, F.
+// They go to the player that has the focus, else the one in full screen, else the one in view (the last used if both are).
+function keyReel(tg) {
+	const p = tg.closest('.player');
+	if (p) return reels.find(r => r.player === p);
+	const f = reels.find(r => r.isFull());
+	if (f) return f;
+	const seen = reels.filter(r => r.S.inView);
+	if (seen.length > 1 && seen.includes(active)) return active;
+	return seen.sort((a, b) => b.S.ratio - a.S.ratio)[0] || null;
+}
 document.addEventListener('keydown', e => {
 	if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
 	const tg = e.target instanceof Element ? e.target : document.body;
-	if (tg.closest('select, textarea, input:not(#seek), [contenteditable]')) return;
-	if (!(S.inView || isFull() || tg.closest('.player'))) return;
+	if (tg.closest('select, textarea, input:not(.seekr), [contenteditable]')) return;
+	const r = keyReel(tg);
+	if (!r) return;
 	const k = e.key, onControl = !!tg.closest('a, button');
 	if (k === ' ' || k === 'k' || k === 'K') {
 		if (k === ' ' && onControl) return;   // a focused button answers Space itself
 		e.preventDefault();
-		if (!e.repeat) toggle();
+		if (!e.repeat) r.toggle();
 	} else if (k === 'ArrowLeft' || k === 'ArrowRight') {
 		e.preventDefault();
 		const d = k === 'ArrowLeft' ? -1 : 1;
-		if (e.shiftKey) jump(d); else step(d);
-	} else if (k === ',' || k === '<') { e.preventDefault(); step(-1); }
-	else if (k === '.' || k === '>') { e.preventDefault(); step(1); }
-	else if (k === 'Home') { e.preventDefault(); seek(0); }
-	else if (k === 'End') { e.preventDefault(); toEnd(); }
-	else if (k === 'm' || k === 'M') { e.preventDefault(); setMute(!S.muted); }
-	else if (k === 'l' || k === 'L') { e.preventDefault(); setLoop(!S.loop); }
-	else if (k === 'f' || k === 'F') { e.preventDefault(); toggleFull(); }
-	else if (k === 'Escape' && S.pseudo) { e.preventDefault(); pseudo(false); }
+		if (e.shiftKey) r.jump(d); else r.step(d);
+	} else if (k === ',' || k === '<') { e.preventDefault(); r.step(-1); }
+	else if (k === '.' || k === '>') { e.preventDefault(); r.step(1); }
+	else if (k === 'Home') { e.preventDefault(); r.seek(0); }
+	else if (k === 'End') { e.preventDefault(); r.toEnd(); }
+	else if (k === 'm' || k === 'M') { e.preventDefault(); r.setMute(!r.S.muted); }
+	else if (k === 'l' || k === 'L') { e.preventDefault(); r.setLoop(!r.S.loop); }
+	else if (k === 'f' || k === 'F') { e.preventDefault(); r.toggleFull(); }
+	else if (k === 'Escape' && r.S.pseudo) { e.preventDefault(); r.pseudo(false); }
 });
-// YouTube's frame can take the focus (on load, or on a click on its picture); bring it back so the keys keep working.
-function keepFocus() {
-	setTimeout(() => {
-		const f = YT && S.ready && YT.getIframe();
-		if (f && document.activeElement === f) player.focus({ preventScroll: true });
-	}, 0);
-}
-window.addEventListener('blur', keepFocus);
 
-if ('IntersectionObserver' in window) {
-	new IntersectionObserver(es => { S.inView = es[0].isIntersecting && es[0].intersectionRatio >= 0.3; }, { threshold: [0, 0.3, 0.6] }).observe(player);
-} else S.inView = true;
-
-function toPlayer() {
-	const r = player.getBoundingClientRect();
-	const top = scrollY + r.top - Math.max(64, (innerHeight - r.height) / 2);
+function toPlayer(r) {
+	const b = r.player.getBoundingClientRect();
+	const top = scrollY + b.top - Math.max(64, (innerHeight - b.height) / 2);
 	scrollTo({ top: Math.max(0, top), behavior: reduce.matches ? 'auto' : 'smooth' });
 }
 
-// The switch under the picture, and the two cuts further down.
+// Watch buttons: data-play names the reel (empty is the minute reel).
+$$('[data-play]').forEach(a => {
+	const r = reel(a.dataset.play || 'main');
+	a.addEventListener('click', e => {
+		e.preventDefault();
+		toPlayer(r);
+		if (!r.S.playing) r.play();
+	});
+	['pointerenter', 'focusin', 'touchstart'].forEach(ev => a.addEventListener(ev, warm, { passive: true, once: true }));
+});
+
+/* ── Cuts: the visitor's pick holds for both reels ── */
+function setCut(c, by) {
+	if (c !== '45' && c !== '169') return;
+	if (by === 'visitor') { root.dataset.picked = 'visitor'; try { sessionStorage.setItem('rs-showreel-cut', c); } catch (err) { /* private mode */ } }
+	if (c === cut) return;
+	cut = c;
+	root.dataset.cut = c;
+	$$('.seg button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.cut === c)));
+	reels.forEach(r => r.cutTo(c));
+	gals.forEach(g => g());
+}
 $$('.seg button').forEach(b => b.addEventListener('click', () => setCut(b.dataset.cut, 'visitor')));
 $$('[data-cut-play]').forEach(b => b.addEventListener('click', () => {
 	setCut(b.dataset.cutPlay, 'visitor');
-	toPlayer();
-	if (!S.playing) play();
+	toPlayer(main);
+	if (!main.S.playing) main.play();
 }));
 
-// Chapters: play from there.
-cards.forEach(a => a.addEventListener('click', e => { e.preventDefault(); toPlayer(); playAt(parseFloat(a.dataset.t)); }));
-$$('.chaps button').forEach(b => b.addEventListener('click', () => playAt(parseFloat(b.dataset.t))));
-$$('.card, .chaps button').forEach(el => el.addEventListener('pointerenter', warm, { once: true, passive: true }));
+// Chapter and moment cards: play their reel from there; the card now playing is marked.
+$$('.card[data-t]').forEach(a => {
+	const r = reel(a.dataset.reel || 'main');
+	a.addEventListener('click', e => { e.preventDefault(); toPlayer(r); r.playAt(parseFloat(a.dataset.t)); });
+	a.addEventListener('pointerenter', warm, { once: true, passive: true });
+});
+function marks(r) {
+	const cards = $$('.card[data-reel="' + r.key + '"]');
+	let was = -1;
+	return (ci, on) => { const now = on ? ci : -1; if (now !== was) { was = now; cards.forEach((c, i) => c.classList.toggle('is-now', i === now)); } };
+}
 
-// The gallery's paddles.
-const gal = $('gallery'), galPrev = $('galPrev'), galNext = $('galNext');
-function galUpdate() {
-	const max = gal.scrollWidth - gal.clientWidth - 2;
-	galPrev.disabled = gal.scrollLeft <= 2;
-	galNext.disabled = gal.scrollLeft >= max;
-}
-function galGo(d) {
-	const w = cards[0].getBoundingClientRect().width + (parseFloat(getComputedStyle(gal).columnGap) || 20);
-	gal.scrollBy({ left: d * w, behavior: reduce.matches ? 'auto' : 'smooth' });
-}
-galPrev.onclick = () => galGo(-1);
-galNext.onclick = () => galGo(1);
-gal.addEventListener('scroll', galUpdate, { passive: true });
-addEventListener('resize', galUpdate);
+// The galleries' paddles.
+const gals = $$('[data-gal]').map(gal => {
+	const k = gal.dataset.gal, prev = document.querySelector('[data-gal-prev="' + k + '"]'), next = document.querySelector('[data-gal-next="' + k + '"]');
+	const upd = () => {
+		const max = gal.scrollWidth - gal.clientWidth - 2;
+		prev.disabled = gal.scrollLeft <= 2;
+		next.disabled = gal.scrollLeft >= max;
+	};
+	const go = d => {
+		const w = gal.querySelector('.card').getBoundingClientRect().width + (parseFloat(getComputedStyle(gal).columnGap) || 20);
+		gal.scrollBy({ left: d * w, behavior: reduce.matches ? 'auto' : 'smooth' });
+	};
+	prev.onclick = () => go(-1);
+	next.onclick = () => go(1);
+	gal.addEventListener('scroll', upd, { passive: true });
+	addEventListener('resize', upd);
+	return upd;
+});
+
+// The minute reel: the beat ruler's playhead follows it, and its chapters are marked.
+const ruler = $('ruler'), grid = $('grid'), head = $('head');
+const mainMarks = marks(main);
+main.onSync = (t, p, ci, on) => {
+	head.style.setProperty('--p', p);
+	ruler.classList.toggle('on', on || t > 0);
+	mainMarks(ci, on);
+};
+// The 3D reel: its moments are marked.
+if (r3d) { const m3 = marks(r3d); r3d.onSync = (t, p, ci, on) => m3(ci, on); }
 
 // The beat ruler: hover shows the time, a click plays from the cut at or before it.
-const hover = $('hover');
+const hover = $('hover'), CH = REELS.main.ch;
+const chapterAt = t => { let i = 0; CH.forEach((c, k) => { if (t + 1e-6 >= c.t) i = k; }); return i; };
 grid.addEventListener('pointermove', e => {
-	const r = grid.getBoundingClientRect(), x = clamp(e.clientX - r.left, 0, r.width), t = x / r.width * DUR;
+	const r = grid.getBoundingClientRect(), x = clamp(e.clientX - r.left, 0, r.width), t = x / r.width * 60;
 	hover.style.left = x + 'px';
 	hover.firstElementChild.textContent = fmt(t) + ' · ' + CH[chapterAt(t)].name;
 });
 grid.addEventListener('click', e => {
 	warm();
-	const r = grid.getBoundingClientRect(), t = clamp(e.clientX - r.left, 0, r.width) / r.width * DUR;
+	const r = grid.getBoundingClientRect(), t = clamp(e.clientX - r.left, 0, r.width) / r.width * 60;
 	let at = 0;
 	CUT_T.forEach(c => { if (c <= t + 0.12) at = c; });
-	playAt(at);
+	main.playAt(at);
 });
 
 // Sections rise into place as they come into view.
@@ -1251,11 +1564,10 @@ toTop.onclick = () => {
 	document.querySelector('.brand').focus({ preventScroll: true });
 };
 
-// Start: the cut the head script picked, the readouts at zero.
-$$('.seg button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.cut === S.cut)));
-$('ytLink').href = CUTS[S.cut].watch;
-facade.href = CUTS[S.cut].watch;
-topBtn(); galUpdate(); sync(0); ui();
+// Start: the cut the head script picked, the saved volume, the readouts at zero.
+$$('.seg button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.cut === cut)));
+reels.forEach(r => r.start());
+topBtn(); gals.forEach(g => g());
 })();
 </script>
 <?php if ( function_exists( 'rs_stats_beacon' ) ) { rs_stats_beacon(); } ?>

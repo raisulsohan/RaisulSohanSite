@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-9.4.1-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-9.5.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 9.5
+
+**The 3D Showreel joins /showreel.**
+
+- **9.5.0: A second reel on the showreel page.** The 17-second 3D Showreel 2026 (19 shots, every cut on a beat of 128 a minute) gets its own section after the minute reel's: a short pitch, its own player from YouTube in the same cut as the rest of the page (16:9 `Jl0WwBXFsSQ`, 4:5 Short `pJWwODCmnng`) under the same full control bar, twelve moments that play it from their shot, its facts and the CC BY credits of the bride models in the footer. The hero and the bar link to it. Both players now come from one markup function and one script (`Reel()`): one reel plays at a time, the cut picked holds for both, the keys go to the player with the focus or in view, and volume and mute are kept in the `vp_prefs` cookie (localStorage as the fallback) for the next visit. The stills, `assets/img/showreel/3d-*.webp`, are frames of the reel's renders; the posters are its thumbnails. Both videos are in the page's structured data.
 
 ## What's new in 9.4
 
