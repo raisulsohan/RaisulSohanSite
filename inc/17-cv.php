@@ -2703,15 +2703,15 @@ function rs_cv_selected_work_v2() {
 add_action( 'init', 'rs_cv_selected_work_v2', 37 );
 
 /**
- * The school entries of the education row (9.5.1): the CV names the
- * education up to HSC, not the B.S.S. (Hons.).
+ * The school entries of the education row (9.5.1, without years since
+ * 9.5.2): the CV names the education up to HSC, not the B.S.S. (Hons.).
  *
  * @return array
  */
 function rs_cv_school_education() {
 	return array(
-		array( 'lead' => 'HSC, Science', 'text' => 'Motijheel Model High School & College, Dhaka · 2007' ),
-		array( 'lead' => 'SSC, Science', 'text' => 'Motijheel Model High School & College, Dhaka · 2005' ),
+		array( 'lead' => 'HSC, Science', 'text' => 'Motijheel Model High School & College, Dhaka' ),
+		array( 'lead' => 'SSC, Science', 'text' => 'Motijheel Model High School & College, Dhaka' ),
 	);
 }
 
@@ -2788,3 +2788,65 @@ function rs_cv_education_hsc_v1() {
 	update_site_option( $flag, 1 );
 }
 add_action( 'init', 'rs_cv_education_hsc_v1', 38 );
+
+/**
+ * Take the years off the school entries that 9.5.1 wrote to a saved CV
+ * (9.5.2). Only text still exactly as 9.5.1 wrote it is changed.
+ *
+ * @param array $saved Saved CV data, changed in place.
+ * @return bool Whether anything changed.
+ */
+function rs_cv_apply_education_hsc_v2( &$saved ) {
+	if ( ! isset( $saved['education'] ) || ! is_array( $saved['education'] ) ) {
+		return false;
+	}
+
+	$old = array(
+		'Motijheel Model High School & College, Dhaka · 2007' => 'Motijheel Model High School & College, Dhaka',
+		'Motijheel Model High School & College, Dhaka · 2005' => 'Motijheel Model High School & College, Dhaka',
+	);
+
+	$changed = false;
+	foreach ( $saved['education'] as &$entry ) {
+		if ( is_array( $entry ) && isset( $entry['text'] ) && is_string( $entry['text'] ) && isset( $old[ $entry['text'] ] ) ) {
+			$entry['text'] = $old[ $entry['text'] ];
+			$changed       = true;
+		}
+	}
+	unset( $entry );
+
+	return $changed;
+}
+
+/**
+ * Run rs_cv_apply_education_hsc_v2() on the saved CV, once, after the 9.5.1
+ * migration.
+ */
+function rs_cv_education_hsc_v2() {
+	$flag = 'rs_cv_education_hsc_v2';
+	if ( get_site_option( $flag ) ) {
+		return;
+	}
+
+	$page  = null;
+	$saved = false;
+	if ( is_multisite() ) {
+		$saved = rs_cv_saved_data();
+	} else {
+		$page  = get_page_by_path( 'cv', OBJECT, 'page' );
+		$saved = $page ? get_post_meta( $page->ID, '_rs_cv_data', true ) : false;
+	}
+
+	if ( is_array( $saved ) && rs_cv_apply_education_hsc_v2( $saved ) ) {
+		if ( is_multisite() ) {
+			update_site_option( 'rs_cv_shared_data_v1', $saved );
+		} elseif ( $page ) {
+			update_post_meta( $page->ID, '_rs_cv_data', $saved );
+		}
+
+		rs_cv_purge_network_caches();
+	}
+
+	update_site_option( $flag, 1 );
+}
+add_action( 'init', 'rs_cv_education_hsc_v2', 39 );
