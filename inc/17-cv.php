@@ -2703,14 +2703,15 @@ function rs_cv_selected_work_v2() {
 add_action( 'init', 'rs_cv_selected_work_v2', 37 );
 
 /**
- * The school entries of the education row (9.5.1, without years since
- * 9.5.2): the CV names the education up to HSC, not the B.S.S. (Hons.).
+ * The school entries of the education row (9.5.1; no years since 9.5.2,
+ * HSC at Bangladesh Open University since 9.5.3): the CV names the
+ * education up to HSC, not the B.S.S. (Hons.).
  *
  * @return array
  */
 function rs_cv_school_education() {
 	return array(
-		array( 'lead' => 'HSC, Science', 'text' => 'Motijheel Model High School & College, Dhaka' ),
+		array( 'lead' => 'HSC, Science', 'text' => 'Bangladesh Open University' ),
 		array( 'lead' => 'SSC, Science', 'text' => 'Motijheel Model High School & College, Dhaka' ),
 	);
 }
@@ -2850,3 +2851,65 @@ function rs_cv_education_hsc_v2() {
 	update_site_option( $flag, 1 );
 }
 add_action( 'init', 'rs_cv_education_hsc_v2', 39 );
+
+/**
+ * Put Bangladesh Open University as the HSC school in a saved CV (9.5.3).
+ * Only the HSC text that 9.5.1 or 9.5.2 wrote is changed.
+ *
+ * @param array $saved Saved CV data, changed in place.
+ * @return bool Whether anything changed.
+ */
+function rs_cv_apply_education_hsc_v3( &$saved ) {
+	if ( ! isset( $saved['education'] ) || ! is_array( $saved['education'] ) ) {
+		return false;
+	}
+
+	$old = array(
+		'Motijheel Model High School & College, Dhaka',
+		'Motijheel Model High School & College, Dhaka · 2007',
+	);
+
+	$changed = false;
+	foreach ( $saved['education'] as &$entry ) {
+		if ( is_array( $entry ) && isset( $entry['lead'], $entry['text'] ) && 'HSC, Science' === $entry['lead'] && in_array( $entry['text'], $old, true ) ) {
+			$entry['text'] = 'Bangladesh Open University';
+			$changed       = true;
+		}
+	}
+	unset( $entry );
+
+	return $changed;
+}
+
+/**
+ * Run rs_cv_apply_education_hsc_v3() on the saved CV, once, after the 9.5.1
+ * and 9.5.2 migrations.
+ */
+function rs_cv_education_hsc_v3() {
+	$flag = 'rs_cv_education_hsc_v3';
+	if ( get_site_option( $flag ) ) {
+		return;
+	}
+
+	$page  = null;
+	$saved = false;
+	if ( is_multisite() ) {
+		$saved = rs_cv_saved_data();
+	} else {
+		$page  = get_page_by_path( 'cv', OBJECT, 'page' );
+		$saved = $page ? get_post_meta( $page->ID, '_rs_cv_data', true ) : false;
+	}
+
+	if ( is_array( $saved ) && rs_cv_apply_education_hsc_v3( $saved ) ) {
+		if ( is_multisite() ) {
+			update_site_option( 'rs_cv_shared_data_v1', $saved );
+		} elseif ( $page ) {
+			update_post_meta( $page->ID, '_rs_cv_data', $saved );
+		}
+
+		rs_cv_purge_network_caches();
+	}
+
+	update_site_option( $flag, 1 );
+}
+add_action( 'init', 'rs_cv_education_hsc_v3', 40 );
