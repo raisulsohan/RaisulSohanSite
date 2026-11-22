@@ -16,6 +16,8 @@
  *   --only <text>      Only pieces whose folder path contains this text.
  *   --exclude <regex>  Leave out pieces whose folder path matches.
  *   --no-audio         Send no sound files, even ones a page plays.
+ *   --mp3              Send each wav, flac or aiff as an mp3 (needs ffmpeg),
+ *                      and point the pages at the .mp3 names.
  *   --max-mb <N>       Leave out (and list) pieces bigger than N MB.
  *   --show             Send pieces shown instead of hidden.
  *   --replace          Send again a piece the site already has (same folder).
@@ -83,6 +85,11 @@ if ( ! ROOT || ( ! DRY && ( ! SITE || ! USER || ! PASS ) ) ) {
 /* --no-audio: no sound files at all, even ones a page plays. */
 const NO_AUDIO = flag( 'no-audio' );
 const AUDIO = /\.(wav|mp3|ogg|oga|m4a|aac|opus|flac|aif|aiff)$/i;
+/* --mp3: send each wav (flac, aiff) as an mp3 made with ffmpeg, about a tenth
+   of the size, and point the pages and scripts at the .mp3 names. */
+const MP3 = flag( 'mp3' );
+const RAW_AUDIO = /\.(wav|flac|aiff?)$/i;
+const RAW_AUDIO_REF = /\.(wav|flac|aiff?)(?=["'`?#)\s,;]|$)/gim;
 /* --max-mb N: pieces bigger than this are listed and not sent. */
 const MAX_MB = parseFloat( opt( 'max-mb', '0' ) ) || 0;
 const EXCLUDE = opt( 'exclude', '' ) ? new RegExp( opt( 'exclude', '' ), 'i' ) : null;
@@ -481,6 +488,27 @@ function gather( p, root ) {
 	p.files = [ ...files.values() ].map( ( f ) => ( { ...f, rel: rel( f.full ), rewrite: p.rewrites[ f.full ] } ) );
 	if ( NO_AUDIO ) {
 		p.files = p.files.filter( ( f ) => ! AUDIO.test( f.rel ) );
+	} else if ( MP3 ) {
+		const names = new Set( p.files.map( ( f ) => f.rel.toLowerCase() ) );
+		p.files = p.files.filter( ( f ) => {
+			if ( ! RAW_AUDIO.test( f.rel ) ) {
+				return true;
+			}
+			/* An mp3 of the same name already beside it is used as it is. */
+			const to = f.rel.replace( RAW_AUDIO, '.mp3' );
+			if ( names.has( to.toLowerCase() ) ) {
+				return false;
+			}
+			f.mp3 = true;
+			f.rel = to;
+			f.size = Math.round( f.size / 10 ); // an estimate until it is made
+			return true;
+		} );
+		p.files.forEach( ( f ) => {
+			if ( TEXT.test( f.rel ) ) {
+				f.toMp3 = true;
+			}
+		} );
 	}
 	p.bytes = p.files.reduce( ( s, f ) => s + f.size, 0 );
 	p.entry = rel( p.mainFile );
@@ -521,6 +549,24 @@ function rewritten( text, pairs ) {
 	return text;
 }
 
+/* An mp3 of a sound file, made once and kept beside the system's temp folder
+   so a sound shared by several pieces is converted only once. */
+const MP3_CACHE = path.join( os.tmpdir(), 'rs-work-mp3' );
+async function mp3Of( file ) {
+	const st = fs.statSync( file );
+	const key = crypto.createHash( 'sha1' ).update( file + '|' + st.size + '|' + st.mtimeMs ).digest( 'hex' );
+	const out = path.join( MP3_CACHE, key + '.mp3' );
+	if ( ! fs.existsSync( out ) ) {
+		fs.mkdirSync( MP3_CACHE, { recursive: true } );
+		const { spawnSync } = await import( 'node:child_process' );
+		const r = spawnSync( 'ffmpeg', [ '-v', 'error', '-y', '-i', file, '-vn', '-codec:a', 'libmp3lame', '-q:a', '4', out ], { stdio: [ 'ignore', 'ignore', 'pipe' ] } );
+		if ( r.status !== 0 ) {
+			throw new Error( 'ffmpeg could not convert ' + file + ': ' + String( r.stderr || r.error || '' ).slice( 0, 200 ) );
+		}
+	}
+	return fsp.readFile( out );
+}
+
 async function zip( files, out ) {
 	const fh = await fsp.open( out, 'w' );
 	const central = [];
@@ -530,9 +576,16 @@ async function zip( files, out ) {
 		offset += b.length;
 	};
 	for ( const f of files ) {
-		let data = await fsp.readFile( f.full );
-		if ( f.rewrite ) {
-			data = Buffer.from( rewritten( data.toString( 'utf8' ), f.rewrite ), 'utf8' );
+		let data = f.mp3 ? await mp3Of( f.full ) : await fsp.readFile( f.full );
+		if ( f.rewrite || f.toMp3 ) {
+			let text = data.toString( 'utf8' );
+			if ( f.rewrite ) {
+				text = rewritten( text, f.rewrite );
+			}
+			if ( f.toMp3 ) {
+				text = text.replace( RAW_AUDIO_REF, '.mp3' );
+			}
+			data = Buffer.from( text, 'utf8' );
 		}
 		const crc = crc32( data );
 		const store = PACKED.test( f.rel ) || data.length < 64;
