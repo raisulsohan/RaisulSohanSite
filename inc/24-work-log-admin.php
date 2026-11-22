@@ -177,10 +177,31 @@ function rs_wla_poster_svg( $title, $label, $date ) {
 }
 
 /**
+ * The page that plays a video piece: the video filling the frame, with its
+ * sound when the visitor opened it (muted when the browser will not allow
+ * that, as in the list's silent preview).
+ *
+ * @param string $video  The video's file name, beside the page.
+ * @param string $poster Its poster's file name, or ''.
+ * @param string $title  The piece's title.
+ * @return string
+ */
+function rs_wla_player_html( $video, $poster = '', $title = '' ) {
+	$src = implode( '/', array_map( 'rawurlencode', explode( '/', $video ) ) );
+	$pos = $poster ? ' poster="' . esc_attr( implode( '/', array_map( 'rawurlencode', explode( '/', $poster ) ) ) ) . '"' : '';
+	return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' . esc_html( $title ) . '</title>'
+		. '<style>html,body{margin:0;height:100%;background:#000}video{display:block;width:100%;height:100%;object-fit:contain;background:#000}</style></head><body>'
+		. '<video src="' . esc_attr( $src ) . '"' . $pos . ' controls autoplay playsinline preload="metadata"></video>'
+		. '<script>var v=document.querySelector("video");var p=v.play();if(p&&p.catch){p.catch(function(){v.muted=true;v.play();});}</script>'
+		. '</body></html>';
+}
+
+/**
  * Unpack an uploaded file into a piece's folder.
  *
  * A ZIP keeps its paths; when everything in it sits in one top folder, that
- * folder is dropped. A single HTML file is copied as it is.
+ * folder is dropped. A single HTML file is copied as it is; a single video
+ * (mp4, webm, m4v, mov) is copied with a page that plays it (index.html).
  *
  * @param string $file   The joined upload.
  * @param string $name   Its original file name.
@@ -204,6 +225,20 @@ function rs_wla_unpack( $file, $name, $target ) {
 		return array(
 			'files' => array( $base ),
 			'bytes' => (int) filesize( $file ),
+		);
+	}
+
+	if ( preg_match( '/\.(mp4|webm|m4v|mov)$/i', $name ) ) {
+		$base = rs_wla_clean_path( sanitize_file_name( wp_basename( $name ) ) );
+		if ( '' === $base || 'index.html' === strtolower( $base ) ) {
+			$base = 'video.mp4';
+		}
+		copy( $file, $target . '/' . $base );
+		file_put_contents( $target . '/index.html', rs_wla_player_html( $base ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		return array(
+			'files' => array( 'index.html', $base ),
+			'bytes' => (int) filesize( $file ),
+			'video' => true,
 		);
 	}
 
@@ -366,7 +401,7 @@ function rs_wla_taken() {
  * Turn an uploaded file into a piece.
  *
  * @param array $req token, name, title, date, kind, desc_bn, desc_en, entry,
- *                   entry45, clips [{title, entry, poster}], poster,
+ *                   entry45, clips [{title, entry, poster}], poster, video,
  *                   poster_token, poster_name, origin, hidden, replace.
  * @return array|WP_Error The stored record.
  */
@@ -489,6 +524,7 @@ function rs_work_log_import( $req ) {
 		'files'   => count( $got['files'] ),
 		'origin'  => $origin,
 		'added'   => time(),
+		'video'   => ! empty( $got['video'] ) || ! empty( $req['video'] ),
 	);
 
 	$store                 = rs_work_log_store();
@@ -856,10 +892,10 @@ function rs_work_log_screen() {
 		<details class="rs-wl-add">
 			<summary><?php echo esc_html( rs_wla_t( '+ নতুন কাজ যোগ করুন', '+ Add a piece' ) ); ?></summary>
 			<form id="rsWlAdd">
-				<p class="rs-wl-help"><?php echo esc_html( rs_wla_t( 'কাজের পুরো ফোল্ডারটা zip করে দিন (ভেতরের ফাইল আর ফোল্ডারের নাম যেমন আছে তেমন থাকবে), অথবা একটা html ফাইল। বড় ফাইলও চলবে, ছোট ছোট অংশে যায়।', 'Upload the piece\'s whole folder as a ZIP (its file and folder names stay as they are), or a single HTML file. Large files are fine; they go up in chunks.' ) ); ?></p>
+				<p class="rs-wl-help"><?php echo esc_html( rs_wla_t( 'একটা mp4 ভিডিও, অথবা কাজের পুরো ফোল্ডারটা zip করে (ভেতরের ফাইল আর ফোল্ডারের নাম যেমন আছে তেমন থাকবে), অথবা একটা html ফাইল দিন। বড় ফাইলও চলবে, ছোট ছোট অংশে যায়।', 'Upload an mp4 video, or the piece\'s whole folder as a ZIP (its file and folder names stay as they are), or a single HTML file. Large files are fine; they go up in chunks.' ) ); ?></p>
 				<div class="rs-wl-grid">
 					<label class="span2"><?php echo esc_html( rs_wla_t( 'ফাইল (zip বা html)', 'File (ZIP or HTML)' ) ); ?>
-						<input type="file" name="file" accept=".zip,.html,.htm" required></label>
+						<input type="file" name="file" accept=".zip,.html,.htm,.mp4,.webm,.m4v,.mov" required></label>
 					<label class="span2"><?php echo esc_html( rs_wla_t( 'নাম', 'Title' ) ); ?>
 						<input type="text" name="title" required></label>
 					<label><?php echo esc_html( rs_wla_t( 'তারিখ', 'Date' ) ); ?>

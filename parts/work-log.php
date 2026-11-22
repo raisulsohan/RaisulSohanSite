@@ -287,6 +287,7 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 	.ctl { position: sticky; top: var(--bar); z-index: 15; background: rgba(0, 0, 0, .86); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255, 255, 255, .08); }
 	.ctl-in { display: flex; align-items: center; justify-content: space-between; gap: 10px 16px; flex-wrap: wrap; padding-block: 10px; }
 	.seg { display: inline-flex; padding: 4px; border-radius: 980px; background: rgba(255, 255, 255, .1); }
+	.seg[hidden] { display: none; }
 	.seg button { min-height: 38px; padding: 0 16px; border: 0; border-radius: 980px; background: none; color: var(--fg2); font-size: 14px; cursor: pointer; }
 	.seg button[aria-pressed="true"] { background: var(--fg); color: var(--ink); font-weight: 600; }
 	.chips-f { display: flex; gap: 8px; flex-wrap: wrap; }

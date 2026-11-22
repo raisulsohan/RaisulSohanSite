@@ -435,8 +435,9 @@ function rs_work_log_from_store( $it ) {
 		'desc_en' => '' !== (string) $it['desc_en'] ? $it['desc_en'] : (string) $it['desc_bn'],
 		'img'     => rs_work_log_file_url( $dir, $it['poster'] ),
 		'src'     => rs_work_log_file_url( $dir, $it['entry'] ),
-		/* A silent preview would fetch the whole piece; only small ones get one. */
-		'preview' => (int) $it['bytes'] < 15 * MB_IN_BYTES,
+		/* A silent preview would fetch the whole piece; only small ones get one.
+		   A video streams, so it always may. */
+		'preview' => ! empty( $it['video'] ) || (int) $it['bytes'] < 15 * MB_IN_BYTES,
 		'source'  => 'upload',
 	);
 

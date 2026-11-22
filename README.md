@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-9.7.6-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-9.8.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 9.8
+
+**Video pieces in the Work Log.**
+
+- **9.8.0: An mp4 is a piece.** *Add a piece* on Dashboard › Work Log now takes an mp4, webm, m4v or mov as well as a ZIP or an HTML file. The video is kept as it is beside a small page that plays it (`rs_wla_player_html()`): full frame, with its sound when opened in the player, muted where the browser will not allow sound (the list's hover preview). A video piece is marked `video` and always gets the hover preview, since a video streams instead of loading whole. The player's 16:9 / 4:5 switch is now really hidden for a piece without a 4:5 cut (`.seg[hidden]`); before, its own `display` kept it on screen.
 
 ## What's new in 9.7
 
