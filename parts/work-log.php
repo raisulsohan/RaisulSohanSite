@@ -301,7 +301,8 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 	.tl-rail, .tl-fill { position: absolute; top: 56px; bottom: 72px; left: 50%; width: 2px; margin-left: -1px; }
 	.tl-rail { background: rgba(255, 255, 255, .14); }
 	.tl-fill { background: var(--acc); transform-origin: top; transform: scaleY(0); }
-	.tl-head { position: absolute; top: 56px; left: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: var(--acc); box-shadow: 0 0 0 6px rgba(255, 74, 28, .25), 0 0 24px rgba(255, 74, 28, .6); z-index: 3; pointer-events: none; opacity: 0; transition: opacity .25s; }
+	/* The playhead sits under a day's box, as the rail does, so it never runs over a card. */
+	.tl-head { position: absolute; top: 56px; left: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: var(--acc); box-shadow: 0 0 0 6px rgba(255, 74, 28, .25), 0 0 24px rgba(255, 74, 28, .6); z-index: 1; pointer-events: none; opacity: 0; transition: opacity .25s; }
 	.tl-head.on { opacity: 1; }
 	.tl-month { position: relative; }
 	.tl-mhead { position: relative; z-index: 2; display: flex; justify-content: center; margin: 0 0 40px; }
