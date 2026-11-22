@@ -787,6 +787,9 @@ function videoPieces( dir ) {
 	return out.sort( ( a, b ) => a.date.localeCompare( b.date ) );
 }
 
+/** The site keeps a folder's name with single spaces, so two that differ only in spaces are one. */
+const oneSpace = ( t ) => t.replace( /\s+/g, ' ' ).trim();
+
 /** A piece the site already has gets its names, kind and cover; returns its id, which may be new. */
 async function rename( p, row ) {
 	const json = {
@@ -835,18 +838,18 @@ async function videoMain() {
 	if ( have.status !== 200 ) {
 		throw new Error( 'The site refused the login (' + have.status + '): ' + ( have.data.message || '' ) );
 	}
-	const known = new Map( have.data.filter( ( r ) => r.origin ).map( ( r ) => [ r.origin, r ] ) );
+	const known = new Map( have.data.filter( ( r ) => r.origin ).map( ( r ) => [ oneSpace( r.origin ), r ] ) );
 	const tmp = fs.mkdtempSync( path.join( os.tmpdir(), 'rs-work-' ) );
 	const done = [];
 	for ( const [ i, p ] of pieces.entries() ) {
 		const label = `[${ i + 1 }/${ pieces.length }] ${ p.origin }`;
-		if ( known.has( p.origin ) && ! flag( 'replace' ) ) {
+		if ( known.has( oneSpace( p.origin ) ) && ! flag( 'replace' ) ) {
 			if ( ! flag( 'names' ) ) {
 				console.log( label + ': already on the site, skipped' );
 				continue;
 			}
 			try {
-				const id = await rename( p, known.get( p.origin ) );
+				const id = await rename( p, known.get( oneSpace( p.origin ) ) );
 				console.log( label + ': named "' + p.title + '" (' + id + ')' );
 				done.push( { origin: p.origin, id } );
 			} catch ( e ) {
@@ -968,13 +971,13 @@ async function main() {
 	if ( have.status !== 200 ) {
 		throw new Error( 'The site refused the login (' + have.status + '): ' + ( have.data.message || '' ) );
 	}
-	const known = new Set( have.data.map( ( r ) => r.origin ).filter( Boolean ) );
+	const known = new Set( have.data.map( ( r ) => oneSpace( r.origin || '' ) ).filter( Boolean ) );
 	const tmp = fs.mkdtempSync( path.join( os.tmpdir(), 'rs-work-' ) );
 	const done = [];
 
 	for ( const [ i, p ] of pieces.entries() ) {
 		const label = `[${ i + 1 }/${ pieces.length }] ${ p.origin }`;
-		if ( known.has( p.origin ) && ! flag( 'replace' ) ) {
+		if ( known.has( oneSpace( p.origin ) ) && ! flag( 'replace' ) ) {
 			console.log( label + ': already on the site, skipped' );
 			continue;
 		}

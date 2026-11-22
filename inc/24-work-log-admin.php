@@ -754,6 +754,7 @@ function rs_work_log_update_item( WP_REST_Request $r ) {
 			$item['poster'] = $poster;
 		}
 		$store['items'][ $id ] = $item;
+		rs_wla_retitle( $item );
 
 		/* A new address for the piece; its folder stays where it is. */
 		if ( ! empty( $params['slug'] ) ) {
@@ -819,6 +820,62 @@ function rs_wla_clip_names( $clips, $names ) {
 
 	return $clips;
 }
+
+/**
+ * Give a video piece's player pages the name they now have: it is what the
+ * browser's tab shows when a page is opened on its own.
+ *
+ * @param array $item The stored piece.
+ */
+function rs_wla_retitle( $item ) {
+	if ( empty( $item['video'] ) || empty( $item['dir'] ) ) {
+		return;
+	}
+
+	$pages = array( $item['entry'] => $item['title'] );
+	if ( ! empty( $item['entry45'] ) ) {
+		$pages[ $item['entry45'] ] = $item['title'];
+	}
+	foreach ( empty( $item['clips'] ) ? array() : $item['clips'] as $c ) {
+		if ( ! isset( $pages[ $c['entry'] ] ) ) {
+			$pages[ $c['entry'] ] = $c['title'] . ' · ' . $item['title'];
+		}
+	}
+
+	foreach ( $pages as $page => $title ) {
+		$file = rs_work_log_files()['dir'] . '/' . $item['dir'] . '/' . $page;
+		/* Only a player page: small, and a page at all. */
+		if ( ! preg_match( '/\.html$/i', $page ) || ! is_file( $file ) || filesize( $file ) > 4096 ) {
+			continue;
+		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$html = (string) file_get_contents( $file );
+		$new  = preg_replace_callback(
+			'#<title>[^<]*</title>#',
+			function () use ( $title ) {
+				return '<title>' . esc_html( $title ) . '</title>';
+			},
+			$html,
+			1
+		);
+		if ( is_string( $new ) && $new !== $html ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+			file_put_contents( $file, $new );
+		}
+	}
+}
+
+/** Once, after 9.10.2 comes in: the pieces that were renamed before their pages could be. */
+function rs_work_log_retitle_once() {
+	if ( ! rs_wla_can() || get_site_option( 'rs_work_log_retitled' ) ) {
+		return;
+	}
+	update_site_option( 'rs_work_log_retitled', 1 );
+	foreach ( rs_work_log_store()['items'] as $item ) {
+		rs_wla_retitle( $item );
+	}
+}
+add_action( 'admin_init', 'rs_work_log_retitle_once' );
 
 /**
  * A new poster for a stored piece: a picture sent on its own, or one that is
