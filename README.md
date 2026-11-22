@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-9.5.3-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-9.6.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 9.6
+
+**A Work Log at /work/.**
+
+- **9.6.0: The Work Log.** Every piece of work that plays in the browser, newest first, on a dated timeline at `/work/` on both editions (*কাজের খাতা* in Bengali, *Work Log* in English, each edition at its own address with hreflang between them). A calendar strip under the headline marks each day a piece came out and jumps to it. The list view is a centre rail with the cards on alternate sides; several pieces on one day share one dot and one box; a project with clips (the Map Animation Showreel and its 12 styles) is one wide card with a filmstrip of its clips and *Play all*, which plays them as a playlist; a piece with a 4:5 cut is one card with a 16:9 / 4:5 switch. A card plays its piece silently in place when the pointer rests on it, or on a phone when it sits in the middle of the screen (not with reduced motion or a light connection). The rail fills orange as the page scrolls, with a timecode chip showing the day in view. Filters for reels, maps and documentaries, and tool promos; a pop-up player with previous and next, `[` `]` and Esc, and deep links (`#id`, `#id/N` for a clip). The Editor view lays the same works out as an editing timeline, one track per kind, with a monitor, an inspector, a minimap of the whole span and zoom; it is built only when opened, so the cached list view never shifts. The works and their dates (the day each was first added to the repository) are in `rs_work_log_items()`; add a new piece there. `inc/23-work-log.php` answers the address and adds it to the main edition's sitemap; the page is `parts/work-log.php`, with the site's statistics beacon. Add it to the menu under Appearance › Menus.
 
 ## What's new in 9.5
 
@@ -650,7 +656,7 @@ raisul-sohan/
 ├── style.css              Theme header only (the stylesheet is built, see below)
 ├── functions.php          Constants, then loads every inc/NN-*.php in order
 ├── inc/
-│   ├── 01-theme-setup.php … 22-statistics-screen.php   The theme, one file per area
+│   ├── 01-theme-setup.php … 23-work-log.php   The theme, one file per area
 │   ├── github-updater.php Self-updater: checks GitHub for new versions
 │   └── portfolio-cpt.php  Portfolio post type, meta boxes, admin reorder
 ├── src/
