@@ -81,38 +81,6 @@ function rs_work_log_sitemap_url( $urls ) {
 }
 add_filter( 'rs_standalone_sitemap_urls', 'rs_work_log_sitemap_url' );
 
-/** The page's name in the reader's edition. */
-function rs_work_log_label() {
-	return rs_is_en() ? 'Work Log' : 'কাজের খাতা';
-}
-
-/**
- * The Work Log at the end of the primary menu, so it is there without an
- * entry made by hand under Appearance › Menus. A menu that already links to
- * the page keeps its own entry and gets no second one.
- *
- * @param string   $items The menu's list items.
- * @param stdClass $args  wp_nav_menu() arguments.
- * @return string
- */
-function rs_work_log_menu_item( $items, $args ) {
-	if ( empty( $args->theme_location ) || 'rs_primary' !== $args->theme_location ) {
-		return $items;
-	}
-
-	$path = '/' . RS_WORK_LOG_SLUG . '/';
-	if ( preg_match( '#href="[^"]*' . preg_quote( $path, '#' ) . '"#', $items ) ) {
-		return $items;
-	}
-
-	return $items . sprintf(
-		'<li class="menu-item menu-item-work-log"><a href="%s">%s</a></li>',
-		esc_url( rs_work_log_url() ),
-		esc_html( rs_work_log_label() )
-	);
-}
-add_filter( 'wp_nav_menu_items', 'rs_work_log_menu_item', 10, 2 );
-
 /**
  * The kinds of work, top track first in the editor view.
  *

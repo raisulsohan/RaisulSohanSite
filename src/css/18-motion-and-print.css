@@ -19,9 +19,10 @@
 	}
 }
 
-/* Below ~520px the centred brand runs into the links on its left, so the
+/* Below ~800px the centred brand runs into the links on its left (five of
+   them since the Work Log joined, and the English name is long), so the
    bar breaks into two rows: the name first, the controls under it. */
-@media (max-width: 520px) {
+@media (max-width: 800px) {
 	.rs-header__inner {
 		flex-wrap: wrap;
 		row-gap: 0.5rem;
@@ -38,6 +39,44 @@
 
 	.rs-header__nav {
 		gap: 1rem;
+	}
+}
+
+/* On a phone the five links and the five icons share the second row; the
+   links and the icons close up, and the links drop a size, so the row
+   still fits. */
+@media (max-width: 440px) {
+	.rs-header__nav {
+		gap: 0.625rem;
+	}
+
+	.rs-header__nav--right {
+		gap: 0.75rem;
+	}
+
+	.rs-header__link {
+		font-size: 0.75rem;
+	}
+}
+
+/* The narrowest phones (375px and under) take a little more off both, and
+   the bar's side margins narrow to a gutter of 1rem. */
+@media (max-width: 380px) {
+	.rs-header__inner {
+		padding-left: 1rem;
+		padding-right: 1rem;
+	}
+
+	.rs-header__nav {
+		gap: 0.5rem;
+	}
+
+	.rs-header__nav--right {
+		gap: 0.625rem;
+	}
+
+	.rs-header__link {
+		font-size: 0.6875rem;
 	}
 }
 

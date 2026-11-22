@@ -43,6 +43,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<a class="rs-header__link<?php echo $rs_is_portfolio ? ' is-active' : ''; ?>" href="<?php echo esc_url( $rs_portfolio_url ); ?>"<?php echo $rs_is_portfolio ? ' aria-current="page"' : ''; ?>>
 				<?php echo esc_html( rs_is_en() ? 'Portfolio' : 'পোর্টফোলিও' ); ?>
 			</a>
+			<?php /* The Work Log is a page of its own (inc/23-work-log.php), so it is never the page this header sits on. */ ?>
+			<a class="rs-header__link" href="<?php echo esc_url( rs_work_log_url() ); ?>"><?php echo esc_html( rs_is_en() ? 'Work' : 'কাজ' ); ?></a>
 			<?php
 			/* The CV is one document in one language, so its link reads
 			   the same on both editions. */
