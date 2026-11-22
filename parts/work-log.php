@@ -143,7 +143,7 @@ $rs_wl_card = function ( $it, $extra = '' ) use ( $rs_wl_t, $rs_wl_abs, $rs_wl_o
 };
 
 /** A project: its own card, then its clips in a strip. */
-$rs_wl_project = function ( $it ) use ( $rs_wl_t, $rs_wl_abs, $rs_wl_open, $rs_wl_en, $rs_wl_icon_play ) {
+$rs_wl_project = function ( $it ) use ( $rs_wl_t, $rs_wl_abs, $rs_wl_open, $rs_wl_has45, $rs_wl_en, $rs_wl_icon_play ) {
 	$type  = $rs_wl_t( $it['type_bn'], $it['type_en'] );
 	$desc  = $rs_wl_t( $it['desc_bn'], $it['desc_en'] );
 	$clips = $it['clips'];
@@ -165,7 +165,7 @@ $rs_wl_project = function ( $it ) use ( $rs_wl_t, $rs_wl_abs, $rs_wl_open, $rs_w
 				<span class="chips">
 					<span><?php echo esc_html( $rs_wl_t( '১টি মূল ভিডিও', '1 main reel' ) ); ?></span>
 					<span><?php echo esc_html( $rs_wl_en ? $n . ' clips' : rs_bn_digits( $n ) . 'টি ক্লিপ' ); ?></span>
-					<span>16:9 · 4:5</span>
+					<?php if ( $rs_wl_has45( $it ) ) : ?><span>16:9 · 4:5</span><?php endif; ?>
 				</span>
 			</span>
 		</a>

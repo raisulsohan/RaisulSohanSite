@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-9.6.3-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-9.7.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 9.7
+
+**The Work Log is kept from the dashboard.**
+
+- **9.7.0: Dashboard › Work Log.** A new admin screen (*কাজের খাতা* / *Work Log*, `inc/24-work-log-admin.php`) lists every piece on the page, the ones built into the theme and the ones uploaded, with its poster, date, kind and whether it is shown. Each piece can be hidden, shown, edited (title, date, kind, both descriptions) or deleted, one at a time or the ones ticked, and the list narrows by a search or a filter (shown, hidden, or a kind). *Add a piece* takes an HTML file or a ZIP of a folder: the file goes up in chunks (so PHP's upload limit does not apply), the ZIP is unpacked under the main site's `uploads/rs-work/<id>/`, scripts that could run on the server (`.php`, `.phtml`, `.htaccess` and the like) are refused, the page to open is found by itself (`index.html`, `episode.html`, or the shallowest page) unless one is named, and a poster is drawn when none is given. The list is one network option (`rs_work_log_store_v1`), shared by both editions, and every change empties the page cache. A built-in piece cannot be deleted, only hidden. Two new kinds: *অ্যানিমেশন* / *Animation* and *ক্লায়েন্টের কাজ* / *Client work*, each with its own filter on the page. `scripts/work-log-import.mjs` uploads a whole folder of work through the same REST routes with an Application Password: one folder is one piece, its other pages become clips, a 4:5 or 9:16 cut of the main page becomes its vertical cut, working folders (`qa`, `tools`, `source` and so on) and heavy source files stay behind, the date is the day the main page was made, and every piece goes up hidden unless `--show` is given. `--dry` lists what would go up and how big it is.
 
 ## What's new in 9.6
 

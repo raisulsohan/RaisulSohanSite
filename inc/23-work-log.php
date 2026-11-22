@@ -11,8 +11,9 @@
  * page), so the player is an iframe. The page itself is
  * parts/work-log.php.
  *
- * The pieces are listed in rs_work_log_items(), below: add one there and it
- * appears in both views, in the calendar and in the player's order.
+ * The theme's own pieces are listed in rs_work_log_builtin(), below; the
+ * rest are added from Dashboard › Work Log. Either way a piece appears in
+ * both views, in the calendar and in the player's order.
  *
  * No WordPress page is needed: the rule below answers the address on both
  * editions, and rs_flush_rewrite_on_update() adds it on the version bump.
@@ -61,6 +62,11 @@ function rs_work_log_render() {
 		return;
 	}
 
+	/* With every piece hidden there is no log to show: WordPress answers 404. */
+	if ( ! rs_work_log_items() ) {
+		return;
+	}
+
 	status_header( 200 );
 	header( 'Content-Type: text/html; charset=UTF-8' );
 	require RS_DIR . '/parts/work-log.php';
@@ -91,14 +97,18 @@ function rs_work_log_kinds() {
 		'reel' => array( 'bn' => 'শোরিল', 'en' => 'Showreels' ),
 		'map'  => array( 'bn' => 'ম্যাপ ও ডকুমেন্টারি', 'en' => 'Maps & documentary' ),
 		'tool' => array( 'bn' => 'টুল প্রোমো', 'en' => 'Tool promos' ),
+		'anim' => array( 'bn' => 'অ্যানিমেশন', 'en' => 'Animation' ),
+		'client' => array( 'bn' => 'ক্লায়েন্টের কাজ', 'en' => 'Client work' ),
 	);
 }
 
 /**
- * Every piece of work, newest first.
+ * The pieces that ship with the theme, newest first.
  *
  * The date is the day the piece went up on this site (the day its file
  * first came into this repository); change it if a piece was made earlier.
+ * Pieces added from the dashboard live in the store (rs_work_log_store())
+ * and join these in rs_work_log_all().
  *
  * Keys:
  * - id       Short, unique; it is the address of the piece (/work/#id).
@@ -117,7 +127,7 @@ function rs_work_log_kinds() {
  *
  * @return array[]
  */
-function rs_work_log_items() {
+function rs_work_log_builtin() {
 	$map = 'assets/demo/map-animation/';
 	$th  = $map . 'thumbs/';
 
@@ -327,5 +337,164 @@ function rs_work_log_items() {
 			'src'     => 'assets/demo/lazylord-demo.html',
 			'src45'   => 'assets/demo/lazylord-demo-vertical.html',
 		),
+	);
+}
+
+/*
+ * The store: pieces added from Dashboard › Work Log (inc/24-work-log-admin.php),
+ * and which pieces are hidden. One network option, so both editions show the
+ * same log; the files sit under the main site's uploads, in rs-work/<id>/.
+ */
+define( 'RS_WORK_LOG_OPTION', 'rs_work_log_store_v1' );
+
+/**
+ * The stored pieces and the hidden list.
+ *
+ * @return array{items: array<string, array>, hidden: array<string, bool>}
+ */
+function rs_work_log_store() {
+	$store = get_site_option( RS_WORK_LOG_OPTION, array() );
+	$store = is_array( $store ) ? $store : array();
+
+	return array(
+		'items'  => isset( $store['items'] ) && is_array( $store['items'] ) ? $store['items'] : array(),
+		'hidden' => isset( $store['hidden'] ) && is_array( $store['hidden'] ) ? $store['hidden'] : array(),
+	);
+}
+
+/**
+ * Save the store, and empty the page cache so /work/ shows the change.
+ *
+ * @param array $store As rs_work_log_store() returns it.
+ */
+function rs_work_log_store_save( $store ) {
+	update_site_option( RS_WORK_LOG_OPTION, $store );
+
+	if ( function_exists( 'rs_purge_host_cache_soon' ) ) {
+		rs_purge_host_cache_soon();
+	}
+}
+
+/**
+ * Where the uploaded pieces live: the main site's uploads, rs-work/.
+ *
+ * @return array{dir: string, url: string}
+ */
+function rs_work_log_files() {
+	static $files = null;
+
+	if ( null === $files ) {
+		$switched = is_multisite() && get_current_blog_id() !== get_main_site_id();
+		if ( $switched ) {
+			switch_to_blog( get_main_site_id() );
+		}
+		$up = wp_upload_dir( null, false );
+		if ( $switched ) {
+			restore_current_blog();
+		}
+		$files = array(
+			'dir' => trailingslashit( $up['basedir'] ) . 'rs-work',
+			'url' => set_url_scheme( trailingslashit( $up['baseurl'] ) . 'rs-work' ),
+		);
+	}
+
+	return $files;
+}
+
+/**
+ * The address of a file inside a stored piece, each part of its path
+ * encoded (the pieces keep their own folder and file names, spaces and all).
+ *
+ * @param string $dir  The piece's folder under rs-work/.
+ * @param string $path The file, relative to that folder.
+ * @return string
+ */
+function rs_work_log_file_url( $dir, $path ) {
+	$parts = array_map( 'rawurlencode', explode( '/', trim( $dir . '/' . $path, '/' ) ) );
+	return rs_work_log_files()['url'] . '/' . implode( '/', $parts );
+}
+
+/**
+ * A stored piece in the shape the page reads (see rs_work_log_builtin()).
+ *
+ * @param array $it The stored record.
+ * @return array
+ */
+function rs_work_log_from_store( $it ) {
+	$kinds = rs_work_log_kinds();
+	$kind  = isset( $kinds[ $it['kind'] ] ) ? $it['kind'] : 'anim';
+	$dir   = $it['dir'];
+	$row   = array(
+		'id'      => $it['id'],
+		'date'    => $it['date'],
+		'kind'    => $kind,
+		'title'   => $it['title'],
+		'type_bn' => '' !== (string) $it['type_bn'] ? $it['type_bn'] : $kinds[ $kind ]['bn'],
+		'type_en' => '' !== (string) $it['type_en'] ? $it['type_en'] : $kinds[ $kind ]['en'],
+		'desc_bn' => (string) $it['desc_bn'],
+		'desc_en' => '' !== (string) $it['desc_en'] ? $it['desc_en'] : (string) $it['desc_bn'],
+		'img'     => rs_work_log_file_url( $dir, $it['poster'] ),
+		'src'     => rs_work_log_file_url( $dir, $it['entry'] ),
+		/* A silent preview would fetch the whole piece; only small ones get one. */
+		'preview' => (int) $it['bytes'] < 15 * MB_IN_BYTES,
+		'source'  => 'upload',
+	);
+
+	if ( ! empty( $it['entry45'] ) ) {
+		$row['src45'] = rs_work_log_file_url( $dir, $it['entry45'] );
+	}
+
+	if ( ! empty( $it['clips'] ) ) {
+		$row['clips'] = array();
+		foreach ( $it['clips'] as $c ) {
+			$row['clips'][] = array(
+				'title' => $c['title'],
+				'src'   => rs_work_log_file_url( $dir, $c['entry'] ),
+				'img'   => rs_work_log_file_url( $dir, $c['poster'] ),
+			);
+		}
+	}
+
+	return $row;
+}
+
+/**
+ * Every piece, the theme's and the stored ones, with a hidden flag.
+ *
+ * @return array[]
+ */
+function rs_work_log_all() {
+	$store = rs_work_log_store();
+	$all   = array();
+
+	foreach ( rs_work_log_builtin() as $it ) {
+		$it['source'] = 'theme';
+		$all[]        = $it;
+	}
+	foreach ( $store['items'] as $it ) {
+		if ( ! empty( $it['id'] ) && ! empty( $it['dir'] ) ) {
+			$all[] = rs_work_log_from_store( $it );
+		}
+	}
+	foreach ( $all as $i => $it ) {
+		$all[ $i ]['hidden'] = ! empty( $store['hidden'][ $it['id'] ] );
+	}
+
+	return $all;
+}
+
+/**
+ * The pieces the page shows: every piece that is not hidden.
+ *
+ * @return array[]
+ */
+function rs_work_log_items() {
+	return array_values(
+		array_filter(
+			rs_work_log_all(),
+			function ( $it ) {
+				return empty( $it['hidden'] );
+			}
+		)
 	);
 }
