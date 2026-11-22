@@ -801,6 +801,45 @@ function rs_work_log_menu() {
 add_action( 'admin_menu', 'rs_work_log_menu' );
 
 /**
+ * What the scripts need, on the dashboard's screen and on the page itself
+ * (inc/25-work-log-manage.php): the routes, the nonce, the chunk size and
+ * the words.
+ *
+ * @return array
+ */
+function rs_work_log_admin_config() {
+	$limit = (int) wp_max_upload_size();
+
+	return array(
+		'api'   => esc_url_raw( rest_url( 'rs/v1/work-log' ) ),
+		'nonce' => wp_create_nonce( 'wp_rest' ),
+		/* Each chunk well under the server's upload limit. */
+		'chunk' => max( 256 * 1024, min( 8 * MB_IN_BYTES, (int) floor( $limit * 0.8 ) ) ),
+		't'     => array(
+			'uploading' => rs_wla_t( 'আপলোড হচ্ছে', 'Uploading' ),
+			'unpacking' => rs_wla_t( 'খোলা হচ্ছে…', 'Unpacking…' ),
+			'added'     => rs_wla_t( 'যোগ হয়েছে। পেজটা আবার লোড হচ্ছে…', 'Added. Reloading…' ),
+			'pickFile'  => rs_wla_t( 'একটা zip বা html ফাইল বাছুন।', 'Choose a ZIP or HTML file.' ),
+			'confirm'   => rs_wla_t( 'বাছাই করা কাজগুলো মুছে ফেলবেন? আপলোড করা ফাইলও মুছে যাবে।', 'Delete the selected pieces? Their uploaded files go too.' ),
+			'hide'      => rs_wla_t( 'লুকান', 'Hide' ),
+			'show'      => rs_wla_t( 'দেখান', 'Show' ),
+			'shown'     => rs_wla_t( 'দেখা যাচ্ছে', 'Shown' ),
+			'hidden'    => rs_wla_t( 'লুকানো', 'Hidden' ),
+			'saved'     => rs_wla_t( 'সেভ হয়েছে', 'Saved' ),
+			'error'     => rs_wla_t( 'হলো না:', 'Failed:' ),
+			'edit'      => rs_wla_t( 'বদলান', 'Edit' ),
+			'del'       => rs_wla_t( 'মুছুন', 'Delete' ),
+			'undo'      => rs_wla_t( 'ফেরান', 'Undo' ),
+			'theme'     => rs_wla_t( 'থিমের সাথে আসা, শুধু লুকানো যায়', 'Comes with the theme, can only be hidden' ),
+			'clips'     => rs_wla_t( 'টি ক্লিপ', ' clips' ),
+			'didHide'   => rs_wla_t( 'লুকানো হয়েছে:', 'Hidden:' ),
+			'didShow'   => rs_wla_t( 'পেজে দেখানো হচ্ছে:', 'Now shown:' ),
+			'didDel'    => rs_wla_t( 'মুছে ফেলা হয়েছে:', 'Deleted:' ),
+		),
+	);
+}
+
+/**
  * The screen's own stylesheet and script, on the screen alone.
  *
  * @param string $hook The admin page being drawn.
@@ -811,34 +850,9 @@ function rs_work_log_admin_assets( $hook ) {
 	}
 
 	wp_enqueue_style( 'rs-work-log-admin', RS_URI . '/assets/work-log-admin.min.css', array(), RS_VERSION );
-	wp_enqueue_script( 'rs-work-log-admin', RS_URI . '/assets/work-log-admin.min.js', array(), RS_VERSION, true );
-
-	$limit = (int) wp_max_upload_size();
-	wp_add_inline_script(
-		'rs-work-log-admin',
-		'window.RS_WL=' . wp_json_encode(
-			array(
-				'api'   => esc_url_raw( rest_url( 'rs/v1/work-log' ) ),
-				'nonce' => wp_create_nonce( 'wp_rest' ),
-				/* Each chunk well under the server's upload limit. */
-				'chunk' => max( 256 * 1024, min( 8 * MB_IN_BYTES, (int) floor( $limit * 0.8 ) ) ),
-				't'     => array(
-					'uploading' => rs_wla_t( 'আপলোড হচ্ছে', 'Uploading' ),
-					'unpacking' => rs_wla_t( 'খোলা হচ্ছে…', 'Unpacking…' ),
-					'added'     => rs_wla_t( 'যোগ হয়েছে। পেজটা আবার লোড হচ্ছে…', 'Added. Reloading…' ),
-					'pickFile'  => rs_wla_t( 'একটা zip বা html ফাইল বাছুন।', 'Choose a ZIP or HTML file.' ),
-					'confirm'   => rs_wla_t( 'বাছাই করা কাজগুলো মুছে ফেলবেন? আপলোড করা ফাইলও মুছে যাবে।', 'Delete the selected pieces? Their uploaded files go too.' ),
-					'hide'      => rs_wla_t( 'লুকান', 'Hide' ),
-					'show'      => rs_wla_t( 'দেখান', 'Show' ),
-					'shown'     => rs_wla_t( 'দেখা যাচ্ছে', 'Shown' ),
-					'hidden'    => rs_wla_t( 'লুকানো', 'Hidden' ),
-					'saved'     => rs_wla_t( 'সেভ হয়েছে', 'Saved' ),
-					'error'     => rs_wla_t( 'হলো না:', 'Failed:' ),
-				),
-			)
-		) . ';',
-		'before'
-	);
+	wp_enqueue_script( 'rs-work-log-api', RS_URI . '/assets/work-log-api.min.js', array(), RS_VERSION, true );
+	wp_enqueue_script( 'rs-work-log-admin', RS_URI . '/assets/work-log-admin.min.js', array( 'rs-work-log-api' ), RS_VERSION, true );
+	wp_add_inline_script( 'rs-work-log-api', 'window.RS_WL=' . wp_json_encode( rs_work_log_admin_config() ) . ';', 'before' );
 }
 add_action( 'admin_enqueue_scripts', 'rs_work_log_admin_assets' );
 

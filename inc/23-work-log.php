@@ -63,8 +63,13 @@ function rs_work_log_render() {
 	}
 
 	/* With every piece hidden there is no log to show: WordPress answers 404. */
-	if ( ! rs_work_log_items() ) {
+	if ( ! rs_work_log_page_items() ) {
 		return;
+	}
+
+	/* Someone who manages the log gets its controls: never from a cache, never into one. */
+	if ( rs_wla_can() ) {
+		nocache_headers();
 	}
 
 	status_header( 200 );

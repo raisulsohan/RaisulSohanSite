@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-9.8.1-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-9.9.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 9.9
+
+**The Work Log is kept from the page itself.**
+
+- **9.9.0: Controls on /work/ for whoever may manage it.** Signed in, `/work/` lists every piece, hidden ones too (dashed and dimmed), with *Hide* or *Show*, *Edit* and *Delete* under each card, in the pop-up player and in the editor view, so a piece can be watched and kept or dropped on the spot. A bar under the filters adds a piece (mp4, ZIP or HTML, sent in chunks; a video's poster is a frame of it), narrows the list to the shown or the hidden ones with live counts, opens the page as a visitor sees it (`?visitor=1`) and links to the dashboard. Hiding and showing can be undone; deleting asks first and offers to hide instead; a piece that comes with the theme can only be hidden. It is `inc/25-work-log-manage.php` with the bundles `work-log-manage.css` and `work-log-manage.js`; the calls and the chunked upload it shares with the dashboard moved to `work-log-api.js`. A visitor gets none of it, and the page is sent uncached to whoever may manage it. Also: the site's back-to-top button; the kind filter now really hides every other card (`[hidden]` lost to the cards' own `display`); the hero, the list and the editor keep their side gutter on phones; the footer no longer says that nothing here is a video file.
 
 ## What's new in 9.8
 

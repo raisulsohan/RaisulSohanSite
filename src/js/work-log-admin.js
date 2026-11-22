@@ -3,60 +3,20 @@
  * file in chunks, hide, show, edit and delete pieces, one at a time or the
  * ones ticked, and narrow the list by a search or a filter.
  *
- * Everything goes through the theme's routes under rs/v1/work-log with the
- * REST nonce; the settings come in window.RS_WL.
+ * The routes and the chunked upload are work-log-api.js's; the settings come
+ * in window.RS_WL.
  */
 ( function () {
 	'use strict';
 
 	const C = window.RS_WL;
-	if ( ! C ) {
+	if ( ! C || ! window.RS_WL_API ) {
 		return;
 	}
+	const { api, send } = window.RS_WL_API;
 	const T = C.t;
 	const $ = ( s, r ) => ( r || document ).querySelector( s );
 	const $$ = ( s, r ) => Array.from( ( r || document ).querySelectorAll( s ) );
-
-	async function api( path, opts ) {
-		const o = Object.assign( { method: 'GET', headers: {} }, opts || {} );
-		o.headers[ 'X-WP-Nonce' ] = C.nonce;
-		if ( o.json !== undefined ) {
-			o.headers[ 'Content-Type' ] = 'application/json';
-			o.body = JSON.stringify( o.json );
-			delete o.json;
-		}
-		const res = await fetch( C.api + path, o );
-		const data = await res.json().catch( () => ( {} ) );
-		if ( ! res.ok && res.status !== 409 ) {
-			throw new Error( data.message || res.status + ' ' + res.statusText );
-		}
-		return { status: res.status, data };
-	}
-
-	function token() {
-		const a = new Uint8Array( 16 );
-		crypto.getRandomValues( a );
-		return Array.from( a, ( b ) => b.toString( 16 ).padStart( 2, '0' ) ).join( '' );
-	}
-
-	/* Send a file in chunks; a refused chunk says where to carry on from. */
-	async function send( file, onStep ) {
-		const id = token();
-		let offset = 0;
-		while ( offset < file.size ) {
-			const fd = new FormData();
-			fd.append( 'token', id );
-			fd.append( 'offset', String( offset ) );
-			fd.append( 'total', String( file.size ) );
-			fd.append( 'chunk', file.slice( offset, offset + C.chunk ), 'chunk' );
-			const r = await api( '/upload', { method: 'POST', body: fd } );
-			offset = r.data.received;
-			if ( onStep ) {
-				onStep( offset / file.size );
-			}
-		}
-		return id;
-	}
 
 	/* ── adding a piece ── */
 	const form = $( '#rsWlAdd' );

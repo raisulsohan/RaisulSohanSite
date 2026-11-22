@@ -33,7 +33,8 @@ $rs_wl_t     = function ( $bn, $en ) use ( $rs_wl_en ) {
 	return $rs_wl_en ? $en : $bn;
 };
 $rs_wl_kinds = rs_work_log_kinds();
-$rs_wl_items = rs_work_log_items();
+$rs_wl_items = rs_work_log_page_items();
+$rs_wl_manage = rs_work_log_manage();
 $rs_wl_email = rs_option( 'rs_email' ) ? rs_option( 'rs_email' ) : 'lettertosohan@gmail.com';
 
 /* Newest first; a stable sort keeps the listed order within a day. */
@@ -233,6 +234,7 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 		color-scheme: dark;
 	}
 	* { box-sizing: border-box; }
+	[hidden] { display: none !important; }
 	html { scroll-behavior: smooth; scroll-padding-top: 140px; }
 	@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 	body { margin: 0; color: var(--fg); background: var(--bg); font: 17px/1.5 var(--sans); -webkit-font-smoothing: antialiased; overflow-x: clip; }
@@ -263,7 +265,7 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 	.nav a[aria-current] { color: var(--fg); background: rgba(255, 255, 255, .1); }
 
 	/* hero */
-	.hero { padding: 84px 0 36px; text-align: center; }
+	.hero { padding-block: 84px 36px; text-align: center; }
 	.kicker { display: block; color: var(--acc); font-size: 14px; font-weight: 600; }
 	.hero .kicker { font-size: 15px; margin-bottom: 14px; }
 	.hero h1 { margin: 0 auto; max-width: 900px; font-size: clamp(44px, 7vw, 76px); line-height: 1.1; font-weight: 700; }
@@ -298,7 +300,7 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 	.tc i { width: 8px; height: 8px; border-radius: 50%; background: var(--acc); }
 
 	/* the list: one line down the middle, a dot per day */
-	.tl { position: relative; padding: 56px 0 72px; }
+	.tl { position: relative; padding-block: 56px 72px; }
 	.tl-rail, .tl-fill { position: absolute; top: 56px; bottom: 72px; left: 50%; width: 2px; margin-left: -1px; }
 	.tl-rail { background: rgba(255, 255, 255, .14); }
 	.tl-fill { background: var(--acc); transform-origin: top; transform: scaleY(0); }
@@ -369,7 +371,7 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 	.tl-end span { padding: 10px 20px; border-radius: 980px; border: 1px solid var(--line2); background: var(--bg); color: var(--mut); font-size: 15px; }
 
 	/* the editor */
-	.ed { padding: 28px 0 72px; }
+	.ed { padding-block: 28px 72px; }
 	.ed-help { margin: 0 0 18px; padding: 14px 18px; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 16px; border-radius: 14px; background: rgba(255, 74, 28, .1); border: 1px solid rgba(255, 74, 28, .35); }
 	.ed-help li { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5; }
 	.n { flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: var(--acc); color: var(--ink); font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; }
@@ -452,6 +454,20 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 	.m-frame { width: 100%; border: 0; border-radius: 14px; background: #050506; display: block; }
 	.m-note { margin: 0; color: var(--dim); font-size: 13px; }
 
+	/* back to top: the site's button in the showreel's dark glass */
+	.to-top {
+		all: unset; position: fixed; right: 22px; bottom: 22px; z-index: 30; box-sizing: border-box; display: grid; place-items: center; width: 44px; height: 44px; cursor: pointer;
+		border-radius: 50%; color: #fff; background: rgba(44, 44, 46, .72);
+		-webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), 0 8px 24px rgba(0, 0, 0, .35);
+		opacity: 0; visibility: hidden; transform: translateY(8px); transition: opacity .2s ease, transform .2s ease, visibility .2s ease;
+	}
+	.to-top.is-visible { opacity: 1; visibility: visible; transform: none; }
+	.to-top:hover { color: #000; background: #f5f5f7; }
+	.to-top:focus-visible { outline: 2px solid var(--acc); outline-offset: 3px; }
+	body.locked .to-top { display: none; }
+	@media (max-width: 600px) { .to-top { right: 16px; bottom: 16px; } }
+	@media (prefers-reduced-motion: reduce) { .to-top { transition: none; } }
+
 	@media (max-width: 900px) {
 		.ed-top { grid-template-columns: 1fr; }
 		.clips { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -491,6 +507,7 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 		.nav .nl { display: none; }
 	}
 </style>
+<?php rs_work_log_manage_head(); ?>
 </head>
 <body>
 
@@ -577,6 +594,7 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 			</div>
 			<span class="tc" id="tc" aria-hidden="true"><i></i><span id="tcText"></span></span>
 		</div>
+		<?php rs_work_log_manage_bar( count( $rs_wl_items ), count( array_filter( wp_list_pluck( $rs_wl_items, 'hidden' ) ) ) ); ?>
 	</div>
 
 	<section class="wrap tl" id="list" aria-label="<?php echo esc_attr( $rs_wl_t( 'টাইমলাইন', 'Timeline' ) ); ?>">
@@ -700,7 +718,7 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 </section>
 
 <footer class="wrap foot">
-	<p><?php echo esc_html( $rs_wl_t( 'বানিয়েছেন', 'Made by' ) ); ?> <a href="<?php echo esc_url( home_url( '/portfolio/' ) ); ?>"><?php echo esc_html( $rs_wl_t( 'রাইসুল সোহান', 'Raisul Sohan' ) ); ?></a>. <?php echo esc_html( $rs_wl_t( 'এখানের প্রতিটা কাজ ব্রাউজারে কোডে আঁকা; কোনোটাই ভিডিও ফাইল নয়, শোরিল ছাড়া।', 'Every piece here is drawn in code in the browser; none is a video file, save the showreel.' ) ); ?></p>
+	<p><?php echo esc_html( $rs_wl_t( 'বানিয়েছেন', 'Made by' ) ); ?> <a href="<?php echo esc_url( home_url( '/portfolio/' ) ); ?>"><?php echo esc_html( $rs_wl_t( 'রাইসুল সোহান', 'Raisul Sohan' ) ); ?></a>. <?php echo esc_html( $rs_wl_t( 'এখানের প্রতিটা কাজ এই পেজেই চলে।', 'Every piece plays right here on the page.' ) ); ?></p>
 </footer>
 
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle" hidden>
@@ -721,6 +739,8 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 		<p class="m-note" id="mNote"><?php echo esc_html( $rs_wl_t( '[ ] দিয়ে আগে-পরে · Esc দিয়ে বন্ধ', '[ ] previous and next · Esc to close' ) ); ?></p>
 	</div>
 </div>
+
+<button type="button" class="to-top" id="toTop" aria-label="<?php echo esc_attr( $rs_wl_t( 'উপরে যান', 'Back to top' ) ); ?>" title="<?php echo esc_attr( $rs_wl_t( 'উপরে যান', 'Back to top' ) ); ?>"><?php echo wp_kses( rs_icon( 'up', 18 ), rs_svg_tags() ); ?></button>
 
 <script>
 (function () {
@@ -752,6 +772,9 @@ foreach ( $rs_wl_items as $rs_wl_it ) {
 		'preview' => ! isset( $rs_wl_it['preview'] ) || false !== $rs_wl_it['preview'],
 		'clips'   => array(),
 	);
+	if ( $rs_wl_manage ) {
+		$rs_wl_row = array_merge( $rs_wl_row, array_intersect_key( rs_wla_row( $rs_wl_it ), array_flip( array( 'hidden', 'source', 'bytes', 'desc_bn', 'desc_en' ) ) ) );
+	}
 	if ( ! empty( $rs_wl_it['clips'] ) ) {
 		foreach ( $rs_wl_it['clips'] as $rs_wl_i => $rs_wl_c ) {
 			$rs_wl_row['clips'][] = array(
@@ -804,7 +827,8 @@ const canVert = p => !!(p.src45 || p.map);
 
 // ── filters
 let kind = 'all';
-const shown = w => kind === 'all' || w.kind === kind;
+let gate = null;   // a further test, set by the controls of someone who manages the log
+const shown = w => !!w && (kind === 'all' || w.kind === kind) && (!gate || gate(w));
 
 function applyFilter() {
   document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.k === kind ? 'true' : 'false'));
@@ -814,7 +838,7 @@ function applyFilter() {
     m.querySelectorAll('.tl-day').forEach(d => {
       let n = 0;
       d.querySelectorAll('[data-kind]').forEach(el => {
-        const on = kind === 'all' || el.dataset.kind === kind;
+        const on = shown(byId(el.dataset.id));
         el.hidden = !on; if (on) n++;
       });
       d.hidden = n === 0; mn += n;
@@ -832,6 +856,7 @@ document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () =
 
 // ── the pop-up player
 const modal = $('modal'), mFrame = $('mFrame');
+const hooks = {};   // filled in below for someone who manages the log
 const P = { list: [], i: 0, vert: store.get('worklog.vert') === '1', last: null, hash: '' };
 function fitModal() {
   if (modal.hidden) return;
@@ -851,6 +876,7 @@ function loadModal() {
   const multi = P.list.length > 1; $('mPrev').hidden = !multi; $('mNext').hidden = !multi;
   mFrame.src = srcOf(p, v);
   if (p.hash && location.hash !== p.hash) history.replaceState(null, '', p.hash);
+  if (hooks.onLoad) hooks.onLoad(byId(p.id));
   fitModal();
 }
 function openPlayer(list, i) {
@@ -867,8 +893,8 @@ function closePlayer() {
   history.replaceState(null, '', location.pathname + location.search);
   if (P.last) P.last.focus({ preventScroll: true });
 }
-const entry = w => ({ title: w.title, type: w.type, src: w.src, src45: w.src45, map: w.map, local: w.local, hash: '#' + w.id });
-const clipEntry = (w, c, i) => ({ title: c.num + ' · ' + c.title, type: w.title, src: c.src, src45: '', map: w.map, local: true, hash: '#' + w.id + '/' + (i + 1) });
+const entry = w => ({ id: w.id, title: w.title, type: w.type, src: w.src, src45: w.src45, map: w.map, local: w.local, hash: '#' + w.id });
+const clipEntry = (w, c, i) => ({ id: w.id, title: c.num + ' · ' + c.title, type: w.title, src: c.src, src45: '', map: w.map, local: true, hash: '#' + w.id + '/' + (i + 1) });
 function playWork(id) {
   const list = WORKS.filter(shown);
   let i = list.findIndex(w => w.id === id);
@@ -1035,7 +1061,7 @@ function drawEditor(keepScroll) {
       const next = keys[idx + 1] ? toDay(g[keys[idx + 1]][0].date) - d0 : d + 3;
       const width = Math.max(12, Math.min(next - d, 3) * px - 6);
       const b = document.createElement('button');
-      b.type = 'button'; b.className = 'eclip' + (ws.length > 1 ? ' stack' : '') + (ws.some(shown) ? '' : ' dim');
+      b.type = 'button'; b.className = 'eclip' + (ws.length > 1 ? ' stack' : '') + (ws.some(shown) ? '' : ' dim') + (ws.every(x => x.hidden) ? ' off' : '');
       b.style.left = (d * px + 3) + 'px'; b.style.width = width + 'px';
       b.dataset.key = key;
       b.setAttribute('aria-label', w.day + ': ' + ws.map(x => x.title).join(', '));
@@ -1088,6 +1114,7 @@ function select(w, scroll) {
   $('edClipsWrap').hidden = !w.clips.length;
   $('edClips').innerHTML = '';
   w.clips.forEach((c, i) => { const b = document.createElement('button'); b.type = 'button'; b.innerHTML = '<img src="' + c.img + '" alt="">'; b.append(c.num + ' · ' + c.title); b.onclick = () => playClip(w.id, i); $('edClips').appendChild(b); });
+  if (hooks.onSelect) hooks.onSelect(w);
   placePh();
   if (scroll) { const x = parseFloat($('edPh').style.left) || 0; edScroll.scrollTo({ left: x - edScroll.clientWidth / 2, behavior: reduced() ? 'auto' : 'smooth' }); }
 }
@@ -1134,6 +1161,38 @@ function setView(v, save) {
 $('vList').onclick = () => setView('list', true);
 $('vEd').onclick = () => setView('editor', true);
 
+// ── back to top
+const toTop = $('toTop');
+const topBtn = () => toTop.classList.toggle('is-visible', scrollY > 300);
+addEventListener('scroll', topBtn, { passive: true });
+toTop.onclick = () => {
+  scrollTo({ top: 0, behavior: reduced() ? 'auto' : 'smooth' });
+  document.querySelector('.brand').focus({ preventScroll: true });   // the button hides at the top, so keyboard focus moves to the first link
+};
+topBtn();
+
+<?php if ( $rs_wl_manage ) : ?>
+// ── for the controls of someone who manages the log (src/js/work-log-manage.js)
+window.rsWorkLog = Object.assign(hooks, {
+  works: WORKS, byId, digits: bn, fit: fitModal,
+  setGate(fn) { gate = fn; },
+  refresh: applyFilter,
+  selected: () => sel,
+  playing: () => modal.hidden ? null : byId(P.list[P.i].id),
+  /* Take a deleted piece out of the player and the editor view. */
+  remove(w) {
+    const i = WORKS.indexOf(w); if (i >= 0) WORKS.splice(i, 1);
+    if (!modal.hidden) {
+      const cur = P.list[P.i];
+      P.list = P.list.filter(p => p.id !== w.id);
+      if (!P.list.length) closePlayer();
+      else if (cur.id === w.id) { P.i = Math.min(P.i, P.list.length - 1); loadModal(); }
+      else P.i = P.list.indexOf(cur);
+    }
+    if (sel === w) { sel = WORKS.find(shown) || WORKS[0] || null; if (edBuilt && sel) select(sel); }
+  },
+});
+<?php endif; ?>
 // ── start
 if (store.get('worklog.view') === 'editor') setView('editor', false);
 onScroll();
@@ -1144,6 +1203,7 @@ if (m && byId(m[1])) {
 }
 })();
 </script>
+<?php rs_work_log_manage_tail(); ?>
 <?php if ( function_exists( 'rs_stats_beacon' ) ) { rs_stats_beacon(); } ?>
 </body>
 </html>

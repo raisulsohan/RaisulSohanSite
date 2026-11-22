@@ -18,6 +18,7 @@
 | `cv-editor.css` | Admin-only page bundle: the CV content metabox; loaded only while editing the page that uses `page-cv.php` |
 | `stats-admin.css` | Admin-only page bundle: Dashboard › Statistics and its panel on the dashboard (`inc/22-statistics-screen.php`) |
 | `work-log-admin.css` | Admin-only page bundle: Dashboard › Work Log (`inc/24-work-log-admin.php`) |
+| `work-log-manage.css` | Admin-only page bundle: the Work Log's controls on `/work/` itself (`inc/25-work-log-manage.php`) |
 | `lazylord-demo.css`, `lazyimage-demo.css`, `lazykick-demo.css`, `lazymotion-demo.css`, `lazyeditmirror-demo.css` | Page bundles: one interactive demo per project, loaded only on that project's page |
 
 ## `src/js/`
@@ -37,7 +38,9 @@
 | `30-statistics.js` | When the page reports to the site's own statistics: the page itself once it is seen, a project opened in the portfolio's pop-up (`rs:page`), how far a story is read, and links out, files, shares, saves, demos and contact clicks |
 | `cv-editor.js` | Admin-only page bundle: add/remove controls for CV repeaters and the Media Library PDF picker |
 | `stats-admin.js` | Admin-only page bundle: the pointer on the statistics chart, with its card beside the point |
-| `work-log-admin.js` | Admin-only page bundle: the chunked upload, hide/show, inline edit, bulk actions, search and filter on Dashboard › Work Log |
+| `work-log-api.js` | Admin-only page bundle: the REST calls and the chunked upload the two below share (`window.RS_WL_API`) |
+| `work-log-admin.js` | Admin-only page bundle: adding, hide/show, inline edit, bulk actions, search and filter on Dashboard › Work Log |
+| `work-log-manage.js` | Admin-only page bundle: the same from `/work/` itself, through the hooks the page leaves in `window.rsWorkLog` |
 | `lazylord-demo.js`, `lazyimage-demo.js`, `lazykick-demo.js`, `lazymotion-demo.js`, `lazyeditmirror-demo.js` | Page bundles: the interactive demos, each running its project's own code; fetched by the portfolio pop-up on first use |
 
 After any change here: `npm run build`, commit `assets/*.min.*` with the sources, bump the version in the four places (AGENTS.md § 3).
