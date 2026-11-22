@@ -712,7 +712,7 @@ async function main() {
 			continue;
 		}
 		if ( p.tooBig ) {
-			console.log( label + ': ' + mb( p.bytes ) + ' is is over the size limit, skipped' );
+			console.log( label + ': ' + mb( p.bytes ) + ' is over the size limit, skipped' );
 			done.push( { origin: p.origin, error: 'too big: ' + mb( p.bytes ) } );
 			continue;
 		}
