@@ -2,7 +2,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-9.7.4-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-9.7.5-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
@@ -14,6 +14,7 @@ A beautifully crafted, bespoke WordPress theme designed and built by Raisul Soha
 
 **The Work Log is kept from the dashboard.**
 
+- **9.7.5: Sending less.** `--no-audio` sends no sound files, `--max-mb N` leaves out pieces bigger than N MB (listed, not sent), and the plan sums what would go up by file type.
 - **9.7.4: Paths in a list.** The import no longer misses the paths in an array (`['../media/a.png', 'b.png']`): finding one path leaves its closing quote for the next.
 - **9.7.3: Joined paths and models.** The import also follows a folder joined to a name with `+` (`'../media/' + f`), reads pages and scripts up to 64 MB for the paths they name (pages with inline media were skipped at 8 MB), and knows `.fbx`, `.obj`, `.mtl`, `.wasm` and `.mov` as files a page may load.
 - **9.7.2: The import sends what the code builds a path to.** A piece goes up with its whole folder again (sound, frames, caches and footage included), so files a script loads by a path it builds (`frames/${i}.jpg`, `audio/mix/${key}.wav`) are there; such a path outside the folder sends the folder before the `${`. A script's paths are looked for beside the page as well as beside the script. Build output, raw sources, After Effects folders, candidates, `.npy` and `.pyc` files, and esri/nasa/osm tile folders stay behind unless a page names them.

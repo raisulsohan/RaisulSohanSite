@@ -15,6 +15,8 @@
  *   --dry              Only list what would be sent, with sizes; send nothing.
  *   --only <text>      Only pieces whose folder path contains this text.
  *   --exclude <regex>  Leave out pieces whose folder path matches.
+ *   --no-audio         Send no sound files, even ones a page plays.
+ *   --max-mb <N>       Leave out (and list) pieces bigger than N MB.
  *   --show             Send pieces shown instead of hidden.
  *   --replace          Send again a piece the site already has (same folder).
  *   --chunk <MB>       Upload chunk size, 4 by default; halved on a refusal.
@@ -78,6 +80,11 @@ if ( ! ROOT || ( ! DRY && ( ! SITE || ! USER || ! PASS ) ) ) {
 	process.exit( 2 );
 }
 
+/* --no-audio: no sound files at all, even ones a page plays. */
+const NO_AUDIO = flag( 'no-audio' );
+const AUDIO = /\.(wav|mp3|ogg|oga|m4a|aac|opus|flac|aif|aiff)$/i;
+/* --max-mb N: pieces bigger than this are listed and not sent. */
+const MAX_MB = parseFloat( opt( 'max-mb', '0' ) ) || 0;
 const EXCLUDE = opt( 'exclude', '' ) ? new RegExp( opt( 'exclude', '' ), 'i' ) : null;
 const MAX_PIECE = 3 * 1024 * 1024 * 1024; // the site's limit for one piece (RS_WORK_LOG_MAX_BYTES)
 
@@ -472,6 +479,9 @@ function gather( p, root ) {
 	const rel = ( f ) => posix( path.relative( base, f ) );
 	p.base = base;
 	p.files = [ ...files.values() ].map( ( f ) => ( { ...f, rel: rel( f.full ), rewrite: p.rewrites[ f.full ] } ) );
+	if ( NO_AUDIO ) {
+		p.files = p.files.filter( ( f ) => ! AUDIO.test( f.rel ) );
+	}
 	p.bytes = p.files.reduce( ( s, f ) => s + f.size, 0 );
 	p.entry = rel( p.mainFile );
 	p.entry45 = p.cutFile ? rel( p.cutFile ) : '';
@@ -638,13 +648,23 @@ async function main() {
 	let total = 0;
 	for ( const p of pieces ) {
 		gather( p, root );
-		p.tooBig = p.bytes > MAX_PIECE;
+		p.tooBig = p.bytes > MAX_PIECE || ( MAX_MB > 0 && p.bytes > MAX_MB * 1048576 );
 		total += p.bytes;
 	}
 
+	const sent = pieces.filter( ( p ) => ! p.tooBig );
+	const byKind = {};
+	for ( const p of sent ) {
+		for ( const f of p.files ) {
+			const k = ( f.rel.match( /\.([a-z0-9]+)$/i ) || [ '', 'other' ] )[ 1 ].toLowerCase();
+			byKind[ k ] = ( byKind[ k ] || 0 ) + f.size;
+		}
+	}
+	const sentBytes = sent.reduce( ( s, p ) => s + p.bytes, 0 );
+	console.log( sent.length + ' of ' + pieces.length + ' pieces would go up, ' + mb( sentBytes ) + '. By file type: ' + Object.entries( byKind ).sort( ( a, b ) => b[ 1 ] - a[ 1 ] ).slice( 0, 8 ).map( ( [ k, v ] ) => k + ' ' + mb( v ) ).join( ', ' ) );
 	console.log( pieces.length + ' pieces, ' + mb( total ) + ' before packing.\n' );
 	for ( const p of pieces ) {
-		const note = [ p.clips.length ? '+' + p.clips.length + ' clips' : '', p.entry45 ? '4:5' : '', p.missing ? p.missing + ' missing' : '', p.tooBig ? 'TOO BIG' : '' ].filter( Boolean ).join( ', ' );
+		const note = [ p.clips.length ? '+' + p.clips.length + ' clips' : '', p.entry45 ? '4:5' : '', p.missing ? p.missing + ' missing' : '', p.tooBig ? 'TOO BIG, not sent' : '' ].filter( Boolean ).join( ', ' );
 		console.log( `${ p.date }  ${ p.kind.padEnd( 6 ) } ${ mb( p.bytes ).padStart( 10 ) }  ${ p.origin }  →  ${ p.title }${ note ? '  (' + note + ')' : '' }` );
 	}
 	const planFile = opt( 'plan', '' );
@@ -692,7 +712,7 @@ async function main() {
 			continue;
 		}
 		if ( p.tooBig ) {
-			console.log( label + ': ' + mb( p.bytes ) + ' is over the site\'s 3 GB limit for one piece, skipped' );
+			console.log( label + ': ' + mb( p.bytes ) + ' is is over the size limit, skipped' );
 			done.push( { origin: p.origin, error: 'too big: ' + mb( p.bytes ) } );
 			continue;
 		}
