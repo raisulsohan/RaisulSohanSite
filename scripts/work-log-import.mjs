@@ -7,7 +7,9 @@
  *   node scripts/work-log-import.mjs --root "…" --site https://raisulsohan.com --user <login> --password "<application password>"
  *
  * Options:
- *   --root <dir>       The folder to read (required).
+ *   --root <dir>       The folder to read (required, unless --videos).
+ *   --videos <dir>     Send mp4 pieces instead: each folder under <dir> with a
+ *                      piece.json (see videoPieces() below).
  *   --site <url>       The site (required unless --dry).
  *   --user, --password An administrator and an Application Password
  *                      (Users › Profile › Application Passwords). The password
@@ -77,7 +79,8 @@ const DRY = flag( 'dry' );
 const ONLY = opt( 'only', '' );
 let CHUNK = Math.round( parseFloat( opt( 'chunk', '4' ) ) * 1024 * 1024 );
 
-if ( ! ROOT || ( ! DRY && ( ! SITE || ! USER || ! PASS ) ) ) {
+const VIDEOS = opt( 'videos', '' );
+if ( ( ! ROOT && ! VIDEOS ) || ( ! DRY && ( ! SITE || ! USER || ! PASS ) ) ) {
 	console.error( 'Usage: node work-log-import.mjs --root <dir> [--dry] | --site <url> --user <login> --password <app password>' );
 	process.exit( 2 );
 }
@@ -695,7 +698,160 @@ async function upload( file, size ) {
 
 const mb = ( n ) => ( n / 1048576 ).toFixed( 1 ) + ' MB';
 
+/* ── video pieces (--videos <dir>) ──
+   Each folder under <dir> with a piece.json is one piece made of mp4s:
+     { "origin": "05. Moksedur Shabuj/Task 12", "title": "…", "date": "2026-11-21",
+       "kind": "client", "main": "part-01.mp4", "cut45": "",
+       "clips": [ { "title": "…", "file": "part-01.mp4" }, … ], "poster": "poster.jpg" }
+   Every mp4 gets a page that plays it (X.mp4 → X.html, the same page the site
+   makes for an mp4 added from the dashboard), with X.jpg as its poster when
+   there is one. A clip may be the main video too; the file goes up once. */
+const htmlEsc = ( s ) => String( s ).replace( /[&<>"']/g, ( c ) => ( { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } )[ c ] );
+function playerHtml( video, poster, title ) {
+	const enc = ( p ) => p.split( '/' ).map( encodeURIComponent ).join( '/' );
+	return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + htmlEsc( title ) + '</title>' +
+		'<style>html,body{margin:0;height:100%;background:#000}video{display:block;width:100%;height:100%;object-fit:contain;background:#000}</style></head><body>' +
+		'<video src="' + htmlEsc( enc( video ) ) + '"' + ( poster ? ' poster="' + htmlEsc( enc( poster ) ) + '"' : '' ) + ' controls autoplay playsinline preload="metadata"></video>' +
+		'<script>var v=document.querySelector("video");var p=v.play();if(p&&p.catch){p.catch(function(){v.muted=true;v.play();});}</script>' +
+		'</body></html>';
+}
+
+function videoPieces( dir ) {
+	const out = [];
+	for ( const d of fs.readdirSync( dir, { withFileTypes: true } ) ) {
+		if ( ! d.isDirectory() ) {
+			continue;
+		}
+		const folder = path.join( dir, d.name );
+		const jf = path.join( folder, 'piece.json' );
+		if ( ! fs.existsSync( jf ) ) {
+			continue;
+		}
+		let j;
+		try {
+			j = JSON.parse( fs.readFileSync( jf, 'utf8' ).replace( /^\uFEFF/, '' ) );
+		} catch ( e ) {
+			console.log( d.name + ': piece.json does not read: ' + e.message );
+			continue;
+		}
+		if ( ONLY && ! ( j.origin || d.name ).toLowerCase().includes( ONLY.toLowerCase() ) ) {
+			continue;
+		}
+		const has = ( f ) => f && fs.existsSync( path.join( folder, f ) );
+		const clips = ( j.clips || [] ).filter( ( c ) => has( c.file ) );
+		const main = has( j.main ) ? j.main : clips.length ? clips[ 0 ].file : '';
+		if ( ! main ) {
+			console.log( d.name + ': no main video, skipped' );
+			continue;
+		}
+		const videos = [ ...new Set( [ main, ...( has( j.cut45 ) ? [ j.cut45 ] : [] ), ...clips.map( ( c ) => c.file ) ] ) ];
+		const page = ( v ) => v.replace( /\.[^.\/]+$/, '' ) + '.html';
+		const jpg = ( v ) => ( has( v.replace( /\.[^.\/]+$/, '' ) + '.jpg' ) ? v.replace( /\.[^.\/]+$/, '' ) + '.jpg' : '' );
+		const poster = has( j.poster ) ? j.poster : jpg( main );
+		const files = [];
+		const extra = [];
+		for ( const v of videos ) {
+			files.push( { full: path.join( folder, v ), rel: v, size: fs.statSync( path.join( folder, v ) ).size } );
+			const pj = jpg( v );
+			if ( pj ) {
+				files.push( { full: path.join( folder, pj ), rel: pj, size: fs.statSync( path.join( folder, pj ) ).size } );
+			}
+			extra.push( { rel: page( v ), text: playerHtml( v, pj || poster, j.title || d.name ) } );
+		}
+		if ( poster && ! files.some( ( f ) => f.rel === poster ) ) {
+			files.push( { full: path.join( folder, poster ), rel: poster, size: fs.statSync( path.join( folder, poster ) ).size } );
+		}
+		out.push( {
+			origin: j.origin || d.name,
+			title: j.title || pretty( d.name ),
+			date: /^\d{4}-\d{2}-\d{2}$/.test( j.date || '' ) ? j.date : dayOf( fs.statSync( path.join( folder, main ) ) ),
+			kind: j.kind === 'client' ? 'client' : 'anim',
+			entry: page( main ),
+			entry45: has( j.cut45 ) ? page( j.cut45 ) : '',
+			poster,
+			clips: clips.length > 1 || ( clips.length === 1 && clips[ 0 ].file !== main ) ? clips.map( ( c ) => ( { title: c.title || pretty( c.file ), entry: page( c.file ), poster: jpg( c.file ) } ) ) : [],
+			files,
+			extra,
+			bytes: files.reduce( ( s, f ) => s + f.size, 0 ),
+		} );
+	}
+	return out.sort( ( a, b ) => a.date.localeCompare( b.date ) );
+}
+
+async function videoMain() {
+	const pieces = videoPieces( path.resolve( VIDEOS ) );
+	const total = pieces.reduce( ( s, p ) => s + p.bytes, 0 );
+	console.log( pieces.length + ' video pieces, ' + mb( total ) + '.\n' );
+	for ( const p of pieces ) {
+		console.log( `${ p.date }  ${ p.kind.padEnd( 6 ) } ${ mb( p.bytes ).padStart( 10 ) }  ${ p.origin }  →  ${ p.title }${ p.clips.length ? '  (+' + p.clips.length + ' clips)' : '' }${ p.entry45 ? '  (4:5)' : '' }` );
+	}
+	if ( DRY ) {
+		return;
+	}
+	const have = await api( '', {} );
+	if ( have.status !== 200 ) {
+		throw new Error( 'The site refused the login (' + have.status + '): ' + ( have.data.message || '' ) );
+	}
+	const known = new Set( have.data.map( ( r ) => r.origin ).filter( Boolean ) );
+	const tmp = fs.mkdtempSync( path.join( os.tmpdir(), 'rs-work-' ) );
+	const done = [];
+	for ( const [ i, p ] of pieces.entries() ) {
+		const label = `[${ i + 1 }/${ pieces.length }] ${ p.origin }`;
+		if ( known.has( p.origin ) && ! flag( 'replace' ) ) {
+			console.log( label + ': already on the site, skipped' );
+			continue;
+		}
+		try {
+			for ( const e of p.extra ) {
+				const full = path.join( tmp, 'page-' + crypto.randomBytes( 6 ).toString( 'hex' ) + '.html' );
+				fs.writeFileSync( full, e.text );
+				p.files.push( { full, rel: e.rel, size: Buffer.byteLength( e.text ) } );
+			}
+			const out = path.join( tmp, 'piece.zip' );
+			const size = await zip( p.files, out );
+			console.log( label + ': ' + mb( size ) );
+			const token = await upload( out, size );
+			const r = await api( '/items', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify( {
+					token,
+					id: p.origin.split( '/' ).slice( -2 ).join( ' ' ),
+					name: 'piece.zip',
+					title: p.title,
+					date: p.date,
+					kind: p.kind,
+					entry: p.entry,
+					entry45: p.entry45,
+					poster: p.poster,
+					clips: p.clips,
+					origin: p.origin,
+					video: true,
+					hidden: ! flag( 'show' ),
+					replace: flag( 'replace' ),
+				} ),
+			} );
+			fs.rmSync( out, { force: true } );
+			if ( r.status !== 200 ) {
+				throw new Error( r.status + ': ' + ( r.data.message || '' ) );
+			}
+			console.log( '   added as ' + r.data.id );
+			done.push( { origin: p.origin, id: r.data.id } );
+		} catch ( e ) {
+			console.log( '   FAILED: ' + e.message );
+			done.push( { origin: p.origin, error: e.message } );
+		}
+	}
+	fs.rmSync( tmp, { recursive: true, force: true } );
+	fs.writeFileSync( 'work-log-import.result.json', JSON.stringify( done, null, 1 ) );
+	const bad = done.filter( ( d ) => d.error ).length;
+	console.log( `\nDone: ${ done.length - bad } sent, ${ bad } failed. The list is in work-log-import.result.json.` );
+}
+
 async function main() {
+	if ( VIDEOS ) {
+		return videoMain();
+	}
 	const root = path.resolve( ROOT );
 	const pieces = plan();
 	let total = 0;

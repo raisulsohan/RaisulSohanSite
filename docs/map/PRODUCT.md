@@ -30,7 +30,7 @@ Start here for any change. The theme root is the WordPress theme folder: templat
 | `page-index.php`, `page-portfolio.php`, `page-book-list.php`, `page-timeline.php`, `page-cv.php` | Page templates: Index, Portfolio (with the case-study pop-up and documentation), Book List, Story Timeline, CV | |
 | `sw.js`, `offline.html` | The service worker and its offline fallback; it sends the statistics beacons on itself, because Chromium drops a beacon from a page that has gone when the worker lets it fall through | |
 | `scripts/build.js` | Joins and minifies `src/` into `assets/`; `--check` compares with the committed build | [FRONTEND.md](FRONTEND.md) |
-| `scripts/work-log-import.mjs` | Uploads a folder of work to the Work Log through `rs/v1/work-log` with an Application Password, hidden by default; `--dry` lists the pieces first | |
+| `scripts/work-log-import.mjs` | Uploads a folder of work to the Work Log through `rs/v1/work-log` with an Application Password, hidden by default; `--dry` lists the pieces first; `--videos <dir>` sends ready mp4 pieces described by `piece.json` | |
 | `scripts/map-demo-sync.js` | Copies the map animation demos, the showreel, Strait of Hormuz and the Bahrain highlights from their working folders into `assets/demo/map-animation/`, with hashed script URLs | |
 | `assets/` | `style.min.css` and `app.min.js` (built, committed, never edited), the page bundles (`cv.min.css`, admin-only `cv-editor.min.css` and `cv-editor.min.js`, `*-demo.min.*`), `editor.css`, `fonts.css`, `fonts/`, `img/`, `demo/`, `cv/` (the bundled CV PDF, printed from `docs/cv/cv-pdf.html`; the steps are in that file) | |
 | `.github/workflows/ci.yml` | PHP syntax on 8.0–8.3, built assets match sources, the version in step | [OPERATIONS.md](OPERATIONS.md) |
