@@ -109,6 +109,7 @@ function rs_work_log_manage_tail() {
 		<h2 id="admAddH"><?php echo esc_html( rs_wla_t( 'নতুন কাজ যোগ করুন', 'Add a piece' ) ); ?></h2>
 		<p><?php echo esc_html( rs_wla_t( 'একটা mp4 ভিডিও দিন, অথবা কাজের পুরো ফোল্ডারটা zip করে, অথবা একটা html ফাইল। বড় ফাইলও চলবে।', 'Choose an mp4 video, the piece\'s whole folder as a ZIP, or a single HTML file. Large files are fine.' ) ); ?></p>
 		<label class="span2"><?php echo esc_html( rs_wla_t( 'ফাইল', 'File' ) ); ?> <input type="file" name="file" accept=".zip,.html,.htm,.mp4,.webm,.m4v,.mov" required></label>
+		<label class="span2"><?php echo esc_html( rs_wla_t( 'অথবা YouTube লিংক (নাম আর তারিখ না দিলে YouTube থেকে আসবে)', 'Or a YouTube link (an empty title or date comes from YouTube)' ) ); ?> <input type="url" name="youtube" placeholder="https://www.youtube.com/watch?v=…"></label>
 		<?php rs_work_log_manage_fields(); ?>
 		<label class="span2"><?php echo esc_html( rs_wla_t( 'পোস্টার ছবি (না দিলে ভিডিও থেকে নেওয়া হবে)', 'Poster image (taken from the video if empty)' ) ); ?> <input type="file" name="poster" accept=".jpg,.jpeg,.png,.webp"></label>
 		<label class="check span2"><input type="checkbox" name="hidden"> <?php echo esc_html( rs_wla_t( 'আপাতত লুকিয়ে রাখুন', 'Keep it hidden for now' ) ); ?></label>

@@ -53,5 +53,36 @@
 		return id;
 	}
 
-	window.RS_WL_API = { api, send };
+	/* A form to add a piece with: a YouTube link in place of a file. The title and
+	   the date may then be empty, as YouTube gives them, and the file has no part. */
+	function youtube( form ) {
+		const f = form.elements;
+		const today = f.date.value;
+		f.youtube.addEventListener( 'input', () => {
+			const on = f.youtube.value.trim() !== '';
+			f.file.required = ! on;
+			f.title.required = ! on;
+			f.date.required = ! on;
+			f.file.disabled = on;
+			if ( on && f.date.value === today ) {
+				f.date.value = '';
+			} else if ( ! on && ! f.date.value ) {
+				f.date.value = today;
+			}
+			if ( on && f.kind.value === 'anim' ) {
+				f.kind.value = 'doc';
+			}
+		} );
+	}
+
+	function fromYoutube( form ) {
+		const f = form.elements;
+		const out = { youtube: f.youtube.value.trim(), client: f.client.checked, hidden: f.hidden.checked };
+		[ 'title', 'title_bn', 'date', 'kind', 'desc_bn', 'desc_en' ].forEach( ( k ) => {
+			out[ k ] = f[ k ].value;
+		} );
+		return out;
+	}
+
+	window.RS_WL_API = { api, send, youtube, fromYoutube };
 }() );

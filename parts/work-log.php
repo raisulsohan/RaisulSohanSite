@@ -145,6 +145,9 @@ $rs_wl_has45 = function ( $it ) {
 
 /** The address a card links to without the script: the piece itself. */
 $rs_wl_open = function ( $it ) use ( $rs_wl_abs ) {
+	if ( ! empty( $it['watch'] ) ) {
+		return $it['watch'];
+	}
 	$src = $rs_wl_abs( $it['src'] );
 	if ( ! empty( $it['map'] ) ) {
 		$src .= '?ver=' . rawurlencode( RS_VERSION );
@@ -155,8 +158,14 @@ $rs_wl_open = function ( $it ) use ( $rs_wl_abs ) {
 $rs_wl_icon_play = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.6-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></svg>';
 $rs_wl_icon_clips = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 1.5h9M2.5 4h11M2 6.5h12v8H2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>';
 
+/** "11:12", a length in seconds. */
+$rs_wl_dur = function ( $s ) {
+	$out = $s >= 3600 ? sprintf( '%d:%02d:%02d', $s / 3600, ( $s % 3600 ) / 60, $s % 60 ) : sprintf( '%d:%02d', $s / 60, $s % 60 );
+	return rs_bn_digits( $out );
+};
+
 /** One card: every piece, with or without clips. */
-$rs_wl_card = function ( $it ) use ( $rs_wl_t, $rs_wl_abs, $rs_wl_open, $rs_wl_has45, $rs_wl_en, $rs_wl_icon_play, $rs_wl_icon_clips, $rs_wl_name, $rs_wl_short ) {
+$rs_wl_card = function ( $it ) use ( $rs_wl_t, $rs_wl_abs, $rs_wl_open, $rs_wl_has45, $rs_wl_en, $rs_wl_icon_play, $rs_wl_icon_clips, $rs_wl_name, $rs_wl_short, $rs_wl_dur ) {
 	$n = empty( $it['clips'] ) ? 0 : count( $it['clips'] );
 	ob_start();
 	?>
@@ -166,6 +175,7 @@ $rs_wl_card = function ( $it ) use ( $rs_wl_t, $rs_wl_abs, $rs_wl_open, $rs_wl_h
 			<span class="pv-tag" aria-hidden="true"><i></i><?php echo esc_html( $rs_wl_t( 'প্রিভিউ · শব্দ বন্ধ', 'Preview · muted' ) ); ?></span>
 			<span class="play" aria-hidden="true"><?php echo $rs_wl_icon_play; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- A fixed SVG. ?></span>
 			<span class="tags">
+				<?php if ( ! empty( $it['yt'] ) ) : ?><span><?php echo $rs_wl_icon_play; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- A fixed SVG. ?><?php echo esc_html( 'YouTube' . ( ! empty( $it['dur'] ) ? ' · ' . $rs_wl_dur( $it['dur'] ) : '' ) ); ?></span><?php endif; ?>
 				<?php if ( $n ) : ?><span><?php echo $rs_wl_icon_clips; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- A fixed SVG. ?><?php echo esc_html( $rs_wl_en ? $n . ' clips' : rs_bn_digits( $n ) . 'টি ক্লিপ' ); ?></span><?php endif; ?>
 				<?php if ( $rs_wl_has45( $it ) ) : ?><span>16:9 · 4:5</span><?php endif; ?>
 			</span>
@@ -319,7 +329,7 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 	.previewing .play { opacity: 0 !important; }
 	.tags { position: absolute; left: 10px; right: 10px; bottom: 10px; display: flex; gap: 6px; transition: opacity .25s; }
 	.tags > span { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 980px; background: rgba(0, 0, 0, .78); color: var(--fg); font-size: 12px; font-weight: 600; line-height: 1.5; white-space: nowrap; }
-	.tags svg { width: 12px; height: 12px; }
+	.tags svg { width: 12px; height: 12px; fill: currentColor; }
 	.tags > span + span { margin-left: auto; color: var(--fg2); }
 	.pv-tag { position: absolute; left: 10px; top: 10px; z-index: 2; display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 980px; background: rgba(0, 0, 0, .75); font-size: 12px; font-weight: 600; opacity: 0; transition: opacity .25s; }
 	.pv-tag i { width: 7px; height: 7px; border-radius: 50%; background: var(--acc); }
@@ -714,7 +724,7 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 				<button type="button" class="icon-btn" id="mClose" aria-label="<?php echo esc_attr( $rs_wl_t( 'বন্ধ করুন', 'Close' ) ); ?>">✕</button>
 			</div>
 		</div>
-		<iframe class="m-frame" id="mFrame" title="<?php echo esc_attr( $rs_wl_t( 'কাজের প্লেয়ার', 'Work player' ) ); ?>" allow="autoplay; fullscreen" allowfullscreen></iframe>
+		<iframe class="m-frame" id="mFrame" title="<?php echo esc_attr( $rs_wl_t( 'কাজের প্লেয়ার', 'Work player' ) ); ?>" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 		<ol class="m-strip" id="mStrip" aria-label="<?php echo esc_attr( $rs_wl_t( 'এই কাজের ক্লিপ', 'Clips in this piece' ) ); ?>" hidden></ol>
 		<p class="m-note" id="mNote"><?php echo esc_html( $rs_wl_t( '[ ] দিয়ে আগে-পরে · Esc দিয়ে বন্ধ', '[ ] previous and next · Esc to close' ) ); ?></p>
 	</div>
@@ -751,6 +761,7 @@ foreach ( $rs_wl_items as $rs_wl_it ) {
 		'src'     => $rs_wl_abs( $rs_wl_it['src'] ),
 		'src45'   => empty( $rs_wl_it['src45'] ) ? '' : $rs_wl_abs( $rs_wl_it['src45'] ),
 		'map'     => ! empty( $rs_wl_it['map'] ),
+		'watch'   => empty( $rs_wl_it['watch'] ) ? '' : $rs_wl_it['watch'],
 		'local'   => ! preg_match( '#^https?://#', $rs_wl_it['src'] ),
 		'preview' => ! isset( $rs_wl_it['preview'] ) || false !== $rs_wl_it['preview'],
 		'clips'   => array(),
@@ -765,6 +776,8 @@ foreach ( $rs_wl_items as $rs_wl_it ) {
 				'title' => $rs_wl_name( $rs_wl_c ),
 				'num'   => rs_bn_digits( $rs_wl_i + 1 ),
 				'src'   => $rs_wl_abs( $rs_wl_c['src'] ),
+				'watch' => empty( $rs_wl_c['watch'] ) ? '' : $rs_wl_c['watch'],
+				'tall'  => ! empty( $rs_wl_c['tall'] ),
 				'img'   => $rs_wl_abs( $rs_wl_c['img'] ),
 			);
 		}
@@ -783,6 +796,8 @@ echo wp_json_encode(
 		'year'  => $rs_wl_t( '২০২৬', '2026' ),
 		'today' => $rs_wl_t( 'আজ', 'Today' ),
 		'main'  => $rs_wl_t( 'মূল ভিডিও', 'Main video' ),
+		'open'  => $rs_wl_t( 'আলাদা খুলুন ↗', 'Open ↗' ),
+		'tube'  => $rs_wl_t( 'YouTube-এ দেখুন ↗', 'Watch on YouTube ↗' ),
 	)
 );
 ?>;
@@ -848,9 +863,14 @@ const hooks = {};   // filled in below for someone who manages the log
 const P = { list: [], i: 0, vert: store.get('worklog.vert') === '1', last: null, hash: '' };
 function fitModal() {
   if (modal.hidden) return;
+  // twice: a narrower box may break its top row in two, which takes height from the frame
+  fitOnce();
+  fitOnce();
+}
+function fitOnce() {
   const strip = $('mStrip'), top = $('mBox').querySelector('.m-top').offsetHeight + 12;
   const room = innerHeight - 32 - top - 34 - (strip.hidden ? 0 : strip.offsetHeight + 12);
-  const vert = P.vert && canVert(P.list[P.i]);
+  const vert = P.list[P.i].tall || (P.vert && canVert(P.list[P.i]));
   let w = Math.min(1240, innerWidth - 32), h;
   if (vert) { h = Math.max(380, room); w = Math.min(w, Math.max(Math.min(640, w), h * 4 / 5)); }
   else { h = w * 9 / 16; if (h > room) { h = Math.max(260, room); w = Math.min(w, h * 16 / 9); } }
@@ -883,7 +903,8 @@ function loadModal() {
   $('mType').textContent = p.type; $('mTitle').textContent = p.title;
   $('mSeg').hidden = !canVert(p);
   document.querySelectorAll('[data-ar]').forEach(b => b.setAttribute('aria-pressed', (b.dataset.ar === '45') === v ? 'true' : 'false'));
-  $('mOpen').href = srcOf(p, v);
+  $('mOpen').href = p.watch || srcOf(p, v);
+  $('mOpen').textContent = p.watch ? T.tube : T.open;
   const multi = P.list.length > 1; $('mPrev').hidden = !multi; $('mNext').hidden = !multi;
   mFrame.src = srcOf(p, v);
   if (p.hash && location.hash !== p.hash) history.replaceState(null, '', p.hash);
@@ -905,8 +926,8 @@ function closePlayer() {
   history.replaceState(null, '', location.pathname + location.search);
   if (P.last) P.last.focus({ preventScroll: true });
 }
-const entry = w => ({ id: w.id, title: w.title, type: w.type, src: w.src, src45: w.src45, map: w.map, local: w.local, clip: -1, hash: '#' + w.id });
-const clipEntry = (w, c, i) => ({ id: w.id, title: c.num + ' · ' + c.title, type: w.title, src: c.src, src45: '', map: w.map, local: true, clip: i, hash: '#' + w.id + '/' + (i + 1) });
+const entry = w => ({ id: w.id, title: w.title, type: w.type, src: w.src, src45: w.src45, map: w.map, local: w.local, watch: w.watch, clip: -1, hash: '#' + w.id });
+const clipEntry = (w, c, i) => ({ id: w.id, title: c.num + ' · ' + c.title, type: w.title, src: c.src, src45: '', map: w.map, local: !c.watch, watch: c.watch, tall: c.tall, clip: i, hash: '#' + w.id + '/' + (i + 1) });
 function playWork(id) {
   const list = WORKS.filter(shown);
   let i = list.findIndex(w => w.id === id);

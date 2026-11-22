@@ -147,6 +147,8 @@ function rs_work_log_name( $it, $en ) {
  *            4:5 frame is ?ar=45 when there is no src45.
  * - preview  false to skip the silent preview on hover.
  * - client   true for work made for a client.
+ * - yt, watch, dur  For a YouTube video: its id, its own page, its length in
+ *            seconds; src is then YouTube's player.
  * - clips    For a project: the pieces inside it, each { title, src, img }.
  *
  * @return array[]
@@ -444,6 +446,27 @@ function rs_work_log_file_url( $dir, $path ) {
 }
 
 /**
+ * The address a YouTube video plays at inside the player: without cookies
+ * until it plays, and starting at once, since a click opened it.
+ *
+ * @param string $id The video's id.
+ * @return string
+ */
+function rs_work_log_yt( $id ) {
+	return 'https://www.youtube-nocookie.com/embed/' . rawurlencode( $id ) . '?autoplay=1&playsinline=1&rel=0';
+}
+
+/**
+ * The address of a YouTube video's own page.
+ *
+ * @param string $id The video's id.
+ * @return string
+ */
+function rs_work_log_yt_watch( $id ) {
+	return 'https://www.youtube.com/watch?v=' . rawurlencode( $id );
+}
+
+/**
  * A stored piece in the shape the page reads (see rs_work_log_builtin()).
  *
  * @param array $it The stored record.
@@ -472,6 +495,15 @@ function rs_work_log_from_store( $it ) {
 		'source'  => 'upload',
 	);
 
+	/* A YouTube video: nothing of YouTube's loads until it is opened, so no preview either. */
+	if ( ! empty( $it['yt'] ) ) {
+		$row['src']     = rs_work_log_yt( $it['yt'] );
+		$row['watch']   = rs_work_log_yt_watch( $it['yt'] );
+		$row['yt']      = $it['yt'];
+		$row['dur']     = isset( $it['dur'] ) ? (int) $it['dur'] : 0;
+		$row['preview'] = false;
+	}
+
 	if ( ! empty( $it['entry45'] ) ) {
 		$row['src45'] = rs_work_log_file_url( $dir, $it['entry45'] );
 	}
@@ -482,7 +514,9 @@ function rs_work_log_from_store( $it ) {
 			$row['clips'][] = array(
 				'title' => $c['title'],
 				'title_bn' => isset( $c['title_bn'] ) ? (string) $c['title_bn'] : '',
-				'src'   => rs_work_log_file_url( $dir, $c['entry'] ),
+				'src'   => ! empty( $c['yt'] ) ? rs_work_log_yt( $c['yt'] ) : rs_work_log_file_url( $dir, $c['entry'] ),
+				'watch' => ! empty( $c['yt'] ) ? rs_work_log_yt_watch( $c['yt'] ) : '',
+				'tall'  => ! empty( $c['tall'] ),
 				'img'   => rs_work_log_file_url( $dir, $c['poster'] ),
 			);
 		}

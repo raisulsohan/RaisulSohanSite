@@ -241,6 +241,7 @@
 		addDlg.showModal();
 	} );
 
+	window.RS_WL_API.youtube( addForm );
 	const isVideo = ( f ) => /\.(mp4|webm|m4v|mov)$/i.test( f.name );
 
 	/* The title from the file's name, until one is written. */
@@ -298,16 +299,25 @@
 		e.preventDefault();
 		const f = addForm.elements;
 		const file = f.file.files[ 0 ];
-		if ( ! file || sending ) {
+		const link = f.youtube.value.trim();
+		if ( ( ! file && ! link ) || sending ) {
 			return;
 		}
 		const bar = $( 'progress', addForm );
 		const buttons = $$( 'button', addForm );
 		sending = true;
 		buttons.forEach( ( b ) => ( b.disabled = true ) );
-		bar.hidden = false;
+		bar.hidden = !! link;
 		bar.value = 0;
 		try {
+			if ( link ) {
+				addMsg.textContent = T.asking;
+				const got = await api( '/items', { method: 'POST', json: window.RS_WL_API.fromYoutube( addForm ) } );
+				addMsg.textContent = T.added;
+				sending = false;
+				reload( got.data.date );
+				return;
+			}
 			let poster = f.poster.files[ 0 ] || null;
 			if ( ! poster && isVideo( file ) ) {
 				poster = await frameOf( file );

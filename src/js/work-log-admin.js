@@ -23,17 +23,26 @@
 	if ( form ) {
 		const prog = $( '.rs-wl-progress progress', form );
 		const note = $( '.rs-wl-progress span', form );
+		window.RS_WL_API.youtube( form );
 		form.addEventListener( 'submit', async ( e ) => {
 			e.preventDefault();
 			const file = form.file.files[ 0 ];
-			if ( ! file ) {
+			const link = form.elements.youtube.value.trim();
+			if ( ! file && ! link ) {
 				note.textContent = T.pickFile;
 				return;
 			}
 			const btn = $( 'button[type=submit]', form );
 			btn.disabled = true;
-			prog.hidden = false;
+			prog.hidden = ! file;
 			try {
+				if ( link ) {
+					note.textContent = T.asking;
+					await api( '/items', { method: 'POST', json: window.RS_WL_API.fromYoutube( form ) } );
+					note.textContent = T.added;
+					location.reload();
+					return;
+				}
 				const fileToken = await send( file, ( f ) => {
 					prog.value = Math.round( f * 100 );
 					note.textContent = T.uploading + ' ' + Math.round( f * 100 ) + '%';

@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-9.10.2-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-9.11.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 9.11
+
+**YouTube videos in the Work Log.**
+
+- **9.11.0: A YouTube link is a piece.** *Add a piece*, on the page and on Dashboard › Work Log, takes a YouTube link in place of a file; an empty title or date comes from YouTube. The piece is a card like any other (its length on the picture), its picture is kept on this site, and it plays in the pop-up player from `youtube-nocookie.com`; nothing of YouTube's loads before that, and there is no hover preview. A video may have others inside it as clips (a film and its Shorts); a standing clip gets a standing frame. *Open* goes to the video on YouTube. The route is the same `POST /items` with `youtube`, and a video that is there already is not added twice.
 
 ## What's new in 9.10
 

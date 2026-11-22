@@ -546,6 +546,206 @@ function rs_work_log_import( $req ) {
 	return $item;
 }
 
+/* ── YouTube ────────────────────────────────────────────────────────────── */
+
+/**
+ * The id in a YouTube address (watch, youtu.be, shorts, live, embed), or the
+ * id itself.
+ *
+ * @param string $in As given.
+ * @return string Empty when there is none.
+ */
+function rs_wla_yt_id( $in ) {
+	$in = trim( (string) $in );
+	if ( preg_match( '/^[A-Za-z0-9_-]{11}$/', $in ) ) {
+		return $in;
+	}
+	if ( preg_match( '#^(?:https?://)?(?:www\.|m\.)?(?:youtube(?:-nocookie)?\.com/(?:watch\?(?:[^\#]*&)?v=|shorts/|live/|embed/)|youtu\.be/)([A-Za-z0-9_-]{11})(?![A-Za-z0-9_-])#', $in, $m ) ) {
+		return $m[1];
+	}
+
+	return '';
+}
+
+/**
+ * What YouTube says about a video: its title and channel, and, when the page
+ * gives them, the day it came out (by this site's clock) and its length.
+ *
+ * @param string $id The video's id.
+ * @param bool   $page Whether to read the video's page for the day and length.
+ * @return array|WP_Error { title, author, date, dur }
+ */
+function rs_wla_yt_about( $id, $page ) {
+	$res = wp_safe_remote_get( 'https://www.youtube.com/oembed?format=json&url=' . rawurlencode( rs_work_log_yt_watch( $id ) ), array( 'timeout' => 12 ) );
+	$say = is_wp_error( $res ) ? null : json_decode( wp_remote_retrieve_body( $res ), true );
+	if ( ! is_array( $say ) || empty( $say['title'] ) ) {
+		return new WP_Error( 'rs_wl_yt', rs_wla_t( 'YouTube-এ ভিডিওটা পাওয়া গেল না। ভিডিওটা পাবলিক কি না দেখুন।', 'YouTube does not give this video. See whether it is public.' ), array( 'status' => 400 ) );
+	}
+	$out = array(
+		'title'  => sanitize_text_field( $say['title'] ),
+		'author' => isset( $say['author_name'] ) ? sanitize_text_field( $say['author_name'] ) : '',
+		'date'   => '',
+		'dur'    => 0,
+	);
+
+	if ( $page ) {
+		$res  = wp_safe_remote_get( rs_work_log_yt_watch( $id ) . '&hl=en', array( 'timeout' => 12, 'headers' => array( 'Accept-Language' => 'en' ) ) );
+		$html = is_wp_error( $res ) ? '' : wp_remote_retrieve_body( $res );
+		if ( preg_match( '/"(?:publishDate|uploadDate)":"([^"]{10,40})"/', $html, $m ) && strtotime( $m[1] ) ) {
+			$out['date'] = wp_date( 'Y-m-d', strtotime( $m[1] ) );
+		}
+		if ( preg_match( '/"lengthSeconds":"(\d{1,6})"/', $html, $m ) ) {
+			$out['dur'] = (int) $m[1];
+		}
+	}
+
+	return $out;
+}
+
+/**
+ * Keep a video's picture in the piece's folder, the largest YouTube has.
+ *
+ * @param string $id   The video's id.
+ * @param string $file Where to.
+ * @return bool
+ */
+function rs_wla_yt_picture( $id, $file ) {
+	foreach ( array( 'maxresdefault', 'sddefault', 'hqdefault' ) as $size ) {
+		$res = wp_safe_remote_get( 'https://i.ytimg.com/vi/' . $id . '/' . $size . '.jpg', array( 'timeout' => 12 ) );
+		if ( is_wp_error( $res ) || 200 !== wp_remote_retrieve_response_code( $res ) ) {
+			continue;
+		}
+		$jpg = wp_remote_retrieve_body( $res );
+		if ( strlen( $jpg ) > 2000 && "\xFF\xD8" === substr( $jpg, 0, 2 ) ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+			return (bool) file_put_contents( $file, $jpg );
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Add a YouTube video as a piece: played by YouTube's own player, its picture
+ * kept here. A video that is on the log already is left as it is.
+ *
+ * @param array $req youtube (an address or an id), and, as for any piece,
+ *                   title, title_bn, date, kind, client, type_bn, type_en,
+ *                   desc_bn, desc_en, hidden; dur (seconds), id, and
+ *                   clips [{youtube, title, title_bn, tall}]. What is not
+ *                   given is read from YouTube.
+ * @return array|WP_Error The stored record.
+ */
+function rs_work_log_add_youtube( $req ) {
+	$root = rs_wla_root();
+	if ( is_wp_error( $root ) ) {
+		return $root;
+	}
+
+	$yt = rs_wla_yt_id( $req['youtube'] );
+	if ( ! $yt ) {
+		return new WP_Error( 'rs_wl_yt', rs_wla_t( 'এটা YouTube ভিডিওর লিংক নয়।', 'This is not the address of a YouTube video.' ), array( 'status' => 400 ) );
+	}
+	foreach ( rs_work_log_store()['items'] as $old ) {
+		if ( isset( $old['yt'] ) && $old['yt'] === $yt ) {
+			return $old;
+		}
+	}
+
+	$meta  = rs_wla_meta( $req );
+	$dur   = isset( $req['dur'] ) ? absint( $req['dur'] ) : 0;
+	$about = rs_wla_yt_about( $yt, empty( $meta['date'] ) || ! $dur );
+	if ( is_wp_error( $about ) ) {
+		return $about;
+	}
+
+	$kinds = rs_work_log_kinds();
+	$kind  = isset( $meta['kind'] ) ? $meta['kind'] : 'doc';
+	$title = ! empty( $meta['title'] ) ? $meta['title'] : $about['title'];
+	$date  = ! empty( $meta['date'] ) ? $meta['date'] : $about['date'];
+	if ( ! $date ) {
+		/* Better asked for than a wrong day. */
+		return new WP_Error( 'rs_wl_yt_date', rs_wla_t( 'YouTube তারিখটা দিল না। তারিখ লিখে আবার যোগ করুন।', 'YouTube did not give the date. Write the date and add it again.' ), array( 'status' => 400 ) );
+	}
+	$type  = function ( $lang ) use ( $meta, $kinds, $kind, $about ) {
+		if ( ! empty( $meta[ 'type_' . $lang ] ) ) {
+			return $meta[ 'type_' . $lang ];
+		}
+		return $about['author'] ? $kinds[ $kind ][ $lang ] . ' · ' . $about['author'] : '';
+	};
+
+	$id     = rs_wla_new_id( ! empty( $req['id'] ) ? $req['id'] : $title, rs_wla_taken() );
+	/* A folder may still stand from a piece deleted before; this one takes a free name. */
+	$dir = $id;
+	for ( $n = 2; is_dir( $root . '/' . $dir ); $n++ ) {
+		$dir = $id . '-' . $n;
+	}
+	$target = $root . '/' . $dir;
+	if ( ! wp_mkdir_p( $target ) ) {
+		return new WP_Error( 'rs_wl_dir', rs_wla_t( 'ফোল্ডার বানানো গেল না।', 'Could not create the folder.' ), array( 'status' => 500 ) );
+	}
+
+	$picture = function ( $video, $name, $says ) use ( $target, $kinds, $kind, $date ) {
+		if ( rs_wla_yt_picture( $video, $target . '/' . $name . '.jpg' ) ) {
+			return $name . '.jpg';
+		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		file_put_contents( $target . '/' . $name . '.svg', rs_wla_poster_svg( $says, rs_is_en() ? $kinds[ $kind ]['en'] : $kinds[ $kind ]['bn'], $date ) );
+		return $name . '.svg';
+	};
+
+	$clips = array();
+	foreach ( ! empty( $req['clips'] ) && is_array( $req['clips'] ) ? array_slice( array_values( $req['clips'] ), 0, 40 ) : array() as $c ) {
+		$cy = is_array( $c ) && isset( $c['youtube'] ) ? rs_wla_yt_id( $c['youtube'] ) : '';
+		$ct = is_array( $c ) && isset( $c['title'] ) ? sanitize_text_field( $c['title'] ) : '';
+		if ( ! $cy || '' === $ct ) {
+			continue;
+		}
+		$clips[] = array(
+			'title'    => $ct,
+			'title_bn' => isset( $c['title_bn'] ) ? sanitize_text_field( $c['title_bn'] ) : '',
+			'yt'       => $cy,
+			'tall'     => ! empty( $c['tall'] ),
+			'entry'    => '',
+			'poster'   => $picture( $cy, 'clip-' . $cy, $ct ),
+		);
+	}
+
+	$item = array(
+		'id'       => $id,
+		'date'     => $date,
+		'kind'     => $kind,
+		'title'    => $title,
+		'title_bn' => isset( $meta['title_bn'] ) ? $meta['title_bn'] : '',
+		'client'   => ! empty( $meta['client'] ),
+		'type_bn'  => $type( 'bn' ),
+		'type_en'  => $type( 'en' ),
+		'desc_bn'  => isset( $meta['desc_bn'] ) ? $meta['desc_bn'] : '',
+		'desc_en'  => isset( $meta['desc_en'] ) ? $meta['desc_en'] : '',
+		'dir'      => $dir,
+		'entry'    => '',
+		'entry45'  => '',
+		'poster'   => $picture( $yt, 'cover-' . $yt, $title ),
+		'clips'    => $clips,
+		'bytes'    => 0,
+		'files'    => 1 + count( $clips ),
+		'origin'   => 'youtube:' . $yt,
+		'added'    => time(),
+		'video'    => false,
+		'yt'       => $yt,
+		'dur'      => $dur ? $dur : $about['dur'],
+	);
+
+	$store                 = rs_work_log_store();
+	$store['items'][ $id ] = $item;
+	if ( ! empty( $req['hidden'] ) ) {
+		$store['hidden'][ $id ] = true;
+	}
+	rs_work_log_store_save( $store );
+
+	return $item;
+}
+
 /**
  * One piece as the screen and the import script see it.
  *
@@ -569,7 +769,7 @@ function rs_wla_row( $it ) {
 		'desc_bn' => $it['desc_bn'],
 		'desc_en' => $it['desc_en'],
 		'img'     => $abs( $it['img'] ),
-		'src'     => $abs( $it['src'] ),
+		'src'     => ! empty( $it['watch'] ) ? $it['watch'] : $abs( $it['src'] ),
 		'clips'   => isset( $it['clips'] ) ? count( $it['clips'] ) : 0,
 		'hidden'  => ! empty( $it['hidden'] ),
 		'source'  => $it['source'],
@@ -614,7 +814,7 @@ function rs_work_log_routes() {
 			'callback'            => function ( WP_REST_Request $r ) {
 				$req = $r->get_json_params();
 				$req = is_array( $req ) && $req ? $req : $r->get_params();
-				$it  = rs_work_log_import( $req );
+				$it  = ! empty( $req['youtube'] ) ? rs_work_log_add_youtube( $req ) : rs_work_log_import( $req );
 				if ( is_wp_error( $it ) ) {
 					return $it;
 				}
@@ -803,15 +1003,18 @@ function rs_wla_clip_names( $clips, $names ) {
 	foreach ( $names as $n ) {
 		if ( is_array( $n ) && ! empty( $n['entry'] ) ) {
 			$by[ rs_wla_clean_path( $n['entry'] ) ] = $n;
+		} elseif ( is_array( $n ) && ! empty( $n['youtube'] ) ) {
+			$by[ 'yt:' . rs_wla_yt_id( $n['youtube'] ) ] = $n;
 		}
 	}
 	$clips = (array) $clips;
 	foreach ( $clips as $i => $c ) {
-		if ( ! isset( $by[ $c['entry'] ] ) ) {
+		$key = empty( $c['yt'] ) ? $c['entry'] : 'yt:' . $c['yt'];
+		if ( ! isset( $by[ $key ] ) ) {
 			continue;
 		}
 		foreach ( array( 'title', 'title_bn' ) as $k ) {
-			$v = isset( $by[ $c['entry'] ][ $k ] ) ? sanitize_text_field( $by[ $c['entry'] ][ $k ] ) : '';
+			$v = isset( $by[ $key ][ $k ] ) ? sanitize_text_field( $by[ $key ][ $k ] ) : '';
 			if ( 'title' !== $k || '' !== $v ) {
 				$clips[ $i ][ $k ] = $v;
 			}
@@ -969,7 +1172,8 @@ function rs_work_log_admin_config() {
 			'uploading' => rs_wla_t( 'আপলোড হচ্ছে', 'Uploading' ),
 			'unpacking' => rs_wla_t( 'খোলা হচ্ছে…', 'Unpacking…' ),
 			'added'     => rs_wla_t( 'যোগ হয়েছে। পেজটা আবার লোড হচ্ছে…', 'Added. Reloading…' ),
-			'pickFile'  => rs_wla_t( 'একটা zip বা html ফাইল বাছুন।', 'Choose a ZIP or HTML file.' ),
+			'pickFile'  => rs_wla_t( 'একটা ফাইল বাছুন, অথবা YouTube লিংক দিন।', 'Choose a file, or give a YouTube link.' ),
+			'asking'    => rs_wla_t( 'YouTube থেকে আনা হচ্ছে…', 'Asking YouTube…' ),
 			'confirm'   => rs_wla_t( 'বাছাই করা কাজগুলো মুছে ফেলবেন? আপলোড করা ফাইলও মুছে যাবে।', 'Delete the selected pieces? Their uploaded files go too.' ),
 			'hide'      => rs_wla_t( 'লুকান', 'Hide' ),
 			'show'      => rs_wla_t( 'দেখান', 'Show' ),
@@ -1058,8 +1262,10 @@ function rs_work_log_screen() {
 			<form id="rsWlAdd">
 				<p class="rs-wl-help"><?php echo esc_html( rs_wla_t( 'একটা mp4 ভিডিও, অথবা কাজের পুরো ফোল্ডারটা zip করে (ভেতরের ফাইল আর ফোল্ডারের নাম যেমন আছে তেমন থাকবে), অথবা একটা html ফাইল দিন। বড় ফাইলও চলবে, ছোট ছোট অংশে যায়।', 'Upload an mp4 video, or the piece\'s whole folder as a ZIP (its file and folder names stay as they are), or a single HTML file. Large files are fine; they go up in chunks.' ) ); ?></p>
 				<div class="rs-wl-grid">
-					<label class="span2"><?php echo esc_html( rs_wla_t( 'ফাইল (zip বা html)', 'File (ZIP or HTML)' ) ); ?>
+					<label class="span2"><?php echo esc_html( rs_wla_t( 'ফাইল (mp4, zip বা html)', 'File (mp4, ZIP or HTML)' ) ); ?>
 						<input type="file" name="file" accept=".zip,.html,.htm,.mp4,.webm,.m4v,.mov" required></label>
+					<label class="span2"><?php echo esc_html( rs_wla_t( 'অথবা YouTube লিংক (নাম আর তারিখ না দিলে YouTube থেকে আসবে)', 'Or a YouTube link (an empty title or date comes from YouTube)' ) ); ?>
+						<input type="url" name="youtube" placeholder="https://www.youtube.com/watch?v=…"></label>
 					<label class="span2"><?php echo esc_html( rs_wla_t( 'নাম (ইংরেজি)', 'Title (English)' ) ); ?>
 						<input type="text" name="title" required></label>
 					<label class="span2"><?php echo esc_html( rs_wla_t( 'নাম (বাংলা, না দিলে ইংরেজিটা যাবে)', 'Title (Bengali; the English is used if empty)' ) ); ?>
