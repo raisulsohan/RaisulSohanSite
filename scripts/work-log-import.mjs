@@ -23,6 +23,10 @@
  *   --max-mb <N>       Leave out (and list) pieces bigger than N MB.
  *   --show             Send pieces shown instead of hidden.
  *   --replace          Send again a piece the site already has (same folder).
+ *   --names            With --videos: give the pieces the site already has the
+ *                      names, lines, kinds, clip names and covers of their
+ *                      piece.json, and an address made from the name. Their
+ *                      videos are not sent again.
  *   --chunk <MB>       Upload chunk size, 4 by default; halved on a refusal.
  *   --plan <file>      Write the plan as JSON to this file.
  *
@@ -765,17 +769,56 @@ function videoPieces( dir ) {
 			origin: j.origin || d.name,
 			title: j.title || pretty( d.name ),
 			date: /^\d{4}-\d{2}-\d{2}$/.test( j.date || '' ) ? j.date : dayOf( fs.statSync( path.join( folder, main ) ) ),
-			kind: j.kind === 'client' ? 'client' : 'anim',
+			titleBn: j.title_bn || '',
+			descEn: j.desc_en || '',
+			descBn: j.desc_bn || '',
+			client: !! j.client || j.kind === 'client',
+			kind: /^(reel|map|doc|tool|brand|edit|anim|client)$/.test( j.kind || '' ) ? j.kind : 'anim',
 			entry: page( main ),
 			entry45: has( j.cut45 ) ? page( j.cut45 ) : '',
 			poster,
-			clips: clips.length > 1 || ( clips.length === 1 && clips[ 0 ].file !== main ) ? clips.map( ( c ) => ( { title: c.title || pretty( c.file ), entry: page( c.file ), poster: jpg( c.file ) } ) ) : [],
+			clips: clips.length > 1 || ( clips.length === 1 && clips[ 0 ].file !== main ) ? clips.map( ( c ) => ( { title: c.title || pretty( c.file ), title_bn: c.title_bn || '', entry: page( c.file ), poster: jpg( c.file ) } ) ) : [],
+			posterFile: poster ? path.join( folder, poster ) : '',
 			files,
 			extra,
 			bytes: files.reduce( ( s, f ) => s + f.size, 0 ),
 		} );
 	}
 	return out.sort( ( a, b ) => a.date.localeCompare( b.date ) );
+}
+
+/** A piece the site already has gets its names, kind and cover; returns its id, which may be new. */
+async function rename( p, row ) {
+	const json = {
+		title: p.title,
+		title_bn: p.titleBn,
+		desc_en: p.descEn,
+		desc_bn: p.descBn,
+		kind: p.kind,
+		client: p.client,
+		clips: p.clips,
+		slug: p.title,
+	};
+	const now = decodeURIComponent( path.posix.basename( row.img || '' ) );
+	if ( p.posterFile ) {
+		/* A picture sent with the videos is in the piece's folder already; a new cover is sent, once. */
+		const cover = 'cover-' + crypto.createHash( 'md5' ).update( fs.readFileSync( p.posterFile ) ).digest( 'hex' ).slice( 0, 10 ) + path.extname( p.poster ).toLowerCase();
+		if ( p.poster !== 'cover.jpg' ) {
+			json.poster = p.poster;
+		} else if ( now !== cover ) {
+			json.poster_token = await upload( p.posterFile, fs.statSync( p.posterFile ).size );
+			json.poster_name = p.poster;
+		}
+	}
+	const r = await api( '/items/' + row.id, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify( json ),
+	} );
+	if ( r.status !== 200 ) {
+		throw new Error( r.status + ': ' + ( r.data.message || '' ) );
+	}
+	return r.data.id;
 }
 
 async function videoMain() {
@@ -792,13 +835,24 @@ async function videoMain() {
 	if ( have.status !== 200 ) {
 		throw new Error( 'The site refused the login (' + have.status + '): ' + ( have.data.message || '' ) );
 	}
-	const known = new Set( have.data.map( ( r ) => r.origin ).filter( Boolean ) );
+	const known = new Map( have.data.filter( ( r ) => r.origin ).map( ( r ) => [ r.origin, r ] ) );
 	const tmp = fs.mkdtempSync( path.join( os.tmpdir(), 'rs-work-' ) );
 	const done = [];
 	for ( const [ i, p ] of pieces.entries() ) {
 		const label = `[${ i + 1 }/${ pieces.length }] ${ p.origin }`;
 		if ( known.has( p.origin ) && ! flag( 'replace' ) ) {
-			console.log( label + ': already on the site, skipped' );
+			if ( ! flag( 'names' ) ) {
+				console.log( label + ': already on the site, skipped' );
+				continue;
+			}
+			try {
+				const id = await rename( p, known.get( p.origin ) );
+				console.log( label + ': named "' + p.title + '" (' + id + ')' );
+				done.push( { origin: p.origin, id } );
+			} catch ( e ) {
+				console.log( label + ': NAME FAILED: ' + e.message );
+				done.push( { origin: p.origin, error: e.message } );
+			}
 			continue;
 		}
 		try {
@@ -816,9 +870,13 @@ async function videoMain() {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify( {
 					token,
-					id: p.origin.split( '/' ).slice( -2 ).join( ' ' ),
+					id: p.title,
 					name: 'piece.zip',
 					title: p.title,
+					title_bn: p.titleBn,
+					desc_en: p.descEn,
+					desc_bn: p.descBn,
+					client: p.client,
 					date: p.date,
 					kind: p.kind,
 					entry: p.entry,

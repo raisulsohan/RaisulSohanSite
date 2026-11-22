@@ -4,7 +4,11 @@
 
 /* The controls are a row taller here, so a day's anchor lands below them. */
 html {
-	scroll-padding-top: 204px;
+	scroll-padding-top: 198px;
+}
+
+.tl-node {
+	top: calc(var(--bar) + 132px);
 }
 
 .adm-btn {
@@ -97,23 +101,6 @@ html {
 }
 
 /* under a card */
-.adm-w {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	width: 100%;
-	max-width: 480px;
-	min-width: 0;
-}
-
-.box .adm-w {
-	max-width: none;
-}
-
-.adm-w:has(> [hidden]) {
-	display: none;
-}
-
 .adm-row {
 	display: flex;
 	align-items: center;
@@ -126,9 +113,19 @@ html {
 	font-size: 13px;
 }
 
-.proj > .adm-row {
-	padding: 14px 22px;
-	border-top: 1px solid var(--line);
+.cell > .adm-row {
+	gap: 6px;
+	padding-inline: 2px;
+}
+
+/* Under a card only a hidden piece says what it is; the buttons say the rest. */
+.cell > .adm-row .adm-st:not(.is-off) {
+	display: none;
+}
+
+.cell > .adm-row .adm-btn--s {
+	min-height: 34px;
+	padding: 0 13px;
 }
 
 .adm-st {
@@ -146,20 +143,17 @@ html {
 	color: var(--fg2);
 }
 
-.card.is-off,
-.proj.is-off {
+.cell.is-off .card {
 	border-style: dashed;
 	border-color: var(--line2);
 }
 
-.card.is-off .thumb > img,
-.proj.is-off img {
+.cell.is-off .thumb > img {
 	opacity: 0.42;
 	filter: grayscale(0.7);
 }
 
-.card.is-off .title,
-.proj.is-off .title {
+.cell.is-off .title {
 	color: var(--mut);
 }
 

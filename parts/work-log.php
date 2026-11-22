@@ -6,17 +6,18 @@
  * pitch, a calendar strip of the days work went up, then two views of the
  * same pieces (rs_work_log_items()):
  *
- * - List: a vertical timeline, newest first, a dot per day. A day with one
- *   piece puts its card left or right of the line in turn; a day with more
- *   puts them side by side in one box; a project (a piece with clips)
- *   shows its clips in a strip under its own card. While the page scrolls,
- *   the line fills in orange up to the middle of the screen and the bar
- *   shows the date there, like a timecode.
+ * - List: a timeline, newest first, a month at a time and within it a week
+ *   at a time (days 1-7, 8-14, 15-21, the rest): the week beside the line,
+ *   its pieces in a grid of cards of one size, each with its kind, day, name
+ *   and one line about it. A piece with clips is one card too, marked with
+ *   their number; the clips stand in a strip under the pop-up player. While
+ *   the page scrolls, the line fills in orange up to the middle of the screen
+ *   and the bar shows the date there, like a timecode.
  * - Editor: the pieces as clips on an editing timeline, one track per kind,
  *   with a monitor above, an overview of the whole time below it and zoom.
  *
  * A card shows a silent preview of its piece when the pointer rests on it
- * (on a phone, when it sits in the middle of the screen), and plays it in
+ * (on a touch screen wider than a phone, when it sits in the middle), and plays it in
  * the pop-up player when clicked. The list is rendered here, so the full
  * page cache keeps it as it is; the editor is drawn by the script, only
  * when it is opened. Without the script every card still opens its piece.
@@ -70,10 +71,43 @@ $rs_wl_count = function ( $n ) use ( $rs_wl_en ) {
 	return $rs_wl_en ? $n . ( 1 === $n ? ' piece' : ' pieces' ) : rs_bn_digits( $n ) . 'টি কাজ';
 };
 
-/* Month → day → pieces, newest first. */
+/** "21 নভে" / "21 Nov", on a card. */
+$rs_wl_short = function ( $ymd ) use ( $rs_wl_en, $rs_wl_day ) {
+	return $rs_wl_en ? gmdate( 'j M', strtotime( $ymd . ' 12:00:00 UTC' ) ) : $rs_wl_day( $ymd );
+};
+
+/** The name of a piece or a clip on this edition. */
+$rs_wl_name = function ( $it ) use ( $rs_wl_en ) {
+	return rs_work_log_name( $it, $rs_wl_en );
+};
+
+/* Month → week → pieces, newest first. A week is days 1-7, 8-14, 15-21 or the rest of its month. */
 $rs_wl_tree = array();
 foreach ( $rs_wl_items as $rs_wl_it ) {
-	$rs_wl_tree[ substr( $rs_wl_it['date'], 0, 7 ) ][ $rs_wl_it['date'] ][] = $rs_wl_it;
+	$rs_wl_w = min( 3, (int) floor( ( (int) substr( $rs_wl_it['date'], 8, 2 ) - 1 ) / 7 ) );
+	$rs_wl_tree[ substr( $rs_wl_it['date'], 0, 7 ) ][ $rs_wl_w ][] = $rs_wl_it;
+}
+
+/** "15–21 নভেম্বর" / "15–21 November", from Y-m and the week's number. */
+$rs_wl_week = function ( $ym, $w ) use ( $rs_wl_day ) {
+	$last = 3 === $w ? gmdate( 't', strtotime( $ym . '-15 12:00:00 UTC' ) ) : 7 * ( $w + 1 );
+	return rs_bn_digits( 7 * $w + 1 ) . '–' . $rs_wl_day( sprintf( '%s-%02d', $ym, $last ) );
+};
+
+/* Only the kinds in use get a filter and a track; Client work counts every piece marked so. */
+$rs_wl_used = array();
+foreach ( $rs_wl_kinds as $rs_wl_k => $rs_wl_kl ) {
+	$rs_wl_n = count(
+		array_filter(
+			$rs_wl_items,
+			function ( $it ) use ( $rs_wl_k ) {
+				return 'client' === $rs_wl_k ? ! empty( $it['client'] ) : $it['kind'] === $rs_wl_k;
+			}
+		)
+	);
+	if ( $rs_wl_n ) {
+		$rs_wl_used[ $rs_wl_k ] = $rs_wl_n;
+	}
 }
 
 /* The calendar strip: every month from the first piece's to this one. */
@@ -119,82 +153,29 @@ $rs_wl_open = function ( $it ) use ( $rs_wl_abs ) {
 };
 
 $rs_wl_icon_play = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.6-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></svg>';
+$rs_wl_icon_clips = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 1.5h9M2.5 4h11M2 6.5h12v8H2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>';
 
-/** One card. */
-$rs_wl_card = function ( $it, $extra = '' ) use ( $rs_wl_t, $rs_wl_abs, $rs_wl_open, $rs_wl_has45, $rs_wl_icon_play ) {
-	$type = $rs_wl_t( $it['type_bn'], $it['type_en'] );
-	$desc = $rs_wl_t( $it['desc_bn'], $it['desc_en'] );
+/** One card: every piece, with or without clips. */
+$rs_wl_card = function ( $it ) use ( $rs_wl_t, $rs_wl_abs, $rs_wl_open, $rs_wl_has45, $rs_wl_en, $rs_wl_icon_play, $rs_wl_icon_clips, $rs_wl_name, $rs_wl_short ) {
+	$n = empty( $it['clips'] ) ? 0 : count( $it['clips'] );
 	ob_start();
 	?>
-	<a class="card <?php echo esc_attr( $extra ); ?>" href="<?php echo esc_url( $rs_wl_open( $it ) ); ?>" data-id="<?php echo esc_attr( $it['id'] ); ?>" data-kind="<?php echo esc_attr( $it['kind'] ); ?>" target="_blank" rel="noopener">
+	<a class="card<?php echo $n ? ' card--set' : ''; ?>" href="<?php echo esc_url( $rs_wl_open( $it ) ); ?>" data-id="<?php echo esc_attr( $it['id'] ); ?>" target="_blank" rel="noopener">
 		<span class="thumb">
 			<img src="<?php echo esc_url( $rs_wl_abs( $it['img'] ) ); ?>" alt="" width="640" height="360" loading="lazy" decoding="async">
 			<span class="pv-tag" aria-hidden="true"><i></i><?php echo esc_html( $rs_wl_t( 'প্রিভিউ · শব্দ বন্ধ', 'Preview · muted' ) ); ?></span>
 			<span class="play" aria-hidden="true"><?php echo $rs_wl_icon_play; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- A fixed SVG. ?></span>
-			<?php if ( $rs_wl_has45( $it ) ) : ?><span class="cuts" aria-hidden="true">16:9 · 4:5</span><?php endif; ?>
+			<span class="tags">
+				<?php if ( $n ) : ?><span><?php echo $rs_wl_icon_clips; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- A fixed SVG. ?><?php echo esc_html( $rs_wl_en ? $n . ' clips' : rs_bn_digits( $n ) . 'টি ক্লিপ' ); ?></span><?php endif; ?>
+				<?php if ( $rs_wl_has45( $it ) ) : ?><span>16:9 · 4:5</span><?php endif; ?>
+			</span>
 		</span>
 		<span class="body">
-			<span class="kicker"><?php echo esc_html( $type ); ?></span>
-			<span class="title"><?php echo esc_html( $it['title'] ); ?></span>
-			<span class="desc"><?php echo esc_html( $desc ); ?></span>
+			<span class="meta"><span class="kicker"><?php echo esc_html( $rs_wl_t( $it['type_bn'], $it['type_en'] ) ); ?></span><time datetime="<?php echo esc_attr( $it['date'] ); ?>"><?php echo esc_html( $rs_wl_short( $it['date'] ) ); ?></time></span>
+			<span class="title"><?php echo esc_html( $rs_wl_name( $it ) ); ?></span>
+			<span class="desc"><?php echo esc_html( $rs_wl_t( $it['desc_bn'], $it['desc_en'] ) ); ?></span>
 		</span>
 	</a>
-	<?php
-	return ob_get_clean();
-};
-
-/** A project: its own card, then its clips in a strip. */
-$rs_wl_project = function ( $it ) use ( $rs_wl_t, $rs_wl_abs, $rs_wl_open, $rs_wl_has45, $rs_wl_en, $rs_wl_icon_play ) {
-	$type  = $rs_wl_t( $it['type_bn'], $it['type_en'] );
-	$desc  = $rs_wl_t( $it['desc_bn'], $it['desc_en'] );
-	$clips = $it['clips'];
-	$n     = count( $clips );
-	$shown = 5;
-	ob_start();
-	?>
-	<div class="proj" data-id="<?php echo esc_attr( $it['id'] ); ?>" data-kind="<?php echo esc_attr( $it['kind'] ); ?>">
-		<a class="card card--wide" href="<?php echo esc_url( $rs_wl_open( $it ) ); ?>" data-id="<?php echo esc_attr( $it['id'] ); ?>" target="_blank" rel="noopener">
-			<span class="thumb">
-				<img src="<?php echo esc_url( $rs_wl_abs( $it['img'] ) ); ?>" alt="" width="640" height="360" loading="lazy" decoding="async">
-				<span class="pv-tag" aria-hidden="true"><i></i><?php echo esc_html( $rs_wl_t( 'প্রিভিউ · শব্দ বন্ধ', 'Preview · muted' ) ); ?></span>
-				<span class="play play--label" aria-hidden="true"><?php echo $rs_wl_icon_play; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- A fixed SVG. ?><?php echo esc_html( $rs_wl_t( 'মূল ভিডিও', 'Main reel' ) ); ?></span>
-			</span>
-			<span class="body">
-				<span class="kicker"><?php echo esc_html( $type ); ?></span>
-				<span class="title"><?php echo esc_html( $it['title'] ); ?></span>
-				<span class="desc"><?php echo esc_html( $desc ); ?></span>
-				<span class="chips">
-					<span><?php echo esc_html( $rs_wl_t( '১টি মূল ভিডিও', '1 main reel' ) ); ?></span>
-					<span><?php echo esc_html( $rs_wl_en ? $n . ' clips' : rs_bn_digits( $n ) . 'টি ক্লিপ' ); ?></span>
-					<?php if ( $rs_wl_has45( $it ) ) : ?><span>16:9 · 4:5</span><?php endif; ?>
-				</span>
-			</span>
-		</a>
-		<div class="strip">
-			<div class="strip-head">
-				<b><?php echo esc_html( $rs_wl_t( 'এই প্রজেক্টের ক্লিপ', 'Clips in this project' ) ); ?></b>
-				<button type="button" class="link-btn" data-playall="<?php echo esc_attr( $it['id'] ); ?>"><?php echo esc_html( $rs_wl_t( 'সব ক্লিপ প্লেলিস্টে চালান →', 'Play all clips as a playlist →' ) ); ?></button>
-			</div>
-			<ol class="clips" id="clips-<?php echo esc_attr( $it['id'] ); ?>">
-				<?php foreach ( $clips as $i => $c ) : ?>
-					<li<?php echo $i >= $shown ? ' class="more" hidden' : ''; ?>>
-						<a class="clip" href="<?php echo esc_url( $rs_wl_abs( $c['src'] ) ); ?>" data-id="<?php echo esc_attr( $it['id'] ); ?>" data-clip="<?php echo (int) $i; ?>" target="_blank" rel="noopener">
-							<img src="<?php echo esc_url( $rs_wl_abs( $c['img'] ) ); ?>" alt="" width="320" height="180" loading="lazy" decoding="async">
-							<span><?php echo esc_html( rs_bn_digits( $i + 1 ) . ' · ' . $c['title'] ); ?></span>
-						</a>
-					</li>
-				<?php endforeach; ?>
-				<?php if ( $n > $shown ) : ?>
-					<li class="clip-more">
-						<button type="button" aria-expanded="false" aria-controls="clips-<?php echo esc_attr( $it['id'] ); ?>" data-more="<?php echo esc_attr( $it['id'] ); ?>">
-							<b>+<?php echo esc_html( rs_bn_digits( $n - $shown ) ); ?></b>
-							<span><?php echo esc_html( $rs_wl_t( 'আরও ক্লিপ', 'More clips' ) ); ?></span>
-						</button>
-					</li>
-				<?php endif; ?>
-			</ol>
-		</div>
-	</div>
 	<?php
 	return ob_get_clean();
 };
@@ -235,7 +216,7 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 	}
 	* { box-sizing: border-box; }
 	[hidden] { display: none !important; }
-	html { scroll-behavior: smooth; scroll-padding-top: 140px; }
+	html { scroll-behavior: smooth; scroll-padding-top: 146px; }
 	@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 	body { margin: 0; color: var(--fg); background: var(--bg); font: 17px/1.5 var(--sans); -webkit-font-smoothing: antialiased; overflow-x: clip; }
 	body.locked { overflow: hidden; }
@@ -287,88 +268,74 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 
 	/* the controls under the bar */
 	.ctl { position: sticky; top: var(--bar); z-index: 15; background: rgba(0, 0, 0, .86); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255, 255, 255, .08); }
-	.ctl-in { display: flex; align-items: center; justify-content: space-between; gap: 10px 16px; flex-wrap: wrap; padding-block: 10px; }
-	.seg { display: inline-flex; padding: 4px; border-radius: 980px; background: rgba(255, 255, 255, .1); }
+	.ctl-in { display: flex; align-items: center; gap: 10px 14px; padding-block: 9px; }
+	.seg { display: inline-flex; flex-shrink: 0; padding: 4px; border-radius: 980px; background: rgba(255, 255, 255, .1); }
 	.seg[hidden] { display: none; }
 	.seg button { min-height: 38px; padding: 0 16px; border: 0; border-radius: 980px; background: none; color: var(--fg2); font-size: 14px; cursor: pointer; }
 	.seg button[aria-pressed="true"] { background: var(--fg); color: var(--ink); font-weight: 600; }
-	.chips-f { display: flex; gap: 8px; flex-wrap: wrap; }
-	.chip { min-height: 40px; padding: 0 16px; border-radius: 980px; border: 1px solid var(--line2); background: none; color: var(--fg2); font-size: 14px; cursor: pointer; }
+	.chips-f { flex: 1; min-width: 0; display: flex; gap: 5px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
+	.chips-f.is-more { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent); }
+	.chip { flex-shrink: 0; min-height: 40px; padding: 0 11px; border-radius: 980px; border: 1px solid var(--line2); background: none; color: var(--fg2); font-size: 13.5px; white-space: nowrap; cursor: pointer; }
 	.chip[aria-pressed="true"] { border-color: var(--fg); background: var(--fg); color: var(--ink); font-weight: 600; }
 	.tc { display: inline-flex; align-items: center; gap: 9px; padding: 7px 13px; border-radius: 8px; border: 1px solid rgba(255, 74, 28, .5); color: var(--acc); font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; opacity: 0; transition: opacity .25s; white-space: nowrap; }
 	.tc.on { opacity: 1; }
+	.ctl .tc { display: none; }
 	.tc i { width: 8px; height: 8px; border-radius: 50%; background: var(--acc); }
 
-	/* the list: one line down the middle, a dot per day */
-	.tl { position: relative; padding-block: 56px 72px; }
-	.tl-rail, .tl-fill { position: absolute; top: 56px; bottom: 72px; left: 50%; width: 2px; margin-left: -1px; }
+	.chip small { display: none; margin-left: 6px; font-size: 12px; opacity: .65; font-variant-numeric: tabular-nums; }
+	.chip[aria-pressed="true"] small { display: inline; }
+
+	/* the list: the line on the left with a week beside it, its cards in a grid */
+	.tl { position: relative; padding-block: 48px 72px; }
+	.tl-rail, .tl-fill { position: absolute; top: 60px; bottom: 88px; left: calc(var(--gut) + 6px); width: 2px; margin-left: -1px; }
 	.tl-rail { background: rgba(255, 255, 255, .14); }
 	.tl-fill { background: var(--acc); transform-origin: top; transform: scaleY(0); }
-	/* The playhead sits under a day's box, as the rail does, so it never runs over a card. */
-	.tl-head { position: absolute; top: 56px; left: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: var(--acc); box-shadow: 0 0 0 6px rgba(255, 74, 28, .25), 0 0 24px rgba(255, 74, 28, .6); z-index: 1; pointer-events: none; opacity: 0; transition: opacity .25s; }
+	.tl-head { position: absolute; top: 60px; left: calc(var(--gut) + 6px); width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: var(--acc); box-shadow: 0 0 0 5px rgba(255, 74, 28, .25), 0 0 24px rgba(255, 74, 28, .6); z-index: 3; pointer-events: none; opacity: 0; transition: opacity .25s; }
 	.tl-head.on { opacity: 1; }
-	.tl-month { position: relative; }
-	.tl-mhead { position: relative; z-index: 2; display: flex; justify-content: center; margin: 0 0 40px; }
-	.tl-mhead > span { padding: 10px 22px; border-radius: 980px; background: var(--fg); color: var(--ink); font-size: 18px; font-weight: 700; }
-	.tl-mhead small { font-size: inherit; font-weight: 500; color: #515154; }
-	.tl-day { position: relative; margin-bottom: 44px; }
-	.tl-node { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-	.tl-node > i { width: 14px; height: 14px; border-radius: 50%; background: var(--acc); box-shadow: 0 0 0 6px var(--bg); }
-	.tl-node time { padding: 2px 8px; background: var(--bg); color: var(--fg2); font-size: 14px; font-weight: 600; }
-	.tl-node time b { color: var(--acc); font-weight: 600; }
-	.tl-day.single { display: grid; grid-template-columns: minmax(0, 1fr) 150px minmax(0, 1fr); align-items: center; }
-	.tl-day.single .tl-node { grid-column: 2; grid-row: 1; }
-	.tl-day.single .slot { grid-row: 1; display: flex; }
-	.tl-day.single.l .slot { grid-column: 1; justify-content: flex-end; }
-	.tl-day.single.r .slot { grid-column: 3; justify-content: flex-start; }
-	.tl-day.group .tl-node { margin-bottom: 22px; }
-	.box { position: relative; z-index: 1; max-width: 1000px; margin-inline: auto; padding: 18px; border: 1px solid rgba(255, 255, 255, .12); border-radius: 24px; background: var(--tile); display: flex; flex-direction: column; gap: 18px; }
-	.box-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
-	.box .card { max-width: none; background: var(--tile2); }
+	.tl-mhead { position: relative; z-index: 2; display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 14px; margin: 0 0 22px; padding-block: 4px; background: var(--bg); font-size: clamp(26px, 3.4vw, 36px); line-height: 1.2; font-weight: 700; }
+	.tl-mhead small { font-size: 16px; font-weight: 500; color: var(--mut); white-space: nowrap; }
+	.tl-week { position: relative; display: grid; grid-template-columns: 138px minmax(0, 1fr); column-gap: 30px; padding-bottom: 48px; }
+	.tl-node { position: sticky; top: calc(var(--bar) + 80px); align-self: start; z-index: 2; padding: 2px 0 2px 30px; }
+	.tl-node > i { position: absolute; left: 0; top: 7px; width: 12px; height: 12px; border-radius: 50%; background: var(--acc); box-shadow: 0 0 0 5px var(--bg); }
+	.tl-node b { display: block; font-size: 16px; line-height: 1.35; font-weight: 700; }
+	.tl-node span { display: block; margin-top: 2px; color: var(--mut); font-size: 14px; }
+	.tl-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px 20px; }
+	.cell { display: flex; flex-direction: column; gap: 10px; min-width: 0; scroll-margin-top: 0; }
+	.cell.flash .card { border-color: var(--acc); box-shadow: 0 0 0 3px rgba(255, 74, 28, .35); }
 
-	/* cards */
-	.card { display: block; width: 100%; max-width: 480px; text-decoration: none; border: 1px solid var(--line); border-radius: 18px; background: var(--tile); overflow: hidden; transition: transform .4s var(--out), border-color .3s; }
-	.card:hover { transform: translateY(-4px); border-color: rgba(255, 74, 28, .6); }
-	.thumb { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; background: #111; }
-	.thumb > img { width: 100%; height: 100%; object-fit: cover; display: block; }
+	/* cards, all of one size */
+	.card { position: relative; flex: 1; display: flex; flex-direction: column; text-decoration: none; border: 1px solid var(--line); border-radius: 16px; background: var(--tile); overflow: hidden; transition: transform .4s var(--out), border-color .3s, box-shadow .3s; }
+	.card:hover { transform: translateY(-3px); border-color: rgba(255, 74, 28, .6); }
+	.thumb { position: relative; display: block; flex-shrink: 0; aspect-ratio: 16 / 9; overflow: hidden; background: #111; }
+	.thumb > img { position: relative; width: 100%; height: 100%; object-fit: cover; display: block; }
+	/* a standing picture is shown whole, over a blur of itself */
+	.thumb.is-tall::before { content: ""; position: absolute; inset: -12%; background: var(--p) center / cover; filter: blur(16px) brightness(.5); }
+	.thumb.is-tall > img { object-fit: contain; }
 	.thumb iframe { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; border: 0; transform-origin: 0 0; pointer-events: none; opacity: 0; transition: opacity .35s; background: #050506; }
 	.thumb iframe.on { opacity: 1; }
-	.play { position: absolute; inset: 0; margin: auto; width: 56px; height: 56px; border-radius: 50%; background: var(--acc); color: var(--ink); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .25s; }
-	.play svg { width: 20px; height: 20px; fill: currentColor; margin-left: 2px; }
+	.play { position: absolute; inset: 0; margin: auto; width: 52px; height: 52px; border-radius: 50%; background: var(--acc); color: var(--ink); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .25s; }
+	.play svg { width: 18px; height: 18px; fill: currentColor; margin-left: 2px; }
 	.card:hover .play, .card:focus-visible .play { opacity: 1; }
 	.previewing .play { opacity: 0 !important; }
-	.play--label { inset: auto auto 14px 14px; margin: 0; width: auto; height: auto; padding: 8px 14px; gap: 8px; border-radius: 980px; font-size: 14px; font-weight: 700; opacity: 1; }
-	.play--label svg { width: 12px; height: 12px; margin: 0; }
-	.cuts { position: absolute; right: 10px; top: 10px; padding: 3px 9px; border-radius: 980px; background: rgba(0, 0, 0, .7); font-size: 12px; font-weight: 600; color: var(--fg2); }
+	.tags { position: absolute; left: 10px; right: 10px; bottom: 10px; display: flex; gap: 6px; transition: opacity .25s; }
+	.tags > span { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 980px; background: rgba(0, 0, 0, .78); color: var(--fg); font-size: 12px; font-weight: 600; line-height: 1.5; white-space: nowrap; }
+	.tags svg { width: 12px; height: 12px; }
+	.tags > span + span { margin-left: auto; color: var(--fg2); }
 	.pv-tag { position: absolute; left: 10px; top: 10px; z-index: 2; display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 980px; background: rgba(0, 0, 0, .75); font-size: 12px; font-weight: 600; opacity: 0; transition: opacity .25s; }
 	.pv-tag i { width: 7px; height: 7px; border-radius: 50%; background: var(--acc); }
 	.previewing .pv-tag { opacity: 1; }
-	.previewing .cuts { opacity: 0; }
-	.body { display: block; padding: 16px 20px 18px; }
-	.body .title { display: block; margin: 4px 0 6px; font-size: 21px; font-weight: 700; line-height: 1.3; }
-	.body .desc { display: block; color: var(--mut); font-size: 15px; line-height: 1.55; }
-
-	/* a project */
-	.proj { border: 1px solid rgba(255, 74, 28, .45); border-radius: 20px; background: var(--tile); overflow: hidden; }
-	.card--wide { max-width: none; border: 0; border-radius: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); background: none; }
-	.card--wide:hover { transform: none; }
-	.card--wide .body { padding: 24px 28px; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
-	.card--wide .title { font-size: 28px; }
+	.previewing .tags { opacity: 0; }
+	.body { display: flex; flex-direction: column; flex: 1; padding: 14px 16px 16px; }
+	.meta { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font-size: 13px; }
+	.meta .kicker { font-size: inherit; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+	.meta time { flex-shrink: 0; color: var(--mut); }
+	.body .title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; margin: 5px 0 5px; font-size: 18px; font-weight: 700; line-height: 1.35; }
+	.body .desc { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; color: var(--mut); font-size: 14px; line-height: 1.5; }
+	.body .desc:empty { display: none; }
 	.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 	.chips span { padding: 5px 12px; border-radius: 980px; background: rgba(255, 255, 255, .1); font-size: 13px; color: var(--fg2); }
-	.strip { border-top: 1px solid var(--line); padding: 18px 22px 22px; }
-	.strip-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
-	.strip-head b { font-size: 15px; }
-	.clips { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
-	.clip { display: block; text-decoration: none; color: var(--fg2); }
-	.clip img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; display: block; transition: transform .3s var(--out); }
-	.clip:hover img { transform: scale(1.04); }
-	.clip span { display: block; margin-top: 6px; font-size: 12px; line-height: 1.35; }
-	.clip-more button { width: 100%; padding: 0; border: 0; background: none; cursor: pointer; text-align: left; color: var(--mut); }
-	.clip-more b { display: flex; align-items: center; justify-content: center; aspect-ratio: 16 / 9; border-radius: 8px; background: var(--tile3); color: var(--fg); font-size: 20px; }
-	.clip-more span { display: block; margin-top: 6px; font-size: 12px; }
-	.tl-end { position: relative; z-index: 2; display: flex; justify-content: center; }
-	.tl-end span { padding: 10px 20px; border-radius: 980px; border: 1px solid var(--line2); background: var(--bg); color: var(--mut); font-size: 15px; }
+	.tl-end { position: relative; z-index: 2; }
+	.tl-end span { display: inline-block; padding: 8px 18px; border-radius: 980px; border: 1px solid var(--line2); background: var(--bg); color: var(--mut); font-size: 15px; }
 
 	/* the editor */
 	.ed { padding-block: 28px 72px; }
@@ -452,6 +419,14 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 	.icon-btn { width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .1); cursor: pointer; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 	.icon-btn:hover { background: rgba(255, 255, 255, .18); }
 	.m-frame { width: 100%; border: 0; border-radius: 14px; background: #050506; display: block; }
+	.m-strip { display: flex; gap: 10px; margin: 0; padding: 2px 2px 8px; list-style: none; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-color: #3a3a3c transparent; scrollbar-width: thin; }
+	.m-strip li { flex: 0 0 148px; min-width: 0; }
+	.m-strip button { display: block; width: 100%; padding: 0; border: 0; background: none; color: var(--fg2); text-align: left; cursor: pointer; }
+	.m-strip img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; border: 2px solid transparent; background: #111; }
+	.m-strip button:hover img { border-color: var(--line2); }
+	.m-strip button[aria-current] img { border-color: var(--acc); }
+	.m-strip button[aria-current] { color: var(--fg); }
+	.m-strip span { display: block; margin-top: 5px; font-size: 12px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 	.m-note { margin: 0; color: var(--dim); font-size: 13px; }
 
 	/* back to top: the site's button in the showreel's dark glass */
@@ -468,9 +443,11 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 	@media (max-width: 600px) { .to-top { right: 16px; bottom: 16px; } }
 	@media (prefers-reduced-motion: reduce) { .to-top { transition: none; } }
 
+	@media (max-width: 1060px) {
+		.tl-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	}
 	@media (max-width: 900px) {
 		.ed-top { grid-template-columns: 1fr; }
-		.clips { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 	}
 	@media (max-width: 760px) {
 		.hero { padding-top: 52px; text-align: left; }
@@ -479,32 +456,46 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 		.cal-row > a, .cal-row > span { width: 64px; font-size: 13px; }
 		.cal-days { gap: 2px; }
 		.hd { height: 16px; border-radius: 3px; }
-		.tl { padding-left: 34px; }
-		.tl-rail, .tl-fill, .tl-head { left: 12px; }
-		.tl-mhead { justify-content: flex-start; margin-left: -30px; }
-		.tl-mhead > span { font-size: 15px; padding: 7px 14px; }
-		.tl-day.single { display: block; }
-		.tl-node { flex-direction: row; justify-content: flex-start; margin: 0 0 10px -28px; gap: 12px; }
-		.tl-node > i { width: 12px; height: 12px; box-shadow: 0 0 0 5px var(--bg); }
-		.tl-node time { padding: 0; }
-		.tl-day.single .slot { display: block; }
-		.card { max-width: none; }
-		.box { padding: 12px; }
-		.box-grid { grid-template-columns: 1fr; }
-		.card--wide { grid-template-columns: 1fr; }
-		.card--wide .body { padding: 18px 20px; }
-		.clips { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-		.tl-end { justify-content: flex-start; margin-left: -30px; }
-		.ctl-in { gap: 8px; }
-		.chips-f { order: 3; flex: 1 0 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
-		.tc { order: 2; padding: 5px 10px; font-size: 13px; }
-		.chip { flex-shrink: 0; }
+		.tl { padding-block: 32px 56px; }
+		.tl-rail, .tl-fill, .tl-head { display: none; }
+		.tl-mhead { margin-bottom: 14px; }
+		.tl-week { display: block; padding-bottom: 34px; }
+		.tl-node { position: static; display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; padding: 0 0 0 22px; }
+		.tl-node > i { top: 6px; box-shadow: none; }
+		.tl-node span { margin: 0; }
+		.tl-grid { gap: 20px 14px; }
+		.ctl-in { flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+		.chips-f { order: 3; flex: 1 0 100%; max-width: 100%; }
+		.chip { padding: 0 14px; font-size: 14px; }
+		.top .tc { display: none; }
+		.ctl .tc { display: inline-flex; order: 2; padding: 5px 10px; font-size: 13px; }
 		.ed-lab, .ed-labs { width: 86px; }
 		.ed-labs div small { display: none; }
 		.legend { margin-left: 0; }
 		.brand { font-size: 17px; }
 		.nav a { padding: 8px 9px; font-size: 14px; }
 		.nav .nl { display: none; }
+	}
+	/* a phone: the picture beside the words, so a screen holds five or six pieces */
+	@media (max-width: 600px) {
+		.tl-grid { grid-template-columns: 1fr; gap: 12px; }
+		.card { flex-direction: row; }
+		.card:hover { transform: none; }
+		.thumb { width: 38%; max-width: 150px; aspect-ratio: auto; min-height: 96px; }
+		.thumb > img { position: absolute; inset: 0; }
+		.tags { left: 6px; right: 6px; bottom: 6px; }
+		.tags > span { padding: 1px 7px; font-size: 11px; }
+		.tags > span + span { display: none; }
+		.body { padding: 10px 12px 11px; min-width: 0; justify-content: center; }
+		.meta { font-size: 12px; }
+		.body .title { margin: 3px 0 2px; font-size: 16px; -webkit-line-clamp: 3; }
+		.body .desc { -webkit-line-clamp: 1; font-size: 13px; }
+		.pv-tag { display: none; }
+		.m-strip li { flex-basis: 118px; }
+	}
+	@media (max-width: 360px) {
+		.ctl .seg button { padding: 0 11px; }
+		.ctl .tc { gap: 6px; padding: 5px 8px; font-size: 12px; }
 	}
 </style>
 <?php rs_work_log_manage_head(); ?>
@@ -514,6 +505,7 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 <header class="top">
 	<div class="wrap top-in">
 		<a class="brand" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php echo esc_html( $rs_wl_t( 'রাইসুল সোহান', 'Raisul Sohan' ) ); ?><span class="dot" aria-hidden="true"></span></a>
+		<span class="tc" aria-hidden="true"><i></i><span></span></span>
 		<nav class="nav" aria-label="<?php echo esc_attr( $rs_wl_t( 'প্রধান মেনু', 'Main menu' ) ); ?>">
 			<a class="nl" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php echo esc_html( $rs_wl_t( 'লেখা', 'Writing' ) ); ?></a>
 			<a class="nl" href="<?php echo esc_url( home_url( '/portfolio/' ) ); ?>"><?php echo esc_html( $rs_wl_t( 'পোর্টফোলিও', 'Portfolio' ) ); ?></a>
@@ -587,12 +579,12 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 				<button type="button" id="vEd" aria-pressed="false" aria-controls="editor"><?php echo esc_html( $rs_wl_t( 'এডিটর', 'Editor' ) ); ?></button>
 			</div>
 			<div class="chips-f" role="group" aria-label="<?php echo esc_attr( $rs_wl_t( 'ধরন অনুযায়ী বাছাই', 'Filter by kind' ) ); ?>">
-				<button type="button" class="chip" data-k="all" aria-pressed="true"><?php echo esc_html( $rs_wl_t( 'সব কাজ', 'All work' ) ); ?></button>
-				<?php foreach ( $rs_wl_kinds as $rs_wl_k => $rs_wl_kl ) : ?>
-					<button type="button" class="chip" data-k="<?php echo esc_attr( $rs_wl_k ); ?>" aria-pressed="false"><?php echo esc_html( $rs_wl_t( $rs_wl_kl['bn'], $rs_wl_kl['en'] ) ); ?></button>
+				<button type="button" class="chip" data-k="all" aria-pressed="true"><?php echo esc_html( $rs_wl_t( 'সব কাজ', 'All work' ) ); ?><small><?php echo esc_html( rs_bn_digits( count( $rs_wl_items ) ) ); ?></small></button>
+				<?php foreach ( $rs_wl_used as $rs_wl_k => $rs_wl_n ) : ?>
+					<button type="button" class="chip" data-k="<?php echo esc_attr( $rs_wl_k ); ?>" aria-pressed="false"><?php echo esc_html( $rs_wl_t( $rs_wl_kinds[ $rs_wl_k ]['bn'], $rs_wl_kinds[ $rs_wl_k ]['en'] ) ); ?><small><?php echo esc_html( rs_bn_digits( $rs_wl_n ) ); ?></small></button>
 				<?php endforeach; ?>
 			</div>
-			<span class="tc" id="tc" aria-hidden="true"><i></i><span id="tcText"></span></span>
+			<span class="tc" aria-hidden="true"><i></i><span></span></span>
 		</div>
 		<?php rs_work_log_manage_bar( count( $rs_wl_items ), count( array_filter( wp_list_pluck( $rs_wl_items, 'hidden' ) ) ) ); ?>
 	</div>
@@ -601,45 +593,29 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 		<div class="tl-rail" aria-hidden="true"></div>
 		<div class="tl-fill" id="tlFill" aria-hidden="true"></div>
 		<div class="tl-head" id="tlHead" aria-hidden="true"></div>
-		<?php $rs_wl_side = 0; ?>
-		<?php foreach ( $rs_wl_tree as $rs_wl_ym => $rs_wl_days ) : ?>
-			<?php $rs_wl_mcount = array_sum( array_map( 'count', $rs_wl_days ) ); ?>
+		<?php $rs_wl_seen = array(); ?>
+		<?php foreach ( $rs_wl_tree as $rs_wl_ym => $rs_wl_weeks ) : ?>
 			<section class="tl-month" id="m-<?php echo esc_attr( $rs_wl_ym ); ?>">
-				<h2 class="tl-mhead"><span><?php echo esc_html( $rs_wl_month( $rs_wl_ym ) ); ?> <small>· <span class="mcount"><?php echo esc_html( $rs_wl_count( $rs_wl_mcount ) ); ?></span></small></span></h2>
-				<?php foreach ( $rs_wl_days as $rs_wl_date => $rs_wl_list ) : ?>
-					<?php
-					$rs_wl_n      = count( $rs_wl_list );
-					$rs_wl_single = 1 === $rs_wl_n && empty( $rs_wl_list[0]['clips'] );
-					$rs_wl_cls    = $rs_wl_single ? 'single ' . ( 0 === $rs_wl_side++ % 2 ? 'l' : 'r' ) : 'group';
-					?>
-					<div class="tl-day <?php echo esc_attr( $rs_wl_cls ); ?>" id="d-<?php echo esc_attr( $rs_wl_date ); ?>" data-date="<?php echo esc_attr( $rs_wl_date ); ?>">
+				<h2 class="tl-mhead"><?php echo esc_html( $rs_wl_month( $rs_wl_ym ) ); ?> <small class="mcount"><?php echo esc_html( $rs_wl_count( array_sum( array_map( 'count', $rs_wl_weeks ) ) ) ); ?></small></h2>
+				<?php foreach ( $rs_wl_weeks as $rs_wl_w => $rs_wl_list ) : ?>
+					<div class="tl-week">
 						<div class="tl-node">
 							<i aria-hidden="true"></i>
-							<time datetime="<?php echo esc_attr( $rs_wl_date ); ?>"><?php echo esc_html( $rs_wl_day( $rs_wl_date ) ); ?><?php if ( $rs_wl_n > 1 ) : ?> <b class="dcount">· <?php echo esc_html( $rs_wl_count( $rs_wl_n ) ); ?></b><?php endif; ?></time>
+							<b><?php echo esc_html( $rs_wl_week( $rs_wl_ym, $rs_wl_w ) ); ?></b>
+							<span class="dcount"><?php echo esc_html( $rs_wl_count( count( $rs_wl_list ) ) ); ?></span>
 						</div>
-						<?php if ( $rs_wl_single ) : ?>
-							<div class="slot"><?php echo $rs_wl_card( $rs_wl_list[0] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside. ?></div>
-						<?php else : ?>
-							<div class="box">
+						<div class="tl-grid">
+							<?php foreach ( $rs_wl_list as $rs_wl_it ) : ?>
 								<?php
-								$rs_wl_plain = array();
-								foreach ( $rs_wl_list as $rs_wl_it ) {
-									if ( ! empty( $rs_wl_it['clips'] ) ) {
-										echo $rs_wl_project( $rs_wl_it ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside.
-									} else {
-										$rs_wl_plain[] = $rs_wl_it;
-									}
-								}
+								/* The first card of a day is where the calendar and a link to that day land. */
+								$rs_wl_anchor = isset( $rs_wl_seen[ $rs_wl_it['date'] ] ) ? '' : ' id="d-' . esc_attr( $rs_wl_it['date'] ) . '"';
+								$rs_wl_seen[ $rs_wl_it['date'] ] = true;
 								?>
-								<?php if ( $rs_wl_plain ) : ?>
-									<div class="box-grid">
-										<?php foreach ( $rs_wl_plain as $rs_wl_it ) : ?>
-											<?php echo $rs_wl_card( $rs_wl_it ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside. ?>
-										<?php endforeach; ?>
-									</div>
-								<?php endif; ?>
-							</div>
-						<?php endif; ?>
+								<div class="cell"<?php echo $rs_wl_anchor; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above. ?> data-id="<?php echo esc_attr( $rs_wl_it['id'] ); ?>" data-kind="<?php echo esc_attr( $rs_wl_it['kind'] ); ?>" data-date="<?php echo esc_attr( $rs_wl_it['date'] ); ?>">
+									<?php echo $rs_wl_card( $rs_wl_it ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside. ?>
+								</div>
+							<?php endforeach; ?>
+						</div>
 					</div>
 				<?php endforeach; ?>
 			</section>
@@ -649,15 +625,15 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 
 	<section class="wrap ed" id="editor" aria-label="<?php echo esc_attr( $rs_wl_t( 'এডিটর ভিউ', 'Editor view' ) ); ?>" hidden>
 		<ol class="ed-help">
-			<li><span class="n">১</span><?php echo esc_html( $rs_wl_t( 'নিচের টাইমলাইনে যেকোনো ক্লিপে চাপুন। একেকটা ক্লিপ মানে একেকটা কাজ।', 'Click any clip on the timeline below. Each clip is one piece of work.' ) ); ?></li>
-			<li><span class="n">২</span><?php echo esc_html( $rs_wl_t( 'উপরের বড় পর্দায় সেই কাজের ছবি আর ডানে তার তথ্য চলে আসবে।', 'The monitor shows that piece, and the panel beside it tells you about it.' ) ); ?></li>
-			<li><span class="n">৩</span><?php echo esc_html( $rs_wl_t( '"চালান" চাপলে ভিডিওটা পুরো স্ক্রিনে চলবে।', 'Press "Play" and it plays in the player.' ) ); ?></li>
-			<li><span class="n">৪</span><?php echo esc_html( $rs_wl_t( 'অন্য সময়ে যেতে উপরের সরু দাগে চাপুন, আর + − দিয়ে জুম করুন।', 'Click the thin strip to move to another time; + and − zoom.' ) ); ?></li>
+			<li><span class="n"><?php echo esc_html( rs_bn_digits( 1 ) ); ?></span><?php echo esc_html( $rs_wl_t( 'নিচের টাইমলাইনে যেকোনো ক্লিপে চাপুন। একেকটা ক্লিপ মানে একেকটা কাজ।', 'Click any clip on the timeline below. Each clip is one piece of work.' ) ); ?></li>
+			<li><span class="n"><?php echo esc_html( rs_bn_digits( 2 ) ); ?></span><?php echo esc_html( $rs_wl_t( 'উপরের বড় পর্দায় সেই কাজের ছবি আর ডানে তার তথ্য চলে আসবে।', 'The monitor shows that piece, and the panel beside it tells you about it.' ) ); ?></li>
+			<li><span class="n"><?php echo esc_html( rs_bn_digits( 3 ) ); ?></span><?php echo esc_html( $rs_wl_t( '"চালান" চাপলে ভিডিওটা পুরো স্ক্রিনে চলবে।', 'Press "Play" and it plays in the player.' ) ); ?></li>
+			<li><span class="n"><?php echo esc_html( rs_bn_digits( 4 ) ); ?></span><?php echo esc_html( $rs_wl_t( 'অন্য সময়ে যেতে উপরের সরু দাগে চাপুন, আর + − দিয়ে জুম করুন।', 'Click the thin strip to move to another time; + and − zoom.' ) ); ?></li>
 		</ol>
 		<div class="ed-top">
 			<div class="mon">
 				<img id="edImg" src="" alt="">
-				<span class="stamp"><span class="n n--s">২</span><span id="edStamp"></span></span>
+				<span class="stamp"><span class="n n--s"><?php echo esc_html( rs_bn_digits( 2 ) ); ?></span><span id="edStamp"></span></span>
 				<button type="button" id="edMonPlay" aria-label="<?php echo esc_attr( $rs_wl_t( 'চালান', 'Play' ) ); ?>"></button>
 			</div>
 			<div class="insp" aria-live="polite">
@@ -667,16 +643,16 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 				<div class="chips"><span id="edDate"></span><span id="edTrack"></span></div>
 				<div class="insp-sub" id="edSameWrap" hidden><span><?php echo esc_html( $rs_wl_t( 'একই দিনে', 'Same day' ) ); ?></span><div class="insp-list" id="edSame"></div></div>
 				<div class="insp-sub" id="edClipsWrap" hidden><span><?php echo esc_html( $rs_wl_t( 'এই প্রজেক্টের ক্লিপ', 'Clips in this project' ) ); ?></span><div class="insp-list" id="edClips"></div></div>
-				<div class="insp-play"><span class="n">৩</span><button type="button" class="pill pill--acc" id="edPlay"><?php echo $rs_wl_icon_play; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- A fixed SVG. ?><?php echo esc_html( $rs_wl_t( 'চালান', 'Play' ) ); ?></button></div>
+				<div class="insp-play"><span class="n"><?php echo esc_html( rs_bn_digits( 3 ) ); ?></span><button type="button" class="pill pill--acc" id="edPlay"><?php echo $rs_wl_icon_play; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- A fixed SVG. ?><?php echo esc_html( $rs_wl_t( 'চালান', 'Play' ) ); ?></button></div>
 			</div>
 		</div>
 		<div class="ed-panel">
 			<div class="ed-row">
-				<span class="ed-lab"><span class="n n--s">৪</span><?php echo esc_html( $rs_wl_t( 'পুরো সময়', 'All time' ) ); ?></span>
+				<span class="ed-lab"><span class="n n--s"><?php echo esc_html( rs_bn_digits( 4 ) ); ?></span><?php echo esc_html( $rs_wl_t( 'পুরো সময়', 'All time' ) ); ?></span>
 				<div class="mini" id="edMini" role="slider" tabindex="0" aria-label="<?php echo esc_attr( $rs_wl_t( 'টাইমলাইনের কোন অংশ দেখছেন', 'The part of the timeline in view' ) ); ?>" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span class="mini-win" id="edWin"></span></div>
 			</div>
 			<div class="ed-row" style="margin-top: -6px;">
-				<span class="ed-lab"><span class="n n--s">১</span><?php echo esc_html( $rs_wl_t( 'ক্লিপে চাপুন', 'Click a clip' ) ); ?></span>
+				<span class="ed-lab"><span class="n n--s"><?php echo esc_html( rs_bn_digits( 1 ) ); ?></span><?php echo esc_html( $rs_wl_t( 'ক্লিপে চাপুন', 'Click a clip' ) ); ?></span>
 				<div class="zoom" role="group" aria-label="<?php echo esc_attr( $rs_wl_t( 'জুম', 'Zoom' ) ); ?>">
 					<button type="button" id="edOut" aria-label="<?php echo esc_attr( $rs_wl_t( 'ছোট করুন', 'Zoom out' ) ); ?>">−</button>
 					<button type="button" id="edIn" aria-label="<?php echo esc_attr( $rs_wl_t( 'বড় করুন', 'Zoom in' ) ); ?>">+</button>
@@ -684,8 +660,9 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 			</div>
 			<div class="ed-body">
 				<div class="ed-labs" aria-hidden="true">
-					<?php $rs_wl_v = count( $rs_wl_kinds ); ?>
-					<?php foreach ( $rs_wl_kinds as $rs_wl_k => $rs_wl_kl ) : ?>
+					<?php $rs_wl_tracks = array_intersect_key( $rs_wl_kinds, array_flip( wp_list_pluck( $rs_wl_items, 'kind' ) ) ); ?>
+					<?php $rs_wl_v = count( $rs_wl_tracks ); ?>
+					<?php foreach ( $rs_wl_tracks as $rs_wl_k => $rs_wl_kl ) : ?>
 						<div><small>V<?php echo (int) $rs_wl_v--; ?></small><?php echo esc_html( $rs_wl_t( $rs_wl_kl['bn'], $rs_wl_kl['en'] ) ); ?></div>
 					<?php endforeach; ?>
 				</div>
@@ -736,6 +713,7 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 			</div>
 		</div>
 		<iframe class="m-frame" id="mFrame" title="<?php echo esc_attr( $rs_wl_t( 'কাজের প্লেয়ার', 'Work player' ) ); ?>" allow="autoplay; fullscreen" allowfullscreen></iframe>
+		<ol class="m-strip" id="mStrip" aria-label="<?php echo esc_attr( $rs_wl_t( 'এই কাজের ক্লিপ', 'Clips in this piece' ) ); ?>" hidden></ol>
 		<p class="m-note" id="mNote"><?php echo esc_html( $rs_wl_t( '[ ] দিয়ে আগে-পরে · Esc দিয়ে বন্ধ', '[ ] previous and next · Esc to close' ) ); ?></p>
 	</div>
 </div>
@@ -749,7 +727,9 @@ const VER = <?php echo wp_json_encode( RS_VERSION ); ?>, EN = <?php echo $rs_wl_
 const KINDS = <?php
 $rs_wl_kjs = array();
 foreach ( $rs_wl_kinds as $rs_wl_k => $rs_wl_kl ) {
-	$rs_wl_kjs[ $rs_wl_k ] = $rs_wl_t( $rs_wl_kl['bn'], $rs_wl_kl['en'] );
+	if ( isset( $rs_wl_used[ $rs_wl_k ] ) ) {
+		$rs_wl_kjs[ $rs_wl_k ] = $rs_wl_t( $rs_wl_kl['bn'], $rs_wl_kl['en'] );
+	}
 }
 echo wp_json_encode( $rs_wl_kjs );
 ?>;
@@ -761,7 +741,8 @@ foreach ( $rs_wl_items as $rs_wl_it ) {
 		'date'    => $rs_wl_it['date'],
 		'day'     => $rs_wl_day( $rs_wl_it['date'] ),
 		'kind'    => $rs_wl_it['kind'],
-		'title'   => $rs_wl_it['title'],
+		'client'  => ! empty( $rs_wl_it['client'] ),
+		'title'   => $rs_wl_name( $rs_wl_it ),
 		'type'    => $rs_wl_t( $rs_wl_it['type_bn'], $rs_wl_it['type_en'] ),
 		'desc'    => $rs_wl_t( $rs_wl_it['desc_bn'], $rs_wl_it['desc_en'] ),
 		'img'     => $rs_wl_abs( $rs_wl_it['img'] ),
@@ -773,12 +754,13 @@ foreach ( $rs_wl_items as $rs_wl_it ) {
 		'clips'   => array(),
 	);
 	if ( $rs_wl_manage ) {
-		$rs_wl_row = array_merge( $rs_wl_row, array_intersect_key( rs_wla_row( $rs_wl_it ), array_flip( array( 'hidden', 'source', 'bytes', 'desc_bn', 'desc_en' ) ) ) );
+		$rs_wl_row = array_merge( $rs_wl_row, array_intersect_key( rs_wla_row( $rs_wl_it ), array_flip( array( 'hidden', 'source', 'bytes', 'title_bn', 'desc_bn', 'desc_en' ) ) ) );
+		$rs_wl_row['name'] = $rs_wl_it['title'];
 	}
 	if ( ! empty( $rs_wl_it['clips'] ) ) {
 		foreach ( $rs_wl_it['clips'] as $rs_wl_i => $rs_wl_c ) {
 			$rs_wl_row['clips'][] = array(
-				'title' => $rs_wl_c['title'],
+				'title' => $rs_wl_name( $rs_wl_c ),
 				'num'   => rs_bn_digits( $rs_wl_i + 1 ),
 				'src'   => $rs_wl_abs( $rs_wl_c['src'] ),
 				'img'   => $rs_wl_abs( $rs_wl_c['img'] ),
@@ -789,6 +771,7 @@ foreach ( $rs_wl_items as $rs_wl_it ) {
 }
 echo wp_json_encode( $rs_wl_js );
 ?>;
+const TRACKS = Object.keys(KINDS).filter(k => WORKS.some(w => w.kind === k));
 const T = <?php
 echo wp_json_encode(
 	array(
@@ -797,6 +780,7 @@ echo wp_json_encode(
 		'same'  => $rs_wl_t( 'একই দিনে', 'Same day' ),
 		'year'  => $rs_wl_t( '২০২৬', '2026' ),
 		'today' => $rs_wl_t( 'আজ', 'Today' ),
+		'main'  => $rs_wl_t( 'মূল ভিডিও', 'Main video' ),
 	)
 );
 ?>;
@@ -828,26 +812,28 @@ const canVert = p => !!(p.src45 || p.map);
 // ── filters
 let kind = 'all';
 let gate = null;   // a further test, set by the controls of someone who manages the log
-const shown = w => !!w && (kind === 'all' || w.kind === kind) && (!gate || gate(w));
+const ofKind = (w, k) => k === 'all' || (k === 'client' ? w.client : w.kind === k);
+const listed = w => !gate || gate(w);
+const shown = w => !!w && ofKind(w, kind) && listed(w);
 
 function applyFilter() {
-  document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.k === kind ? 'true' : 'false'));
-  let side = 0;
+  document.querySelectorAll('.chip').forEach(c => {
+    c.setAttribute('aria-pressed', c.dataset.k === kind ? 'true' : 'false');
+    c.querySelector('small').textContent = bn(WORKS.filter(w => ofKind(w, c.dataset.k) && listed(w)).length);
+  });
   document.querySelectorAll('.tl-month').forEach(m => {
     let mn = 0;
-    m.querySelectorAll('.tl-day').forEach(d => {
+    m.querySelectorAll('.tl-week').forEach(d => {
       let n = 0;
-      d.querySelectorAll('[data-kind]').forEach(el => {
+      d.querySelectorAll('.cell').forEach(el => {
         const on = shown(byId(el.dataset.id));
         el.hidden = !on; if (on) n++;
       });
       d.hidden = n === 0; mn += n;
-      const dc = d.querySelector('.dcount');
-      if (dc) { dc.textContent = n > 1 ? '· ' + count(n) : ''; }
-      if (d.classList.contains('single') && n) { const l = side++ % 2 === 0; d.classList.toggle('l', l); d.classList.toggle('r', !l); }
+      d.querySelector('.dcount').textContent = count(n);
     });
     m.hidden = mn === 0;
-    const mc = m.querySelector('.mcount'); if (mc) mc.textContent = count(mn);
+    m.querySelector('.mcount').textContent = count(mn);
   });
   if (edBuilt) drawEditor(false);
   onScroll();
@@ -860,12 +846,35 @@ const hooks = {};   // filled in below for someone who manages the log
 const P = { list: [], i: 0, vert: store.get('worklog.vert') === '1', last: null, hash: '' };
 function fitModal() {
   if (modal.hidden) return;
-  const top = $('mBox').querySelector('.m-top').offsetHeight + 12, room = innerHeight - 32 - top - 34;
+  const strip = $('mStrip'), top = $('mBox').querySelector('.m-top').offsetHeight + 12;
+  const room = innerHeight - 32 - top - 34 - (strip.hidden ? 0 : strip.offsetHeight + 12);
   const vert = P.vert && canVert(P.list[P.i]);
   let w = Math.min(1240, innerWidth - 32), h;
   if (vert) { h = Math.max(380, room); w = Math.min(w, Math.max(Math.min(640, w), h * 4 / 5)); }
   else { h = w * 9 / 16; if (h > room) { h = Math.max(260, room); w = Math.min(w, h * 16 / 9); } }
+  if (!strip.hidden) w = Math.max(w, Math.min(720, innerWidth - 32));
   $('mBox').style.maxWidth = Math.round(w) + 'px'; mFrame.style.height = Math.round(h) + 'px';
+}
+/* The clips of the piece in the player, the one that plays marked. A piece whose
+   main video is one of its clips has no card of its own for it. */
+function drawStrip(p) {
+  const w = byId(p.id), ol = $('mStrip');
+  ol.hidden = !w || !w.clips.length;
+  ol.textContent = '';
+  if (ol.hidden) return;
+  const inClips = w.clips.findIndex(c => c.src === w.src);
+  const now = p.clip >= 0 ? p.clip : inClips;
+  const rows = w.clips.map((c, i) => ({ i, img: c.img, name: c.num + ' · ' + c.title }));
+  if (inClips < 0) rows.unshift({ i: -1, img: w.img, name: T.main });
+  rows.forEach(r => {
+    const li = document.createElement('li'), b = document.createElement('button'), im = document.createElement('img'), t = document.createElement('span');
+    b.type = 'button'; im.src = r.img; im.alt = ''; im.width = 320; im.height = 180; im.loading = 'lazy'; t.textContent = r.name; b.title = r.name;
+    if (r.i === now) b.setAttribute('aria-current', 'true');
+    b.append(im, t); li.append(b); ol.append(li);
+    b.addEventListener('click', () => { if (r.i < 0) playWork(w.id); else playClip(w.id, r.i); });
+  });
+  const cur = ol.querySelector('[aria-current]');
+  if (cur) ol.scrollLeft = cur.parentNode.offsetLeft - ol.offsetLeft - (ol.clientWidth - cur.offsetWidth) / 2;
 }
 function loadModal() {
   const p = P.list[P.i], v = P.vert && canVert(p);
@@ -876,6 +885,7 @@ function loadModal() {
   const multi = P.list.length > 1; $('mPrev').hidden = !multi; $('mNext').hidden = !multi;
   mFrame.src = srcOf(p, v);
   if (p.hash && location.hash !== p.hash) history.replaceState(null, '', p.hash);
+  drawStrip(p);
   if (hooks.onLoad) hooks.onLoad(byId(p.id));
   fitModal();
 }
@@ -893,8 +903,8 @@ function closePlayer() {
   history.replaceState(null, '', location.pathname + location.search);
   if (P.last) P.last.focus({ preventScroll: true });
 }
-const entry = w => ({ id: w.id, title: w.title, type: w.type, src: w.src, src45: w.src45, map: w.map, local: w.local, hash: '#' + w.id });
-const clipEntry = (w, c, i) => ({ id: w.id, title: c.num + ' · ' + c.title, type: w.title, src: c.src, src45: '', map: w.map, local: true, hash: '#' + w.id + '/' + (i + 1) });
+const entry = w => ({ id: w.id, title: w.title, type: w.type, src: w.src, src45: w.src45, map: w.map, local: w.local, clip: -1, hash: '#' + w.id });
+const clipEntry = (w, c, i) => ({ id: w.id, title: c.num + ' · ' + c.title, type: w.title, src: c.src, src45: '', map: w.map, local: true, clip: i, hash: '#' + w.id + '/' + (i + 1) });
 function playWork(id) {
   const list = WORKS.filter(shown);
   let i = list.findIndex(w => w.id === id);
@@ -927,22 +937,42 @@ addEventListener('keydown', e => {
 });
 addEventListener('resize', fitModal);
 
-// cards, clips and buttons in the list
+// the kinds fade at the right while there are more of them to scroll to
+const kinds = document.querySelector('.chips-f');
+const more = () => kinds.classList.toggle('is-more', kinds.scrollLeft + kinds.clientWidth < kinds.scrollWidth - 4);
+kinds.addEventListener('scroll', more, { passive: true });
+addEventListener('resize', more);
+more();
+
+// cards in the list
 $('list').addEventListener('click', e => {
-  const more = e.target.closest('[data-more]');
-  if (more) {
-    const ol = $('clips-' + more.dataset.more), open = more.getAttribute('aria-expanded') !== 'true';
-    ol.querySelectorAll('li.more').forEach(li => { li.hidden = !open; });
-    more.setAttribute('aria-expanded', open ? 'true' : 'false');
-    more.querySelector('b').textContent = open ? '−' : '+' + bn(ol.querySelectorAll('li.more').length);
-    return;
-  }
-  const all = e.target.closest('[data-playall]');
-  if (all) { playClip(all.dataset.playall, 0); return; }
-  const clip = e.target.closest('a.clip');
-  if (clip) { e.preventDefault(); playClip(clip.dataset.id, +clip.dataset.clip); return; }
   const card = e.target.closest('a.card');
   if (card) { e.preventDefault(); playWork(card.dataset.id); }
+});
+// a standing poster is shown whole
+const tall = im => {
+  if (!im.closest('.thumb') || im.naturalHeight <= im.naturalWidth) return;
+  im.parentNode.style.setProperty('--p', 'url("' + im.currentSrc.replace(/"/g, '%22') + '")');
+  im.parentNode.classList.add('is-tall');
+};
+$('list').addEventListener('load', e => { if (e.target.tagName === 'IMG') tall(e.target); }, true);
+document.querySelectorAll('#list .thumb > img').forEach(im => { if (im.complete && im.naturalWidth) tall(im); });
+// a day in the calendar: its first listed card, and all its cards lit for a moment
+let flashT = 0;
+document.querySelector('.cal').addEventListener('click', e => {
+  const a = e.target.closest('a.hd'); if (!a) return;
+  e.preventDefault();
+  if (list.hidden) setView('list', true);
+  let cells = [...document.querySelectorAll('.cell[data-date="' + a.dataset.d + '"]')];
+  if (cells.length && cells.every(c => c.hidden)) { kind = 'all'; applyFilter(); }
+  cells = cells.filter(c => !c.hidden);
+  if (!cells.length) return;
+  cells[0].scrollIntoView({ block: 'start', behavior: reduced() ? 'auto' : 'smooth' });
+  clearTimeout(flashT);
+  document.querySelectorAll('.cell.flash').forEach(c => c.classList.remove('flash'));
+  cells.forEach(c => c.classList.add('flash'));
+  flashT = setTimeout(() => cells.forEach(c => c.classList.remove('flash')), 2600);
+  history.replaceState(null, '', location.pathname + location.search + '#d-' + a.dataset.d);
 });
 
 // ── the silent preview: on a resting pointer, or in the middle of a phone's screen
@@ -977,7 +1007,7 @@ document.querySelectorAll('#list a.card').forEach(card => {
 });
 if ('IntersectionObserver' in window) {
   const io = new IntersectionObserver(es => {
-    if (fine.matches) return;
+    if (fine.matches || innerWidth <= 600) return;   // a phone's thumbnails are too small to preview in
     es.forEach(en => {
       if (en.isIntersecting) { clearTimeout(pvTimer); pvTimer = setTimeout(() => startPreview(en.target), 700); }
       else if (pvEl === en.target) stopPreview();
@@ -987,26 +1017,27 @@ if ('IntersectionObserver' in window) {
 }
 
 // ── the line fills in as the page scrolls, and the bar shows the date in the middle of the screen
-const list = $('list'), fill = $('tlFill'), head = $('tlHead'), tc = $('tc'), tcText = $('tcText');
+const list = $('list'), fill = $('tlFill'), head = $('tlHead'), tcs = [...document.querySelectorAll('.tc')];
 let ticking = false;
 function onScroll() {
   if (ticking) return; ticking = true;
   requestAnimationFrame(() => {
     ticking = false;
-    if (list.hidden) { tc.classList.remove('on'); return; }
-    const rail = list.querySelector('.tl-rail').getBoundingClientRect(), mid = innerHeight * .5;
+    if (list.hidden) { tcs.forEach(tc => tc.classList.remove('on')); return; }
+    // the line by its place in the list (top 60, bottom 88), which holds on a phone too, where it is not drawn
+    const box = list.getBoundingClientRect(), rail = { top: box.top + 60, bottom: box.bottom - 88, height: Math.max(0, box.height - 148) }, mid = innerHeight * .5;
     const y = Math.max(0, Math.min(rail.height, mid - rail.top));
     fill.style.transform = 'scaleY(' + (rail.height ? y / rail.height : 0) + ')';
     head.style.transform = 'translateY(' + y + 'px)';
     const inside = rail.top < mid && rail.bottom > mid;
     head.classList.toggle('on', inside);
     let cur = null;
-    list.querySelectorAll('.tl-day:not([hidden])').forEach(d => {
-      const n = d.querySelector('.tl-node'); if (n.getBoundingClientRect().top <= mid) cur = d;
+    const cells = list.querySelectorAll('.tl-week:not([hidden]) .cell:not([hidden])');
+    for (const c of cells) { cur = c; if (c.getBoundingClientRect().bottom >= mid) break; }
+    tcs.forEach(tc => {
+      if (cur) tc.lastElementChild.textContent = timecode(cur.dataset.date);
+      tc.classList.toggle('on', rail.top < mid && rail.bottom > 0);
     });
-    if (!cur) cur = list.querySelector('.tl-day:not([hidden])');
-    if (cur) tcText.textContent = timecode(cur.dataset.date);
-    tc.classList.toggle('on', rail.top < innerHeight && rail.bottom > 0);
   });
 }
 addEventListener('scroll', onScroll, { passive: true });
@@ -1052,7 +1083,7 @@ function drawEditor(keepScroll) {
   // tracks
   const g = groups(), tracks = $('edTracks');
   tracks.innerHTML = '';
-  Object.keys(KINDS).forEach(k => {
+  TRACKS.forEach(k => {
     const tr = document.createElement('div'); tr.className = 'track';
     tr.setAttribute('role', 'group'); tr.setAttribute('aria-label', KINDS[k]);
     const keys = Object.keys(g).filter(key => key.startsWith(k + '|')).sort();

@@ -85,26 +85,17 @@
 		b.setAttribute( 'aria-label', b.textContent + ': ' + w.title );
 	}
 
-	/** Every place a piece stands in the list: its card or its project's box. */
-	const places = ( id ) => $$( '#list [data-kind][data-id="' + id + '"]' );
+	/** Every place a piece stands in the list: the cell its card is in. */
+	const places = ( id ) => $$( '#list .cell[data-id="' + id + '"]' );
 
 	function paint( w ) {
 		places( w.id ).forEach( ( el ) => el.classList.toggle( 'is-off', w.hidden ) );
 		$$( '.adm-row[data-adm="' + w.id + '"]' ).forEach( ( el ) => paintRow( el, w ) );
 	}
 
-	/* A card is a link, so its buttons stand beside it in a wrapper of their own. */
+	/* A card is a link, so its buttons stand under it, in the same cell. */
 	W.works.forEach( ( w ) => {
-		places( w.id ).forEach( ( el ) => {
-			if ( el.classList.contains( 'proj' ) ) {
-				el.append( row( w ) );
-			} else {
-				const box = document.createElement( 'div' );
-				box.className = 'adm-w';
-				el.before( box );
-				box.append( el, row( w ) );
-			}
-		} );
+		places( w.id ).forEach( ( el ) => el.append( row( w ) ) );
 		paint( w );
 	} );
 
@@ -167,23 +158,26 @@
 		$( '[data-close]', delDlg ).focus();
 	}
 
-	/** Take a deleted piece off the page, with its day and month if they are left empty. */
+	/** Take a deleted piece off the page, with its week and month if they are left empty. */
 	function take( w ) {
 		places( w.id ).forEach( ( el ) => {
-			const day = el.closest( '.tl-day' );
-			const month = el.closest( '.tl-month' );
-			( el.closest( '.adm-w' ) || el ).remove();
-			if ( day && ! $( '[data-kind]', day ) ) {
-				const dot = $( '.cal a[data-d="' + day.dataset.date + '"]' );
+			const around = [ el.closest( '.tl-week' ), el.closest( '.tl-month' ) ];
+			const mates = $$( '#list .cell[data-date="' + w.date + '"]' ).filter( ( x ) => x !== el );
+			el.remove();
+			if ( mates.length ) {
+				mates[ 0 ].id = 'd-' + w.date;
+			} else {
+				const dot = $( '.cal a[data-d="' + w.date + '"]' );
 				if ( dot ) {
 					dot.classList.remove( 'on' );
 					[ 'href', 'title', 'aria-label' ].forEach( ( a ) => dot.removeAttribute( a ) );
 				}
-				day.remove();
 			}
-			if ( month && ! $( '[data-kind]', month ) ) {
-				month.remove();
-			}
+			around.forEach( ( box ) => {
+				if ( box && ! $( '.cell', box ) ) {
+					box.remove();
+				}
+			} );
 		} );
 		W.remove( w );
 		counts();
@@ -203,14 +197,15 @@
 	/* ── edit ── */
 	const editDlg = $( '#admEditDlg' );
 	const editForm = $( '#admEditForm' );
-	const FIELDS = [ 'title', 'date', 'kind', 'desc_bn', 'desc_en' ];
+	const FIELDS = [ 'title', 'title_bn', 'date', 'kind', 'desc_bn', 'desc_en' ];
 	let editOf = null;
 
 	function askEdit( w ) {
 		editOf = w;
 		FIELDS.forEach( ( k ) => {
-			editForm.elements[ k ].value = w[ k ] || '';
+			editForm.elements[ k ].value = ( k === 'title' ? w.name : w[ k ] ) || '';
 		} );
+		editForm.elements.client.checked = !! w.client;
 		$( '.adm-msg', editDlg ).textContent = '';
 		editDlg.showModal();
 	}
@@ -218,7 +213,7 @@
 	editForm.addEventListener( 'submit', ( e ) => {
 		e.preventDefault();
 		busy( editDlg, async () => {
-			const json = {};
+			const json = { client: editForm.elements.client.checked };
 			FIELDS.forEach( ( k ) => {
 				json[ k ] = editForm.elements[ k ].value;
 			} );
@@ -331,6 +326,8 @@
 					poster_token: posterToken,
 					poster_name: poster ? poster.name || 'poster.jpg' : '',
 					title: f.title.value,
+					title_bn: f.title_bn.value,
+					client: f.client.checked,
 					date: f.date.value,
 					kind: f.kind.value,
 					desc_bn: f.desc_bn.value,

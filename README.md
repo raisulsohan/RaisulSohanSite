@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-9.9.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-9.10.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 9.10
+
+**The Work Log is a tidy list with real names.**
+
+- **9.10.0: One size of card, week by week.** The list no longer mixes cards left and right of a line, boxes of several and wide projects with their clips open: a month is split into weeks (days 1-7, 8-14, 15-21, the rest), the week stands beside the line on the left and stays in sight while its pieces pass, and every piece is one card of one size with its kind, day, name and one line about it. On a phone the picture stands beside the words. Clips moved from the list into the player, as a strip under the video. A standing poster is shown whole over a blur of itself. A day in the calendar lights its cards. The controls are one row (kinds that do not fit scroll), the timecode stands in the header. Kinds are what a piece is (*Map animation*, *Documentary*, *Logos & intros*, *Reels & edits* are new); *Client work* is now a mark of its own and still a filter, and only kinds in use are listed, with their counts. A piece may have a name of its own for the Bengali edition (`title_bn`), and so may a clip. The update route also takes clip names, a new poster and a new address (`slug`), and `work-log-import.mjs --videos --names` sends all of it for the pieces already on the site.
 
 ## What's new in 9.9
 

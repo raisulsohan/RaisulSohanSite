@@ -347,7 +347,7 @@ function rs_wla_pick_entry( $files ) {
  */
 function rs_wla_meta( $in ) {
 	$out = array();
-	foreach ( array( 'title', 'type_bn', 'type_en' ) as $k ) {
+	foreach ( array( 'title', 'title_bn', 'type_bn', 'type_en' ) as $k ) {
 		if ( isset( $in[ $k ] ) ) {
 			$out[ $k ] = sanitize_text_field( wp_unslash( $in[ $k ] ) );
 		}
@@ -362,6 +362,9 @@ function rs_wla_meta( $in ) {
 	}
 	if ( isset( $in['kind'] ) && array_key_exists( $in['kind'], rs_work_log_kinds() ) ) {
 		$out['kind'] = $in['kind'];
+	}
+	if ( isset( $in['client'] ) ) {
+		$out['client'] = rest_sanitize_boolean( $in['client'] );
 	}
 
 	return $out;
@@ -400,8 +403,9 @@ function rs_wla_taken() {
 /**
  * Turn an uploaded file into a piece.
  *
- * @param array $req token, name, title, date, kind, desc_bn, desc_en, entry,
- *                   entry45, clips [{title, entry, poster}], poster, video,
+ * @param array $req token, name, title, title_bn, date, kind, client, desc_bn,
+ *                   desc_en, entry, entry45,
+ *                   clips [{title, title_bn, entry, poster}], poster, video,
  *                   poster_token, poster_name, origin, hidden, replace.
  * @return array|WP_Error The stored record.
  */
@@ -500,6 +504,7 @@ function rs_work_log_import( $req ) {
 			}
 			$clips[] = array(
 				'title'  => $ct,
+				'title_bn' => isset( $c['title_bn'] ) ? sanitize_text_field( $c['title_bn'] ) : '',
 				'entry'  => $ce,
 				'poster' => $cp,
 			);
@@ -511,6 +516,8 @@ function rs_work_log_import( $req ) {
 		'date'    => $date,
 		'kind'    => $kind,
 		'title'   => $meta['title'],
+		'title_bn' => isset( $meta['title_bn'] ) ? $meta['title_bn'] : '',
+		'client'  => ! empty( $meta['client'] ),
 		'type_bn' => isset( $meta['type_bn'] ) ? $meta['type_bn'] : '',
 		'type_en' => isset( $meta['type_en'] ) ? $meta['type_en'] : '',
 		'desc_bn' => isset( $meta['desc_bn'] ) ? $meta['desc_bn'] : '',
@@ -557,6 +564,8 @@ function rs_wla_row( $it ) {
 		'date'    => $it['date'],
 		'kind'    => $it['kind'],
 		'title'   => $it['title'],
+		'title_bn' => isset( $it['title_bn'] ) ? $it['title_bn'] : '',
+		'client'  => ! empty( $it['client'] ),
 		'desc_bn' => $it['desc_bn'],
 		'desc_en' => $it['desc_en'],
 		'img'     => $abs( $it['img'] ),
@@ -736,7 +745,32 @@ function rs_work_log_update_item( WP_REST_Request $r ) {
 	$params = is_array( $params ) && $params ? $params : $r->get_params();
 
 	if ( isset( $store['items'][ $id ] ) ) {
-		$store['items'][ $id ] = array_merge( $store['items'][ $id ], rs_wla_meta( $params ) );
+		$item = array_merge( $store['items'][ $id ], rs_wla_meta( $params ) );
+		if ( ! empty( $params['clips'] ) && is_array( $params['clips'] ) ) {
+			$item['clips'] = rs_wla_clip_names( $item['clips'], $params['clips'] );
+		}
+		$poster = rs_wla_new_poster( $item, $params );
+		if ( $poster ) {
+			$item['poster'] = $poster;
+		}
+		$store['items'][ $id ] = $item;
+
+		/* A new address for the piece; its folder stays where it is. */
+		if ( ! empty( $params['slug'] ) ) {
+			$taken = rs_wla_taken();
+			unset( $taken[ $id ] );
+			$new = rs_wla_new_id( (string) $params['slug'], $taken );
+			if ( $new !== $id ) {
+				$item['id'] = $new;
+				unset( $store['items'][ $id ] );
+				$store['items'][ $new ] = $item;
+				if ( isset( $store['hidden'][ $id ] ) ) {
+					unset( $store['hidden'][ $id ] );
+					$store['hidden'][ $new ] = true;
+				}
+				$id = $new;
+			}
+		}
 	}
 	if ( isset( $params['hidden'] ) ) {
 		if ( rest_sanitize_boolean( $params['hidden'] ) ) {
@@ -754,6 +788,65 @@ function rs_work_log_update_item( WP_REST_Request $r ) {
 	}
 
 	return rest_ensure_response( array( 'id' => $id ) );
+}
+
+/**
+ * New names for a piece's clips; each is told by the page it plays.
+ *
+ * @param array $clips The stored clips.
+ * @param array $names [{entry, title, title_bn}].
+ * @return array
+ */
+function rs_wla_clip_names( $clips, $names ) {
+	$by = array();
+	foreach ( $names as $n ) {
+		if ( is_array( $n ) && ! empty( $n['entry'] ) ) {
+			$by[ rs_wla_clean_path( $n['entry'] ) ] = $n;
+		}
+	}
+	$clips = (array) $clips;
+	foreach ( $clips as $i => $c ) {
+		if ( ! isset( $by[ $c['entry'] ] ) ) {
+			continue;
+		}
+		foreach ( array( 'title', 'title_bn' ) as $k ) {
+			$v = isset( $by[ $c['entry'] ][ $k ] ) ? sanitize_text_field( $by[ $c['entry'] ][ $k ] ) : '';
+			if ( 'title' !== $k || '' !== $v ) {
+				$clips[ $i ][ $k ] = $v;
+			}
+		}
+	}
+
+	return $clips;
+}
+
+/**
+ * A new poster for a stored piece: a picture sent on its own, or one that is
+ * already in the piece's folder.
+ *
+ * @param array $item   The stored piece.
+ * @param array $params poster_token and poster_name, or poster.
+ * @return string Its path in the piece's folder, or ''.
+ */
+function rs_wla_new_poster( $item, $params ) {
+	$dir   = rs_work_log_files()['dir'];
+	$to    = $dir . '/' . $item['dir'];
+	$token = rs_wla_token( isset( $params['poster_token'] ) ? $params['poster_token'] : '' );
+	$part  = $dir . '/.incoming/' . $token . '.part';
+	$name  = isset( $params['poster_name'] ) ? (string) $params['poster_name'] : '';
+
+	if ( $token && file_exists( $part ) ) {
+		if ( ! preg_match( '/\.(jpe?g|png|webp)$/i', $name, $m ) || ! is_dir( $to ) ) {
+			unlink( $part ); // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+			return '';
+		}
+		/* Named after its contents, so no cache keeps an older picture. */
+		$file = 'cover-' . substr( md5_file( $part ), 0, 10 ) . '.' . strtolower( $m[1] );
+		return rename( $part, $to . '/' . $file ) ? $file : '';
+	}
+
+	$own = isset( $params['poster'] ) ? rs_wla_clean_path( $params['poster'] ) : '';
+	return $own && preg_match( '/\.(jpe?g|png|webp|gif|svg)$/i', $own ) && is_file( $to . '/' . $own ) ? $own : '';
 }
 
 /**
@@ -830,7 +923,7 @@ function rs_work_log_admin_config() {
 			'edit'      => rs_wla_t( 'বদলান', 'Edit' ),
 			'del'       => rs_wla_t( 'মুছুন', 'Delete' ),
 			'undo'      => rs_wla_t( 'ফেরান', 'Undo' ),
-			'theme'     => rs_wla_t( 'থিমের সাথে আসা, শুধু লুকানো যায়', 'Comes with the theme, can only be hidden' ),
+			'theme'     => rs_wla_t( 'থিমের সাথে আসা', 'Comes with the theme' ),
 			'clips'     => rs_wla_t( 'টি ক্লিপ', ' clips' ),
 			'didHide'   => rs_wla_t( 'লুকানো হয়েছে:', 'Hidden:' ),
 			'didShow'   => rs_wla_t( 'পেজে দেখানো হচ্ছে:', 'Now shown:' ),
@@ -910,8 +1003,10 @@ function rs_work_log_screen() {
 				<div class="rs-wl-grid">
 					<label class="span2"><?php echo esc_html( rs_wla_t( 'ফাইল (zip বা html)', 'File (ZIP or HTML)' ) ); ?>
 						<input type="file" name="file" accept=".zip,.html,.htm,.mp4,.webm,.m4v,.mov" required></label>
-					<label class="span2"><?php echo esc_html( rs_wla_t( 'নাম', 'Title' ) ); ?>
+					<label class="span2"><?php echo esc_html( rs_wla_t( 'নাম (ইংরেজি)', 'Title (English)' ) ); ?>
 						<input type="text" name="title" required></label>
+					<label class="span2"><?php echo esc_html( rs_wla_t( 'নাম (বাংলা, না দিলে ইংরেজিটা যাবে)', 'Title (Bengali; the English is used if empty)' ) ); ?>
+						<input type="text" name="title_bn"></label>
 					<label><?php echo esc_html( rs_wla_t( 'তারিখ', 'Date' ) ); ?>
 						<input type="date" name="date" value="<?php echo esc_attr( current_time( 'Y-m-d' ) ); ?>" required></label>
 					<label><?php echo esc_html( rs_wla_t( 'ধরন', 'Kind' ) ); ?>
@@ -930,6 +1025,7 @@ function rs_work_log_screen() {
 						<input type="text" name="entry45" placeholder="film-4x5.html"></label>
 					<label><?php echo esc_html( rs_wla_t( 'পোস্টার ছবি (না দিলে নাম দিয়ে বানানো হবে)', 'Poster image (drawn from the title if empty)' ) ); ?>
 						<input type="file" name="poster" accept=".jpg,.jpeg,.png,.webp,.gif,.svg"></label>
+					<label class="check"><input type="checkbox" name="client" value="1"> <?php echo esc_html( rs_wla_t( 'ক্লায়েন্টের জন্য করা', 'Made for a client' ) ); ?></label>
 					<label class="check"><input type="checkbox" name="hidden" value="1"> <?php echo esc_html( rs_wla_t( 'আপাতত লুকিয়ে রাখুন', 'Keep it hidden for now' ) ); ?></label>
 				</div>
 				<p><button type="submit" class="button button-primary"><?php echo esc_html( rs_wla_t( 'যোগ করুন', 'Add' ) ); ?></button>
@@ -966,12 +1062,12 @@ function rs_work_log_screen() {
 			</thead>
 			<tbody>
 				<?php foreach ( $rows as $row ) : ?>
-					<tr data-id="<?php echo esc_attr( $row['id'] ); ?>" data-hidden="<?php echo $row['hidden'] ? '1' : '0'; ?>" data-kind="<?php echo esc_attr( $row['kind'] ); ?>" data-find="<?php echo esc_attr( strtolower( $row['title'] . ' ' . $row['origin'] . ' ' . $row['id'] ) ); ?>" data-row="<?php echo esc_attr( wp_json_encode( $row ) ); ?>">
+					<tr data-id="<?php echo esc_attr( $row['id'] ); ?>" data-hidden="<?php echo $row['hidden'] ? '1' : '0'; ?>" data-kind="<?php echo esc_attr( $row['kind'] ); ?>" data-find="<?php echo esc_attr( strtolower( $row['title'] . ' ' . $row['title_bn'] . ' ' . $row['origin'] . ' ' . $row['id'] ) ); ?>" data-row="<?php echo esc_attr( wp_json_encode( $row ) ); ?>">
 						<th scope="row" class="check-column"><input type="checkbox" value="<?php echo esc_attr( $row['id'] ); ?>"></th>
 						<td class="rs-wl-piece">
 							<img src="<?php echo esc_url( $row['img'] ); ?>" alt="" width="128" height="72" loading="lazy">
 							<div>
-								<a class="rs-wl-title" href="<?php echo esc_url( $row['src'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $row['title'] ); ?></a>
+								<a class="rs-wl-title" href="<?php echo esc_url( $row['src'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( rs_work_log_name( $row, $en ) ); ?></a>
 								<small>
 									<?php
 									echo esc_html(
@@ -1010,7 +1106,8 @@ function rs_work_log_screen() {
 				<td></td>
 				<td colspan="5">
 					<form class="rs-wl-grid">
-						<label class="span2"><?php echo esc_html( rs_wla_t( 'নাম', 'Title' ) ); ?> <input type="text" name="title" required></label>
+						<label class="span2"><?php echo esc_html( rs_wla_t( 'নাম (ইংরেজি)', 'Title (English)' ) ); ?> <input type="text" name="title" required></label>
+						<label class="span2"><?php echo esc_html( rs_wla_t( 'নাম (বাংলা)', 'Title (Bengali)' ) ); ?> <input type="text" name="title_bn"></label>
 						<label><?php echo esc_html( rs_wla_t( 'তারিখ', 'Date' ) ); ?> <input type="date" name="date" required></label>
 						<label><?php echo esc_html( rs_wla_t( 'ধরন', 'Kind' ) ); ?>
 							<select name="kind">
@@ -1020,6 +1117,7 @@ function rs_work_log_screen() {
 							</select></label>
 						<label class="span2"><?php echo esc_html( rs_wla_t( 'বর্ণনা (বাংলা)', 'About it (Bengali)' ) ); ?> <input type="text" name="desc_bn"></label>
 						<label class="span2"><?php echo esc_html( rs_wla_t( 'বর্ণনা (ইংরেজি)', 'About it (English)' ) ); ?> <input type="text" name="desc_en"></label>
+						<label class="check"><input type="checkbox" name="client"> <?php echo esc_html( rs_wla_t( 'ক্লায়েন্টের জন্য করা', 'Made for a client' ) ); ?></label>
 						<p class="span4"><button type="submit" class="button button-primary"><?php echo esc_html( rs_wla_t( 'সেভ করুন', 'Save' ) ); ?></button>
 							<button type="button" class="button" data-cancel><?php echo esc_html( rs_wla_t( 'বাদ দিন', 'Cancel' ) ); ?></button></p>
 					</form>

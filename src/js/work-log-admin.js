@@ -48,7 +48,9 @@
 						name: file.name,
 						poster_token: posterToken,
 						poster_name: poster ? poster.name : '',
-						title: form.title.value,
+						title: form.elements.title.value,
+						title_bn: form.elements.title_bn.value,
+						client: form.elements.client.checked,
 						date: form.date.value,
 						kind: form.kind.value,
 						desc_bn: form.desc_bn.value,
@@ -78,7 +80,7 @@
 		st.textContent = row.hidden ? T.hidden : T.shown;
 		st.classList.toggle( 'is-hidden', row.hidden );
 		$( '[data-toggle]', tr ).textContent = row.hidden ? T.show : T.hide;
-		$( '.rs-wl-title', tr ).textContent = row.title;
+		$( '.rs-wl-title', tr ).textContent = ( document.documentElement.lang.startsWith( 'bn' ) && row.title_bn ) || row.title;
 		$( '.rs-wl-date', tr ).textContent = row.date;
 		const opt = $( '#rsWlEdit' ).content.querySelector( 'option[value="' + row.kind + '"]' );
 		if ( opt ) {
@@ -172,16 +174,18 @@
 			const row = JSON.parse( tr.dataset.row );
 			const ed = $( '#rsWlEdit' ).content.firstElementChild.cloneNode( true );
 			const f = $( 'form', ed );
-			[ 'title', 'date', 'kind', 'desc_bn', 'desc_en' ].forEach( ( k ) => {
-				f[ k ].value = row[ k ] || '';
+			const F = [ 'title', 'title_bn', 'date', 'kind', 'desc_bn', 'desc_en' ];
+			F.forEach( ( k ) => {
+				f.elements[ k ].value = row[ k ] || '';
 			} );
+			f.elements.client.checked = !! row.client;
 			$( '[data-cancel]', ed ).addEventListener( 'click', () => ed.remove() );
 			f.addEventListener( 'submit', async ( ev ) => {
 				ev.preventDefault();
 				try {
 					const r = await api( '/items/' + tr.dataset.id, {
 						method: 'POST',
-						json: { title: f.title.value, date: f.date.value, kind: f.kind.value, desc_bn: f.desc_bn.value, desc_en: f.desc_en.value },
+						json: F.reduce( ( o, k ) => Object.assign( o, { [ k ]: f.elements[ k ].value } ), { client: f.elements.client.checked } ),
 					} );
 					paint( tr, r.data );
 					ed.remove();

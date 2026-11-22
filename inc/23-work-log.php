@@ -95,16 +95,34 @@ add_filter( 'rs_standalone_sitemap_urls', 'rs_work_log_sitemap_url' );
 /**
  * The kinds of work, top track first in the editor view.
  *
+ * A piece has one kind, what it is; whether it was made for a client is a mark
+ * of its own ('client'), and the Client work filter lists every piece with it.
+ * 'client' is also a kind because pieces sent before 9.10 may still have it.
+ *
  * @return array[] key => { bn, en }
  */
 function rs_work_log_kinds() {
 	return array(
 		'reel' => array( 'bn' => 'শোরিল', 'en' => 'Showreels' ),
-		'map'  => array( 'bn' => 'ম্যাপ ও ডকুমেন্টারি', 'en' => 'Maps & documentary' ),
+		'map'  => array( 'bn' => 'ম্যাপ অ্যানিমেশন', 'en' => 'Map animation' ),
+		'doc'  => array( 'bn' => 'ডকুমেন্টারি', 'en' => 'Documentary' ),
 		'tool' => array( 'bn' => 'টুল প্রোমো', 'en' => 'Tool promos' ),
+		'brand' => array( 'bn' => 'লোগো ও ইন্ট্রো', 'en' => 'Logos & intros' ),
+		'edit' => array( 'bn' => 'রিল ও এডিট', 'en' => 'Reels & edits' ),
 		'anim' => array( 'bn' => 'অ্যানিমেশন', 'en' => 'Animation' ),
 		'client' => array( 'bn' => 'ক্লায়েন্টের কাজ', 'en' => 'Client work' ),
 	);
+}
+
+/**
+ * The name of a piece, or of a clip inside one, on an edition.
+ *
+ * @param array $it The piece or the clip.
+ * @param bool  $en Whether for the English edition.
+ * @return string
+ */
+function rs_work_log_name( $it, $en ) {
+	return ! $en && ! empty( $it['title_bn'] ) ? $it['title_bn'] : $it['title'];
 }
 
 /**
@@ -119,7 +137,7 @@ function rs_work_log_kinds() {
  * - id       Short, unique; it is the address of the piece (/work/#id).
  * - date     Y-m-d.
  * - kind     A key of rs_work_log_kinds().
- * - title    The same on both editions.
+ * - title    Its name; title_bn, if set, is its name on the Bengali edition.
  * - type_bn, type_en  The line above the title.
  * - desc_bn, desc_en  One sentence for the card.
  * - img      The thumbnail, relative to the theme (16:9).
@@ -128,6 +146,7 @@ function rs_work_log_kinds() {
  * - map      true for a map animation player: it takes ?embed, and its
  *            4:5 frame is ?ar=45 when there is no src45.
  * - preview  false to skip the silent preview on hover.
+ * - client   true for work made for a client.
  * - clips    For a project: the pieces inside it, each { title, src, img }.
  *
  * @return array[]
@@ -153,7 +172,9 @@ function rs_work_log_builtin() {
 			'id'      => 'bahrain',
 			'date'    => '2026-10-20',
 			'kind'    => 'map',
-			'title'   => 'Bahrain',
+			'title'   => 'Bahrain: An Island With No Rivers',
+			'title_bn' => 'বাহরাইন: নদীহীন এক দ্বীপ',
+			'client'  => true,
 			'type_bn' => 'ক্লায়েন্ট ডকুমেন্টারি',
 			'type_en' => 'Client documentary',
 			'desc_bn' => 'নদীহীন এক মরু দ্বীপ নিয়ে ইউটিউব ডকুমেন্টারির ম্যাপ সিনের হাইলাইট।',
@@ -167,6 +188,7 @@ function rs_work_log_builtin() {
 			'date'    => '2026-10-19',
 			'kind'    => 'reel',
 			'title'   => 'Showreel 2026',
+			'title_bn' => 'শোরিল ২০২৬',
 			'type_bn' => 'শোরিল',
 			'type_en' => 'Showreel',
 			'desc_bn' => '৬০ সেকেন্ডে ২৪টি কাজ, প্রতিটি বিটে একটি কাট।',
@@ -179,7 +201,8 @@ function rs_work_log_builtin() {
 			'id'      => 'hormuz',
 			'date'    => '2026-10-14',
 			'kind'    => 'map',
-			'title'   => 'Strait of Hormuz',
+			'title'   => 'Breaking News: Strait of Hormuz',
+			'title_bn' => 'ব্রেকিং নিউজ: হরমুজ প্রণালি',
 			'type_bn' => '৩D স্যাটেলাইট নিউজ ম্যাপ',
 			'type_en' => '3D satellite news map',
 			'desc_bn' => 'স্যাটেলাইট রিলিফের উপর ৩D-তে ব্রেকিং নিউজ: রুটে একটা ডেস্ট্রয়ার, রেল থেকে ছোটা মিসাইল।',
@@ -194,6 +217,7 @@ function rs_work_log_builtin() {
 			'date'    => '2026-10-14',
 			'kind'    => 'reel',
 			'title'   => 'Map Animation Showreel',
+			'title_bn' => 'ম্যাপ অ্যানিমেশন শোরিল',
 			'type_bn' => 'ম্যাপ অ্যানিমেশন প্রজেক্ট',
 			'type_en' => 'Map animation project',
 			'desc_bn' => '১৩টি ম্যাপ অ্যানিমেশন স্টাইল, কোডে বানানো। মূল রিলের সাথে প্রতিটা স্টাইল আলাদা ক্লিপ হিসেবেও আছে।',
@@ -434,6 +458,8 @@ function rs_work_log_from_store( $it ) {
 		'date'    => $it['date'],
 		'kind'    => $kind,
 		'title'   => $it['title'],
+		'title_bn' => isset( $it['title_bn'] ) ? (string) $it['title_bn'] : '',
+		'client'  => ! empty( $it['client'] ) || 'client' === $kind,
 		'type_bn' => '' !== (string) $it['type_bn'] ? $it['type_bn'] : $kinds[ $kind ]['bn'],
 		'type_en' => '' !== (string) $it['type_en'] ? $it['type_en'] : $kinds[ $kind ]['en'],
 		'desc_bn' => (string) $it['desc_bn'],
@@ -455,6 +481,7 @@ function rs_work_log_from_store( $it ) {
 		foreach ( $it['clips'] as $c ) {
 			$row['clips'][] = array(
 				'title' => $c['title'],
+				'title_bn' => isset( $c['title_bn'] ) ? (string) $c['title_bn'] : '',
 				'src'   => rs_work_log_file_url( $dir, $c['entry'] ),
 				'img'   => rs_work_log_file_url( $dir, $c['poster'] ),
 			);

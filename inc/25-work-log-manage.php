@@ -74,7 +74,8 @@ function rs_work_log_manage_bar( $all, $hidden ) {
 /** The fields an added and an edited piece share. */
 function rs_work_log_manage_fields() {
 	?>
-	<label class="span2"><?php echo esc_html( rs_wla_t( 'নাম', 'Title' ) ); ?> <input type="text" name="title" required></label>
+	<label class="span2"><?php echo esc_html( rs_wla_t( 'নাম (ইংরেজি)', 'Title (English)' ) ); ?> <input type="text" name="title" required></label>
+	<label class="span2"><?php echo esc_html( rs_wla_t( 'নাম (বাংলা, না দিলে ইংরেজিটা যাবে)', 'Title (Bengali; the English is used if empty)' ) ); ?> <input type="text" name="title_bn"></label>
 	<label><?php echo esc_html( rs_wla_t( 'তারিখ', 'Date' ) ); ?> <input type="date" name="date" value="<?php echo esc_attr( current_time( 'Y-m-d' ) ); ?>" required></label>
 	<label><?php echo esc_html( rs_wla_t( 'ধরন', 'Kind' ) ); ?>
 		<select name="kind">
@@ -84,6 +85,7 @@ function rs_work_log_manage_fields() {
 		</select></label>
 	<label class="span2"><?php echo esc_html( rs_wla_t( 'এক লাইনের বর্ণনা (বাংলা)', 'One line about it (Bengali)' ) ); ?> <input type="text" name="desc_bn"></label>
 	<label class="span2"><?php echo esc_html( rs_wla_t( 'এক লাইনের বর্ণনা (ইংরেজি, না দিলে বাংলাটা যাবে)', 'One line about it (English; the Bengali is used if empty)' ) ); ?> <input type="text" name="desc_en"></label>
+	<label class="check span2"><input type="checkbox" name="client"> <?php echo esc_html( rs_wla_t( 'ক্লায়েন্টের জন্য করা', 'Made for a client' ) ); ?></label>
 	<?php
 }
 
