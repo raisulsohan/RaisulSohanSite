@@ -292,7 +292,7 @@ function filesOf( dir ) {
    to the file, since the piece is served from its own folder on the site. A
    path the code builds (`frames/${i}.jpg`, `audio/mix/${key}.wav`) sends the
    whole folder before the first `${`. */
-const REF = /["'`(]\s*((?:\.{1,2}\/|\/)?[^"'`()\s<>{}|\\*]{1,300}?)(?:[?#][^"'`()\s<>]*)?\s*["'`)]/g;
+const REF = /["'`(]\s*((?:\.{1,2}\/|\/)?[^"'`()\s<>{}|\\*]{1,300}?)(?:[?#][^"'`()\s<>]*)?(?=\s*["'`)])/g;
 const TPL = /[`'"]\s*((?:\.{1,2}\/|\/)?(?:[\w .@-]+\/)+)(?:[\w .@-]*)\$\{/g;
 /* The same, joined with +: '../media/' + name. */
 const CAT = /[`'"]\s*((?:\.{1,2}\/|\/)?(?:[\w .@-]+\/)+)\s*[`'"]\s*\+/g;
