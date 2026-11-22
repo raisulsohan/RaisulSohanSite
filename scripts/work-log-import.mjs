@@ -14,6 +14,7 @@
  *                      can also come from the RS_WL_PASSWORD environment variable.
  *   --dry              Only list what would be sent, with sizes; send nothing.
  *   --only <text>      Only pieces whose folder path contains this text.
+ *   --exclude <regex>  Leave out pieces whose folder path matches.
  *   --show             Send pieces shown instead of hidden.
  *   --replace          Send again a piece the site already has (same folder).
  *   --chunk <MB>       Upload chunk size, 4 by default; halved on a refusal.
@@ -24,18 +25,24 @@
  * index.html, the page named like the folder, or else the first by name)
  * plays and the others are its clips, in name order. A page named for a 4:5
  * or vertical cut (4x5, 9x16, vertical) of the main page becomes its 4:5 cut.
- * Working folders are skipped (tools, qa, source, node_modules, rules, kits,
- * backups and the like), as are probes, starters, backups and partials.
+ * A folder of pages inside a piece's folder goes up with that piece, its pages
+ * as clips, not as a second copy. Working folders, copies and data are not
+ * searched (tools, qa, source, work, render, frames, cache, old, backups,
+ * *-kept, _not-needed, naturalearth and the like), nor are probes, starters,
+ * backups and partials.
  *
- * What is sent. The piece's folder with everything its pages need, as one
- * ZIP: when a page loads files from above its folder (../), the folder sent
- * is the one that holds them all. Recordings, sources and project files
- * (wav, mov, fbx, blend, psd, aep, prproj, zip) and the working folders stay
- * behind.
+ * What is sent. The piece's folder, less those working folders and less
+ * recordings, sources, project files and documents (wav, mov, fbx, blend,
+ * psd, aep, prproj, zip, docx, txt), plus every file its pages and scripts
+ * name, wherever it sits under the root and whatever its kind: a wav a page
+ * plays goes up, one it does not stays behind. A path from the site root
+ * ("/media/clip.mp4") is pointed at the same file inside the piece. A piece
+ * over 3 GB is listed as TOO BIG and not sent.
  *
- * The date of a piece is the day its main page was made: the earlier of the
- * file's creation and last change. The title is the page's <title>, or else
- * the folder's name.
+ * The date of a piece is the day its earliest page was made: the earlier of
+ * each file's creation and last change. The title is the main page's <title>,
+ * or else the folder's name; a title several pieces share is prefixed with
+ * the project's folder.
  *
  * Needs Node 18 or later; nothing to install.
  */
@@ -68,17 +75,34 @@ if ( ! ROOT || ( ! DRY && ( ! SITE || ! USER || ! PASS ) ) ) {
 	process.exit( 2 );
 }
 
-/* Folders that hold work in progress, not work. */
-const SKIP_DIR = /^(\.git|\.claude|\.vscode|\.impeccable|node_modules|tools|00_tools|qa|source|sources|feedback|research|script|scripts|social|export|exports|04_exports|out|build|backup|backups|archive|kit|lib|mlib|templates?|00\. rules|rules|asset-downloaders|website-page|scenes|sequences|plan|notes|data-cache|bgm|footage|frames|probe|probes|mock|film)$/i;
+const EXCLUDE = opt( 'exclude', '' ) ? new RegExp( opt( 'exclude', '' ), 'i' ) : null;
+const MAX_PIECE = 3 * 1024 * 1024 * 1024; // the site's limit for one piece (RS_WORK_LOG_MAX_BYTES)
+
+/* Folders whose name says they hold work in progress, copies or data, not work. */
+const WORKING = '\\.git|\\.github|\\.claude|\\.vscode|\\.impeccable|node_modules|tools|00_tools|qa|source|sources|feedback|research|export|exports|04_exports|backup|backups|_?backup[_-].*|.*[_-]backup|archive-.*-backup.*|old|_old|v\\d+-kept|_not-needed.*|not-needed.*|work|render|renders|frames|cache|data-cache|natural-?earth|natural_earth|bgm|footage';
+/* Folders that are never searched for pieces. */
+const SKIP_DIR = new RegExp( '^(' + WORKING + '|script|scripts|social|out|build|kit|lib|mlib|00\\. rules|rules|asset-downloaders|website-page|sequences|plan|notes|probe|probes|mock|src|listen)$', 'i' );
+/* Folders that are not sent inside a piece, unless a page loads a file from them. */
+const SKIP_INSIDE = new RegExp( '^(' + WORKING + ')$', 'i' );
 /* Pages that are not finished pieces. */
 const SKIP_PAGE = /(^_|probe|starter|backup|\.bak|bak\d|-v\d+\.html$|make-|hook-options|compare_ab|thumbs?\.html$|^index\.template)/i;
-/* Files that never go up: recordings, sources, project files. */
-const SKIP_FILE = /\.(wav|aif|aiff|flac|mov|mkv|avi|fbx|blend|blend1|psd|ai|aep|aepx|prproj|zip|7z|rar|exr|tif|tiff|md|srt|log|py|bat|cmd|ps1|sh|php\d*|phtml|lnk)$|(^|\/)(\.env|\.git.*|package-lock\.json|desktop\.ini|thumbs\.db)$/i;
-/* Folders that never go up inside a piece. */
-const SKIP_INSIDE = /^(\.git|\.github|\.claude|\.vscode|\.impeccable|node_modules|tools|00_tools|qa|source|sources|feedback|research|export|exports|04_exports|backup|backups|archive|bgm|footage)$/i;
+/* Files that do not go up unless a page loads them: recordings, sources,
+   project files, documents. */
+const SKIP_FILE = /\.(wav|aif|aiff|flac|mov|mkv|avi|fbx|blend|blend1|psd|ai|aep|aepx|prproj|zip|7z|rar|exr|tif|tiff|md|srt|log|txt|docx?|xlsx?|pptx?|pth|ckpt|safetensors|onnx|lnk)$|(^|\/)(\.env.*|\.git.*|package-lock\.json|desktop\.ini|thumbs\.db)$/i;
+/* Files that never go up, even when a page names them (the site refuses them too). */
+const NEVER = /\.(py|bat|cmd|ps1|sh|php\d*|phtml|phar|cgi|pl|asp|aspx|jsp|exe)$|(^|\/)(\.ht[^/]*|\.user\.ini|\.env[^/]*)$/i;
 /* Top folders whose work was made for a client. */
 const CLIENT = /suly|shabuj|real estate|gym|rupom|debangshu|barakat|ashik/i;
 const CUT45 = /(4x5|4-5|9x16|vertical)/i;
+/* Text files read for the files they load. */
+const TEXT = /\.(html?|m?js|css|json)$/i;
+const MEDIA_REF = /\.(wav|mp3|ogg|oga|m4a|aac|opus|flac|mp4|webm|m4v|mov|glb|gltf|bin|hdr|exr|ktx2|json|geojson|topojson|csv|png|jpe?g|webp|avif|gif|svg|woff2?|ttf|otf|m?js|css|html?)$/i;
+
+const posix = ( p ) => p.split( path.sep ).join( '/' );
+const under = ( child, parent ) => {
+	const r = path.relative( parent, child );
+	return r === '' || ( ! r.startsWith( '..' ) && ! path.isAbsolute( r ) );
+};
 
 /* ── finding the pieces ── */
 function walk( dir, out ) {
@@ -97,23 +121,37 @@ function walk( dir, out ) {
 			}
 		} else if ( /\.html?$/i.test( d.name ) && ! SKIP_PAGE.test( d.name ) ) {
 			const st = fs.statSync( full );
-			if ( st.size >= 1500 ) {
+			if ( st.size >= 600 ) {
 				pages.push( { file: full, name: d.name, st } );
 			}
 		}
 	}
 	if ( pages.length ) {
-		out.push( { dir, pages } );
+		out.push( { dir, pages, nested: [] } );
 	}
 	return out;
+}
+
+const ENT = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', raquo: '»', laquo: '«', mdash: '—', ndash: '–', middot: '·', hellip: '…', rsquo: '’', lsquo: '‘', rdquo: '”', ldquo: '“', copy: '©' };
+function decode( s ) {
+	for ( let i = 0; i < 3 && /&[#a-z0-9]+;/i.test( s ); i++ ) {
+		s = s.replace( /&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, ( m, e ) => {
+			if ( e[ 0 ] === '#' ) {
+				const n = e[ 1 ].toLowerCase() === 'x' ? parseInt( e.slice( 2 ), 16 ) : parseInt( e.slice( 1 ), 10 );
+				return Number.isFinite( n ) ? String.fromCodePoint( n ) : m;
+			}
+			return ENT[ e.toLowerCase() ] ?? m;
+		} );
+	}
+	return s;
 }
 
 function titleOf( file, fallback ) {
 	try {
 		const head = fs.readFileSync( file, 'utf8' ).slice( 0, 20000 );
-		const m = head.match( /<title[^>]*>([^<]{2,120})<\/title>/i );
+		const m = head.match( /<title[^>]*>([^<]{2,160})<\/title>/i );
 		if ( m ) {
-			return m[ 1 ].replace( /\s+/g, ' ' ).trim();
+			return decode( m[ 1 ] ).replace( /\s+/g, ' ' ).trim().slice( 0, 120 );
 		}
 	} catch ( e ) {}
 	return fallback;
@@ -128,23 +166,6 @@ function dayOf( st ) {
 	return d.getFullYear() + '-' + pad( d.getMonth() + 1 ) + '-' + pad( d.getDate() );
 }
 
-/* Files a page loads from above its own folder. */
-function upRefs( file ) {
-	let html = '';
-	try {
-		html = fs.readFileSync( file, 'utf8' );
-	} catch ( e ) {
-		return [];
-	}
-	const refs = [];
-	const re = /(?:src|href)\s*=\s*["'](\.\.\/[^"'?#]+)/gi;
-	let m;
-	while ( ( m = re.exec( html ) ) ) {
-		refs.push( path.resolve( path.dirname( file ), decodeURIComponent( m[ 1 ] ) ) );
-	}
-	return refs;
-}
-
 function common( a, b ) {
 	const pa = a.split( path.sep );
 	const pb = b.split( path.sep );
@@ -155,23 +176,49 @@ function common( a, b ) {
 	return pa.slice( 0, i ).join( path.sep );
 }
 
+/* Does a piece sent from `dir` carry the folder `sub` inside it? */
+function carries( dir, sub ) {
+	if ( ! under( sub, dir ) || sub === dir ) {
+		return false;
+	}
+	return ! path.relative( dir, sub ).split( path.sep ).some( ( s ) => SKIP_INSIDE.test( s ) );
+}
+
 function plan() {
 	const root = path.resolve( ROOT );
-	const groups = walk( root, [] );
-	const pieces = [];
+	let groups = walk( root, [] );
 
+	/* A folder of pages inside another piece's folder travels with that piece:
+	   its pages become that piece's clips instead of a second copy. */
+	groups.sort( ( a, b ) => a.dir.length - b.dir.length );
+	const kept = [];
 	for ( const g of groups ) {
-		const rel = path.relative( root, g.dir ).split( path.sep ).join( '/' );
+		const host = kept.filter( ( k ) => carries( k.dir, g.dir ) ).pop();
+		if ( host ) {
+			host.nested.push( ...g.pages, ...g.nested );
+		} else {
+			kept.push( g );
+		}
+	}
+	groups = kept;
+
+	const pieces = [];
+	for ( const g of groups ) {
+		const rel = posix( path.relative( root, g.dir ) );
 		if ( ONLY && ! rel.toLowerCase().includes( ONLY.toLowerCase() ) ) {
+			continue;
+		}
+		if ( EXCLUDE && EXCLUDE.test( rel ) ) {
 			continue;
 		}
 		const top = rel.split( '/' )[ 0 ] || path.basename( root );
 		const folder = path.basename( g.dir );
-		g.pages.sort( ( a, b ) => a.name.localeCompare( b.name, undefined, { numeric: true } ) );
+		const byName = ( a, b ) => a.file.localeCompare( b.file, undefined, { numeric: true } );
+		g.pages.sort( byName );
+		g.nested.sort( byName );
 
-		const names = g.pages.map( ( p ) => p.name.toLowerCase() );
 		const plain = g.pages.filter( ( p ) => ! CUT45.test( p.name ) );
-		let main =
+		const main =
 			g.pages.find( ( p ) => /^episode\.html?$/i.test( p.name ) ) ||
 			g.pages.find( ( p ) => /^index\.html?$/i.test( p.name ) ) ||
 			g.pages.find( ( p ) => pretty( p.name ).toLowerCase() === pretty( folder ).toLowerCase() ) ||
@@ -179,68 +226,163 @@ function plan() {
 			g.pages[ 0 ];
 		const stem = main.name.replace( /\.html?$/i, '' ).toLowerCase();
 		const cut45 = g.pages.find( ( p ) => p !== main && CUT45.test( p.name ) && p.name.toLowerCase().replace( /[-_ ]?(4x5|4-5|9x16|vertical)/i, '' ).replace( /\.html?$/i, '' ) === stem );
-		const clips = g.pages.filter( ( p ) => p !== main && p !== cut45 );
-
-		/* The folder to send: the piece's own, or higher when its pages reach up. */
-		let base = g.dir;
-		const roots = new Set( [ g.dir ] );
-		for ( const p of g.pages ) {
-			for ( const r of upRefs( p.file ) ) {
-				if ( r.toLowerCase().startsWith( root.toLowerCase() ) && fs.existsSync( r ) ) {
-					base = common( base, path.dirname( r ) );
-					roots.add( path.dirname( r ) );
-				}
-			}
-		}
-		const toBase = ( f ) => path.relative( base, f ).split( path.sep ).join( '/' );
+		const clips = [ ...g.pages, ...g.nested ].filter( ( p ) => p !== main && p !== cut45 );
+		const all = [ ...g.pages, ...g.nested ];
+		const date = all.map( ( p ) => dayOf( p.st ) ).sort()[ 0 ];
 
 		pieces.push( {
 			origin: rel || folder,
-			base,
-			roots: [ ...roots ],
+			dir: g.dir,
 			title: titleOf( main.file, pretty( folder === path.basename( root ) ? main.name : folder ) ),
-			date: dayOf( main.st ),
+			project: pretty( rel.split( '/' )[ 1 ] || folder ),
+			date,
 			kind: CLIENT.test( top ) ? 'client' : 'anim',
-			entry: toBase( main.file ),
-			entry45: cut45 ? toBase( cut45.file ) : '',
-			clips: clips.map( ( c ) => ( { title: titleOf( c.file, pretty( c.name ) ), entry: toBase( c.file ) } ) ),
-			// only for the plan
-			pages: names.length,
+			mainFile: main.file,
+			cutFile: cut45 ? cut45.file : '',
+			clipFiles: clips.map( ( c ) => ( { title: titleOf( c.file, pretty( c.name ) ), file: c.file } ) ),
 		} );
 	}
 
-	/* Pieces that share a folder to send go up together; each keeps its pages. */
+	/* The same title on several pieces: say which project each is from. */
+	const seen = {};
+	pieces.forEach( ( p ) => {
+		seen[ p.title.toLowerCase() ] = ( seen[ p.title.toLowerCase() ] || 0 ) + 1;
+	} );
+	pieces.forEach( ( p ) => {
+		if ( seen[ p.title.toLowerCase() ] > 1 && p.project && ! p.title.toLowerCase().includes( p.project.toLowerCase() ) ) {
+			p.title = p.project + ' · ' + p.title;
+		}
+	} );
 	return pieces;
 }
 
 /* ── the files of a piece ── */
-function filesOf( base, roots, keep ) {
+function filesOf( dir ) {
 	const out = [];
-	const seen = new Set();
-	const go = ( dir ) => {
+	const go = ( d0 ) => {
 		let list;
 		try {
-			list = fs.readdirSync( dir, { withFileTypes: true } );
+			list = fs.readdirSync( d0, { withFileTypes: true } );
 		} catch ( e ) {
 			return;
 		}
 		for ( const d of list ) {
-			const full = path.join( dir, d.name );
-			const rel = path.relative( base, full ).split( path.sep ).join( '/' );
+			const full = path.join( d0, d.name );
 			if ( d.isDirectory() ) {
 				if ( ! SKIP_INSIDE.test( d.name ) ) {
 					go( full );
 				}
-			} else if ( d.isFile() && ! seen.has( rel ) && ( keep.has( rel ) || ! SKIP_FILE.test( rel ) ) ) {
-				seen.add( rel );
-				out.push( { full, rel, size: fs.statSync( full ).size } );
+			} else if ( d.isFile() && ! SKIP_FILE.test( d.name ) && ! NEVER.test( d.name ) ) {
+				out.push( { full, size: fs.statSync( full ).size } );
 			}
 		}
 	};
-	/* The piece's own folder, and each folder above it that its pages load from
-	   (only those, not everything beside them). */
-	roots.forEach( go );
+	go( dir );
 	return out;
+}
+
+/* The files a text file loads: quoted paths with a known extension. A path
+   from the site root ("/media/x.mp4") is looked for in each folder above the
+   file, and when found it is rewritten relative to the file, since the piece
+   is served from its own folder on the site. */
+const REF = /["'`(]\s*((?:\.{1,2}\/|\/)?[^"'`()\s<>{}|\\*]{1,300}?)(?:[?#][^"'`()\s<>]*)?\s*["'`)]/g;
+function refsOf( file, root ) {
+	let text;
+	try {
+		text = fs.readFileSync( file, 'utf8' );
+	} catch ( e ) {
+		return { found: [], missing: 0, rewrite: [] };
+	}
+	const found = [];
+	const rewrite = [];
+	let missing = 0;
+	const dir = path.dirname( file );
+	let m;
+	REF.lastIndex = 0;
+	while ( ( m = REF.exec( text ) ) ) {
+		let s = m[ 1 ];
+		if ( ! MEDIA_REF.test( s ) || /^(https?:|data:|blob:|\/\/|mailto:|#)/i.test( s ) || s.includes( '${' ) ) {
+			continue;
+		}
+		try {
+			s = decodeURIComponent( s );
+		} catch ( e ) {}
+		let hit = '';
+		if ( s.startsWith( '/' ) ) {
+			for ( let d = dir; under( d, root ); d = path.dirname( d ) ) {
+				const t = path.join( d, s );
+				if ( fs.existsSync( t ) && fs.statSync( t ).isFile() ) {
+					hit = t;
+					let relTo = posix( path.relative( dir, t ) );
+					if ( ! relTo.startsWith( '.' ) ) {
+						relTo = './' + relTo;
+					}
+					rewrite.push( [ m[ 1 ], relTo ] );
+					break;
+				}
+				if ( d === root ) {
+					break;
+				}
+			}
+		} else {
+			const t = path.resolve( dir, s );
+			if ( under( t, root ) && fs.existsSync( t ) && fs.statSync( t ).isFile() ) {
+				hit = t;
+			}
+		}
+		if ( hit ) {
+			if ( ! NEVER.test( hit ) ) {
+				found.push( hit );
+			}
+		} else if ( /^\.{0,2}\//.test( s ) || /^[\w.-]+\//.test( s ) ) {
+			missing++;
+		}
+	}
+	return { found, missing, rewrite };
+}
+
+/* Everything a piece sends: its folder (less the working parts) and every file
+   its pages and scripts load, wherever it sits under the root. */
+function gather( p, root ) {
+	const files = new Map();
+	for ( const f of filesOf( p.dir ) ) {
+		files.set( f.full, f );
+	}
+	p.missing = 0;
+	p.rewrites = {};
+	const read = new Set();
+	for ( let round = 0; round < 4; round++ ) {
+		const todo = [ ...files.values() ].filter( ( f ) => TEXT.test( f.full ) && ! read.has( f.full ) && f.size < 8 * 1048576 );
+		if ( ! todo.length ) {
+			break;
+		}
+		for ( const f of todo ) {
+			read.add( f.full );
+			const r = refsOf( f.full, root );
+			p.missing += r.missing;
+			if ( r.rewrite.length ) {
+				p.rewrites[ f.full ] = r.rewrite;
+			}
+			for ( const t of r.found ) {
+				if ( ! files.has( t ) ) {
+					files.set( t, { full: t, size: fs.statSync( t ).size } );
+				}
+			}
+		}
+	}
+	let base = p.dir;
+	for ( const f of files.values() ) {
+		if ( ! under( f.full, base ) ) {
+			base = common( base, path.dirname( f.full ) );
+		}
+	}
+	const rel = ( f ) => posix( path.relative( base, f ) );
+	p.base = base;
+	p.files = [ ...files.values() ].map( ( f ) => ( { ...f, rel: rel( f.full ), rewrite: p.rewrites[ f.full ] } ) );
+	p.bytes = p.files.reduce( ( s, f ) => s + f.size, 0 );
+	p.entry = rel( p.mainFile );
+	p.entry45 = p.cutFile ? rel( p.cutFile ) : '';
+	p.clips = p.clipFiles.map( ( c ) => ( { title: c.title, entry: rel( c.file ) } ) );
 }
 
 /* ── a small ZIP writer: deflate for text, store for media ── */
@@ -267,6 +409,15 @@ function crc32( buf ) {
 }
 const PACKED = /\.(mp4|webm|m4v|mp3|ogg|oga|m4a|aac|opus|jpe?g|png|webp|gif|avif|woff2?|glb|gz|br)$/i;
 
+const esc = ( s ) => s.replace( /[.*+?^${}()|[\]\\]/g, '\\$&' );
+/* Paths from the site root, pointed at the same files inside the piece. */
+function rewritten( text, pairs ) {
+	for ( const [ from, to ] of pairs ) {
+		text = text.replace( new RegExp( '(["\'`(]\\s*)' + esc( from ) + '(?=[?#"\'`)\\s])', 'g' ), ( m, q ) => q + to );
+	}
+	return text;
+}
+
 async function zip( files, out ) {
 	const fh = await fsp.open( out, 'w' );
 	const central = [];
@@ -276,7 +427,10 @@ async function zip( files, out ) {
 		offset += b.length;
 	};
 	for ( const f of files ) {
-		const data = await fsp.readFile( f.full );
+		let data = await fsp.readFile( f.full );
+		if ( f.rewrite ) {
+			data = Buffer.from( rewritten( data.toString( 'utf8' ), f.rewrite ), 'utf8' );
+		}
 		const crc = crc32( data );
 		const store = PACKED.test( f.rel ) || data.length < 64;
 		const body = store ? data : zlib.deflateRawSync( data, { level: 6 } );
@@ -386,22 +540,44 @@ async function upload( file, size ) {
 const mb = ( n ) => ( n / 1048576 ).toFixed( 1 ) + ' MB';
 
 async function main() {
+	const root = path.resolve( ROOT );
 	const pieces = plan();
 	let total = 0;
 	for ( const p of pieces ) {
-		const keep = new Set( [ p.entry, p.entry45, ...p.clips.map( ( c ) => c.entry ) ].filter( Boolean ) );
-		p.files = filesOf( p.base, p.roots, keep );
-		p.bytes = p.files.reduce( ( s, f ) => s + f.size, 0 );
+		gather( p, root );
+		p.tooBig = p.bytes > MAX_PIECE;
 		total += p.bytes;
 	}
 
 	console.log( pieces.length + ' pieces, ' + mb( total ) + ' before packing.\n' );
 	for ( const p of pieces ) {
-		console.log( `${ p.date }  ${ p.kind.padEnd( 6 ) } ${ mb( p.bytes ).padStart( 10 ) }  ${ p.origin }  →  ${ p.title }${ p.clips.length ? '  (+' + p.clips.length + ' clips)' : '' }` );
+		const note = [ p.clips.length ? '+' + p.clips.length + ' clips' : '', p.entry45 ? '4:5' : '', p.missing ? p.missing + ' missing' : '', p.tooBig ? 'TOO BIG' : '' ].filter( Boolean ).join( ', ' );
+		console.log( `${ p.date }  ${ p.kind.padEnd( 6 ) } ${ mb( p.bytes ).padStart( 10 ) }  ${ p.origin }  →  ${ p.title }${ note ? '  (' + note + ')' : '' }` );
 	}
 	const planFile = opt( 'plan', '' );
 	if ( planFile ) {
-		fs.writeFileSync( planFile, JSON.stringify( pieces.map( ( { files, roots, ...p } ) => ( { ...p, files: files.map( ( f ) => f.rel ) } ) ), null, 1 ) );
+		fs.writeFileSync(
+			planFile,
+			JSON.stringify(
+				pieces.map( ( p ) => ( {
+					origin: p.origin,
+					title: p.title,
+					date: p.date,
+					kind: p.kind,
+					mb: +( p.bytes / 1048576 ).toFixed( 1 ),
+					tooBig: p.tooBig,
+					base: p.base,
+					entry: p.entry,
+					entry45: p.entry45,
+					clips: p.clips,
+					missing: p.missing,
+					rewritten: Object.keys( p.rewrites ).map( ( f ) => posix( path.relative( p.base, f ) ) ),
+					files: p.files.map( ( f ) => f.rel ),
+				} ) ),
+				null,
+				1
+			)
+		);
 	}
 	if ( DRY ) {
 		return;
@@ -419,6 +595,11 @@ async function main() {
 		const label = `[${ i + 1 }/${ pieces.length }] ${ p.origin }`;
 		if ( known.has( p.origin ) && ! flag( 'replace' ) ) {
 			console.log( label + ': already on the site, skipped' );
+			continue;
+		}
+		if ( p.tooBig ) {
+			console.log( label + ': ' + mb( p.bytes ) + ' is over the site\'s 3 GB limit for one piece, skipped' );
+			done.push( { origin: p.origin, error: 'too big: ' + mb( p.bytes ) } );
 			continue;
 		}
 		try {
