@@ -450,6 +450,8 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 		.ed-top { grid-template-columns: 1fr; }
 	}
 	@media (max-width: 760px) {
+		/* the controls are two rows here, so a day lands lower */
+		html { scroll-padding-top: 194px; }
 		.hero { padding-top: 52px; text-align: left; }
 		.hero h1, .hero p { margin-left: 0; }
 		.cal { padding: 18px 16px; }
