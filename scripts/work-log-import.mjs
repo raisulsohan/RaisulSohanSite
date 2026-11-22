@@ -37,7 +37,8 @@
  * documents (mov, fbx, blend, psd, aep, prproj, zip, docx, txt, npy), plus
  * every file its pages and scripts name, wherever it sits under the root and
  * whatever its kind. A path the code builds (`frames/${i}.jpg`) sends the
- * whole folder before the `${`, up to 1.5 GB. A path from the site root
+ * whole folder before the `${` (or before the `' +` of a joined path), up to
+ * 1.5 GB. A path from the site root
  * ("/media/clip.mp4") is pointed at the same file inside the piece. A piece
  * over 3 GB is listed as TOO BIG and not sent.
  *
@@ -99,7 +100,7 @@ const CLIENT = /suly|shabuj|real estate|gym|rupom|debangshu|barakat|ashik/i;
 const CUT45 = /(4x5|4-5|9x16|vertical)/i;
 /* Text files read for the files they load. */
 const TEXT = /\.(html?|m?js|css|json)$/i;
-const MEDIA_REF = /\.(wav|mp3|ogg|oga|m4a|aac|opus|flac|mp4|webm|m4v|mov|glb|gltf|bin|hdr|exr|ktx2|json|geojson|topojson|csv|png|jpe?g|webp|avif|gif|svg|woff2?|ttf|otf|m?js|css|html?)$/i;
+const MEDIA_REF = /\.(wav|mp3|ogg|oga|m4a|aac|opus|flac|mp4|webm|m4v|mov|glb|gltf|bin|fbx|obj|mtl|usdz|hdr|exr|ktx2|basis|wasm|json|geojson|topojson|csv|png|jpe?g|webp|avif|gif|svg|woff2?|ttf|otf|m?js|css|html?)$/i;
 
 const posix = ( p ) => p.split( path.sep ).join( '/' );
 const under = ( child, parent ) => {
@@ -293,6 +294,8 @@ function filesOf( dir ) {
    whole folder before the first `${`. */
 const REF = /["'`(]\s*((?:\.{1,2}\/|\/)?[^"'`()\s<>{}|\\*]{1,300}?)(?:[?#][^"'`()\s<>]*)?\s*["'`)]/g;
 const TPL = /[`'"]\s*((?:\.{1,2}\/|\/)?(?:[\w .@-]+\/)+)(?:[\w .@-]*)\$\{/g;
+/* The same, joined with +: '../media/' + name. */
+const CAT = /[`'"]\s*((?:\.{1,2}\/|\/)?(?:[\w .@-]+\/)+)\s*[`'"]\s*\+/g;
 const MAX_DIR = 1536 * 1048576;
 const isFile = ( t ) => {
 	try {
@@ -392,9 +395,14 @@ function refsOf( file, root, homes ) {
 			missing++;
 		}
 	}
-	TPL.lastIndex = 0;
-	while ( ( m = TPL.exec( text ) ) ) {
-		const s = m[ 1 ];
+	const built = [];
+	for ( const re of [ TPL, CAT ] ) {
+		re.lastIndex = 0;
+		while ( ( m = re.exec( text ) ) ) {
+			built.push( m[ 1 ] );
+		}
+	}
+	for ( const s of built ) {
 		if ( /^(https?:|\/\/)/i.test( s ) || s.startsWith( '/' ) ) {
 			continue;
 		}
@@ -420,7 +428,7 @@ function gather( p, root ) {
 	const homes = [ ...new Set( [ p.mainFile, p.cutFile, ...p.clipFiles.map( ( c ) => c.file ) ].filter( Boolean ).map( ( f ) => path.dirname( f ) ) ) ];
 	const read = new Set();
 	for ( let round = 0; round < 4; round++ ) {
-		const todo = [ ...files.values() ].filter( ( f ) => TEXT.test( f.full ) && ! read.has( f.full ) && f.size < 8 * 1048576 );
+		const todo = [ ...files.values() ].filter( ( f ) => TEXT.test( f.full ) && ! read.has( f.full ) && f.size < 64 * 1048576 );
 		if ( ! todo.length ) {
 			break;
 		}
