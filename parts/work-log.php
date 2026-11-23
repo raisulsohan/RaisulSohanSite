@@ -110,7 +110,11 @@ foreach ( $rs_wl_kinds as $rs_wl_k => $rs_wl_kl ) {
 	}
 }
 
-/* The calendar strip: every month from the first piece's to this one. */
+/*
+ * The calendar: the recent stretch a day to a cell, every month from this one
+ * back to the oldest piece before three empty months in a row; work older
+ * than that a year to a row, a month to a cell.
+ */
 $rs_wl_days_on = array();
 foreach ( $rs_wl_items as $rs_wl_it ) {
 	$rs_wl_days_on[ $rs_wl_it['date'] ] = true;
@@ -122,9 +126,28 @@ if ( $rs_wl_now_ym < $rs_wl_first_ym ) {
 	$rs_wl_now_ym = $rs_wl_first_ym;
 }
 $rs_wl_strip = array();
+$rs_wl_run   = array();
+$rs_wl_empty = 0;
 for ( $rs_wl_ts = strtotime( $rs_wl_now_ym . '-01 12:00:00 UTC' ); gmdate( 'Y-m', $rs_wl_ts ) >= $rs_wl_first_ym; $rs_wl_ts = strtotime( '-1 month', $rs_wl_ts ) ) {
-	$rs_wl_strip[] = gmdate( 'Y-m', $rs_wl_ts );
+	$rs_wl_ym    = gmdate( 'Y-m', $rs_wl_ts );
+	$rs_wl_run[] = $rs_wl_ym;
+	if ( isset( $rs_wl_tree[ $rs_wl_ym ] ) ) {
+		$rs_wl_strip = $rs_wl_run;
+		$rs_wl_empty = 0;
+	} elseif ( ++$rs_wl_empty > 2 && $rs_wl_strip ) {
+		break;
+	}
 }
+$rs_wl_years = array();
+$rs_wl_from  = end( $rs_wl_strip );
+foreach ( $rs_wl_tree as $rs_wl_ym => $rs_wl_weeks ) {
+	if ( $rs_wl_ym < $rs_wl_from ) {
+		$rs_wl_years[ substr( $rs_wl_ym, 0, 4 ) ][ (int) substr( $rs_wl_ym, 5, 2 ) ] = array_sum( array_map( 'count', $rs_wl_weeks ) );
+	}
+}
+krsort( $rs_wl_years );
+/* Months from the first piece's to this one, for the line above the calendar. */
+$rs_wl_span_m = ( (int) substr( $rs_wl_now_ym, 0, 4 ) - (int) substr( $rs_wl_first_ym, 0, 4 ) ) * 12 + (int) substr( $rs_wl_now_ym, 5, 2 ) - (int) substr( $rs_wl_first_ym, 5, 2 ) + 1;
 
 /* The other edition, for hreflang and the language link. */
 $rs_wl_pair  = rs_edition_pair();
@@ -275,6 +298,11 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 	.hd.on { background: var(--acc); }
 	a.hd.on:hover { background: var(--acc2); }
 	.hd.fut { background: none; border: 1px dashed rgba(255, 255, 255, .14); }
+	/* older work: a year to a row, a month to a cell */
+	.cal-row:not(.cal-yr) + .cal-yr { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+	.cal-ms { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+	.cal-ms .hd { display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 11px; line-height: 1; white-space: nowrap; color: var(--dim); text-decoration: none; }
+	.cal-ms .hd.on { color: var(--ink); font-weight: 600; }
 
 	/* the controls under the bar */
 	.ctl { position: sticky; top: var(--bar); z-index: 15; background: rgba(0, 0, 0, .86); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255, 255, 255, .08); }
@@ -406,6 +434,9 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 	.ph::before { content: ""; position: absolute; top: 0; left: -6px; width: 14px; height: 10px; border-radius: 3px; background: var(--acc); }
 	.today { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(255, 255, 255, .35); pointer-events: none; }
 	.today em { position: absolute; top: 0; left: 4px; font-style: normal; font-size: 11px; color: var(--fg); white-space: nowrap; }
+	/* a stretch without work, cut out of the axis */
+	.brk { position: absolute; top: 0; bottom: 6px; border-inline: 1px dashed rgba(255, 255, 255, .22); background: repeating-linear-gradient(135deg, rgba(255, 255, 255, .06) 0 6px, transparent 6px 12px); pointer-events: none; }
+	.brk em { position: absolute; top: 4px; left: 0; right: 0; padding: 0 4px; font-style: normal; font-size: 10.5px; line-height: 1.25; text-align: center; color: var(--mut); }
 	.legend { display: flex; gap: 10px 24px; flex-wrap: wrap; margin: 12px 0 0 164px; color: var(--mut); font-size: 13px; }
 	.legend b { display: inline-block; padding: 0 6px; border-radius: 980px; background: var(--fg); color: var(--ink); margin-right: 6px; }
 	.legend i { display: inline-block; width: 2px; height: 12px; background: var(--acc); margin-right: 6px; vertical-align: middle; }
@@ -458,6 +489,7 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 	}
 	@media (max-width: 900px) {
 		.ed-top { grid-template-columns: 1fr; }
+		.cal-ms .hd span { display: none; }
 	}
 	@media (max-width: 760px) {
 		/* the controls are two rows here, so a day lands lower */
@@ -532,7 +564,11 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 
 <main id="main">
 	<section class="wrap hero">
-		<span class="kicker"><?php echo esc_html( $rs_wl_title . ' · ' . rs_bn_digits( substr( $rs_wl_items[0]['date'], 0, 4 ) ) ); ?></span>
+		<?php
+		$rs_wl_y0 = substr( $rs_wl_first_ym, 0, 4 );
+		$rs_wl_y1 = substr( $rs_wl_items[0]['date'], 0, 4 );
+		?>
+		<span class="kicker"><?php echo esc_html( $rs_wl_title . ' · ' . rs_bn_digits( $rs_wl_y0 === $rs_wl_y1 ? $rs_wl_y1 : $rs_wl_y0 . '–' . $rs_wl_y1 ) ); ?></span>
 		<h1><?php echo esc_html( $rs_wl_t( 'কবে, কোন কাজ', 'What I made, and when' ) ); ?><span class="dot" aria-hidden="true"></span></h1>
 		<p><?php echo esc_html( $rs_wl_t( 'টুল, ম্যাপ অ্যানিমেশন, ডকুমেন্টারি, শোরিল: যা বানাই সব এখানে, তারিখ ধরে। সবচেয়ে নতুনটা সবার উপরে, কার্ডে চাপলেই চলে।', 'Tools, map animation, documentary, showreels: everything I make, by date. The newest is on top; click a card and it plays.' ) ); ?></p>
 	</section>
@@ -541,9 +577,13 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 		<section class="cal" aria-label="<?php echo esc_attr( $rs_wl_t( 'কোন দিনে কাজ এসেছে', 'The days work went up' ) ); ?>">
 			<div class="cal-head">
 				<b><?php
-				$rs_wl_nm = count( $rs_wl_strip );
+				$rs_wl_nm = $rs_wl_span_m;
 				$rs_wl_ni = count( $rs_wl_items );
-				echo esc_html( $rs_wl_en ? $rs_wl_ni . ' pieces in ' . $rs_wl_nm . ( 1 === $rs_wl_nm ? ' month' : ' months' ) : rs_bn_digits( $rs_wl_nm ) . ' মাসে ' . rs_bn_digits( $rs_wl_ni ) . 'টি কাজ' );
+				if ( $rs_wl_nm > 12 ) {
+					echo esc_html( $rs_wl_en ? $rs_wl_ni . ' pieces since ' . $rs_wl_month( $rs_wl_first_ym ) : $rs_wl_month( $rs_wl_first_ym ) . ' থেকে ' . rs_bn_digits( $rs_wl_ni ) . 'টি কাজ' );
+				} else {
+					echo esc_html( $rs_wl_en ? $rs_wl_ni . ' pieces in ' . $rs_wl_nm . ( 1 === $rs_wl_nm ? ' month' : ' months' ) : rs_bn_digits( $rs_wl_nm ) . ' মাসে ' . rs_bn_digits( $rs_wl_ni ) . 'টি কাজ' );
+				}
 				?></b>
 				<span><i aria-hidden="true"></i><?php echo esc_html( $rs_wl_t( 'যেদিন নতুন কাজ এসেছে', 'A day new work went up' ) ); ?></span>
 			</div>
@@ -568,6 +608,24 @@ $rs_wl_t_title = $rs_wl_title . ' · ' . get_bloginfo( 'name' );
 								printf( '<a class="hd on" href="#d-%1$s" data-d="%1$s" title="%2$s" aria-label="%2$s"></a>', esc_attr( $rs_wl_ymd ), esc_attr( $rs_wl_day( $rs_wl_ymd ) ) );
 							} else {
 								printf( '<span class="hd" data-d="%s"></span>', esc_attr( $rs_wl_ymd ) );
+							}
+						}
+						?>
+					</div>
+				</div>
+			<?php endforeach; ?>
+			<?php foreach ( $rs_wl_years as $rs_wl_y => $rs_wl_ms ) : ?>
+				<div class="cal-row cal-yr">
+					<span><?php echo esc_html( rs_bn_digits( $rs_wl_y ) ); ?></span>
+					<div class="cal-days cal-ms">
+						<?php
+						for ( $rs_wl_m = 1; $rs_wl_m <= 12; $rs_wl_m++ ) {
+							$rs_wl_ym = sprintf( '%s-%02d', $rs_wl_y, $rs_wl_m );
+							$rs_wl_mn = $rs_wl_en ? gmdate( 'M', strtotime( $rs_wl_ym . '-15 12:00:00 UTC' ) ) : $rs_wl_months_bn[ $rs_wl_m ];
+							if ( isset( $rs_wl_ms[ $rs_wl_m ] ) ) {
+								printf( '<a class="hd on" href="#m-%1$s" data-m="%1$s" title="%2$s" aria-label="%2$s"><span aria-hidden="true">%3$s</span></a>', esc_attr( $rs_wl_ym ), esc_attr( $rs_wl_month( $rs_wl_ym ) . ' · ' . $rs_wl_count( $rs_wl_ms[ $rs_wl_m ] ) ), esc_html( $rs_wl_mn ) );
+							} else {
+								printf( '<span class="hd"><span>%s</span></span>', esc_html( $rs_wl_mn ) );
 							}
 						}
 						?>
@@ -793,7 +851,6 @@ echo wp_json_encode(
 		'clip'  => $rs_wl_t( 'ক্লিপ', 'Clip' ),
 		'clips' => $rs_wl_t( 'টি ক্লিপ', ' clips' ),
 		'same'  => $rs_wl_t( 'একই দিনে', 'Same day' ),
-		'year'  => $rs_wl_t( '২০২৬', '2026' ),
 		'today' => $rs_wl_t( 'আজ', 'Today' ),
 		'main'  => $rs_wl_t( 'মূল ভিডিও', 'Main video' ),
 		'open'  => $rs_wl_t( 'আলাদা খুলুন ↗', 'Open ↗' ),
@@ -980,13 +1037,14 @@ const tall = im => {
 };
 $('list').addEventListener('load', e => { if (e.target.tagName === 'IMG') tall(e.target); }, true);
 document.querySelectorAll('#list .thumb > img').forEach(im => { if (im.complete && im.naturalWidth) tall(im); });
-// a day in the calendar: its first listed card, and all its cards lit for a moment
+// a day in the calendar (or a month of an older year): its first listed card, and all its cards lit for a moment
 let flashT = 0;
 document.querySelector('.cal').addEventListener('click', e => {
   const a = e.target.closest('a.hd'); if (!a) return;
   e.preventDefault();
   if (list.hidden) setView('list', true);
-  let cells = [...document.querySelectorAll('.cell[data-date="' + a.dataset.d + '"]')];
+  const day = a.dataset.d, at = day ? 'd-' + day : 'm-' + a.dataset.m;
+  let cells = [...document.querySelectorAll(day ? '.cell[data-date="' + day + '"]' : '.cell[data-date^="' + a.dataset.m + '-"]')];
   if (cells.length && cells.every(c => c.hidden)) { kind = 'all'; applyFilter(); }
   cells = cells.filter(c => !c.hidden);
   if (!cells.length) return;
@@ -995,7 +1053,7 @@ document.querySelector('.cal').addEventListener('click', e => {
   document.querySelectorAll('.cell.flash').forEach(c => c.classList.remove('flash'));
   cells.forEach(c => c.classList.add('flash'));
   flashT = setTimeout(() => cells.forEach(c => c.classList.remove('flash')), 2600);
-  history.replaceState(null, '', location.pathname + location.search + '#d-' + a.dataset.d);
+  history.replaceState(null, '', location.pathname + location.search + '#' + at);
 });
 
 // ── the silent preview: on a resting pointer, or in the middle of a phone's screen
@@ -1074,11 +1132,45 @@ if (!(zi >= 0 && zi < ZOOM.length)) zi = 2;
 const dayMs = 864e5;
 const toDay = ymd => Date.UTC(+ymd.slice(0, 4), +ymd.slice(5, 7) - 1, +ymd.slice(8, 10)) / dayMs;
 const localToday = () => { const n = new Date(); return Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()) / dayMs; };
-const oldest = WORKS[WORKS.length - 1].date;
-const d0 = toDay(oldest.slice(0, 8) + '01');
-const dEnd = Math.max(localToday(), toDay(WORKS[0].date)) + 4;
-const span = dEnd - d0;
 const ymdOf = d => new Date(d * dayMs).toISOString().slice(0, 10);
+/*
+ * The time axis: the days with work in runs; a stretch of more than GAP days
+ * with none is cut out and drawn as a narrow break (BRK pixels at every zoom),
+ * so pieces years apart do not leave a screen of empty track between them.
+ * A run starts on the first of its month and ends ten days after its last
+ * piece; the newest run ends four days after today.
+ */
+const GAP = 45, BRK = 64;
+let CL = [];
+function axis() {
+  const days = [...new Set(WORKS.map(w => toDay(w.date)).concat(localToday()))].sort((a, b) => a - b);
+  CL = [];
+  days.forEach(d => { const c = CL[CL.length - 1]; if (c && d - c.last <= GAP) c.last = d; else CL.push({ first: d, last: d }); });
+  let v = 0;
+  CL.forEach((c, i) => {
+    c.s = toDay(ymdOf(c.first).slice(0, 8) + '01');
+    c.e = c.last + (i === CL.length - 1 ? 4 : 10);
+    c.i = i; c.v = v; v += c.e - c.s + 1;
+  });
+}
+const runOf = d => CL.find(c => d <= c.e) || CL[CL.length - 1];
+// the left edge of a day (or part of one) in pixels, at this zoom
+const at = d => { const c = runOf(d); return (c.v + Math.max(0, d - c.s)) * ZOOM[zi] + c.i * BRK; };
+// and back: the day at a point, for keeping the middle of the view on a zoom
+const dayAt = x => {
+  const px = ZOOM[zi];
+  for (const c of CL) {
+    const x0 = c.v * px + c.i * BRK, n = c.e - c.s + 1;
+    if (x < x0 + n * px + BRK || c.i === CL.length - 1) return c.s + Math.max(0, Math.min(x - x0, n * px)) / px;
+  }
+  return 0;
+};
+const axisWidth = () => { const c = CL[CL.length - 1]; return (c.v + c.e - c.s + 1) * ZOOM[zi] + c.i * BRK; };
+// "1 yr 3 mo" / "১ বছর ৩ মাস": how long a break is
+const gapText = days => {
+  const m = Math.max(1, Math.round(days / 30.44)), y = Math.floor(m / 12), r = m % 12;
+  return EN ? [y ? y + ' yr' : '', r ? r + ' mo' : ''].filter(Boolean).join(' ') : [y ? bn(y) + ' বছর' : '', r ? bn(r) + ' মাস' : ''].filter(Boolean).join(' ');
+};
 const MONTHS = <?php
 echo wp_json_encode( $rs_wl_en ? array( '', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ) : array_merge( array( '' ), array_values( $rs_wl_months_bn ) ) );
 ?>;
@@ -1090,18 +1182,29 @@ function groups() {
   return g;
 }
 function drawEditor(keepScroll) {
-  const px = ZOOM[zi], W = Math.ceil(span * px), sl = edScroll.scrollLeft;
+  axis();
+  const px = ZOOM[zi], W = Math.ceil(axisWidth()), sl = edScroll.scrollLeft;
   edInner.style.width = W + 'px';
-  // ruler: the first of each month, and days when there is room
+  // ruler: the first of each month, and days when there is room; a break between runs
   let r = '';
-  for (let d = d0; d <= dEnd; d++) {
-    const s = ymdOf(d), dd = +s.slice(8, 10), x = (d - d0) * px + px / 2;
-    if (dd === 1) r += '<b style="left:' + ((d - d0) * px) + 'px">' + MONTHS[+s.slice(5, 7)] + ' ' + yearOf(s) + '</b>';
-    if (px >= 24 || dd % 7 === 1) {
-      const on = WORKS.some(w => w.date === s);
-      r += '<span class="' + (on ? 'w' : '') + '" style="left:' + x + 'px">' + bn(dd) + '</span>';
+  edInner.querySelectorAll('.brk').forEach(n => n.remove());
+  CL.forEach(c => {
+    for (let d = c.s; d <= c.e; d++) {
+      const s = ymdOf(d), dd = +s.slice(8, 10), x0 = at(d);
+      if (dd === 1) r += '<b style="left:' + x0 + 'px">' + MONTHS[+s.slice(5, 7)] + ' ' + yearOf(s) + '</b>';
+      if (px >= 24 || dd % 7 === 1) {
+        const on = WORKS.some(w => w.date === s);
+        r += '<span class="' + (on ? 'w' : '') + '" style="left:' + (x0 + px / 2) + 'px">' + bn(dd) + '</span>';
+      }
     }
-  }
+    const next = CL[c.i + 1];
+    if (next) {
+      const k = document.createElement('div'); k.className = 'brk'; k.setAttribute('aria-hidden', 'true');
+      k.style.left = (at(c.e) + px) + 'px'; k.style.width = BRK + 'px';
+      k.innerHTML = '<em>' + gapText(next.s - c.e - 1) + '</em>';
+      edInner.appendChild(k);
+    }
+  });
   $('edRuler').innerHTML = r;
   // tracks
   const g = groups(), tracks = $('edTracks');
@@ -1111,35 +1214,35 @@ function drawEditor(keepScroll) {
     tr.setAttribute('role', 'group'); tr.setAttribute('aria-label', KINDS[k]);
     const keys = Object.keys(g).filter(key => key.startsWith(k + '|')).sort();
     keys.forEach((key, idx) => {
-      const ws = g[key], w = ws[0], d = toDay(w.date) - d0;
-      const next = keys[idx + 1] ? toDay(g[keys[idx + 1]][0].date) - d0 : d + 3;
-      const width = Math.max(12, Math.min(next - d, 3) * px - 6);
+      const ws = g[key], w = ws[0], x = at(toDay(w.date));
+      const nx = keys[idx + 1] ? at(toDay(g[keys[idx + 1]][0].date)) : x + 3 * px;
+      const width = Math.max(12, Math.min(nx - x, 3 * px) - 6);
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'eclip' + (ws.length > 1 ? ' stack' : '') + (ws.some(shown) ? '' : ' dim') + (ws.every(x => x.hidden) ? ' off' : '');
-      b.style.left = (d * px + 3) + 'px'; b.style.width = width + 'px';
+      b.style.left = (x + 3) + 'px'; b.style.width = width + 'px';
       b.dataset.key = key;
       b.setAttribute('aria-label', w.day + ': ' + ws.map(x => x.title).join(', '));
       b.setAttribute('aria-pressed', sel && ws.includes(sel) ? 'true' : 'false');
       b.innerHTML = '<img src="' + w.img + '" alt="" loading="lazy">' +
         (ws.length > 1 ? '<span class="bdg">' + bn(ws.length) + '</span>' : (w.clips.length ? '<span class="bdg">+' + bn(w.clips.length) + '</span>' : ''));
       b.addEventListener('click', () => {
-        const at = sel && ws.includes(sel) ? (ws.indexOf(sel) + 1) % ws.length : 0;   // a stacked clip steps through its day
-        select(ws[at]);
+        const nth = sel && ws.includes(sel) ? (ws.indexOf(sel) + 1) % ws.length : 0;   // a stacked clip steps through its day
+        select(ws[nth]);
       });
       tr.appendChild(b);
     });
     tracks.appendChild(tr);
   });
   // today
-  const t = localToday() - d0;
-  const td = document.createElement('div'); td.className = 'today'; td.style.left = (t * px + px / 2) + 'px';
+  const td = document.createElement('div'); td.className = 'today'; td.style.left = (at(localToday()) + px / 2) + 'px';
   td.innerHTML = '<em>' + T.today + '</em>'; edInner.appendChild(td);
   edInner.querySelectorAll('.today').forEach((n, i, all) => { if (i < all.length - 1) n.remove(); });
-  // the overview strip
-  const mini = $('edMini');
+  // the overview strip: month names over one run, the years over several
+  const mini = $('edMini'), mark = (d, text) => { const em = document.createElement('em'); em.style.left = (at(d) / W * 100) + '%'; em.textContent = text; mini.appendChild(em); };
   mini.querySelectorAll('i, em').forEach(n => n.remove());
-  WORKS.forEach(w => { const i = document.createElement('i'); i.style.left = ((toDay(w.date) - d0) / span * 100) + '%'; if (!shown(w)) i.style.opacity = '.25'; mini.appendChild(i); });
-  for (let d = d0; d <= dEnd; d++) { const s = ymdOf(d); if (s.endsWith('-01')) { const em = document.createElement('em'); em.style.left = ((d - d0) / span * 100) + '%'; em.textContent = MONTHS[+s.slice(5, 7)]; mini.appendChild(em); } }
+  WORKS.forEach(w => { const i = document.createElement('i'); i.style.left = (at(toDay(w.date)) / W * 100) + '%'; if (!shown(w)) i.style.opacity = '.25'; mini.appendChild(i); });
+  if (CL.length === 1) { for (let d = CL[0].s; d <= CL[0].e; d++) { const s = ymdOf(d); if (s.endsWith('-01')) mark(d, MONTHS[+s.slice(5, 7)]); } }
+  else CL.forEach(c => { if (!c.i || ymdOf(c.s).slice(0, 4) !== ymdOf(CL[c.i - 1].s).slice(0, 4)) mark(c.s, yearOf(ymdOf(c.s))); });
   const te = document.createElement('em'); te.style.right = '0'; te.style.color = 'var(--fg)'; te.textContent = T.today; mini.appendChild(te);
   edBuilt = true;
   placePh();
@@ -1150,9 +1253,8 @@ function drawEditor(keepScroll) {
 }
 function placePh() {
   if (!sel) return;
-  const px = ZOOM[zi], d = toDay(sel.date) - d0;
   const b = edInner.querySelector('.eclip[data-key="' + sel.kind + '|' + sel.date + '"]');
-  $('edPh').style.left = (b ? b.offsetLeft + b.offsetWidth / 2 : d * px) + 'px';
+  $('edPh').style.left = (b ? b.offsetLeft + b.offsetWidth / 2 : at(toDay(sel.date))) + 'px';
 }
 function select(w, scroll) {
   sel = w;
@@ -1189,10 +1291,10 @@ $('edMini').addEventListener('keydown', e => {
 });
 function zoom(k) {
   const n = Math.max(0, Math.min(ZOOM.length - 1, zi + k)); if (n === zi) return;
-  const mid = (edScroll.scrollLeft + edScroll.clientWidth / 2) / ZOOM[zi];
+  const mid = dayAt(edScroll.scrollLeft + edScroll.clientWidth / 2);
   zi = n; store.set('worklog.zoom', String(zi));
   drawEditor(false);
-  edScroll.scrollLeft = mid * ZOOM[zi] - edScroll.clientWidth / 2; syncMini();
+  edScroll.scrollLeft = at(mid) - edScroll.clientWidth / 2; syncMini();
 }
 $('edIn').onclick = () => zoom(1);
 $('edOut').onclick = () => zoom(-1);

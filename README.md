@@ -2,13 +2,19 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759b.svg?logo=wordpress&logoColor=white)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg?logo=php&logoColor=white)](https://php.net)
-[![Version](https://img.shields.io/badge/Version-9.11.0-0080ff.svg)](style.css)
+[![Version](https://img.shields.io/badge/Version-9.12.0-0080ff.svg)](style.css)
 [![Zero-Plugin Architecture](https://img.shields.io/badge/Plugins-0%20(Built--in)-success.svg)](#how-it-works)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-brightgreen.svg)](#how-it-works)
 
 A beautifully crafted, bespoke WordPress theme designed and built by Raisul Sohan exclusively for his personal writings, with creativity and a focus on an immersive reading experience. It features lightning-fast AJAX navigation, a distraction-free reading modal, native SEO, and a completely plugin-less architecture.
 
 ---
+
+## What's new in 9.12
+
+**The Work Log spans years.**
+
+- **9.12.0: Older work has room.** Pieces may now be years older than the rest (a YouTube video keeps its own publish day). The calendar shows the recent stretch a day to a cell, from this month back to three empty months in a row; older work is a year to a row, a month to a cell, and a lit month leads to its cards. The heading says the years it covers ("2020–2026"). In the Editor view a stretch of more than 45 days without work is cut out of the axis and drawn as a narrow break with its length ("1 yr 3 mo"), so pieces years apart sit close; the overview strip names the years when there are several runs. Zoom keeps the day in the middle of the view.
 
 ## What's new in 9.11
 
